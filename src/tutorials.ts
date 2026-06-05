@@ -1265,4 +1265,257 @@ for proven performance needs, and know which copy is the source of truth.
 the start, modeling around access patterns instead of relationships (see the
 NoSQL tutorial).`,
   },
+  {
+    id: 'tut-idempotency',
+    subjectId: 'architecture',
+    title: 'Idempotency and the Exactly-Once Lie',
+    minutes: 10,
+    body: `"Exactly-once delivery" is mostly a myth in distributed systems. What you can
+build is **exactly-once effects** on top of at-least-once delivery, using
+idempotency.
+
+**Why duplicates are guaranteed.** A client times out and retries. A message
+broker redelivers after a consumer crashes before acking. A load balancer retries
+a request. You will process the same logical operation more than once, so design
+for it.
+
+**Idempotent operations.** An operation is idempotent if doing it twice equals
+doing it once. Some are naturally so:
+
+    -- idempotent: setting an absolute state
+    UPDATE orders SET status = 'paid' WHERE id = $1;
+    -- NOT idempotent: a relative change repeats its effect
+    UPDATE accounts SET balance = balance - 100 WHERE id = $1;
+
+**Idempotency keys.** For non-idempotent work (charge a card, create an order),
+the client sends a unique Idempotency-Key. You store the key with the result; a
+repeat with the same key returns the stored result instead of doing the work
+again. The *Idempotent Dedupe* drill builds this.
+
+    if key in processed: return processed[key]
+    result = doWork()
+    processed[key] = result   # atomically, ideally in the same txn
+    return result
+
+**The race.** Two concurrent requests with the same key must not both do the work.
+Use a unique constraint on the key (the second insert fails) or a lock, so exactly
+one wins.
+
+**Takeaway:** assume at-least-once everywhere, make handlers idempotent, and you
+get the exactly-once behavior users actually care about, without pretending the
+network is reliable.`,
+  },
+  {
+    id: 'tut-webhooks',
+    subjectId: 'api',
+    title: 'Webhooks: Receiving Events Safely',
+    minutes: 10,
+    body: `A webhook is another service calling your endpoint when something happens
+(payment succeeded, repo pushed). Receiving them safely has a few non-obvious
+rules.
+
+**Verify the signature.** Anyone can POST to your public URL, so a provider signs
+each payload with an HMAC over the **raw body** plus a timestamp. Recompute it and
+compare in constant time. Verify against the raw bytes, not the parsed object,
+because re-serializing changes them. The *Verify A Webhook* drill covers this.
+
+**Reject replays.** An attacker can capture and resend a valid signed request.
+Reject requests whose timestamp is too old, and ideally dedupe on the event id.
+
+**Respond fast, process async.** Providers retry if you do not return 2xx quickly,
+which can cause duplicate processing and timeouts. Acknowledge immediately (return
+200), then do the real work on a queue.
+
+**Be idempotent.** Because providers retry, you will receive the same event more
+than once. Dedupe on the event id so processing twice is harmless (see the
+idempotency tutorial).
+
+**Return the right codes.** 2xx = received (the provider stops retrying). A 4xx
+for a bad signature; a 5xx if you genuinely failed and want a retry. Returning 200
+on failure means the event is lost forever.
+
+**Make testing possible.** Webhooks are async and external; log every received
+event with its id, and provide a way to replay one in development.`,
+  },
+  {
+    id: 'tut-profiling',
+    subjectId: 'performance',
+    title: 'Profiling: Finding the Slow Endpoint',
+    minutes: 10,
+    body: `Performance work without measurement is guessing. The discipline: measure, find
+the real bottleneck, fix that one thing, measure again.
+
+**Start at the percentiles.** Look at p95/p99 latency per endpoint, not averages.
+Averages hide the tail where real users hurt. One slow endpoint usually dominates;
+fix it before anything else (the *Latency Percentile* drill).
+
+**The usual suspect: the database.** Most "slow endpoint" tickets are a slow query
+or too many queries. Two patterns dominate:
+- **Missing index** -> a sequential scan. EXPLAIN ANALYZE shows it; add the right
+  index (see the indexes tutorial).
+- **N+1 queries** -> one query to list items, then one per item. 1 + 50 queries
+  where 2 would do. Fix with a join, an IN query, or eager loading
+  (select_related/prefetch in Django, dataloaders in GraphQL). The *N+1 Query
+  Hunt* drill covers this.
+
+**Then the obvious wins:**
+- Add caching for hot, rarely-changing reads (mind the failure modes).
+- Remove blocking work from the request path; push it to a queue.
+- Watch for accidental O(n^2) in code and serialization of large payloads.
+
+**Profile, do not guess.** Use a profiler / APM to see where time actually goes
+(DB vs CPU vs external call). The biggest mistake is optimizing the part that was
+never the bottleneck.
+
+**Load test before you ship.** Behavior under 1 user and under 1000 differs
+(connection pools, locks, GC). Test at expected and 10x traffic so the surprise
+is in staging, not production.`,
+  },
+  {
+    id: 'tut-logging',
+    subjectId: 'devops',
+    title: 'Logging That Helps at 3 AM',
+    minutes: 9,
+    body: `Logs are written for the person debugging an incident half-asleep. Optimize for
+that moment.
+
+**Structured, not prose.** Emit JSON (or key=value), not free-text sentences. You
+cannot grep or aggregate "User Bob had a problem with order 42". You can query
+{ "event": "order_failed", "orderId": 42, "userId": "bob" }.
+
+**Correlate with a request id.** Generate an id per incoming request (or accept a
+trace header), attach it to every log line and pass it downstream. Now you can
+follow one request across services with a single filter. This is the single most
+useful logging practice.
+
+**Log levels with intent.**
+- ERROR: something failed that needs attention.
+- WARN: recovered from something suspicious.
+- INFO: significant business events (order created).
+- DEBUG: detail for development, usually off in prod.
+Do not log every line at INFO; noise hides signal.
+
+**Never log secrets or PII.** Tokens, passwords, full card numbers, personal data:
+keep them out of logs (mask them, as in the *Mask PII* drill). A log aggregator is
+a juicy target and often less protected than your database.
+
+**Write to stdout.** In twelve-factor style, log to standard out and let the
+platform collect, ship, and rotate. Do not manage log files in the app.
+
+**Make errors actionable.** An error log should answer "what failed, for whom, and
+with what context" so the on-call engineer can act without reproducing it. Pair
+logs with metrics (rates, percentiles) and traces (where the time went).`,
+  },
+  {
+    id: 'tut-outbox',
+    subjectId: 'architecture',
+    title: 'The Dual-Write Problem and the Outbox',
+    minutes: 10,
+    body: `A subtle, common bug: you update the database AND publish an event, and the two
+can get out of sync. The outbox pattern fixes it.
+
+**The dual-write problem.** Your handler does two writes to two systems:
+
+    db.save(order)            // 1: commit to the database
+    broker.publish(event)     // 2: publish to Kafka/RabbitMQ
+
+If the process crashes between 1 and 2, the order exists but no event was sent
+(downstream never learns). If you reorder them and 1 fails after 2, you published
+an event for an order that does not exist. There is no atomic transaction across a
+database and a broker.
+
+**The outbox pattern.** Write the event to an **outbox table in the same database
+transaction** as the business change:
+
+    BEGIN;
+      INSERT INTO orders ...;
+      INSERT INTO outbox (event_type, payload) VALUES (...);
+    COMMIT;
+
+Now the order and the intent-to-publish commit atomically. A separate **relay**
+process polls the outbox (or tails the DB change log) and publishes events to the
+broker, marking them sent. The *Transactional Outbox* problem drills this.
+
+**Why it works.** The only source of truth is the database transaction. If it
+commits, the event is guaranteed to be in the outbox and will eventually be
+published (at-least-once, so consumers must be idempotent). If it rolls back,
+neither happened.
+
+**The trade-off:** events are published slightly after the commit (eventual), and
+you run a relay. That is a small price for never losing or inventing events.
+
+**Related:** change data capture (CDC) tools like Debezium implement the relay by
+reading the database's write-ahead log directly.`,
+  },
+  {
+    id: 'tut-search',
+    subjectId: 'sql',
+    title: 'Full-Text Search and Inverted Indexes',
+    minutes: 9,
+    body: `"WHERE description LIKE '%shoe%'" does not scale and does not rank. Real search
+uses an inverted index, the data structure behind every search engine.
+
+**The inverted index.** Instead of mapping documents to their words, it maps each
+word to the list of documents containing it:
+
+    "shoe"  -> [doc1, doc7, doc42]
+    "red"   -> [doc7, doc99]
+
+A query for "red shoe" intersects the two lists, so lookups are fast no matter how
+many documents there are. Building one is a great exercise (tokenize, then map
+terms to doc ids, like a specialized groupBy).
+
+**Analysis matters as much as the index.** Before indexing, text is processed:
+lowercasing, tokenizing, removing stop words ("the", "a"), and **stemming**
+("running" -> "run") so "run" matches "running". The same analysis runs on the
+query so they line up.
+
+**Ranking.** Search returns results in relevance order, classically with TF-IDF or
+BM25: a term is more significant if it appears often in a document (term
+frequency) but is rare across all documents (inverse document frequency). This is
+why "the" barely affects ranking but "photosynthesis" does.
+
+**Where it runs.** Postgres has built-in full-text search (tsvector/tsquery) which
+is plenty for many apps. Dedicated engines (Elasticsearch, OpenSearch) add
+scale, faceting, fuzzy matching, and aggregations.
+
+**Keep it in sync.** The search index is a derived read model of your source data.
+Update it on writes (often via the outbox/event stream), and accept that it is
+eventually consistent with the database.`,
+  },
+  {
+    id: 'tut-clocks',
+    subjectId: 'system-design',
+    title: 'Clocks, Ordering, and Why Time Is Hard',
+    minutes: 10,
+    body: `In a distributed system you cannot trust wall-clock timestamps to order events.
+Understanding why prevents a class of subtle bugs.
+
+**Wall clocks drift and jump.** Each machine's clock is slightly off and gets
+corrected by NTP, which can jump time backward. So "event A has an earlier
+timestamp than B" does not reliably mean A happened first. Never use timestamps
+from different machines to decide ordering in a way that affects correctness.
+
+**Logical clocks (Lamport).** A counter that increments on each event and travels
+with messages (receiver sets its clock to max(local, received) + 1). It gives a
+consistent "happened-before" ordering without synchronized wall clocks, though it
+cannot tell you two events were truly concurrent.
+
+**Vector clocks.** A per-node counter map. Comparing two vector clocks tells you
+if one happened before the other or if they are **concurrent** (genuinely
+independent, a conflict to resolve). The *Compare Vector Clocks* drill implements
+exactly this, returning before/after/concurrent/equal.
+
+**Why it matters practically:**
+- **Last-write-wins** using wall clocks can silently drop data when clocks
+  disagree. Some stores use vector clocks to detect conflicts instead.
+- Distributed unique ids (Snowflake-style) combine a timestamp with a node id and
+  a sequence so ids are roughly time-ordered without colliding across machines.
+- "Read your own writes" breaks under replication lag, a time/ordering problem in
+  disguise (see the replication tutorial).
+
+**Takeaway:** for correctness, reason about causality (what caused what), not the
+clock on the wall. Use logical or vector clocks when ordering across nodes must be
+reliable.`,
+  },
 ]
