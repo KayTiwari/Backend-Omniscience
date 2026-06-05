@@ -25,7 +25,6 @@ import {
   allProblems,
   subjects,
   type Problem,
-  type ProblemDifficulty,
   type ProblemType,
   type Subject,
 } from './course'
@@ -122,8 +121,6 @@ function App() {
   const [activeProblemId, setActiveProblemId] = useState(initialLocation.problem.id)
   const [query, setQuery] = useState('')
   const [homeQuery, setHomeQuery] = useState('')
-  const [typeFilter, setTypeFilter] = useState<ProblemType | 'all'>('all')
-  const [difficultyFilter, setDifficultyFilter] = useState<ProblemDifficulty | 'all'>('all')
   const [progress, setProgress] = useState<ProgressState>(() => loadProgress())
   const [importMessage, setImportMessage] = useState('')
   const [gradeResults, setGradeResults] = useState<Record<string, GradeResult>>({})
@@ -183,33 +180,17 @@ function App() {
   const remainingMinutes = totalMinutes - completedMinutes
   const completionPercent = Math.round((completedCount / allProblems.length) * 100)
   const activeIndex = allProblems.findIndex((problem) => problem.id === activeProblem.id)
-  const problemTypes = useMemo(
-    () => [...new Set(allProblems.map((problem) => problem.type))],
-    [],
-  )
-  const problemDifficulties = useMemo(
-    () => [...new Set(allProblems.map((problem) => problem.difficulty))],
-    [],
-  )
   const courseWarnings = useMemo(() => validateCourse(subjects), [])
   const filteredProblemIds = useMemo(() => {
     const ids = new Set<string>()
     subjects.forEach((subject) => {
       subject.problems.forEach((problem) => {
         const searchable = `${subject.title} ${subject.subtitle} ${problem.title} ${problem.prompt}`
-        const matchesSearch = searchable.toLowerCase().includes(query.toLowerCase())
-        const matchesType = typeFilter === 'all' || problem.type === typeFilter
-        const matchesDifficulty =
-          difficultyFilter === 'all' || problem.difficulty === difficultyFilter
-        if (matchesSearch && matchesType && matchesDifficulty) ids.add(problem.id)
+        if (searchable.toLowerCase().includes(query.toLowerCase())) ids.add(problem.id)
       })
     })
     return ids
-  }, [difficultyFilter, query, typeFilter])
-  const filteredProblemCount = filteredProblemIds.size
-  const filteredCompletedCount = [...filteredProblemIds].filter((problemId) =>
-    completedSet.has(problemId),
-  ).length
+  }, [query])
   const filteredSubjects = subjects
     .map((subject) => ({
       ...subject,
@@ -549,58 +530,6 @@ function App() {
           />
         </label>
 
-        <div className="filter-stack" aria-label="Problem filters">
-          <div className="filter-group">
-            <span>Type</span>
-            <div className="filter-row">
-              <button
-                className={typeFilter === 'all' ? 'active' : ''}
-                onClick={() => setTypeFilter('all')}
-                type="button"
-              >
-                All
-              </button>
-              {problemTypes.map((type) => (
-                <button
-                  key={type}
-                  className={typeFilter === type ? 'active' : ''}
-                  onClick={() => setTypeFilter(type)}
-                  type="button"
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="filter-group">
-            <span>Difficulty</span>
-            <div className="filter-row">
-              <button
-                className={difficultyFilter === 'all' ? 'active' : ''}
-                onClick={() => setDifficultyFilter('all')}
-                type="button"
-              >
-                All
-              </button>
-              {problemDifficulties.map((difficulty) => (
-                <button
-                  key={difficulty}
-                  className={difficultyFilter === difficulty ? 'active' : ''}
-                  onClick={() => setDifficultyFilter(difficulty)}
-                  type="button"
-                >
-                  {difficulty}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="filter-summary">
-          <span>{filteredProblemCount} showing</span>
-          <span>{filteredCompletedCount} complete</span>
-        </div>
 
         {courseWarnings.length > 0 && (
           <details className="warning-block">
