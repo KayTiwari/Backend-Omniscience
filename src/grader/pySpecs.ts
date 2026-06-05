@@ -634,4 +634,160 @@ def group_items(items, key_fn):
     return max(items, key=key_fn)
 `,
   },
+
+  // ----- Advanced: recursion, lru_cache, Counter, real problems ----------
+  {
+    problemId: 'py-flatten-deep',
+    title: 'Recursion: Flatten Deeply',
+    language: 'py',
+    starter: 'def flatten_deep(items):\n    # flatten arbitrarily nested lists\n    pass\n',
+    tests: [
+      { name: 'any depth', body: 'assert flatten_deep([1, [2, [3, 4]], 5]) == [1, 2, 3, 4, 5]' },
+    ],
+    reference: `def flatten_deep(items):
+    out = []
+    for x in items:
+        if isinstance(x, list):
+            out.extend(flatten_deep(x))
+        else:
+            out.append(x)
+    return out
+`,
+  },
+  {
+    problemId: 'py-fib-memo',
+    title: 'functools.lru_cache',
+    language: 'py',
+    starter: 'from functools import lru_cache\n\n@lru_cache(maxsize=None)\ndef fib(n):\n    # memoized fibonacci\n    pass\n',
+    tests: [
+      { name: 'fast fib', body: 'assert fib(0) == 0\nassert fib(10) == 55' },
+    ],
+    reference: `from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def fib(n):
+    if n < 2:
+        return n
+    return fib(n - 1) + fib(n - 2)
+`,
+  },
+  {
+    problemId: 'py-anagram-groups',
+    title: 'Group Anagrams',
+    language: 'py',
+    starter: 'from collections import defaultdict\n\ndef anagram_groups(words):\n    # group anagrams; return sorted groups, each sorted\n    pass\n',
+    tests: [
+      { name: 'groups anagrams', body: "assert anagram_groups(['eat','tea','tan','ate','nat','bat']) == [['ate','eat','tea'],['bat'],['nat','tan']]" },
+    ],
+    reference: `from collections import defaultdict
+
+def anagram_groups(words):
+    groups = defaultdict(list)
+    for w in words:
+        groups[''.join(sorted(w))].append(w)
+    return sorted([sorted(g) for g in groups.values()])
+`,
+  },
+  {
+    problemId: 'py-chunk',
+    title: 'Chunk A List',
+    language: 'py',
+    starter: 'def chunk(items, size):\n    # split into sub-lists of length size\n    pass\n',
+    tests: [
+      { name: 'splits', body: 'assert chunk([1,2,3,4,5], 2) == [[1,2],[3,4],[5]]' },
+    ],
+    reference: `def chunk(items, size):
+    return [items[i:i + size] for i in range(0, len(items), size)]
+`,
+  },
+  {
+    problemId: 'py-running-total',
+    title: 'Running Total',
+    language: 'py',
+    starter: 'def running_total(nums):\n    # cumulative sums\n    pass\n',
+    tests: [
+      { name: 'accumulates', body: 'assert running_total([1,2,3,4]) == [1,3,6,10]' },
+    ],
+    reference: `def running_total(nums):
+    out = []
+    total = 0
+    for n in nums:
+        total += n
+        out.append(total)
+    return out
+`,
+  },
+  {
+    problemId: 'py-rotate',
+    title: 'Rotate A List',
+    language: 'py',
+    starter: 'def rotate(items, k):\n    # rotate right by k (wraps)\n    pass\n',
+    tests: [
+      { name: 'wraps around', body: 'assert rotate([1,2,3,4,5], 2) == [4,5,1,2,3]\nassert rotate([1,2,3], 0) == [1,2,3]' },
+    ],
+    reference: `def rotate(items, k):
+    if not items:
+        return []
+    k = k % len(items)
+    return items[-k:] + items[:-k] if k else items[:]
+`,
+  },
+  {
+    problemId: 'py-count-words',
+    title: 'collections.Counter',
+    language: 'py',
+    starter: 'from collections import Counter\n\ndef count_words(text):\n    # word -> count as a dict\n    pass\n',
+    tests: [
+      { name: 'counts words', body: "assert count_words('a b a c b a') == {'a':3, 'b':2, 'c':1}" },
+    ],
+    reference: `from collections import Counter
+
+def count_words(text):
+    return dict(Counter(text.split()))
+`,
+  },
+  {
+    problemId: 'py-merge-sum',
+    title: 'Merge Dicts Summing Values',
+    language: 'py',
+    starter: 'def merge_sum(a, b):\n    # add values for shared keys\n    pass\n',
+    tests: [
+      { name: 'adds overlaps', body: "assert merge_sum({'x':1,'y':2}, {'y':3,'z':4}) == {'x':1,'y':5,'z':4}" },
+    ],
+    reference: `def merge_sum(a, b):
+    out = dict(a)
+    for k, v in b.items():
+        out[k] = out.get(k, 0) + v
+    return out
+`,
+  },
+  {
+    problemId: 'py-is-palindrome',
+    title: 'Palindrome Check',
+    language: 'py',
+    starter: 'def is_palindrome(s):\n    pass\n',
+    tests: [
+      { name: 'checks', body: "assert is_palindrome('racecar') == True\nassert is_palindrome('hello') == False" },
+    ],
+    reference: `def is_palindrome(s):
+    return s == s[::-1]
+`,
+  },
+  {
+    problemId: 'py-two-sum',
+    title: 'Two Sum',
+    language: 'py',
+    starter: 'def two_sum(nums, target):\n    # return indices [i, j] that sum to target, else None\n    pass\n',
+    tests: [
+      { name: 'finds the pair', body: 'assert two_sum([2,7,11,15], 9) == [0, 1]\nassert two_sum([1,2], 100) is None' },
+    ],
+    reference: `def two_sum(nums, target):
+    seen = {}
+    for i, n in enumerate(nums):
+        if target - n in seen:
+            return [seen[target - n], i]
+        seen[n] = i
+    return None
+`,
+  },
 ]
