@@ -274,4 +274,221 @@ assert len(calls) == 1`,
     return out
 `,
   },
+
+  // ----- Even more fundamentals: conditionals, methods, iteration --------
+  {
+    problemId: 'py-is-even',
+    title: 'Is It Even?',
+    language: 'py',
+    starter: 'def is_even(n):\n    # return True if n is even\n    pass\n',
+    tests: [
+      { name: 'even and odd', body: 'assert is_even(4) == True\nassert is_even(7) == False' },
+    ],
+    reference: `def is_even(n):
+    return n % 2 == 0
+`,
+  },
+  {
+    problemId: 'py-max-of-three',
+    title: 'Max Of Three',
+    language: 'py',
+    starter: 'def max_of_three(a, b, c):\n    pass\n',
+    tests: [{ name: 'largest', body: 'assert max_of_three(1, 9, 4) == 9' }],
+    reference: `def max_of_three(a, b, c):
+    return max(a, b, c)
+`,
+  },
+  {
+    problemId: 'py-shout',
+    title: 'String Method: Upper',
+    language: 'py',
+    starter: 'def shout(s):\n    # uppercase it\n    pass\n',
+    tests: [{ name: 'uppercases', body: "assert shout('hi') == 'HI'" }],
+    reference: `def shout(s):
+    return s.upper()
+`,
+  },
+  {
+    problemId: 'py-has-substring',
+    title: 'Membership: in',
+    language: 'py',
+    starter: 'def has_substring(s, sub):\n    pass\n',
+    tests: [
+      { name: 'contains', body: "assert has_substring('hello', 'ell') == True\nassert has_substring('hello', 'z') == False" },
+    ],
+    reference: `def has_substring(s, sub):
+    return sub in s
+`,
+  },
+  {
+    problemId: 'py-is-url',
+    title: 'String Method: startswith',
+    language: 'py',
+    starter: 'def is_url(s):\n    pass\n',
+    tests: [
+      { name: 'http prefix', body: "assert is_url('https://x') == True\nassert is_url('ftp://x') == False" },
+    ],
+    reference: `def is_url(s):
+    return s.startswith('http')
+`,
+  },
+  {
+    problemId: 'py-redact',
+    title: 'String Method: replace',
+    language: 'py',
+    starter: "def redact(s, word):\n    # replace word with '***'\n    pass\n",
+    tests: [{ name: 'redacts', body: "assert redact('pw is hunter2', 'hunter2') == 'pw is ***'" }],
+    reference: `def redact(s, word):
+    return s.replace(word, '***')
+`,
+  },
+  {
+    problemId: 'py-csv-join',
+    title: 'String Method: join',
+    language: 'py',
+    starter: "def csv_join(items):\n    # comma-join\n    pass\n",
+    tests: [{ name: 'joins', body: "assert csv_join(['a', 'b', 'c']) == 'a,b,c'" }],
+    reference: `def csv_join(items):
+    return ','.join(items)
+`,
+  },
+  {
+    problemId: 'py-count-char',
+    title: 'String Method: count',
+    language: 'py',
+    starter: 'def count_char(s, c):\n    pass\n',
+    tests: [{ name: 'counts', body: "assert count_char('banana', 'a') == 3" }],
+    reference: `def count_char(s, c):
+    return s.count(c)
+`,
+  },
+  {
+    problemId: 'py-reverse-string',
+    title: 'Slicing: Reverse',
+    language: 'py',
+    starter: 'def reverse_string(s):\n    # use slicing\n    pass\n',
+    tests: [{ name: 'reverses', body: "assert reverse_string('abc') == 'cba'" }],
+    reference: `def reverse_string(s):
+    return s[::-1]
+`,
+  },
+  {
+    problemId: 'py-build-range',
+    title: 'For Loop: Build A List',
+    language: 'py',
+    starter: 'def build_range(n):\n    # [0, 1, ..., n-1] using append in a loop\n    pass\n',
+    tests: [{ name: 'builds', body: 'assert build_range(3) == [0, 1, 2]' }],
+    reference: `def build_range(n):
+    out = []
+    for i in range(n):
+        out.append(i)
+    return out
+`,
+  },
+  {
+    problemId: 'py-evens-up-to',
+    title: 'range With A Step',
+    language: 'py',
+    starter: 'def evens_up_to(n):\n    # [0, 2, 4, ...] below n\n    pass\n',
+    tests: [{ name: 'steps by two', body: 'assert evens_up_to(6) == [0, 2, 4]' }],
+    reference: `def evens_up_to(n):
+    return list(range(0, n, 2))
+`,
+  },
+  {
+    problemId: 'py-first-n',
+    title: 'List Slicing',
+    language: 'py',
+    starter: 'def first_n(items, n):\n    pass\n',
+    tests: [{ name: 'takes a prefix', body: 'assert first_n([1, 2, 3, 4], 2) == [1, 2]' }],
+    reference: `def first_n(items, n):
+    return items[:n]
+`,
+  },
+  {
+    problemId: 'py-position',
+    title: 'List Method: index (safely)',
+    language: 'py',
+    starter: 'def position(items, target):\n    # index of target, or -1 if absent\n    pass\n',
+    tests: [
+      { name: 'found and missing', body: "assert position(['a', 'b', 'c'], 'b') == 1\nassert position([], 'x') == -1" },
+    ],
+    reference: `def position(items, target):
+    return items.index(target) if target in items else -1
+`,
+  },
+  {
+    problemId: 'py-sort-desc',
+    title: 'sorted Descending',
+    language: 'py',
+    starter: 'def sort_desc(nums):\n    pass\n',
+    tests: [{ name: 'descending', body: 'assert sort_desc([3, 1, 2]) == [3, 2, 1]' }],
+    reference: `def sort_desc(nums):
+    return sorted(nums, reverse=True)
+`,
+  },
+  {
+    problemId: 'py-sort-by-len',
+    title: 'sorted With A Key',
+    language: 'py',
+    starter: 'def sort_by_len(words):\n    pass\n',
+    tests: [{ name: 'by length', body: "assert sort_by_len(['ccc', 'a', 'bb']) == ['a', 'bb', 'ccc']" }],
+    reference: `def sort_by_len(words):
+    return sorted(words, key=len)
+`,
+  },
+  {
+    problemId: 'py-with-index',
+    title: 'enumerate',
+    language: 'py',
+    starter: 'def with_index(items):\n    # [(0, a), (1, b), ...]\n    pass\n',
+    tests: [{ name: 'pairs index', body: "assert with_index(['a', 'b']) == [(0, 'a'), (1, 'b')]" }],
+    reference: `def with_index(items):
+    return list(enumerate(items))
+`,
+  },
+  {
+    problemId: 'py-pair-up',
+    title: 'zip',
+    language: 'py',
+    starter: 'def pair_up(a, b):\n    pass\n',
+    tests: [{ name: 'zips', body: "assert pair_up([1, 2], ['a', 'b']) == [(1, 'a'), (2, 'b')]" }],
+    reference: `def pair_up(a, b):
+    return list(zip(a, b))
+`,
+  },
+  {
+    problemId: 'py-keys-sorted',
+    title: 'Dict Method: keys',
+    language: 'py',
+    starter: 'def keys_sorted(d):\n    pass\n',
+    tests: [{ name: 'sorted keys', body: "assert keys_sorted({'b': 1, 'a': 2}) == ['a', 'b']" }],
+    reference: `def keys_sorted(d):
+    return sorted(d.keys())
+`,
+  },
+  {
+    problemId: 'py-merge-dicts',
+    title: 'Dict Merge (spread)',
+    language: 'py',
+    starter: 'def merge_dicts(a, b):\n    # b wins on conflicts\n    pass\n',
+    tests: [
+      { name: 'merges, b wins', body: "assert merge_dicts({'a': 1}, {'b': 2}) == {'a': 1, 'b': 2}\nassert merge_dicts({'a': 1}, {'a': 9}) == {'a': 9}" },
+    ],
+    reference: `def merge_dicts(a, b):
+    return {**a, **b}
+`,
+  },
+  {
+    problemId: 'py-all-positive',
+    title: 'all() With A Generator',
+    language: 'py',
+    starter: 'def all_positive(nums):\n    pass\n',
+    tests: [
+      { name: 'every element', body: 'assert all_positive([1, 2, 3]) == True\nassert all_positive([1, -1]) == False' },
+    ],
+    reference: `def all_positive(nums):
+    return all(x > 0 for x in nums)
+`,
+  },
 ]
