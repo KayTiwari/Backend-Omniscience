@@ -33,31 +33,31 @@ Legend: L = lesson, Q = quiz, C = coding drill. Mark `[x]` when done.
 
 ### Internet & HTTP
 - [x] How the internet works / request lifecycle — L (Codex), C `internet-request-line`
-- [x] HTTP methods & status codes — Q (Codex), C `internet-status-codes` (parseQuery)
+- [x] HTTP methods & status codes — Q (Codex), C `internet-query-parser` (parseQuery)
 - [x] HTTP messages / headers — C `internet-build-response`, `internet-parse-cookies`
 - [x] Content negotiation / caching headers — Q (Claude), C `internet-content-negotiation`
-- [ ] DNS, domains, hosting, browsers — L/Q (Codex)
+- [x] DNS, domains, hosting, browsers — L/Q (Codex)
 - [x] TLS/HTTPS — L (Claude)
 
 ### Languages, Git, Package managers
-- [ ] Pick a language, package managers — L (Codex)
-- [ ] Git basics & workflows — L/Q (Codex)
+- [x] Pick a language, package managers — L (Codex)
+- [x] Git basics & workflows — L/Q (Codex)
 - [x] Node.js / Python framework tracks — L/Q/C (Claude: course.extra + drills)
 
 ### Databases
 - [x] SQL, indexes, transactions, isolation — L/Q/debug (Codex), C `db-hash-join`, `db-group-by`
 - [x] Schema design / migrations / N+1 — design (Codex + Claude.extra)
-- [ ] NoSQL, replication, sharding, CAP — L/Q (Codex)
+- [x] NoSQL, replication, sharding, CAP — L/Q (Codex)
 
 ### APIs
 - [x] REST, pagination, validation, versioning — (Codex), C `api-pagination`, `api-offset-paginate`, `api-validate`, `api-etag`
 - [x] Webhooks / idempotency — (Claude.extra), C `architecture-idempotency`
-- [ ] GraphQL, gRPC, OpenAPI — L/Q (Codex)
+- [x] GraphQL, gRPC, OpenAPI — L/Q (Codex)
 
 ### Auth & Security
 - [x] Passwords, JWT, CSRF, SSRF, rate limits — (Codex + Claude.extra)
 - [x] Coding: `security-rate-limit`, `security-token-bucket`, `security-constant-time`, `security-jwt-payload`, `security-escape-html`, `security-strong-password` (Claude)
-- [ ] OAuth/OpenID/SAML flows — L/Q (Codex)
+- [x] OAuth/OpenID/SAML flows — L/Q (Codex)
 
 ### Caching
 - [x] Strategies, CDN, Redis — (Codex.extra cache-aside, stampede)
@@ -66,15 +66,15 @@ Legend: L = lesson, Q = quiz, C = coding drill. Mark `[x]` when done.
 ### Architecture & Messaging
 - [x] Queues, DLQ, outbox, retries, circuit breaker — (Codex + Claude.extra)
 - [x] Coding: `architecture-backoff`, `architecture-circuit-breaker`, `queue-dlq` (Claude)
-- [ ] Patterns (monolith/microservices/serverless/12-factor) — L/Q (Codex)
+- [x] Patterns (monolith/microservices/serverless/12-factor) — L/Q (Codex)
 
 ### DevOps, Scale, Observability, Real-time
 - [x] Docker, deploys, zero-downtime, observability — (Codex + Claude.extra)
 - [x] Coding: `perf-percentile`, `perf-topk`, `perf-chunk` (Claude)
 - [x] Real-time (SSE/WebSocket/polling) — C `realtime-sse-format` (Claude), L/Q (Codex)
-- [ ] Testing & CI/CD — L/Q (Codex)
+- [x] Testing & CI/CD — L/Q (Codex)
 
 ## Next up
-- Claude: keep adding coding drills (target real code for every section above).
-- Codex: lessons + quizzes for the unchecked `[ ]` rows, and wire `gradeJs` into
-  the coding-problem UI (editor + run + results).
+- Keep adding deeper explanations and design/debug questions inside each subject.
+- Keep adding coding drills until every major concept has at least one runnable test.
+- Add broader capstones that combine several sections into one production-style build.

@@ -13,6 +13,8 @@ import {
 } from 'lucide-react'
 import { deepDiveProblems } from './course.deepdive'
 import { extraProblems, extraSubjects } from './course.extra'
+import { graderDrillProblems } from './course.graderDrills'
+import { roadmapGapProblems } from './course.roadmapGaps'
 
 export type ProblemType = 'lesson' | 'coding' | 'quiz' | 'debug' | 'design'
 
@@ -624,6 +626,8 @@ export const subjects: Subject[] = [
     problems: [
       ...subject.problems,
       ...(deepDiveProblems[subject.id] ?? []),
+      ...(roadmapGapProblems[subject.id] ?? []),
+      ...(graderDrillProblems[subject.id] ?? []),
       ...(extraProblems[subject.id] ?? []),
     ],
   })),
