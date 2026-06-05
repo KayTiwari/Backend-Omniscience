@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
+  ArrowRight,
   BookOpen,
   Check,
   ChevronLeft,
@@ -8,6 +9,7 @@ import {
   Code2,
   Download,
   Flame,
+  Home,
   ListChecks,
   Play,
   RotateCcw,
@@ -91,6 +93,7 @@ function getInitialLocation() {
 
 function App() {
   const initialLocation = useMemo(() => getInitialLocation(), [])
+  const [isHome, setIsHome] = useState(() => window.location.hash.replace('#', '') === '')
   const [activeSubjectId, setActiveSubjectId] = useState(initialLocation.subject.id)
   const [activeProblemId, setActiveProblemId] = useState(initialLocation.problem.id)
   const [query, setQuery] = useState('')
@@ -109,7 +112,11 @@ function App() {
   useEffect(() => {
     const syncFromHash = () => {
       const location = findProblemLocation(window.location.hash.replace('#', ''))
-      if (!location) return
+      if (!location) {
+        setIsHome(true)
+        return
+      }
+      setIsHome(false)
       setActiveSubjectId(location.subject.id)
       setActiveProblemId(location.problem.id)
     }
@@ -174,11 +181,29 @@ function App() {
       problems: subject.problems.filter((problem) => filteredProblemIds.has(problem.id)),
     }))
     .filter((subject) => subject.problems.length > 0)
+  const nextUnsolved =
+    allProblems.find((problem) => !completedSet.has(problem.id)) ?? allProblems[0]
+  const subjectSummaries = subjects.map((subject) => {
+    const done = subject.problems.filter((problem) => completedSet.has(problem.id)).length
+    const codingCount = subject.problems.filter((problem) => specsByProblemId.has(problem.id)).length
+    return {
+      ...subject,
+      codingCount,
+      done,
+      percent: Math.round((done / subject.problems.length) * 100),
+    }
+  })
 
   function openProblem(subject: Subject, problem: Problem) {
+    setIsHome(false)
     setActiveSubjectId(subject.id)
     setActiveProblemId(problem.id)
     window.history.replaceState(null, '', `#${problem.id}`)
+  }
+
+  function openHome() {
+    setIsHome(true)
+    window.history.replaceState(null, '', window.location.pathname)
   }
 
   function moveProblem(direction: -1 | 1) {
@@ -197,6 +222,12 @@ function App() {
     const subject = subjects.find((item) => item.id === next.subjectId)
     if (!subject) return
     openProblem(subject, next)
+  }
+
+  function openFirstProblemFor(problemId: string) {
+    const location = findProblemLocation(problemId)
+    if (!location) return
+    openProblem(location.subject, location.problem)
   }
 
   function markProblemComplete(problemId: string) {
@@ -366,7 +397,7 @@ function App() {
   return (
     <main className="app-shell">
       <aside className="sidebar">
-        <div className="brand">
+        <button className="brand brand-button" onClick={openHome} type="button">
           <div className="brand-mark">
             <Flame size={22} />
           </div>
@@ -374,7 +405,12 @@ function App() {
             <p className="eyebrow">Roadmap gauntlet</p>
             <h1>Backend Omniscience</h1>
           </div>
-        </div>
+        </button>
+
+        <button className={`home-button ${isHome ? 'active' : ''}`} onClick={openHome} type="button">
+          <Home size={17} />
+          <span>Home</span>
+        </button>
 
         <div className="progress-block">
           <div className="progress-copy">
@@ -499,7 +535,9 @@ function App() {
             return (
               <section key={subject.id} className="subject-group">
                 <button
-                  className={`subject-button ${subject.id === activeSubject.id ? 'active' : ''}`}
+                  className={`subject-button ${
+                    !isHome && subject.id === activeSubject.id ? 'active' : ''
+                  }`}
                   onClick={() => openProblem(subject, subject.problems[0])}
                   type="button"
                 >
@@ -517,7 +555,7 @@ function App() {
                   <div style={{ width: `${subjectPercent}%`, background: subject.color }} />
                 </div>
 
-                {subject.id === activeSubject.id && (
+                {!isHome && subject.id === activeSubject.id && (
                   <div className="problem-list">
                     {subject.problems.map((problem) => {
                       const done = completedSet.has(problem.id)
@@ -549,16 +587,16 @@ function App() {
           <button
             className="icon-button"
             onClick={() => moveProblem(-1)}
-            disabled={activeIndex <= 0}
+            disabled={isHome || activeIndex <= 0}
             aria-label="Previous problem"
             type="button"
           >
             <ChevronLeft size={18} />
           </button>
           <div className="topbar-title">
-            <span>{activeSubject.title}</span>
+            <span>{isHome ? 'Dashboard' : activeSubject.title}</span>
             <strong>
-              Problem {activeIndex + 1} of {allProblems.length}
+              {isHome ? 'Choose your next gauntlet' : `Problem ${activeIndex + 1} of ${allProblems.length}`}
             </strong>
           </div>
           <div className="topbar-actions">
@@ -574,7 +612,7 @@ function App() {
             <button
               className="icon-button"
               onClick={() => moveProblem(1)}
-              disabled={activeIndex >= allProblems.length - 1}
+              disabled={isHome || activeIndex >= allProblems.length - 1}
               aria-label="Next problem"
               type="button"
             >
@@ -583,6 +621,82 @@ function App() {
           </div>
         </header>
 
+        {isHome ? (
+          <article className="home-panel">
+            <section className="home-hero">
+              <div>
+                <p className="eyebrow">Backend Omniscience</p>
+                <h2>Choose your next backend rep.</h2>
+                <p>
+                  Work subject by subject, jump into coding drills, or continue from the next
+                  unsolved problem.
+                </p>
+              </div>
+              <button
+                className="continue-button"
+                onClick={() => openFirstProblemFor(nextUnsolved.id)}
+                type="button"
+              >
+                Continue
+                <ArrowRight size={18} />
+              </button>
+            </section>
+
+            <section className="home-stats" aria-label="Course stats">
+              <div>
+                <span>{allProblems.length}</span>
+                <strong>Total problems</strong>
+              </div>
+              <div>
+                <span>{gradableCount}</span>
+                <strong>Coding drills</strong>
+              </div>
+              <div>
+                <span>{Math.round(totalMinutes / 60)}h</span>
+                <strong>Curriculum</strong>
+              </div>
+              <div>
+                <span>{completionPercent}%</span>
+                <strong>Complete</strong>
+              </div>
+            </section>
+
+            <section className="home-section">
+              <h3>Subjects</h3>
+              <div className="subject-grid">
+                {subjectSummaries.map((subject) => {
+                  const SubjectIcon = subject.icon
+                  return (
+                    <button
+                      key={subject.id}
+                      className="subject-card"
+                      onClick={() => openProblem(subject, subject.problems[0])}
+                      type="button"
+                    >
+                      <span className="subject-card-icon" style={{ color: subject.color }}>
+                        <SubjectIcon size={22} />
+                      </span>
+                      <span className="subject-card-copy">
+                        <strong>{subject.title}</strong>
+                        <small>{subject.subtitle}</small>
+                      </span>
+                      <span className="subject-card-meta">
+                        {subject.done}/{subject.problems.length}
+                      </span>
+                      <span className="subject-card-progress">
+                        <span style={{ width: `${subject.percent}%`, background: subject.color }} />
+                      </span>
+                      <span className="subject-card-footer">
+                        <span>{subject.codingCount} coding drills</span>
+                        <ArrowRight size={16} />
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
+          </article>
+        ) : (
         <article className="problem-panel">
           <div className="problem-heading">
             <div className="problem-type">
@@ -871,6 +985,7 @@ function App() {
             </button>
           </div>
         </article>
+        )}
       </section>
     </main>
   )
