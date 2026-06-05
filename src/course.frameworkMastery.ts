@@ -19,6 +19,24 @@ function makeMasteryTrack(prefix: string, items: MasteryItem[]): Problem[] {
   return items.map((item, index) => {
     const type = typeCycle[index % typeCycle.length]
     const order = String(index + 1).padStart(2, '0')
+    const previous = index > 0 ? items[index - 1] : undefined
+    const next = items[index + 1]
+    const progression =
+      previous && next
+        ? `This builds on ${previous.title} and prepares you for ${next.title}.`
+        : previous
+          ? `This builds on ${previous.title} and turns the track toward capstone-level judgment.`
+          : `This is the foundation for the rest of the ${prefix.toUpperCase()} path.`
+    const action =
+      type === 'coding'
+        ? `Write the smallest implementation that proves ${item.focus}. Start with a pure function or minimal route contract, run it against edge cases, then explain how the same idea appears in a real backend.`
+        : type === 'debug'
+          ? `Read the scenario as if it came from a production incident. Identify the broken assumption, list the evidence you would gather, then write the fix or guardrail.`
+          : type === 'design'
+            ? `Design the backend slice on paper first: inputs, outputs, storage, failures, tests, and rollout. Then turn that design into pseudocode or a small implementation sketch.`
+            : type === 'quiz'
+              ? `Answer in complete sentences, then defend your answer by naming a failure mode, a test, and a production signal.`
+              : `Study the concept, write a tiny example, and explain the request/runtime/data flow without looking at the notes.`
 
     return {
       id: `${prefix}-mastery-${order}-${slugify(item.title)}`,
@@ -29,38 +47,51 @@ function makeMasteryTrack(prefix: string, items: MasteryItem[]): Problem[] {
       minutes: type === 'coding' ? 35 : type === 'debug' || type === 'design' ? 30 : 22,
       prompt:
         type === 'coding'
-          ? `Coding assessment: ${item.task}`
+          ? `Coding assessment: ${item.task}. ${action}`
           : type === 'debug'
-            ? `Debugging assessment: diagnose a realistic failure involving ${item.focus}.`
+            ? `Debugging assessment: diagnose a realistic failure involving ${item.focus}. ${action}`
             : type === 'design'
-              ? `Design assessment: design the backend approach for ${item.focus}.`
+              ? `Design assessment: design the backend approach for ${item.focus}. ${action}`
               : type === 'quiz'
-                ? `Checkpoint question: explain the key tradeoffs of ${item.focus} and pick the safest production default.`
-                : `Tutorial: learn ${item.focus} in the correct progression, then explain it in your own words.`,
+                ? `Checkpoint question: explain the key tradeoffs of ${item.focus} and pick the safest production default. ${action}`
+                : `Tutorial: learn ${item.focus} in the correct progression, then explain it in your own words. ${action}`,
       explanation:
-        `${item.title} is part ${index + 1} of this framework mastery path. The point is to build from mental model to implementation: understand what the runtime/framework is doing, know the API shape you would write, then know how it fails under production pressure. Focus: ${item.focus}.`,
+        `${item.title} is part ${index + 1} of this framework mastery path. ${progression} The point is to build from mental model to implementation: understand what the runtime/framework is doing, know the API shape you would write, then know how it fails under production pressure. Focus: ${item.focus}. Do not treat this as trivia: write or sketch the contract, name the boundary where untrusted input enters, and describe the exact behavior a client or operator should observe.`,
       production:
-        `In production, ${item.focus} affects reliability, maintainability, performance, or security. You should be able to explain the happy path, the failure mode, the observability signal, and the safest default before writing code.`,
+        `In production, ${item.focus} affects reliability, maintainability, performance, or security. You should be able to explain the happy path, the failure mode, the observability signal, and the safest default before writing code. A strong backend engineer can say what breaks first, which logs or metrics prove it, how users experience it, and how to roll out the fix without guessing.`,
       walkthrough: [
-        `Define the concept: ${item.focus}.`,
-        'Write the smallest working example or pseudocode.',
-        'Name the failure mode you expect in production.',
-        'Add validation, error handling, logging, and tests where appropriate.',
-        'Explain how you would verify it with a request, unit test, integration test, or dashboard.',
+        `Restate the concept in one sentence: ${item.focus}.`,
+        `Complete the concrete task: ${item.task}`,
+        'Write the smallest working example, route, function, model, serializer, query, or pseudocode that demonstrates the idea.',
+        'Mark every boundary: user input, framework parsing, business logic, persistence, network dependency, response shape.',
+        'Add the minimum safety layer: validation, authorization, timeout, transaction, idempotency, logging, or metric.',
+        'Test the happy path, one edge case, and one failure path.',
+        'Explain how this connects to the previous lesson and what the next lesson depends on.',
+        'Finish by writing the production symptom you would watch for after deployment.',
       ],
       example:
         type === 'coding'
-          ? `Start with a small function, route, model, serializer, or service method. Keep the input/output contract explicit before adding framework details.`
-          : undefined,
+          ? `Example workflow: define the input contract -> implement the smallest behavior -> add one invalid-input branch -> add one production guardrail -> run the tests -> write down what request or metric proves it works.`
+          : type === 'debug'
+            ? `Example workflow: symptom -> suspected layer -> evidence -> reproduction -> fix -> regression test -> production monitor.`
+            : type === 'design'
+              ? `Example workflow: API contract -> data model -> transaction or consistency rule -> failure behavior -> observability -> deployment/rollback note.`
+              : `Example workflow: explain it out loud, then write a tiny code or request example that makes the concept concrete.`,
       questions: [
         `What problem does ${item.focus} solve?`,
         `What is the most common beginner mistake with ${item.focus}?`,
+        `What is the smallest example that proves you understand ${item.title}?`,
+        `Where does untrusted input cross a boundary in this lesson?`,
+        `What validation or guardrail belongs closest to that boundary?`,
         `How would you test ${item.focus} without relying only on manual clicking?`,
         `What metric, log, or error would reveal this failing in production?`,
+        `How does this connect to ${previous ? previous.title : 'the foundation of the track'}?`,
       ],
       checklist: [
         'Explain the concept clearly.',
         'Show or sketch the smallest implementation.',
+        'Write the client-visible contract.',
+        'Identify the runtime/framework boundary.',
         'Name production failure modes.',
         'Include tests or verification steps.',
         'Connect it to the previous concepts in this track.',
