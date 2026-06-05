@@ -574,4 +574,307 @@ export const frameworkSpecs: GradeSpec[] = [
       "  return `task:${taskName}:${id}`;\n" +
       "}\n",
   },
+  {
+    problemId: 'nodejs-mastery-24-metrics-for-apis',
+    title: 'HTTP Metric Labels',
+    language: 'js',
+    starter:
+      "function metricLabels(method, route, status) {\n  // return stable low-cardinality metric labels\n}\n",
+    tests: [
+      {
+        name: 'normalizes method and status class',
+        body: "assertEqual(metricLabels('get', '/users/:id', 200), { method: 'GET', route: '/users/:id', statusClass: '2xx' });",
+      },
+      {
+        name: 'does not use raw ids in route labels',
+        body: "assertEqual(metricLabels('POST', '/projects/:id/invites', 404), { method: 'POST', route: '/projects/:id/invites', statusClass: '4xx' });",
+      },
+    ],
+    reference:
+      "function metricLabels(method, route, status) {\n" +
+      "  return { method: method.toUpperCase(), route, statusClass: Math.floor(status / 100) + 'xx' };\n" +
+      "}\n",
+  },
+  {
+    problemId: 'nodejs-mastery-27-testing-routes',
+    title: 'Route Test Matrix',
+    language: 'js',
+    starter:
+      "function routeTestMatrix(routeName) {\n  // return common API route test names\n}\n",
+    tests: [
+      {
+        name: 'includes success and failure branches',
+        body: "assertEqual(routeTestMatrix('create user'), ['create user success', 'create user validation failure', 'create user auth failure', 'create user not found or conflict']);",
+      },
+    ],
+    reference:
+      "function routeTestMatrix(routeName) {\n" +
+      "  return [routeName + ' success', routeName + ' validation failure', routeName + ' auth failure', routeName + ' not found or conflict'];\n" +
+      "}\n",
+  },
+  {
+    problemId: 'nodejs-mastery-31-queues-and-workers',
+    title: 'Retry Or Dead Letter',
+    language: 'js',
+    starter:
+      "function nextJobState(job, maxAttempts) {\n  // return 'retry', 'dead-letter', or 'done'\n}\n",
+    tests: [
+      {
+        name: 'done jobs stay done',
+        body: "assertEqual(nextJobState({ status: 'done', attempts: 1 }, 3), 'done');",
+      },
+      {
+        name: 'failed jobs retry before max',
+        body: "assertEqual(nextJobState({ status: 'failed', attempts: 2 }, 3), 'retry');",
+      },
+      {
+        name: 'failed jobs dead letter at max',
+        body: "assertEqual(nextJobState({ status: 'failed', attempts: 3 }, 3), 'dead-letter');",
+      },
+    ],
+    reference:
+      "function nextJobState(job, maxAttempts) {\n" +
+      "  if (job.status === 'done') return 'done';\n" +
+      "  return job.attempts >= maxAttempts ? 'dead-letter' : 'retry';\n" +
+      "}\n",
+  },
+  {
+    problemId: 'nodejs-mastery-32-graceful-shutdown',
+    title: 'Shutdown Step Order',
+    language: 'js',
+    starter:
+      "function shutdownSteps(hasQueue) {\n  // return ordered shutdown steps\n}\n",
+    tests: [
+      {
+        name: 'orders web shutdown safely',
+        body: "assertEqual(shutdownSteps(false), ['stop-accepting-requests', 'drain-inflight', 'close-db-pool', 'exit']);",
+      },
+      {
+        name: 'includes worker drain when queue exists',
+        body: "assertEqual(shutdownSteps(true), ['stop-accepting-requests', 'pause-workers', 'drain-inflight', 'close-db-pool', 'exit']);",
+      },
+    ],
+    reference:
+      "function shutdownSteps(hasQueue) {\n" +
+      "  const steps = ['stop-accepting-requests'];\n" +
+      "  if (hasQueue) steps.push('pause-workers');\n" +
+      "  steps.push('drain-inflight', 'close-db-pool', 'exit');\n" +
+      "  return steps;\n" +
+      "}\n",
+  },
+  {
+    problemId: 'nodejs-mastery-43-caching-in-node-apis',
+    title: 'Cache Key Builder',
+    language: 'js',
+    starter:
+      "function productCacheKey(productId, version) {\n  // include namespace and version\n}\n",
+    tests: [
+      {
+        name: 'builds versioned product key',
+        body: "assertEqual(productCacheKey(42, 'v3'), 'product:v3:42');",
+      },
+      {
+        name: 'rejects missing id',
+        body: "let ok = false; try { productCacheKey('', 'v1'); } catch { ok = true; } assert(ok);",
+      },
+    ],
+    reference:
+      "function productCacheKey(productId, version) {\n" +
+      "  if (!productId) throw new Error('product id required');\n" +
+      "  return `product:${version}:${productId}`;\n" +
+      "}\n",
+  },
+  {
+    problemId: 'python-mastery-08-exceptions-and-error-boundaries',
+    title: 'Domain Error To API Error',
+    language: 'js',
+    starter:
+      "function domainErrorToApi(err) {\n  // map known domain codes to HTTP status and body\n}\n",
+    tests: [
+      {
+        name: 'maps validation domain error',
+        body: "assertEqual(domainErrorToApi({ code: 'INVALID_EMAIL', message: 'invalid email' }), { status: 400, body: { error: { code: 'INVALID_EMAIL', message: 'invalid email' } } });",
+      },
+      {
+        name: 'hides unknown errors',
+        body: "assertEqual(domainErrorToApi({ code: 'DB_DOWN', message: 'secret' }), { status: 500, body: { error: { code: 'INTERNAL', message: 'Internal server error' } } });",
+      },
+    ],
+    reference:
+      "function domainErrorToApi(err) {\n" +
+      "  if (err.code === 'INVALID_EMAIL') return { status: 400, body: { error: { code: err.code, message: err.message } } };\n" +
+      "  return { status: 500, body: { error: { code: 'INTERNAL', message: 'Internal server error' } } };\n" +
+      "}\n",
+  },
+  {
+    problemId: 'python-mastery-11-decorators-for-cross-cutting-behavior',
+    title: 'Timing Log Envelope',
+    language: 'js',
+    starter:
+      "function timingLog(name, startedMs, endedMs, ok) {\n  // return structured timing log object\n}\n",
+    tests: [
+      {
+        name: 'records duration and success',
+        body: "assertEqual(timingLog('sendEmail', 100, 175, true), { name: 'sendEmail', durationMs: 75, ok: true });",
+      },
+    ],
+    reference:
+      "function timingLog(name, startedMs, endedMs, ok) {\n" +
+      "  return { name, durationMs: endedMs - startedMs, ok };\n" +
+      "}\n",
+  },
+  {
+    problemId: 'python-mastery-15-asyncio-fundamentals',
+    title: 'Async Gather Result Envelope',
+    language: 'js',
+    starter:
+      "function gatherEnvelope(results) {\n  // results contain { ok, value?, error? }; return successes and errors\n}\n",
+    tests: [
+      {
+        name: 'splits success values and errors',
+        body: "assertEqual(gatherEnvelope([{ ok: true, value: 'a' }, { ok: false, error: 'timeout' }]), { values: ['a'], errors: ['timeout'] });",
+      },
+    ],
+    reference:
+      "function gatherEnvelope(results) {\n" +
+      "  return { values: results.filter((r) => r.ok).map((r) => r.value), errors: results.filter((r) => !r.ok).map((r) => r.error) };\n" +
+      "}\n",
+  },
+  {
+    problemId: 'python-mastery-31-celery-rq-background-jobs',
+    title: 'Idempotent Job Claim',
+    language: 'js',
+    starter:
+      "function claimJob(processedKeys, key) {\n  // return { claimed, processedKeys }\n}\n",
+    tests: [
+      {
+        name: 'claims unseen key',
+        body: "assertEqual(claimJob(['a'], 'b'), { claimed: true, processedKeys: ['a', 'b'] });",
+      },
+      {
+        name: 'rejects duplicate key',
+        body: "assertEqual(claimJob(['a'], 'a'), { claimed: false, processedKeys: ['a'] });",
+      },
+    ],
+    reference:
+      "function claimJob(processedKeys, key) {\n" +
+      "  if (processedKeys.includes(key)) return { claimed: false, processedKeys };\n" +
+      "  return { claimed: true, processedKeys: [...processedKeys, key] };\n" +
+      "}\n",
+  },
+  {
+    problemId: 'python-mastery-43-health-checks',
+    title: 'Readiness Decision',
+    language: 'js',
+    starter:
+      "function readiness(dependencies) {\n  // dependencies: [{ name, ok }]\n}\n",
+    tests: [
+      {
+        name: 'ready when all dependencies are ok',
+        body: "assertEqual(readiness([{ name: 'db', ok: true }, { name: 'redis', ok: true }]), { ready: true, failed: [] });",
+      },
+      {
+        name: 'not ready when dependency fails',
+        body: "assertEqual(readiness([{ name: 'db', ok: false }, { name: 'redis', ok: true }]), { ready: false, failed: ['db'] });",
+      },
+    ],
+    reference:
+      "function readiness(dependencies) {\n" +
+      "  const failed = dependencies.filter((dep) => !dep.ok).map((dep) => dep.name);\n" +
+      "  return { ready: failed.length === 0, failed };\n" +
+      "}\n",
+  },
+  {
+    problemId: 'django-mastery-09-filtering-and-managers',
+    title: 'Active QuerySet Filter',
+    language: 'js',
+    starter:
+      "function activeRows(rows) {\n  // return rows where isActive is true and deletedAt is null/undefined\n}\n",
+    tests: [
+      {
+        name: 'filters active non-deleted rows',
+        body: "assertEqual(activeRows([{ id: 1, isActive: true }, { id: 2, isActive: false }, { id: 3, isActive: true, deletedAt: 'x' }]), [{ id: 1, isActive: true }]);",
+      },
+    ],
+    reference:
+      "function activeRows(rows) {\n" +
+      "  return rows.filter((row) => row.isActive === true && row.deletedAt == null);\n" +
+      "}\n",
+  },
+  {
+    problemId: 'django-mastery-10-select-related-vs-prefetch-related',
+    title: 'Eager Loading Choice',
+    language: 'js',
+    starter:
+      "function eagerLoadingFor(relationType) {\n  // one-to-one/many-to-one -> select_related; many-to-many/reverse -> prefetch_related\n}\n",
+    tests: [
+      {
+        name: 'chooses select_related for singular relationships',
+        body: "assertEqual(eagerLoadingFor('foreign-key'), 'select_related'); assertEqual(eagerLoadingFor('one-to-one'), 'select_related');",
+      },
+      {
+        name: 'chooses prefetch_related for plural relationships',
+        body: "assertEqual(eagerLoadingFor('many-to-many'), 'prefetch_related'); assertEqual(eagerLoadingFor('reverse-foreign-key'), 'prefetch_related');",
+      },
+    ],
+    reference:
+      "function eagerLoadingFor(relationType) {\n" +
+      "  return relationType === 'foreign-key' || relationType === 'one-to-one' ? 'select_related' : 'prefetch_related';\n" +
+      "}\n",
+  },
+  {
+    problemId: 'django-mastery-15-zero-downtime-migrations',
+    title: 'Expand Contract Steps',
+    language: 'js',
+    starter:
+      "function expandContractSteps(fieldName) {\n  // return safe rollout steps for required field\n}\n",
+    tests: [
+      {
+        name: 'returns safe migration sequence',
+        body: "assertEqual(expandContractSteps('slug'), ['add nullable slug', 'deploy writer for slug', 'backfill slug in batches', 'validate slug constraint', 'enforce slug not null', 'remove fallback code']);",
+      },
+    ],
+    reference:
+      "function expandContractSteps(fieldName) {\n" +
+      "  return [`add nullable ${fieldName}`, `deploy writer for ${fieldName}`, `backfill ${fieldName} in batches`, `validate ${fieldName} constraint`, `enforce ${fieldName} not null`, 'remove fallback code'];\n" +
+      "}\n",
+  },
+  {
+    problemId: 'django-mastery-34-testing-django-apis',
+    title: 'Permission Test Matrix',
+    language: 'js',
+    starter:
+      "function permissionCases(action) {\n  // return anonymous, non-member, member, staff cases\n}\n",
+    tests: [
+      {
+        name: 'creates standard permission cases',
+        body: "assertEqual(permissionCases('update project'), ['anonymous cannot update project', 'non-member cannot update project', 'member can update project', 'staff can update project']);",
+      },
+    ],
+    reference:
+      "function permissionCases(action) {\n" +
+      "  return [`anonymous cannot ${action}`, `non-member cannot ${action}`, `member can ${action}`, `staff can ${action}`];\n" +
+      "}\n",
+  },
+  {
+    problemId: 'django-mastery-35-performance-query-counts',
+    title: 'Query Count Budget',
+    language: 'js',
+    starter:
+      "function queryCountOk(actual, budget) {\n  // return { ok, overBy }\n}\n",
+    tests: [
+      {
+        name: 'passes within budget',
+        body: "assertEqual(queryCountOk(3, 5), { ok: true, overBy: 0 });",
+      },
+      {
+        name: 'reports over budget',
+        body: "assertEqual(queryCountOk(101, 3), { ok: false, overBy: 98 });",
+      },
+    ],
+    reference:
+      "function queryCountOk(actual, budget) {\n" +
+      "  return { ok: actual <= budget, overBy: Math.max(0, actual - budget) };\n" +
+      "}\n",
+  },
 ]
