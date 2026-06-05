@@ -28,6 +28,11 @@ export type GradeSpec = {
   language: 'js'
   starter: string
   tests: TestCase[]
-  // A known-good solution, used by the self-test to prove the spec is sound.
+  // A known-good solution. Doubles as the "show a correct solution" reveal that
+  // the Check-solutions UI offers when the learner is stuck. The self-test runs
+  // it against `tests` to prove the spec is sound.
   reference: string
+  // Optional prose shown after Check: why the correct approach works. When
+  // absent, the UI falls back to revealing `reference`.
+  explanation?: string
 }

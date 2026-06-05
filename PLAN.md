@@ -74,7 +74,39 @@ Legend: L = lesson, Q = quiz, C = coding drill. Mark `[x]` when done.
 - [x] Real-time (SSE/WebSocket/polling) — C `realtime-sse-format` (Claude), L/Q (Codex)
 - [x] Testing & CI/CD — L/Q (Codex)
 
+## Interaction model (graded, not self-attested) — agreed direction
+
+The experience must *grade*, not let the learner mark themselves done.
+
+- **No "Mark complete" button.** Replace with **"Check solutions"**. Completion is
+  derived from passing, never clicked.
+- **Acceptance criteria are real, gradable questions:**
+  - Knowledge problems (lesson/quiz/design/debug): each criterion becomes a
+    multiple-choice question with `choices`, a correct index, and an
+    `explanation`. A problem can hold several such MCQs.
+  - Coding problems: the criteria are the grader `tests`; "Check solutions" runs
+    `gradeJs(code, spec.tests)`.
+- **"Your answers" → optional Notes only.** It never decides completion.
+- **Explain on wrong/incomplete:**
+  - MCQ: show which option is correct and the `explanation` of why.
+  - Coding: show each failing test's message, and a "Show a correct solution"
+    reveal backed by `spec.reference` (and `spec.explanation` if present).
+- **State:** unanswered → attempted (some wrong) → passed. Only "passed" marks the
+  problem complete.
+
+### Data shape implications
+- Quiz/MCQ item: { prompt, choices: string[], correctIndex: number, explanation }.
+  A problem may carry an array of these as its acceptance criteria.
+- Coding drill (GradeSpec, owned by Claude): now also has optional
+  `explanation` (the "why it works") alongside `reference` and `tests`.
+
+### Owners
+- UI behavior (Check button, MCQ evaluation, explanation reveal, notes): Codex (App.tsx).
+- Coding grading + reference + explanation: Claude (grader module).
+- Converting existing checklists into MCQ acceptance criteria: split by subject in PLAN.
+
 ## Next up
-- Keep adding deeper explanations and design/debug questions inside each subject.
-- Keep adding coding drills until every major concept has at least one runnable test.
+- Codex: implement the Check-solutions UI + MCQ evaluation + explanation reveal;
+  migrate checklists to MCQ acceptance criteria.
+- Claude: keep adding coding drills (with explanations) and tutorials.
 - Add broader capstones that combine several sections into one production-style build.

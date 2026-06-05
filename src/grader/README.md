@@ -22,6 +22,21 @@ if (spec) {
 Render `result.results` as a checklist (green/red per test, show `message` on
 fail). Mark the problem complete when `result.passed` is true.
 
+## Check-solutions flow (graded, not self-attested)
+
+The button is **"Check solutions"**, never "Mark complete". Completion is derived
+from `result.passed`, not clicked.
+
+- On **pass**: mark the problem complete.
+- On **fail**: show each failing test's `name` + `message` (the assertion told you
+  exactly what was expected vs got). Offer a **"Show a correct solution"** reveal
+  backed by `spec.reference`, and show `spec.explanation` (the "why") when present.
+- A separate **Notes** field is for the learner's own notes only; it never decides
+  completion.
+
+This mirrors the MCQ side (Codex's quiz problems): choices + correct index +
+explanation. Coding and knowledge problems both grade and then explain.
+
 ## Contract
 
 - `gradeJs(code, tests, timeoutMs = 3000)` → `Promise<GradeResult>`
