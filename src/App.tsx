@@ -10,10 +10,18 @@ import {
   ListChecks,
   RotateCcw,
   Search,
+  SkipForward,
   Trophy,
 } from 'lucide-react'
 import './App.css'
-import { allProblems, subjects, type Problem, type ProblemType, type Subject } from './course'
+import {
+  allProblems,
+  subjects,
+  type Problem,
+  type ProblemDifficulty,
+  type ProblemType,
+  type Subject,
+} from './course'
 
 type ProgressState = {
   completed: string[]
@@ -55,6 +63,8 @@ function App() {
   const [activeSubjectId, setActiveSubjectId] = useState(subjects[0].id)
   const [activeProblemId, setActiveProblemId] = useState(subjects[0].problems[0].id)
   const [query, setQuery] = useState('')
+  const [typeFilter, setTypeFilter] = useState<ProblemType | 'all'>('all')
+  const [difficultyFilter, setDifficultyFilter] = useState<ProblemDifficulty | 'all'>('all')
   const [progress, setProgress] = useState<ProgressState>(() => loadProgress())
 
   useEffect(() => {
@@ -66,17 +76,44 @@ function App() {
     activeSubject.problems.find((problem) => problem.id === activeProblemId) ??
     activeSubject.problems[0]
 
-  const completedSet = useMemo(() => new Set(progress.completed), [progress.completed])
-  const completedCount = progress.completed.length
+  const problemIds = useMemo(() => new Set(allProblems.map((problem) => problem.id)), [])
+  const completedSet = useMemo(
+    () => new Set(progress.completed.filter((problemId) => problemIds.has(problemId))),
+    [problemIds, progress.completed],
+  )
+  const completedCount = completedSet.size
   const completionPercent = Math.round((completedCount / allProblems.length) * 100)
   const activeIndex = allProblems.findIndex((problem) => problem.id === activeProblem.id)
+  const problemTypes = useMemo(
+    () => [...new Set(allProblems.map((problem) => problem.type))],
+    [],
+  )
+  const problemDifficulties = useMemo(
+    () => [...new Set(allProblems.map((problem) => problem.difficulty))],
+    [],
+  )
+  const filteredProblemIds = useMemo(() => {
+    const ids = new Set<string>()
+    subjects.forEach((subject) => {
+      subject.problems.forEach((problem) => {
+        const searchable = `${subject.title} ${subject.subtitle} ${problem.title} ${problem.prompt}`
+        const matchesSearch = searchable.toLowerCase().includes(query.toLowerCase())
+        const matchesType = typeFilter === 'all' || problem.type === typeFilter
+        const matchesDifficulty =
+          difficultyFilter === 'all' || problem.difficulty === difficultyFilter
+        if (matchesSearch && matchesType && matchesDifficulty) ids.add(problem.id)
+      })
+    })
+    return ids
+  }, [difficultyFilter, query, typeFilter])
+  const filteredProblemCount = filteredProblemIds.size
+  const filteredCompletedCount = [...filteredProblemIds].filter((problemId) =>
+    completedSet.has(problemId),
+  ).length
   const filteredSubjects = subjects
     .map((subject) => ({
       ...subject,
-      problems: subject.problems.filter((problem) => {
-        const searchable = `${subject.title} ${subject.subtitle} ${problem.title} ${problem.prompt}`
-        return searchable.toLowerCase().includes(query.toLowerCase())
-      }),
+      problems: subject.problems.filter((problem) => filteredProblemIds.has(problem.id)),
     }))
     .filter((subject) => subject.problems.length > 0)
 
@@ -87,6 +124,16 @@ function App() {
 
   function moveProblem(direction: -1 | 1) {
     const next = allProblems[activeIndex + direction]
+    if (!next) return
+    const subject = subjects.find((item) => item.id === next.subjectId)
+    if (!subject) return
+    openProblem(subject, next)
+  }
+
+  function openNextUnsolved() {
+    const searchStart = Math.max(activeIndex, 0)
+    const ordered = [...allProblems.slice(searchStart + 1), ...allProblems.slice(0, searchStart + 1)]
+    const next = ordered.find((problem) => !completedSet.has(problem.id))
     if (!next) return
     const subject = subjects.find((item) => item.id === next.subjectId)
     if (!subject) return
@@ -157,11 +204,65 @@ function App() {
           />
         </label>
 
+        <div className="filter-stack" aria-label="Problem filters">
+          <div className="filter-group">
+            <span>Type</span>
+            <div className="filter-row">
+              <button
+                className={typeFilter === 'all' ? 'active' : ''}
+                onClick={() => setTypeFilter('all')}
+                type="button"
+              >
+                All
+              </button>
+              {problemTypes.map((type) => (
+                <button
+                  key={type}
+                  className={typeFilter === type ? 'active' : ''}
+                  onClick={() => setTypeFilter(type)}
+                  type="button"
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <span>Difficulty</span>
+            <div className="filter-row">
+              <button
+                className={difficultyFilter === 'all' ? 'active' : ''}
+                onClick={() => setDifficultyFilter('all')}
+                type="button"
+              >
+                All
+              </button>
+              {problemDifficulties.map((difficulty) => (
+                <button
+                  key={difficulty}
+                  className={difficultyFilter === difficulty ? 'active' : ''}
+                  onClick={() => setDifficultyFilter(difficulty)}
+                  type="button"
+                >
+                  {difficulty}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="filter-summary">
+          <span>{filteredProblemCount} showing</span>
+          <span>{filteredCompletedCount} complete</span>
+        </div>
+
         <nav className="subject-list" aria-label="Course subjects">
           {filteredSubjects.map((subject) => {
             const subjectDone = subject.problems.filter((problem) =>
               completedSet.has(problem.id),
             ).length
+            const subjectPercent = Math.round((subjectDone / subject.problems.length) * 100)
             const SubjectIcon = subject.icon
 
             return (
@@ -181,6 +282,9 @@ function App() {
                     </small>
                   </span>
                 </button>
+                <div className="subject-progress" aria-label={`${subjectPercent}% complete`}>
+                  <div style={{ width: `${subjectPercent}%`, background: subject.color }} />
+                </div>
 
                 {subject.id === activeSubject.id && (
                   <div className="problem-list">
@@ -225,15 +329,26 @@ function App() {
               Problem {activeIndex + 1} of {allProblems.length}
             </strong>
           </div>
-          <button
-            className="icon-button"
-            onClick={() => moveProblem(1)}
-            disabled={activeIndex >= allProblems.length - 1}
-            aria-label="Next problem"
-            type="button"
-          >
-            <ChevronRight size={18} />
-          </button>
+          <div className="topbar-actions">
+            <button
+              className="icon-button"
+              onClick={openNextUnsolved}
+              disabled={completedCount >= allProblems.length}
+              aria-label="Next unsolved problem"
+              type="button"
+            >
+              <SkipForward size={18} />
+            </button>
+            <button
+              className="icon-button"
+              onClick={() => moveProblem(1)}
+              disabled={activeIndex >= allProblems.length - 1}
+              aria-label="Next problem"
+              type="button"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </header>
 
         <article className="problem-panel">

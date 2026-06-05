@@ -18,7 +18,7 @@ export type Problem = {
   id: string
   title: string
   type: ProblemType
-  difficulty: 'Warmup' | 'Core' | 'Hard' | 'Boss'
+  difficulty: ProblemDifficulty
   minutes: number
   prompt: string
   example?: string
@@ -27,6 +27,8 @@ export type Problem = {
   choices?: string[]
   correctChoice?: number
 }
+
+export type ProblemDifficulty = 'Warmup' | 'Core' | 'Hard' | 'Boss'
 
 export type Subject = {
   id: string

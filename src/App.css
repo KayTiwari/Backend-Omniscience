@@ -109,6 +109,61 @@ h1 {
   font: inherit;
 }
 
+.filter-stack {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.filter-group {
+  display: grid;
+  gap: 8px;
+}
+
+.filter-group > span {
+  color: #687372;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filter-row button {
+  min-height: 32px;
+  border: 1px solid #d9ded8;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: #ffffff;
+  color: #52605d;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.filter-row button.active,
+.filter-row button:hover {
+  border-color: #263238;
+  background: #263238;
+  color: #ffffff;
+}
+
+.filter-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  color: #65716f;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .subject-list {
   display: grid;
   gap: 12px;
@@ -168,6 +223,19 @@ h1 {
   font-weight: 800;
 }
 
+.subject-progress {
+  height: 4px;
+  overflow: hidden;
+  margin: -4px 10px 2px 50px;
+  border-radius: 999px;
+  background: #e7ebe4;
+}
+
+.subject-progress div {
+  height: 100%;
+  border-radius: inherit;
+}
+
 .subject-icon {
   width: 30px;
   height: 30px;
@@ -218,7 +286,7 @@ h1 {
   top: 0;
   z-index: 1;
   display: grid;
-  grid-template-columns: 44px 1fr 44px;
+  grid-template-columns: 44px 1fr auto;
   align-items: center;
   gap: 12px;
   max-width: 980px;
@@ -228,6 +296,11 @@ h1 {
   border-radius: 8px;
   background: rgba(255, 253, 250, 0.92);
   backdrop-filter: blur(12px);
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .icon-button {
