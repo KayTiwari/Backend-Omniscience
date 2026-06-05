@@ -998,6 +998,124 @@ h1 {
   font-size: 17px;
 }
 
+.learn-first-block {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--brand-b) 8%, transparent), transparent 45%),
+    var(--surface-soft);
+}
+
+.learn-first-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.learn-first-heading h3,
+.lesson-grid h4 {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.learn-first-heading p,
+.visual-lesson p,
+.practice-mode p {
+  margin: 0;
+  color: #31413f;
+  line-height: 1.55;
+}
+
+.learn-first-heading > span {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: var(--brand-b);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.visual-lesson {
+  display: grid;
+  gap: 12px;
+}
+
+.visual-picture {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--paper);
+}
+
+.visual-picture span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.visual-picture strong {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: color-mix(in srgb, var(--brand-b) 12%, var(--field));
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.visual-picture i {
+  color: var(--brand-b);
+  font-style: normal;
+  font-weight: 900;
+}
+
+.lesson-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.lesson-grid section {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--paper);
+}
+
+.lesson-grid ul,
+.lesson-grid ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+  color: #31413f;
+  line-height: 1.45;
+}
+
+.practice-mode {
+  border-left: 4px solid var(--brand-b);
+  padding: 4px 0 4px 14px;
+}
+
+.practice-mode strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ink);
+}
+
 .prompt-block,
 .learning-path,
 .explanation-block,
@@ -1654,6 +1772,8 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .subject-icon,
 .app-shell[data-theme='dark'] .icon-button,
 .app-shell[data-theme='dark'] .time-stats span,
+.app-shell[data-theme='dark'] .visual-picture,
+.app-shell[data-theme='dark'] .lesson-grid section,
 .app-shell[data-theme='dark'] .choice,
 .app-shell[data-theme='dark'] .criterion-choice,
 .app-shell[data-theme='dark'] .notes-block textarea,
@@ -1697,6 +1817,11 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .home-result-meta,
 .app-shell[data-theme='dark'] .home-empty-search,
 .app-shell[data-theme='dark'] .subject-subtitle,
+.app-shell[data-theme='dark'] .learn-first-heading p,
+.app-shell[data-theme='dark'] .visual-lesson p,
+.app-shell[data-theme='dark'] .practice-mode p,
+.app-shell[data-theme='dark'] .lesson-grid ul,
+.app-shell[data-theme='dark'] .lesson-grid ol,
 .app-shell[data-theme='dark'] .prompt-block p,
 .app-shell[data-theme='dark'] .explanation-block p,
 .app-shell[data-theme='dark'] .production-block p,
@@ -1783,6 +1908,14 @@ input:focus-visible {
 
   .home-result-meta {
     justify-content: flex-start;
+  }
+
+  .learn-first-heading {
+    flex-direction: column;
+  }
+
+  .lesson-grid {
+    grid-template-columns: 1fr;
   }
 
   .home-hero {

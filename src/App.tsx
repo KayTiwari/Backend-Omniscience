@@ -33,6 +33,7 @@ import { validateCourse } from './courseValidation'
 import { applyEditorKey } from './editorKeys'
 import { allSpecs, grade, type GradeResult } from './grader'
 import { renderMarkdown } from './miniMarkdown'
+import { getTeachingModel } from './problemTeaching'
 import { tutorials } from './tutorials'
 
 type ProgressState = {
@@ -408,6 +409,10 @@ function App() {
   const quizCorrect = selectedChoice === activeProblem.correctChoice
   const activeSpec = specsByProblemId.get(activeProblem.id)
   const activeCode = activeSpec ? (progress.code[activeProblem.id] ?? activeSpec.starter) : ''
+  const teachingModel = useMemo(
+    () => getTeachingModel(activeSubject, activeProblem),
+    [activeSubject, activeProblem],
+  )
   const activeGradeResult = gradeResults[activeProblem.id]
   const isRunningTests = runningProblemId === activeProblem.id
   const previousProblem = activeIndex > 0 ? allProblems[activeIndex - 1] : undefined
@@ -846,6 +851,68 @@ function App() {
 
           <h2>{activeProblem.title}</h2>
           <p className="subject-subtitle">{activeSubject.subtitle}</p>
+
+          <section className="learn-first-block" aria-label="Learn first">
+            <div className="learn-first-heading">
+              <div>
+                <h3>Learn First</h3>
+                <p>{teachingModel.problemIntro}</p>
+              </div>
+              <span>{activeSubject.title}</span>
+            </div>
+
+            <div className="visual-lesson">
+              <div className="visual-picture" aria-label={teachingModel.picture}>
+                {teachingModel.diagram.map((node, index) => (
+                  <span key={`${node}:${index}`}>
+                    <strong>{node}</strong>
+                    {index < teachingModel.diagram.length - 1 && <i aria-hidden="true">→</i>}
+                  </span>
+                ))}
+              </div>
+              <p>{teachingModel.mentalModel}</p>
+            </div>
+
+            <div className="lesson-grid">
+              <section>
+                <h4>Fundamentals</h4>
+                <ul>
+                  {teachingModel.fundamentals.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </section>
+              <section>
+                <h4>Tutorial Steps</h4>
+                <ol>
+                  {teachingModel.tutorial.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ol>
+              </section>
+              <section>
+                <h4>Advanced Knowledge</h4>
+                <ul>
+                  {teachingModel.advanced.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </section>
+              <section>
+                <h4>Interview Tips</h4>
+                <ul>
+                  {teachingModel.interview.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+
+            <div className="practice-mode">
+              <strong>How to use this problem</strong>
+              <p>{teachingModel.practiceMode}</p>
+            </div>
+          </section>
 
           <section className="learning-path" aria-label="Learning path">
             <button
