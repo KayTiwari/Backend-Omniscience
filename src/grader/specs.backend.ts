@@ -3035,4 +3035,96 @@ function rleDecode(s) {
 }
 `,
   },
+  {
+    problemId: 'obs-request-id',
+    title: 'Request ID Propagation',
+    language: 'js',
+    starter: 'function requestId(headers, generate) {\n  // use x-request-id if present, otherwise generate one\n}\n',
+    tests: [
+      { name: 'uses incoming id or generates one', body: "assertEqual(requestId({'x-request-id':'abc'}, () => 'new'), 'abc'); assertEqual(requestId({}, () => 'new'), 'new');" },
+    ],
+    reference: `function requestId(headers, generate) {
+  return headers['x-request-id'] || headers['X-Request-Id'] || generate();
+}
+`,
+  },
+  {
+    problemId: 'obs-span-duration',
+    title: 'Span Duration',
+    language: 'js',
+    starter: 'function spanDuration(span) {\n  // span: { name, start, end, error? }. return { name, durationMs, status }\n}\n',
+    tests: [
+      { name: 'computes duration and status', body: "assertEqual(spanDuration({name:'db',start:10,end:35}), { name:'db', durationMs:25, status:'ok' }); assertEqual(spanDuration({name:'api',start:5,end:15,error:true}), { name:'api', durationMs:10, status:'error' });" },
+    ],
+    reference: `function spanDuration(span) {
+  return { name: span.name, durationMs: span.end - span.start, status: span.error ? 'error' : 'ok' };
+}
+`,
+  },
+  {
+    problemId: 'obs-slo-burn-rate',
+    title: 'SLO Burn Rate',
+    language: 'js',
+    starter: 'function burnRate(errors, total, errorBudgetRatio) {\n  // return current error ratio divided by allowed error budget ratio\n}\n',
+    tests: [
+      { name: 'calculates burn multiple', body: 'assertEqual(burnRate(5, 1000, 0.001), 5); assertEqual(burnRate(0, 1000, 0.001), 0); assertEqual(burnRate(1, 0, 0.001), 0);' },
+    ],
+    reference: `function burnRate(errors, total, errorBudgetRatio) {
+  if (total === 0) return 0;
+  return (errors / total) / errorBudgetRatio;
+}
+`,
+  },
+  {
+    problemId: 'obs-redact-fields',
+    title: 'Redact Sensitive Fields',
+    language: 'js',
+    starter: 'function redactFields(obj, fields) {\n  // return a shallow copy with listed fields replaced by "[redacted]"\n}\n',
+    tests: [
+      { name: 'redacts configured fields only', body: "assertEqual(redactFields({email:'a@b.com',password:'pw',token:'t'}, ['password','token']), {email:'a@b.com',password:'[redacted]',token:'[redacted]'});" },
+    ],
+    reference: `function redactFields(obj, fields) {
+  const out = { ...obj };
+  for (const field of fields) if (field in out) out[field] = '[redacted]';
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'obs-latency-buckets',
+    title: 'Latency Buckets',
+    language: 'js',
+    starter: 'function latencyBuckets(values, buckets) {\n  // buckets are upper bounds. return counts per bucket plus +Inf\n}\n',
+    tests: [
+      { name: 'counts cumulative-style buckets', body: "assertEqual(latencyBuckets([20,75,120,900], [50,100,500]), { '50':1, '100':1, '500':1, '+Inf':1 });" },
+    ],
+    reference: `function latencyBuckets(values, buckets) {
+  const out = {};
+  for (const b of buckets) out[b] = 0;
+  out['+Inf'] = 0;
+  for (const value of values) {
+    const bucket = buckets.find((b) => value <= b);
+    if (bucket === undefined) out['+Inf']++;
+    else out[bucket]++;
+  }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'ops-health-rollup',
+    title: 'Health Check Rollup',
+    language: 'js',
+    starter: 'function healthRollup(checks) {\n  // checks: { name: "ok" | "degraded" | "down" }. return overall status\n}\n',
+    tests: [
+      { name: 'down beats degraded beats ok', body: "assertEqual(healthRollup({db:'ok',cache:'ok'}), 'ok'); assertEqual(healthRollup({db:'ok',cache:'degraded'}), 'degraded'); assertEqual(healthRollup({db:'down',cache:'degraded'}), 'down');" },
+    ],
+    reference: `function healthRollup(checks) {
+  const values = Object.values(checks);
+  if (values.includes('down')) return 'down';
+  if (values.includes('degraded')) return 'degraded';
+  return 'ok';
+}
+`,
+  },
 ]
