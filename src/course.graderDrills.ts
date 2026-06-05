@@ -70,6 +70,22 @@ export const graderDrillProblems: Record<string, Problem[]> = {
       ],
       checklist: ['Parse comma-separated media types.', 'Respect q-values.', 'Return null when none match.'],
     },
+    {
+      id: 'http-parse-auth',
+      title: 'Parse An Authorization Header',
+      type: coding,
+      difficulty: 'Warmup',
+      minutes: 18,
+      prompt:
+        'Implement parseAuth(header). Split an Authorization header into scheme and token. Empty input should return null.',
+      explanation:
+        'Authentication middleware starts by parsing the wire format. This drill keeps parsing separate from trusting: extracting a Bearer token is not the same thing as verifying it.',
+      questions: [
+        'Why should parsing and verification be separate steps?',
+        'What should middleware do when the header is missing?',
+      ],
+      checklist: ['Handle empty headers.', 'Preserve the auth scheme.', 'Return the remaining token string.'],
+    },
   ],
   api: [
     {
@@ -119,6 +135,38 @@ export const graderDrillProblems: Record<string, Problem[]> = {
         'Why are content-hashed assets easy to cache aggressively?',
       ],
       checklist: ['Return a string.', 'Stay stable for identical input.', 'Change when body changes.'],
+    },
+    {
+      id: 'json-stable-stringify',
+      title: 'Stable JSON Stringify',
+      type: coding,
+      difficulty: 'Core',
+      minutes: 30,
+      prompt:
+        'Implement stableStringify(v). Return deterministic JSON with object keys sorted recursively.',
+      explanation:
+        'Stable JSON matters for signatures, cache keys, ETags, tests, and change detection. Same logical object should produce the same bytes even if key insertion order differs.',
+      questions: [
+        'Why do signatures need deterministic serialization?',
+        'Why should nested object keys be sorted too?',
+      ],
+      checklist: ['Sort object keys.', 'Handle nested objects.', 'Preserve arrays in order.'],
+    },
+    {
+      id: 'json-flatten',
+      title: 'Flatten Nested Object',
+      type: coding,
+      difficulty: 'Core',
+      minutes: 25,
+      prompt:
+        "Implement flatten(obj). Convert nested objects into dot-path keys, like { a: { b: 1 } } into { 'a.b': 1 }.",
+      explanation:
+        'Flattening shows up in logs, metrics labels, config inspection, form errors, and search indexing. The backend lesson is to transform shape deliberately instead of sprinkling ad hoc property access everywhere.',
+      questions: [
+        'Where would flattened paths help an API client?',
+        'Why should arrays usually keep their original order?',
+      ],
+      checklist: ['Walk nested objects recursively.', 'Join paths with dots.', 'Keep leaf values unchanged.'],
     },
   ],
   performance: [
@@ -187,6 +235,48 @@ export const graderDrillProblems: Record<string, Problem[]> = {
       questions: ['Why is counting first better than repeated scanning?', 'How should ties be deterministic?'],
       checklist: ['Count frequencies.', 'Sort by count descending.', 'Break ties deterministically.'],
     },
+    {
+      id: 'cache-evict-expired',
+      title: 'Evict Expired Entries',
+      type: coding,
+      difficulty: 'Warmup',
+      minutes: 18,
+      prompt:
+        'Implement evictExpired(entries, now). Given cache entries with expiresAt timestamps, return keys that are still valid.',
+      explanation:
+        'TTL eviction is the smallest version of cache lifecycle management. Backends need explicit expiration so stale data does not live forever.',
+      questions: ['Why should cache entries expire?', 'What can go wrong if clocks disagree?'],
+      checklist: ['Compare expiresAt to now.', 'Return only valid keys.', 'Preserve input order.'],
+    },
+    {
+      id: 'ratelimit-leaky-bucket',
+      title: 'Leaky Bucket Limiter',
+      type: coding,
+      difficulty: 'Hard',
+      minutes: 35,
+      prompt:
+        'Implement leakyBucket(times, capacity, leakPerSec). Return whether each timestamped request is allowed.',
+      explanation:
+        'Leaky bucket smooths request flow by draining over time. It teaches the production idea that rate limiters are state machines, not just counters.',
+      questions: [
+        'How does leaky bucket differ from token bucket?',
+        'Why do distributed rate limiters need shared state?',
+      ],
+      checklist: ['Track water level.', 'Drain based on elapsed time.', 'Reject requests above capacity.'],
+    },
+    {
+      id: 'parse-duration',
+      title: 'Parse A Duration',
+      type: coding,
+      difficulty: 'Warmup',
+      minutes: 20,
+      prompt:
+        "Implement parseDuration(s). Parse strings such as '90s', '2m', and '1h30m' into seconds.",
+      explanation:
+        'Backends constantly parse human-readable durations for TTLs, job delays, lock leases, and timeouts. Bad parsing turns config into an outage.',
+      questions: ['Where do backend systems use durations?', 'Why should invalid duration config fail fast?'],
+      checklist: ['Support h, m, and s units.', 'Sum multiple units.', 'Return seconds.'],
+    },
   ],
   security: [
     {
@@ -254,6 +344,22 @@ export const graderDrillProblems: Record<string, Problem[]> = {
       questions: ['Why is decoding a JWT not authentication?', 'Which JWT fields must be validated?'],
       checklist: ['Split token segments.', 'Base64url-decode the payload.', 'Parse JSON claims.'],
     },
+    {
+      id: 'auth-has-scope',
+      title: 'Scope Check',
+      type: coding,
+      difficulty: 'Core',
+      minutes: 20,
+      prompt:
+        'Implement hasScope(granted, required). Return true only when every required scope is present.',
+      explanation:
+        'Scopes are a compact authorization primitive. The important backend habit is fail-closed: missing one required permission should deny access.',
+      questions: [
+        'Why must every required scope be present?',
+        'How are scopes different from resource ownership checks?',
+      ],
+      checklist: ['Require all scopes.', 'Allow empty requirements.', 'Fail closed when a scope is missing.'],
+    },
   ],
   architecture: [
     {
@@ -268,6 +374,22 @@ export const graderDrillProblems: Record<string, Problem[]> = {
         'Backoff gives struggling dependencies room to recover. Without it, retries can amplify an outage.',
       questions: ['Why add jitter in production?', 'Why cap retries?'],
       checklist: ['Double delay per attempt.', 'Apply the cap.', 'Use zero-based attempts.'],
+    },
+    {
+      id: 'reliability-retry-schedule',
+      title: 'Retry Schedule',
+      type: coding,
+      difficulty: 'Core',
+      minutes: 20,
+      prompt:
+        'Implement retrySchedule(maxRetries, base, cap). Return the backoff delay for each retry.',
+      explanation:
+        'Retry schedules define how much pressure your service applies to a dependency during failure. Capping prevents retries from growing without bound.',
+      questions: [
+        'Why do retries amplify outages without backoff?',
+        'What does the cap protect?',
+      ],
+      checklist: ['Return one delay per retry.', 'Double delays.', 'Cap at the maximum.'],
     },
     {
       id: 'architecture-idempotency',
@@ -320,6 +442,35 @@ export const graderDrillProblems: Record<string, Problem[]> = {
         'SSE is a simple HTTP-friendly realtime primitive for server-to-client streams. The wire format is line based and ends each message with a blank line.',
       questions: ['When is SSE simpler than WebSockets?', 'Why must each event end with a blank line?'],
       checklist: ['Include data.', 'Include optional event and id.', 'End with a blank line.'],
+    },
+    {
+      id: 'lb-expand-weights',
+      title: 'Expand Weighted Pool',
+      type: coding,
+      difficulty: 'Warmup',
+      minutes: 18,
+      prompt:
+        'Implement expandWeights(items). Expand [{ id, weight }] into a flat pool with each id repeated by weight.',
+      explanation:
+        'Weighted pools are the simplest mental model behind weighted load balancing, canary routing, and traffic splitting.',
+      questions: ['Why weight a server or version differently?', 'What breaks if weights are misconfigured?'],
+      checklist: ['Repeat ids by weight.', 'Preserve item order.', 'Return a flat list.'],
+    },
+    {
+      id: 'sla-error-budget',
+      title: 'Error Budget',
+      type: coding,
+      difficulty: 'Core',
+      minutes: 20,
+      prompt:
+        'Implement errorBudgetMs(slaPercent, periodMs). Return allowed downtime in milliseconds for the period.',
+      explanation:
+        'Error budgets turn reliability into math. Instead of saying “be reliable,” you calculate how much failure a service can afford before engineering priorities change.',
+      questions: [
+        'How does an error budget connect product risk to engineering work?',
+        'Why is 99.9% not the same as 100%?',
+      ],
+      checklist: ['Compute unavailable fraction.', 'Multiply by period.', 'Round to milliseconds.'],
     },
   ],
   sql: [
