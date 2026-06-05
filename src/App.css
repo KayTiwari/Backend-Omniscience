@@ -308,7 +308,7 @@ h1 {
 .subject-progress {
   height: 4px;
   overflow: hidden;
-  margin: -4px 10px 2px 50px;
+  margin: -4px 10px 2px;
   border-radius: 999px;
   background: #e7ebe4;
 }
@@ -331,16 +331,18 @@ h1 {
 .problem-list {
   display: grid;
   gap: 4px;
-  margin-left: 40px;
+  margin-left: 0;
 }
 
 .problem-link {
-  display: flex;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) 18px;
   align-items: center;
   gap: 8px;
+  min-width: 0;
   border: 0;
   border-radius: 6px;
-  padding: 8px;
+  padding: 8px 10px;
   background: transparent;
   color: #556260;
   text-align: left;
@@ -353,14 +355,13 @@ h1 {
 }
 
 .problem-link span {
-  flex: 1;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .problem-link > svg:last-child {
-  flex: 0 0 auto;
+  justify-self: end;
   color: #2f80ed;
 }
 
@@ -484,6 +485,8 @@ h1 {
 
 .prompt-block,
 .explanation-block,
+.production-block,
+.walkthrough-block,
 .example-block,
 .quiz-block,
 .coding-block,
@@ -495,6 +498,8 @@ h1 {
 
 .prompt-block h3,
 .explanation-block h3,
+.production-block h3,
+.walkthrough-block h3,
 .example-block h3,
 .quiz-block h3,
 .coding-block h3,
@@ -522,6 +527,31 @@ h1 {
   color: #31413f;
   font-size: 18px;
   line-height: 1.6;
+  white-space: pre-line;
+}
+
+.production-block {
+  border-left: 4px solid #e84a5f;
+  padding: 2px 0 2px 14px;
+}
+
+.production-block p {
+  color: #31413f;
+  font-size: 18px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.walkthrough-block ol {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 22px;
+  color: #31413f;
+}
+
+.walkthrough-block li {
+  padding-left: 4px;
 }
 
 .example-block pre {

@@ -414,4 +414,306 @@ much (the *Reproducible Environments* tutorial in the Python track).
 Treat these as defaults, not aspirations: most outages trace back to violating
 one of them.`,
   },
+  {
+    id: 'tut-dns',
+    subjectId: 'internet',
+    title: 'DNS, Domains, and How Names Resolve',
+    minutes: 9,
+    body: `DNS is the phone book of the internet: it maps human names to addresses. It is
+also a frequent, sneaky source of outages.
+
+**The lookup, top down.** To resolve api.example.com your resolver may ask: a
+root server (where is .com?), a TLD server (where is example.com?), then the
+authoritative server for example.com (what is api?). Results are cached at every
+layer based on each record's **TTL**.
+
+**Record types you will meet:**
+- **A / AAAA** map a name to an IPv4 / IPv6 address.
+- **CNAME** aliases one name to another (api -> lb.provider.net).
+- **MX** for mail, **TXT** for verification/SPF, **NS** for delegation.
+
+**TTL is a trade-off.** A long TTL means fast, cached lookups but slow
+propagation when you change records. Before a migration, lower the TTL ahead of
+time so the cutover is quick.
+
+**Why deploys "fail" on DNS.** A new service has no DNS record yet, or an old IP
+is still cached, or a CNAME points at a decommissioned host. "It works by IP but
+not by name" is the tell. DNS resolves names to addresses; it knows nothing about
+ports, paths, or health.`,
+  },
+  {
+    id: 'tut-nosql-cap',
+    subjectId: 'sql',
+    title: 'NoSQL and the CAP Theorem',
+    minutes: 12,
+    body: `"NoSQL" is not one thing; it is a family of databases that drop some relational
+guarantees to gain scale, flexibility, or a better fit for a data shape.
+
+**The families:**
+- **Key-value** (Redis, DynamoDB): O(1) lookups by key; great for caches,
+  sessions, counters.
+- **Document** (MongoDB): JSON-ish documents; flexible schema, good when data is
+  naturally nested and accessed as a unit.
+- **Wide-column** (Cassandra): huge write throughput, queries designed around
+  known access patterns.
+- **Graph** (Neo4j): relationships are first-class (social graphs, recommendations).
+
+**Model around access patterns.** Relational design normalizes first and joins
+later. Many NoSQL stores do the opposite: you **denormalize** and shape data for
+the exact queries you will run, because cross-document joins are expensive or
+absent.
+
+**CAP theorem.** Under a network **partition** (P, which you cannot avoid in a
+distributed system), you must choose:
+- **CP** (consistency): refuse some requests to avoid serving stale/conflicting
+  data.
+- **AP** (availability): keep serving, accepting that replicas may temporarily
+  disagree (eventual consistency).
+
+There is no "CA" in a real distributed system; partitions happen, so the real
+choice is C vs A during one. **PACELC** extends this: even without a partition
+(Else), you trade Latency vs Consistency.
+
+**Practical takeaway:** pick the store for the access pattern, and know whether
+your reads can tolerate being a little stale. Most systems mix: Postgres for
+transactional truth, Redis for hot reads, a search engine for queries.`,
+  },
+  {
+    id: 'tut-replication-sharding',
+    subjectId: 'sql',
+    title: 'Replication and Sharding',
+    minutes: 12,
+    body: `Two different tools for two different problems. Replication is about copies;
+sharding is about splitting.
+
+**Replication = copies of the same data.** A primary takes writes and streams
+changes to replicas.
+- **Read scaling:** send read queries to replicas to offload the primary.
+- **High availability:** if the primary dies, promote a replica (failover).
+- **The catch: replication lag.** A replica may be milliseconds-to-seconds
+  behind. "I saved it but it is not there" often means you wrote to the primary
+  and immediately read from a lagging replica. Fix with read-your-writes routing
+  (read from primary right after a write) or by waiting for replication.
+
+**Sync vs async.** Synchronous replication waits for a replica to confirm
+(safer, slower); asynchronous does not (faster, risks losing the last writes on
+failover).
+
+**Sharding = split data across nodes by a key.** When one machine cannot hold
+the data or the write load, partition rows across shards (e.g. by user_id).
+- **The shard key is everything.** A bad key creates hot shards (one node gets
+  all the traffic) or forces cross-shard queries (slow, complex).
+- **Rebalancing is hard.** Adding a shard with naive modulo hashing remaps almost
+  every key. **Consistent hashing** moves only a fraction of keys (build it in
+  the *Consistent Hashing Ring* drill).
+
+**Order of operations:** optimize queries and add indexes first, then a cache,
+then read replicas, and only shard when you genuinely must. Sharding adds
+permanent complexity.`,
+  },
+  {
+    id: 'tut-monolith-microservices',
+    subjectId: 'architecture',
+    title: 'Monolith vs Microservices',
+    minutes: 11,
+    body: `This is an organizational decision disguised as a technical one. Both are valid;
+the wrong one for your stage is expensive.
+
+**The modular monolith.** One deployable, clear internal module boundaries, one
+database. You get simple local development, easy transactions, and one thing to
+deploy and debug. Most products should start here.
+
+**Microservices.** Many small services, each owning its data, communicating over
+the network.
+- **Real benefits:** independent deploys, independent scaling, team autonomy,
+  fault isolation.
+- **Real costs:** the network is now in your business logic. You inherit
+  distributed transactions, partial failure, eventual consistency, service
+  discovery, versioned contracts, and distributed tracing just to debug a single
+  request.
+
+**The trap.** A "distributed monolith": services so chatty and coupled that you
+pay all the microservice costs and get none of the benefits, because you cannot
+deploy one without the others.
+
+**How to decide.** Split a service out when a real force demands it: a part needs
+to scale independently, a team needs to own and deploy it independently, or a
+fault needs to be isolated. Do not split because microservices are fashionable.
+
+**If you do split:** make each service own its data (no shared database),
+communicate via well-defined contracts, design every call for failure (timeouts,
+retries with backoff, circuit breakers), and make operations idempotent.`,
+  },
+  {
+    id: 'tut-message-brokers',
+    subjectId: 'architecture',
+    title: 'Message Brokers: Queues vs Logs',
+    minutes: 11,
+    body: `Brokers move work and events between services. The big mental split is
+"task queue" versus "event log".
+
+**Task queue (RabbitMQ, SQS).** A message is work to be done; once a consumer
+acks it, it is gone. Good for jobs: send email, process upload, charge a card.
+- Competing consumers share the load.
+- Supports priorities, delays, dead-letter queues.
+
+**Event log (Kafka).** Messages are an append-only, replayable log. Consumers
+track their own offset and can re-read history.
+- Multiple independent consumers read the same events at their own pace.
+- Great for event sourcing, analytics pipelines, and fan-out to many systems.
+- Partitions give ordering **within a key** and parallelism across keys (the
+  *Partition By Key* drill).
+
+**Delivery guarantees.** Most brokers are **at-least-once**: a message may be
+delivered more than once (a consumer crashes after working, before acking). So
+consumers must be **idempotent** (see the queues tutorial). Exactly-once is
+expensive and usually faked with idempotency + dedup.
+
+**Backpressure.** A queue absorbs spikes so a slow downstream does not topple the
+upstream. Watch queue depth as a health signal: a growing queue means consumers
+cannot keep up, and a flat-lined DLQ depth means poison messages need attention.
+
+**Choosing:** need to distribute jobs to workers? A task queue. Need many systems
+to react to the same stream of facts, possibly replaying them? A log like Kafka.`,
+  },
+  {
+    id: 'tut-containers',
+    subjectId: 'devops',
+    title: 'Containers vs VMs, and What Docker Actually Does',
+    minutes: 10,
+    body: `Containers package your app with its dependencies so it runs the same
+everywhere. Understanding the model prevents a lot of "works locally" pain.
+
+**VM vs container.** A VM virtualizes hardware and runs a full guest OS (heavy,
+minutes to boot). A container shares the host kernel and isolates a process with
+namespaces and cgroups (light, milliseconds to start). A container is a process,
+not a tiny computer.
+
+**The image.** A Dockerfile builds a layered, read-only image. Layers are cached,
+so order matters: copy your lockfile and install dependencies **before** copying
+source, so a code change does not bust the dependency layer.
+
+    FROM node:22-slim
+    WORKDIR /app
+    COPY package*.json ./
+    RUN npm ci --omit=dev      # cached unless deps change
+    COPY . .
+    CMD ["node", "server.js"]
+
+**Production hygiene:**
+- Use small base images and **multi-stage builds** (build with the full toolchain,
+  copy only the artifact into a slim final image).
+- Run as a non-root user.
+- Do not bake secrets into the image; pass config via environment.
+- Add a health endpoint so the orchestrator knows when the container is ready.
+
+**Orchestration.** Kubernetes schedules containers across machines, restarts
+failed ones, and routes traffic to **ready** ones (readiness probes are what make
+zero-downtime deploys work). You do not need Kubernetes to start; a single
+container behind a proxy is fine until scale forces more.`,
+  },
+  {
+    id: 'tut-observability',
+    subjectId: 'performance',
+    title: 'Observability: Logs, Metrics, and Traces',
+    minutes: 11,
+    body: `You cannot fix what you cannot see. Observability is the difference between
+"the site is slow" and "the checkout endpoint p95 tripled because the DB pool is
+saturated".
+
+**The three pillars:**
+- **Logs:** discrete events ("order 42 created"). Make them **structured** (JSON)
+  and attach a **request id** so you can follow one request across services. The
+  *Parse An Access Log Line* drill works with this shape.
+- **Metrics:** numeric time series (request rate, error rate, latency, queue
+  depth, CPU). Cheap to store, great for dashboards and alerts. Latency should be
+  tracked as **percentiles** (p50/p95/p99), not averages, because averages hide
+  the tail (the *Latency Percentile* and *Cumulative Histogram* drills).
+- **Traces:** the path of one request across services, with timing per span.
+  This is how you find which hop is slow in a distributed call.
+
+**The golden signals** (a good starting alert set): latency, traffic, errors,
+saturation. Alert on symptoms users feel (error rate, p99 latency), not on every
+internal metric.
+
+**Error rate, concretely.** Track the fraction of 5xx responses over a window
+(the *Error Rate* drill). A spike is your earliest signal something broke.
+
+**Make it actionable.** A log line with no request id, or a metric with no
+dashboard or alert, is noise. The goal is: an alert fires, and the linked
+dashboard plus traces point you at the failing component in minutes.`,
+  },
+  {
+    id: 'tut-realtime',
+    subjectId: 'system-design',
+    title: 'Real-Time Delivery: Polling, SSE, and WebSockets',
+    minutes: 10,
+    body: `When clients need fresh data, you have a spectrum of options trading simplicity
+for latency and efficiency.
+
+**Short polling.** The client asks "anything new?" on a timer. Dead simple, works
+everywhere, but wastes requests and adds up to one interval of latency. Fine for
+low-frequency updates.
+
+**Long polling.** The client makes a request and the server holds it open until
+there is data (or a timeout), then the client immediately re-requests. Near
+real-time over plain HTTP, but ties up a connection per client and is fiddly.
+
+**Server-Sent Events (SSE).** A one-way stream from server to client over a
+single long-lived HTTP response. Built-in reconnection and event ids, simple to
+implement. Perfect for feeds, notifications, and progress updates. The format is
+just text frames (the *Format A Server-Sent Event* drill):
+
+    event: ping
+    data: hello
+    id: 1
+
+**WebSockets.** A full-duplex, persistent connection after an HTTP upgrade. Use
+when you need **bidirectional**, low-latency messaging: chat, multiplayer,
+collaborative editing, live trading.
+
+**Choosing:**
+- One-way updates, want simplicity and HTTP semantics? **SSE.**
+- Two-way, high-frequency? **WebSockets.**
+- Rare updates, maximum compatibility, least effort? **Polling.**
+
+**Scaling gotcha:** persistent connections are stateful. Across many servers you
+need a shared pub/sub layer (e.g. Redis) so a message published on one server
+reaches clients connected to another.`,
+  },
+  {
+    id: 'tut-testing',
+    subjectId: 'devops',
+    title: 'A Testing Strategy That Pays Off',
+    minutes: 10,
+    body: `Tests exist to let you change code with confidence. The goal is maximum
+confidence per minute of test runtime and maintenance.
+
+**The pyramid.**
+- **Unit tests** (many, fast): one function/module, no I/O. They pin down logic
+  and edge cases. The coding drills in this app are essentially unit tests with a
+  reference solution.
+- **Integration tests** (fewer): real database, real HTTP, real wiring. They
+  catch the bugs unit tests cannot: a wrong SQL query, a serialization mismatch,
+  a broken migration.
+- **End-to-end** (few): the whole system through the front door. Valuable but
+  slow and flaky; keep them to critical paths.
+
+**Test behavior, not implementation.** Assert on inputs and outputs, not private
+internals, so refactors do not break tests. A test that breaks every refactor is
+worse than no test.
+
+**Make failures fast and clear.** A good test names the case and reports
+"expected X, got Y" (exactly what the grader's assertEqual does). When it fails,
+you should know why without a debugger.
+
+**The N+1 example.** A list endpoint that fires one query per item passes a naive
+unit test but explodes in integration. Catch it by asserting the query count
+(assertNumQueries / a query log) in an integration test. The *ORM N+1* problem
+in the Django track and the *N+1 Query Hunt* drill cover this.
+
+**Determinism.** Flaky tests train you to ignore failures. Control time, randomness,
+and ordering (inject a clock or seed, as the jitter and rate-limit drills do) so a
+test passes or fails for real reasons only.`,
+  },
 ]

@@ -534,6 +534,24 @@ function App() {
             </section>
           )}
 
+          {activeProblem.production && (
+            <section className="production-block">
+              <h3>Why This Matters In Production</h3>
+              <p>{activeProblem.production}</p>
+            </section>
+          )}
+
+          {activeProblem.walkthrough && (
+            <section className="walkthrough-block">
+              <h3>Guided Walkthrough</h3>
+              <ol>
+                {activeProblem.walkthrough.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+            </section>
+          )}
+
           {activeProblem.example && (
             <section className="example-block">
               <h3>Example</h3>

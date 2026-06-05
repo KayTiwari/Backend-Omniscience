@@ -25,6 +25,12 @@ export function validateCourse(subjects: Subject[]) {
       if (problem.explanation !== undefined && !problem.explanation.trim()) {
         warnings.push(`Problem "${problem.id}" has an empty explanation.`)
       }
+      if (problem.production !== undefined && !problem.production.trim()) {
+        warnings.push(`Problem "${problem.id}" has an empty production note.`)
+      }
+      if (problem.walkthrough?.some((step) => !step.trim())) {
+        warnings.push(`Problem "${problem.id}" has an empty walkthrough step.`)
+      }
       if (problem.minutes <= 0) warnings.push(`Problem "${problem.id}" needs positive minutes.`)
       if (problem.checklist.length === 0) {
         warnings.push(`Problem "${problem.id}" needs at least one checklist item.`)

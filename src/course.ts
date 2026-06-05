@@ -17,6 +17,8 @@ import { extraProblems, extraSubjects } from './course.extra'
 import { graderDrillProblems } from './course.graderDrills'
 import { oralExamProblems } from './course.oralExams'
 import { roadmapGapProblems } from './course.roadmapGaps'
+import { tutorialProblems } from './course.tutorials'
+import { tutorials as longTutorials } from './tutorials'
 
 export type ProblemType = 'lesson' | 'coding' | 'quiz' | 'debug' | 'design'
 
@@ -28,6 +30,8 @@ export type Problem = {
   minutes: number
   prompt: string
   explanation?: string
+  production?: string
+  walkthrough?: string[]
   example?: string
   questions?: string[]
   checklist: string[]
@@ -46,6 +50,32 @@ export type Subject = {
   color: string
   problems: Problem[]
 }
+
+const longTutorialProblems = longTutorials.reduce<Record<string, Problem[]>>((acc, tutorial) => {
+  acc[tutorial.subjectId] ??= []
+  acc[tutorial.subjectId].push({
+    id: tutorial.id,
+    title: `Tutorial: ${tutorial.title}`,
+    type: 'lesson',
+    difficulty: 'Core',
+    minutes: tutorial.minutes,
+    prompt: `Study this tutorial, then explain the concept back in your own words and connect it to at least one backend failure mode.`,
+    explanation: tutorial.body,
+    production:
+      'This long-form tutorial is meant to build the mental model before you move into quizzes, debugging prompts, and runnable coding drills. In production, the engineer with the clearest model usually finds the fault fastest.',
+    questions: [
+      'What is the core concept this tutorial is teaching?',
+      'Which production failure mode does this help you diagnose?',
+      'Which coding drill or design prompt should you do next to prove the concept?',
+    ],
+    checklist: [
+      'Summarize the tutorial without rereading it.',
+      'Name one production implication.',
+      'Complete the next related drill or review question.',
+    ],
+  })
+  return acc
+}, {})
 
 const coreSubjects: Subject[] = [
   {
@@ -627,6 +657,8 @@ export const subjects: Subject[] = [
     ...subject,
     problems: [
       ...subject.problems,
+      ...(tutorialProblems[subject.id] ?? []),
+      ...(longTutorialProblems[subject.id] ?? []),
       ...(deepDiveProblems[subject.id] ?? []),
       ...(roadmapGapProblems[subject.id] ?? []),
       ...(graderDrillProblems[subject.id] ?? []),
