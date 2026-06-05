@@ -174,4 +174,159 @@ function isActive(s: Status): boolean {
   return s === Status.Active
 }`,
   },
+
+  // ----- Batch 2: guards, utility types, generics ------------------------
+  {
+    problemId: 'ts-type-guard',
+    title: 'Type Guard',
+    language: 'ts',
+    starter: 'function isString(x: unknown): x is string {\n  pass\n}\n',
+    tests: [
+      { name: 'narrows', body: "assert(isString('a') === true)\nassert(isString(5) === false)" },
+    ],
+    reference: `function isString(x: unknown): x is string {
+  return typeof x === 'string'
+}`,
+  },
+  {
+    problemId: 'ts-omit',
+    title: 'Omit<T, K>',
+    language: 'ts',
+    starter: "interface User {\n  id: number\n  name: string\n  password: string\n}\n\nfunction publicUser(u: User): Omit<User, 'password'> {\n  pass\n}\n",
+    tests: [
+      { name: 'drops password', body: "assertEqual(publicUser({ id: 1, name: 'Ada', password: 'x' }), { id: 1, name: 'Ada' })" },
+    ],
+    reference: `interface User {
+  id: number
+  name: string
+  password: string
+}
+
+function publicUser(u: User): Omit<User, 'password'> {
+  const { password, ...rest } = u
+  return rest
+}`,
+  },
+  {
+    problemId: 'ts-pick',
+    title: 'Pick<T, K>',
+    language: 'ts',
+    starter: "interface User {\n  id: number\n  name: string\n  email: string\n}\n\nfunction summary(u: User): Pick<User, 'id' | 'name'> {\n  pass\n}\n",
+    tests: [
+      { name: 'keeps id and name', body: "assertEqual(summary({ id: 1, name: 'Ada', email: 'a@b.c' }), { id: 1, name: 'Ada' })" },
+    ],
+    reference: `interface User {
+  id: number
+  name: string
+  email: string
+}
+
+function summary(u: User): Pick<User, 'id' | 'name'> {
+  return { id: u.id, name: u.name }
+}`,
+  },
+  {
+    problemId: 'ts-required',
+    title: 'Required<T> Defaults',
+    language: 'ts',
+    starter: 'interface Opts {\n  a?: number\n  b?: number\n}\n\nfunction normalize(o: Opts): Required<Opts> {\n  pass\n}\n',
+    tests: [
+      { name: 'fills missing', body: 'assertEqual(normalize({ a: 5 }), { a: 5, b: 0 })\nassertEqual(normalize({}), { a: 0, b: 0 })' },
+    ],
+    reference: `interface Opts {
+  a?: number
+  b?: number
+}
+
+function normalize(o: Opts): Required<Opts> {
+  return { a: o.a ?? 0, b: o.b ?? 0 }
+}`,
+  },
+  {
+    problemId: 'ts-readonly',
+    title: 'Readonly<T>',
+    language: 'ts',
+    starter: 'interface Config {\n  retries: number\n}\n\nfunction freezeConfig(c: Config): Readonly<Config> {\n  pass\n}\n',
+    tests: [
+      { name: 'returns the config', body: 'assertEqual(freezeConfig({ retries: 3 }), { retries: 3 })' },
+    ],
+    reference: `interface Config {
+  retries: number
+}
+
+function freezeConfig(c: Config): Readonly<Config> {
+  return Object.freeze({ ...c })
+}`,
+  },
+  {
+    problemId: 'ts-tuple',
+    title: 'Tuple Return',
+    language: 'ts',
+    starter: 'function pair<A, B>(a: A, b: B): [A, B] {\n  pass\n}\n',
+    tests: [
+      { name: 'builds a tuple', body: "assertEqual(pair(1, 'a'), [1, 'a'])" },
+    ],
+    reference: `function pair<A, B>(a: A, b: B): [A, B] {
+  return [a, b]
+}`,
+  },
+  {
+    problemId: 'ts-generic-constraint',
+    title: 'Generic Constraint (extends)',
+    language: 'ts',
+    starter: 'function longest<T extends { length: number }>(a: T, b: T): T {\n  // return the one with greater length\n}\n',
+    tests: [
+      { name: 'strings and arrays', body: "assertEqual(longest('aa', 'b'), 'aa')\nassertEqual(longest([1], [1, 2]), [1, 2])" },
+    ],
+    reference: `function longest<T extends { length: number }>(a: T, b: T): T {
+  return a.length >= b.length ? a : b
+}`,
+  },
+  {
+    problemId: 'ts-mapped-type',
+    title: 'Mapped Type: All Flags',
+    language: 'ts',
+    starter: 'type Flags<T> = { [K in keyof T]: boolean }\n\nfunction allTrue<T extends object>(obj: T): Flags<T> {\n  pass\n}\n',
+    tests: [
+      { name: 'every key true', body: 'assertEqual(allTrue({ a: 1, b: 2 }), { a: true, b: true })' },
+    ],
+    reference: `type Flags<T> = { [K in keyof T]: boolean }
+
+function allTrue<T extends object>(obj: T): Flags<T> {
+  const out = {} as Flags<T>
+  for (const k of Object.keys(obj) as (keyof T)[]) out[k] = true
+  return out
+}`,
+  },
+  {
+    problemId: 'ts-enum',
+    title: 'Enum',
+    language: 'ts',
+    starter: 'enum Level {\n  Low = 1,\n  High = 10,\n}\n\nfunction isHigh(l: Level): boolean {\n  pass\n}\n',
+    tests: [
+      { name: 'compares members', body: 'assert(isHigh(Level.High) === true)\nassert(isHigh(Level.Low) === false)' },
+    ],
+    reference: `enum Level {
+  Low = 1,
+  High = 10,
+}
+
+function isHigh(l: Level): boolean {
+  return l === Level.High
+}`,
+  },
+  {
+    problemId: 'ts-union-return',
+    title: 'Union Return Type',
+    language: 'ts',
+    starter: 'function parseBool(s: string): boolean | null {\n  // "true"/"false" -> boolean, else null\n}\n',
+    tests: [
+      { name: 'parses or nulls', body: "assert(parseBool('true') === true)\nassert(parseBool('false') === false)\nassert(parseBool('x') === null)" },
+    ],
+    reference: `function parseBool(s: string): boolean | null {
+  if (s === 'true') return true
+  if (s === 'false') return false
+  return null
+}`,
+  },
 ]
