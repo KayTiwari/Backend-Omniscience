@@ -16,6 +16,7 @@ import { deepDiveProblems } from './course.deepdive'
 import { extraProblems, extraSubjects } from './course.extra'
 import { frameworkCapstoneProjectProblems } from './course.frameworkCapstoneProjects'
 import { frameworkMasteryProblems } from './course.frameworkMastery'
+import { frameworkRapidReviewProblems } from './course.frameworkRapidReview'
 import { frameworkReviewProblems } from './course.frameworkReview'
 import { frameworkTutorialProblems } from './course.frameworkTutorials'
 import { graderDrillProblems } from './course.graderDrills'
@@ -680,6 +681,7 @@ export const subjects: Subject[] = [
       ...(frameworkTutorialProblems[subject.id] ?? []),
       ...(frameworkReviewProblems[subject.id] ?? []),
       ...(frameworkMasteryProblems[subject.id] ?? []),
+      ...(frameworkRapidReviewProblems[subject.id] ?? []),
       ...(frameworkCapstoneProjectProblems[subject.id] ?? []),
     ],
   })),
