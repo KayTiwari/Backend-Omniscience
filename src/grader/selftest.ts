@@ -1,5 +1,5 @@
-import { runTests } from './core'
-import { specs } from './specs'
+import { runTests } from './core.ts'
+import { specs } from './specs.ts'
 
 // Proves every spec's reference solution passes its own tests, and that a
 // broken (empty) solution is correctly failed. Run with esbuild + node.

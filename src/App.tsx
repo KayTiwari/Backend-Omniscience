@@ -9,6 +9,7 @@ import {
   Download,
   Flame,
   ListChecks,
+  Play,
   RotateCcw,
   Search,
   SkipForward,
@@ -25,11 +26,13 @@ import {
   type Subject,
 } from './course'
 import { validateCourse } from './courseValidation'
+import { gradeJs, specs, type GradeResult } from './grader'
 
 type ProgressState = {
   completed: string[]
   notes: Record<string, string>
   selectedChoice: Record<string, number>
+  code: Record<string, string>
 }
 
 const storageKey = 'backend-omniscience-progress'
@@ -38,6 +41,7 @@ const emptyProgress: ProgressState = {
   completed: [],
   notes: {},
   selectedChoice: {},
+  code: {},
 }
 
 function loadProgress(): ProgressState {
@@ -49,6 +53,7 @@ function loadProgress(): ProgressState {
       completed: parsed.completed ?? [],
       notes: parsed.notes ?? {},
       selectedChoice: parsed.selectedChoice ?? {},
+      code: parsed.code ?? {},
     }
   } catch {
     return emptyProgress
@@ -87,6 +92,8 @@ function App() {
   const [difficultyFilter, setDifficultyFilter] = useState<ProblemDifficulty | 'all'>('all')
   const [progress, setProgress] = useState<ProgressState>(() => loadProgress())
   const [importMessage, setImportMessage] = useState('')
+  const [gradeResults, setGradeResults] = useState<Record<string, GradeResult>>({})
+  const [runningProblemId, setRunningProblemId] = useState('')
   const importInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -132,6 +139,10 @@ function App() {
     [],
   )
   const courseWarnings = useMemo(() => validateCourse(subjects), [])
+  const specsByProblemId = useMemo(
+    () => new Map(specs.map((spec) => [spec.problemId, spec])),
+    [],
+  )
   const filteredProblemIds = useMemo(() => {
     const ids = new Set<string>()
     subjects.forEach((subject) => {
@@ -197,6 +208,13 @@ function App() {
     }))
   }
 
+  function updateCode(problemId: string, value: string) {
+    setProgress((current) => ({
+      ...current,
+      code: { ...current.code, [problemId]: value },
+    }))
+  }
+
   function selectChoice(problemId: string, choiceIndex: number) {
     setProgress((current) => ({
       ...current,
@@ -237,6 +255,7 @@ function App() {
         ),
         notes: imported.notes ?? {},
         selectedChoice: imported.selectedChoice ?? {},
+        code: imported.code ?? {},
       })
       setImportMessage('Progress imported.')
     } catch {
@@ -244,9 +263,28 @@ function App() {
     }
   }
 
+  async function runCodingTests() {
+    const spec = specsByProblemId.get(activeProblem.id)
+    if (!spec) return
+
+    setRunningProblemId(activeProblem.id)
+    const code = progress.code[activeProblem.id] ?? spec.starter
+    const result = await gradeJs(code, spec.tests)
+    setGradeResults((current) => ({ ...current, [activeProblem.id]: result }))
+    setRunningProblemId('')
+
+    if (result.passed && !completedSet.has(activeProblem.id)) {
+      toggleComplete(activeProblem.id)
+    }
+  }
+
   const selectedChoice = progress.selectedChoice[activeProblem.id]
   const quizAnswered = selectedChoice !== undefined
   const quizCorrect = selectedChoice === activeProblem.correctChoice
+  const activeSpec = specsByProblemId.get(activeProblem.id)
+  const activeCode = activeSpec ? (progress.code[activeProblem.id] ?? activeSpec.starter) : ''
+  const activeGradeResult = gradeResults[activeProblem.id]
+  const isRunningTests = runningProblemId === activeProblem.id
 
   return (
     <main className="app-shell">
@@ -483,6 +521,13 @@ function App() {
             <p>{activeProblem.prompt}</p>
           </section>
 
+          {activeProblem.explanation && (
+            <section className="explanation-block">
+              <h3>Explanation</h3>
+              <p>{activeProblem.explanation}</p>
+            </section>
+          )}
+
           {activeProblem.example && (
             <section className="example-block">
               <h3>Example</h3>
@@ -519,6 +564,65 @@ function App() {
                   {quizCorrect ? 'Correct.' : 'Not quite.'} {activeProblem.answer}
                 </p>
               )}
+            </section>
+          )}
+
+          {activeSpec && (
+            <section className="coding-block">
+              <div className="coding-heading">
+                <div>
+                  <h3>Coding Tests</h3>
+                  <p>{activeSpec.title} · JavaScript</p>
+                </div>
+                <button
+                  className="run-button"
+                  onClick={() => void runCodingTests()}
+                  disabled={isRunningTests}
+                  type="button"
+                >
+                  <Play size={17} />
+                  {isRunningTests ? 'Running' : 'Run tests'}
+                </button>
+              </div>
+
+              <textarea
+                className="code-editor"
+                value={activeCode}
+                onChange={(event) => updateCode(activeProblem.id, event.target.value)}
+                spellCheck={false}
+              />
+
+              {activeGradeResult && (
+                <div className={`test-results ${activeGradeResult.passed ? 'pass' : 'fail'}`}>
+                  <strong>
+                    {activeGradeResult.passed ? 'All tests passed.' : 'Tests need work.'}
+                  </strong>
+                  {activeGradeResult.error && <p>{activeGradeResult.error}</p>}
+                  {activeGradeResult.timedOut && <p>Execution timed out.</p>}
+                  <ul>
+                    {activeGradeResult.results.map((result) => (
+                      <li key={result.name} className={result.pass ? 'pass' : 'fail'}>
+                        {result.pass ? <Check size={15} /> : <Circle size={15} />}
+                        <span>
+                          {result.name}
+                          {result.message && <small>{result.message}</small>}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </section>
+          )}
+
+          {activeProblem.questions && (
+            <section className="review-block">
+              <h3>Review Questions</h3>
+              <ol>
+                {activeProblem.questions.map((question) => (
+                  <li key={question}>{question}</li>
+                ))}
+              </ol>
             </section>
           )}
 

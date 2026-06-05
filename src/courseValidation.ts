@@ -22,12 +22,18 @@ export function validateCourse(subjects: Subject[]) {
 
       if (!problem.title.trim()) warnings.push(`Problem "${problem.id}" is missing a title.`)
       if (!problem.prompt.trim()) warnings.push(`Problem "${problem.id}" is missing a prompt.`)
+      if (problem.explanation !== undefined && !problem.explanation.trim()) {
+        warnings.push(`Problem "${problem.id}" has an empty explanation.`)
+      }
       if (problem.minutes <= 0) warnings.push(`Problem "${problem.id}" needs positive minutes.`)
       if (problem.checklist.length === 0) {
         warnings.push(`Problem "${problem.id}" needs at least one checklist item.`)
       }
       if (problem.checklist.some((item) => !item.trim())) {
         warnings.push(`Problem "${problem.id}" has an empty checklist item.`)
+      }
+      if (problem.questions?.some((question) => !question.trim())) {
+        warnings.push(`Problem "${problem.id}" has an empty review question.`)
       }
 
       if (problem.type === 'quiz') {

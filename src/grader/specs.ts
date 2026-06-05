@@ -68,7 +68,7 @@ export const specs: GradeSpec[] = [
       '}\n',
   },
   {
-    problemId: 'internet-status-codes',
+    problemId: 'internet-query-parser',
     title: 'Parse A Query String',
     language: 'js',
     starter:
@@ -99,6 +99,161 @@ export const specs: GradeSpec[] = [
       '    out[k] = v;\n' +
       '  }\n' +
       '  return out;\n' +
+      '}\n',
+  },
+  {
+    problemId: 'language-data-shapes',
+    title: 'Data Shape Transformer',
+    language: 'js',
+    starter:
+      'function groupEvents(events) {\n  // events: [{ userId: string, type: string }]\n  // return { [userId]: { [type]: count } }\n}\n',
+    tests: [
+      {
+        name: 'groups event counts by user',
+        body:
+          "const events = [{userId:'u1', type:'login'}, {userId:'u1', type:'click'}, {userId:'u1', type:'login'}]; assertEqual(groupEvents(events), { u1: { login: 2, click: 1 } });",
+      },
+      {
+        name: 'keeps users separate',
+        body:
+          "const events = [{userId:'u1', type:'login'}, {userId:'u2', type:'login'}]; assertEqual(groupEvents(events), { u1: { login: 1 }, u2: { login: 1 } });",
+      },
+      {
+        name: 'empty input returns empty object',
+        body: 'assertEqual(groupEvents([]), {});',
+      },
+    ],
+    reference:
+      'function groupEvents(events) {\n' +
+      '  const out = {};\n' +
+      '  for (const event of events) {\n' +
+      '    out[event.userId] ||= {};\n' +
+      '    out[event.userId][event.type] = (out[event.userId][event.type] || 0) + 1;\n' +
+      '  }\n' +
+      '  return out;\n' +
+      '}\n',
+  },
+  {
+    problemId: 'sql-join-practice',
+    title: 'Join The Mental Model',
+    language: 'js',
+    starter:
+      'function usersWithOrderCounts(users, orders) {\n  // return each user with an orderCount property\n}\n',
+    tests: [
+      {
+        name: 'counts orders for each user',
+        body:
+          "const users = [{id:1, name:'Ada'}, {id:2, name:'Lin'}]; const orders = [{userId:1}, {userId:1}, {userId:2}]; assertEqual(usersWithOrderCounts(users, orders), [{id:1, name:'Ada', orderCount:2}, {id:2, name:'Lin', orderCount:1}]);",
+      },
+      {
+        name: 'keeps users with zero orders',
+        body:
+          "assertEqual(usersWithOrderCounts([{id:1}], []), [{id:1, orderCount:0}]);",
+      },
+      {
+        name: 'does not mutate the original user objects',
+        body:
+          "const users = [{id:1}]; usersWithOrderCounts(users, [{userId:1}]); assertEqual(users, [{id:1}]);",
+      },
+    ],
+    reference:
+      'function usersWithOrderCounts(users, orders) {\n' +
+      '  const counts = {};\n' +
+      '  for (const order of orders) counts[order.userId] = (counts[order.userId] || 0) + 1;\n' +
+      '  return users.map((user) => ({ ...user, orderCount: counts[user.id] || 0 }));\n' +
+      '}\n',
+  },
+  {
+    problemId: 'api-filter-builder',
+    title: 'Filter Builder',
+    language: 'js',
+    starter:
+      'function buildFilters(query) {\n  // support only status, ownerId, and createdAfter\n}\n',
+    tests: [
+      {
+        name: 'keeps whitelisted filters',
+        body:
+          "assertEqual(buildFilters({ status: 'open', ownerId: 'u1' }), { status: 'open', ownerId: 'u1' });",
+      },
+      {
+        name: 'drops unknown filters',
+        body:
+          "assertEqual(buildFilters({ status: 'open', admin: 'true', debug: '1' }), { status: 'open' });",
+      },
+      {
+        name: 'omits empty values',
+        body:
+          "assertEqual(buildFilters({ status: '', ownerId: null, createdAfter: '2026-01-01' }), { createdAfter: '2026-01-01' });",
+      },
+    ],
+    reference:
+      'function buildFilters(query) {\n' +
+      '  const out = {};\n' +
+      "  for (const key of ['status', 'ownerId', 'createdAfter']) {\n" +
+      '    if (query[key]) out[key] = query[key];\n' +
+      '  }\n' +
+      '  return out;\n' +
+      '}\n',
+  },
+  {
+    problemId: 'security-token-parser',
+    title: 'Bearer Token Parser',
+    language: 'js',
+    starter:
+      'function parseBearer(header) {\n  // return token string or null\n}\n',
+    tests: [
+      {
+        name: 'extracts a valid bearer token',
+        body: "assertEqual(parseBearer('Bearer abc123'), 'abc123');",
+      },
+      {
+        name: 'rejects other schemes',
+        body: "assertEqual(parseBearer('Basic abc123'), null);",
+      },
+      {
+        name: 'rejects missing or extra token parts',
+        body:
+          "assertEqual(parseBearer('Bearer'), null); assertEqual(parseBearer('Bearer a b'), null); assertEqual(parseBearer(null), null);",
+      },
+    ],
+    reference:
+      'function parseBearer(header) {\n' +
+      "  if (typeof header !== 'string') return null;\n" +
+      "  const parts = header.split(' ');\n" +
+      "  if (parts.length !== 2 || parts[0] !== 'Bearer' || !parts[1]) return null;\n" +
+      '  return parts[1];\n' +
+      '}\n',
+  },
+  {
+    problemId: 'architecture-idempotent-worker',
+    title: 'Idempotent Worker Handler',
+    language: 'js',
+    starter:
+      'function decideJob(job, maxAttempts) {\n  // return "run", "skip", "retry", or "dead-letter"\n}\n',
+    tests: [
+      {
+        name: 'skips completed jobs',
+        body: "assertEqual(decideJob({ completed: true, attempts: 0, lastError: null }, 3), 'skip');",
+      },
+      {
+        name: 'runs new jobs',
+        body: "assertEqual(decideJob({ completed: false, attempts: 0, lastError: null }, 3), 'run');",
+      },
+      {
+        name: 'retries failed jobs under the max',
+        body: "assertEqual(decideJob({ completed: false, attempts: 2, lastError: 'timeout' }, 3), 'retry');",
+      },
+      {
+        name: 'dead-letters exhausted failures',
+        body: "assertEqual(decideJob({ completed: false, attempts: 3, lastError: 'timeout' }, 3), 'dead-letter');",
+      },
+    ],
+    reference:
+      'function decideJob(job, maxAttempts) {\n' +
+      "  if (job.completed) return 'skip';\n" +
+      "  if (!job.lastError) return 'run';\n" +
+      "  if (job.attempts >= maxAttempts) return 'dead-letter';\n" +
+      "  return 'retry';\n" +
       '}\n',
   },
 ]

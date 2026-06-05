@@ -11,6 +11,7 @@ import {
   Workflow,
   type LucideIcon,
 } from 'lucide-react'
+import { deepDiveProblems } from './course.deepdive'
 import { extraProblems, extraSubjects } from './course.extra'
 
 export type ProblemType = 'lesson' | 'coding' | 'quiz' | 'debug' | 'design'
@@ -22,7 +23,9 @@ export type Problem = {
   difficulty: ProblemDifficulty
   minutes: number
   prompt: string
+  explanation?: string
   example?: string
+  questions?: string[]
   checklist: string[]
   answer?: string
   choices?: string[]
@@ -80,6 +83,22 @@ const coreSubjects: Subject[] = [
         checklist: [
           'Distinguish authentication from authorization.',
           'Explain when hiding existence with 404 might be acceptable.',
+        ],
+      },
+      {
+        id: 'internet-query-parser',
+        title: 'Parse A Query String',
+        type: 'coding',
+        difficulty: 'Core',
+        minutes: 25,
+        prompt:
+          'Implement a small query string parser. It should turn a=1&b=2 into an object, percent-decode keys and values, and return an empty object for an empty query string.',
+        example: "parseQuery('q=hello%20world') should return { q: 'hello world' }.",
+        checklist: [
+          'Split key/value pairs on ampersands.',
+          'Decode percent-encoded keys and values.',
+          'Handle empty input without throwing.',
+          'Keep the parser deterministic and side-effect free.',
         ],
       },
       {
@@ -602,7 +621,11 @@ const coreSubjects: Subject[] = [
 export const subjects: Subject[] = [
   ...coreSubjects.map((subject) => ({
     ...subject,
-    problems: [...subject.problems, ...(extraProblems[subject.id] ?? [])],
+    problems: [
+      ...subject.problems,
+      ...(deepDiveProblems[subject.id] ?? []),
+      ...(extraProblems[subject.id] ?? []),
+    ],
   })),
   ...extraSubjects,
 ]

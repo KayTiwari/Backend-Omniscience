@@ -30,6 +30,12 @@ Run all local checks with:
 npm run check
 ```
 
+The in-browser coding test specs can be self-tested with:
+
+```bash
+npm run grader:selftest
+```
+
 ## Expand The Course
 
 Add or edit subjects and problems in `src/course.ts`. The GUI updates automatically from that data.
