@@ -64,5 +64,6 @@ function makeRapidReviews(subjectId: string): Problem[] {
 export const frameworkRapidReviewProblems: Record<string, Problem[]> = {
   nodejs: makeRapidReviews('nodejs'),
   python: makeRapidReviews('python'),
+  flask: makeRapidReviews('flask'),
   django: makeRapidReviews('django'),
 }
