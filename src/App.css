@@ -140,6 +140,17 @@ h1 {
   font: inherit;
   font-size: 13px;
   font-weight: 900;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
+}
+.progress-tools button:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+  background: var(--teal-soft);
+  transform: translateY(-1px);
+}
+.progress-tools button:active {
+  transform: translateY(0);
 }
 
 .progress-tools input {
