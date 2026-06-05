@@ -2343,4 +2343,201 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Writing API code (handlers, routing, responses, validation) -----
+  {
+    problemId: 'apidrill-route-match',
+    title: 'API: Match A Route',
+    language: 'js',
+    starter: 'function matchRoute(routes, method, path) {\n  // routes: [{method, path, handler}]. return the handler or null\n}\n',
+    tests: [
+      { name: 'matches and misses', body: "assertEqual(matchRoute([{method:'GET',path:'/users',handler:'list'}], 'GET', '/users'), 'list'); assertEqual(matchRoute([], 'GET', '/x'), null);" },
+    ],
+    reference: `function matchRoute(routes, method, path) {
+  for (const r of routes) if (r.method === method && r.path === path) return r.handler;
+  return null;
+}
+`,
+  },
+  {
+    problemId: 'apidrill-parse-params',
+    title: 'API: Parse Query Params With Defaults',
+    language: 'js',
+    starter: "function parseParams(query) {\n  // return { page:1, limit:20, sort:'id' } defaults, overridden by query\n}\n",
+    tests: [
+      { name: 'defaults and overrides', body: "assertEqual(parseParams({ page:'2', limit:'10', sort:'name' }), { page:2, limit:10, sort:'name' }); assertEqual(parseParams({}), { page:1, limit:20, sort:'id' });" },
+    ],
+    reference: `function parseParams(query) {
+  return { page: Number(query.page) || 1, limit: Number(query.limit) || 20, sort: query.sort || 'id' };
+}
+`,
+  },
+  {
+    problemId: 'apidrill-status-for-error',
+    title: 'API: Map Error To Status',
+    language: 'js',
+    starter: "function statusForError(type) {\n  // validation->400, unauthorized->401, forbidden->403, not_found->404, conflict->409, else 500\n}\n",
+    tests: [
+      { name: 'maps types', body: "assertEqual(statusForError('validation'), 400); assertEqual(statusForError('not_found'), 404); assertEqual(statusForError('weird'), 500);" },
+    ],
+    reference: `function statusForError(type) {
+  const map = { validation: 400, unauthorized: 401, forbidden: 403, not_found: 404, conflict: 409 };
+  return map[type] || 500;
+}
+`,
+  },
+  {
+    problemId: 'apidrill-paginate',
+    title: 'API: Paginate A Response',
+    language: 'js',
+    starter: 'function paginate(items, page, perPage) {\n  // return { data, page, perPage, total, totalPages }\n}\n',
+    tests: [
+      { name: 'shapes the page', body: 'assertEqual(paginate([1,2,3,4,5], 1, 2), { data:[1,2], page:1, perPage:2, total:5, totalPages:3 });' },
+    ],
+    reference: `function paginate(items, page, perPage) {
+  const total = items.length;
+  const start = (page - 1) * perPage;
+  return { data: items.slice(start, start + perPage), page, perPage, total, totalPages: Math.ceil(total / perPage) };
+}
+`,
+  },
+  {
+    problemId: 'apidrill-validate-body',
+    title: 'API: Validate A Request Body',
+    language: 'js',
+    starter: 'function validateBody(rules, body) {\n  // rules: { field: { required?, type? } }. return { valid, errors }\n}\n',
+    tests: [
+      { name: 'valid and invalid', body: "assertEqual(validateBody({ name:{required:true,type:'string'} }, { name:'Ada' }), { valid:true, errors:{} }); assertEqual(validateBody({ name:{required:true} }, {}), { valid:false, errors:{ name:'required' } });" },
+    ],
+    reference: `function validateBody(rules, body) {
+  const errors = {};
+  for (const field of Object.keys(rules)) {
+    const r = rules[field], v = body[field];
+    if (r.required && (v === undefined || v === null || v === '')) errors[field] = 'required';
+    else if (v !== undefined && r.type && typeof v !== r.type) errors[field] = 'type';
+  }
+  return { valid: Object.keys(errors).length === 0, errors };
+}
+`,
+  },
+  {
+    problemId: 'apidrill-serialize',
+    title: 'API: Serialize A Public DTO',
+    language: 'js',
+    starter: "function toPublic(user) {\n  // strip sensitive fields (password) before returning to clients\n}\n",
+    tests: [
+      { name: 'drops password', body: "assertEqual(toPublic({ id:1, name:'Ada', password:'x' }), { id:1, name:'Ada' });" },
+    ],
+    reference: `function toPublic(user) {
+  const { password, ...rest } = user;
+  return rest;
+}
+`,
+  },
+  {
+    problemId: 'apidrill-authorize',
+    title: 'API: Authorization Guard',
+    language: 'js',
+    starter: 'function authorize(user, requiredRole) {\n  // no user -> 401; wrong role -> 403; ok -> 200\n}\n',
+    tests: [
+      { name: 'auth states', body: "assertEqual(authorize(null, 'admin'), 401); assertEqual(authorize({ role:'user' }, 'admin'), 403); assertEqual(authorize({ role:'admin' }, 'admin'), 200);" },
+    ],
+    reference: `function authorize(user, requiredRole) {
+  if (!user) return 401;
+  if (user.role !== requiredRole) return 403;
+  return 200;
+}
+`,
+  },
+  {
+    problemId: 'apidrill-method-guard',
+    title: 'API: Method Not Allowed',
+    language: 'js',
+    starter: 'function methodGuard(allowed, method) {\n  // 200 if allowed, else 405\n}\n',
+    tests: [
+      { name: 'allows or 405', body: "assertEqual(methodGuard(['GET','POST'], 'GET'), 200); assertEqual(methodGuard(['GET'], 'DELETE'), 405);" },
+    ],
+    reference: `function methodGuard(allowed, method) {
+  return allowed.includes(method) ? 200 : 405;
+}
+`,
+  },
+  {
+    problemId: 'apidrill-json-response',
+    title: 'API: Build A JSON Response',
+    language: 'js',
+    starter: 'function jsonResponse(status, data) {\n  // return { status, headers: { Content-Type }, body: JSON string }\n}\n',
+    tests: [
+      { name: 'shapes the response', body: "assertEqual(jsonResponse(200, { ok:true }), { status:200, headers:{ 'Content-Type':'application/json' }, body:'{\"ok\":true}' });" },
+    ],
+    reference: `function jsonResponse(status, data) {
+  return { status, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) };
+}
+`,
+  },
+  {
+    problemId: 'apidrill-error-envelope',
+    title: 'API: Error Envelope',
+    language: 'js',
+    starter: 'function errorBody(code, message, fields) {\n  // { error: { code, message, fields? } } — omit fields when not given\n}\n',
+    tests: [
+      { name: 'with and without fields', body: "assertEqual(errorBody('VALIDATION', 'bad', { email:'required' }), { error:{ code:'VALIDATION', message:'bad', fields:{ email:'required' } } }); assertEqual(errorBody('NOT_FOUND', 'x'), { error:{ code:'NOT_FOUND', message:'x' } });" },
+    ],
+    reference: `function errorBody(code, message, fields) {
+  const err = { code, message };
+  if (fields) err.fields = fields;
+  return { error: err };
+}
+`,
+  },
+  {
+    problemId: 'apidrill-crud-handler',
+    title: 'API: A Real CRUD Handler',
+    language: 'js',
+    starter: 'function handleRequest(store, req) {\n  // req: { method, id?, body? } over an array store.\n  // GET (no id)->200 list; GET id->200 item or 404; POST->201 created (id = len+1);\n  // DELETE->204 or 404; else 405. Return { status, body }.\n}\n',
+    tests: [
+      {
+        name: 'handles the verbs',
+        body: "const store = [{id:1,name:'a'}]; assertEqual(handleRequest(store,{method:'GET'}), {status:200, body:[{id:1,name:'a'}]}); assertEqual(handleRequest(store,{method:'GET',id:1}), {status:200, body:{id:1,name:'a'}}); assertEqual(handleRequest(store,{method:'GET',id:9}), {status:404, body:null}); assertEqual(handleRequest(store,{method:'POST',body:{name:'b'}}), {status:201, body:{id:2,name:'b'}}); assertEqual(handleRequest(store,{method:'DELETE',id:1}), {status:204, body:null}); assertEqual(handleRequest(store,{method:'PUT'}), {status:405, body:null});",
+      },
+    ],
+    reference: `function handleRequest(store, req) {
+  const { method, id, body } = req;
+  if (method === 'GET' && id == null) return { status: 200, body: store };
+  if (method === 'GET') {
+    const item = store.find((x) => x.id === id);
+    return item ? { status: 200, body: item } : { status: 404, body: null };
+  }
+  if (method === 'POST') {
+    const item = { id: store.length + 1, ...body };
+    store.push(item);
+    return { status: 201, body: item };
+  }
+  if (method === 'DELETE') {
+    const idx = store.findIndex((x) => x.id === id);
+    if (idx === -1) return { status: 404, body: null };
+    store.splice(idx, 1);
+    return { status: 204, body: null };
+  }
+  return { status: 405, body: null };
+}
+`,
+  },
+  {
+    problemId: 'apidrill-rate-headers',
+    title: 'API: Rate-Limit Headers',
+    language: 'js',
+    starter: 'function rateHeaders(limit, remaining, resetSec) {\n  // return the three X-RateLimit-* headers as strings\n}\n',
+    tests: [
+      { name: 'builds headers', body: "assertEqual(rateHeaders(100, 99, 60), { 'X-RateLimit-Limit':'100', 'X-RateLimit-Remaining':'99', 'X-RateLimit-Reset':'60' });" },
+    ],
+    reference: `function rateHeaders(limit, remaining, resetSec) {
+  return {
+    'X-RateLimit-Limit': String(limit),
+    'X-RateLimit-Remaining': String(remaining),
+    'X-RateLimit-Reset': String(resetSec),
+  };
+}
+`,
+  },
 ]
