@@ -112,6 +112,10 @@ function App() {
   const initialLocation = useMemo(() => getInitialLocation(), [])
   const [isHome, setIsHome] = useState(() => window.location.hash.replace('#', '') === '')
   const [activeSubjectId, setActiveSubjectId] = useState(initialLocation.subject.id)
+  // Which subject's problem list is expanded in the sidebar (accordion). Kept
+  // separate from activeSubjectId so a second click can collapse without
+  // navigating away from the current page.
+  const [expandedSubjectId, setExpandedSubjectId] = useState(initialLocation.subject.id)
   const [activeProblemId, setActiveProblemId] = useState(initialLocation.problem.id)
   const [query, setQuery] = useState('')
   const [homeQuery, setHomeQuery] = useState('')
@@ -145,6 +149,7 @@ function App() {
       }
       setIsHome(false)
       setActiveSubjectId(location.subject.id)
+      setExpandedSubjectId(location.subject.id)
       setActiveProblemId(location.problem.id)
     }
 
@@ -249,8 +254,15 @@ function App() {
   function openProblem(subject: Subject, problem: Problem) {
     setIsHome(false)
     setActiveSubjectId(subject.id)
+    setExpandedSubjectId(subject.id)
     setActiveProblemId(problem.id)
     window.history.replaceState(null, '', `#${problem.id}`)
+  }
+
+  // Sidebar accordion: expand a subject, or collapse it on a second click,
+  // without opening a problem or scrolling the page.
+  function toggleSubject(subject: Subject) {
+    setExpandedSubjectId((current) => (current === subject.id ? '' : subject.id))
   }
 
   function openHome() {
@@ -605,9 +617,10 @@ function App() {
               <section key={subject.id} className="subject-group">
                 <button
                   className={`subject-button ${
-                    !isHome && subject.id === activeSubject.id ? 'active' : ''
+                    subject.id === expandedSubjectId ? 'active' : ''
                   }`}
-                  onClick={() => openProblem(subject, subject.problems[0])}
+                  onClick={() => toggleSubject(subject)}
+                  aria-expanded={subject.id === expandedSubjectId}
                   type="button"
                 >
                   <span className="subject-icon" style={{ color: subject.color }}>
@@ -624,7 +637,7 @@ function App() {
                   <div style={{ width: `${subjectPercent}%`, background: subject.color }} />
                 </div>
 
-                {!isHome && subject.id === activeSubject.id && (
+                {expandedSubjectId === subject.id && (
                   <div className="problem-list">
                     {subject.problems.map((problem) => {
                       const done = completedSet.has(problem.id)
