@@ -1,5 +1,7 @@
 # Backend Omniscience
 
+https://backend-omniscience.vercel.app/
+
 A repo-based backend training app for building backend omniscience through repeated drills, debugging prompts, design exercises, and capstone builds.
 
 The course is inspired by roadmap-style backend progression and organized into subjects:
