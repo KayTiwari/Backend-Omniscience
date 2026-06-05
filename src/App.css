@@ -118,6 +118,22 @@ h1 {
   background: linear-gradient(90deg, #e84a5f, #f59f00, #00a878);
 }
 
+.time-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.time-stats span {
+  border-radius: 8px;
+  padding: 8px;
+  background: #ffffff;
+  color: #465451;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+}
+
 .search-box {
   display: flex;
   align-items: center;

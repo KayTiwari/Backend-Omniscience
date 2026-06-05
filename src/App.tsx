@@ -116,6 +116,11 @@ function App() {
     [problemIds, progress.completed],
   )
   const completedCount = completedSet.size
+  const totalMinutes = allProblems.reduce((sum, problem) => sum + problem.minutes, 0)
+  const completedMinutes = allProblems
+    .filter((problem) => completedSet.has(problem.id))
+    .reduce((sum, problem) => sum + problem.minutes, 0)
+  const remainingMinutes = totalMinutes - completedMinutes
   const completionPercent = Math.round((completedCount / allProblems.length) * 100)
   const activeIndex = allProblems.findIndex((problem) => problem.id === activeProblem.id)
   const problemTypes = useMemo(
@@ -265,6 +270,10 @@ function App() {
             <div style={{ width: `${completionPercent}%` }} />
           </div>
           <strong>{completionPercent}% complete</strong>
+          <div className="time-stats">
+            <span>{Math.round(totalMinutes / 60)}h curriculum</span>
+            <span>{Math.max(0, Math.round(remainingMinutes / 60))}h left</span>
+          </div>
           <div className="progress-tools">
             <button onClick={exportProgress} type="button">
               <Download size={15} />
