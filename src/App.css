@@ -47,7 +47,7 @@
   --mint-soft: #112a21;
   --teal-soft: #102d2d;
   --shadow: 0 18px 50px rgba(0, 0, 0, 0.32);
-  --shadow-hover: 0 20px 48px rgba(255, 151, 0, 0.16);
+  --shadow-hover: 0 20px 48px rgba(47, 128, 237, 0.22);
   --button-hover: #182a2d;
 }
 
@@ -106,8 +106,19 @@
   place-items: center;
   border-radius: 8px;
   color: #ffffff;
-  background: linear-gradient(135deg, var(--brand-a), var(--brand-b));
+  background: linear-gradient(135deg, var(--brand-a), var(--brand-b), var(--brand-a));
+  background-size: 200%;
   box-shadow: 0 12px 32px color-mix(in srgb, var(--brand-a) 26%, transparent);
+  animation: brand-shift 4s linear infinite;
+}
+
+@keyframes brand-shift {
+  from { background-position: 0% 50%; }
+  to   { background-position: 200% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark { animation: none; }
 }
 
 .brand-button:hover .brand-mark {
@@ -1652,7 +1663,8 @@ input:focus-visible {
   color: var(--ink);
 }
 
-.app-shell[data-theme='dark'] .check-button {
+.app-shell[data-theme='dark'] .check-button,
+.app-shell[data-theme='dark'] .continue-button {
   border-color: var(--teal);
   background: var(--teal);
   color: #ffffff;
