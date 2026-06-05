@@ -106,34 +106,13 @@
   place-items: center;
   border-radius: 8px;
   color: #ffffff;
-  background-image: var(--brand-gradient);
-  background-size: 260% 260%;
-  background-position: 0% 50%;
+  background: linear-gradient(135deg, var(--brand-a), var(--brand-b));
   box-shadow: 0 12px 32px color-mix(in srgb, var(--brand-a) 26%, transparent);
-  animation: brand-gradient-drift 7s ease-in-out infinite;
 }
 
 .brand-button:hover .brand-mark {
   transform: translateY(-2px) rotate(-2deg) scale(1.04);
   box-shadow: 0 16px 36px color-mix(in srgb, var(--brand-a) 32%, transparent);
-}
-
-@keyframes brand-gradient-drift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .brand-mark {
-    animation: none;
-  }
 }
 
 .eyebrow {
