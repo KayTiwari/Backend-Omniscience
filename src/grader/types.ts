@@ -19,6 +19,7 @@ export type GradeResult = {
   results: TestResult[]
   timedOut?: boolean
   error?: string
+  logs?: string[]
 }
 
 // A gradable drill. `problemId` lets you attach a spec to a course problem.

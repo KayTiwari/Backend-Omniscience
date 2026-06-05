@@ -25,16 +25,39 @@ ctx.onmessage = async (e: MessageEvent) => {
   try {
     const py = await getPyodide()
     const results: TestResult[] = []
+    const logs: string[] = []
     for (const t of tests) {
       try {
-        await py.runPythonAsync(code + '\n' + t.body + '\n')
+        await py.runPythonAsync(
+          'import io, sys\n' +
+            '__backend_omniscience_stdout = io.StringIO()\n' +
+            '__backend_omniscience_old_stdout = sys.stdout\n' +
+            'sys.stdout = __backend_omniscience_stdout\n' +
+            'try:\n' +
+            code
+              .split('\n')
+              .map((line) => '    ' + line)
+              .join('\n') +
+            '\n' +
+            t.body
+              .split('\n')
+              .map((line) => '    ' + line)
+              .join('\n') +
+            '\nfinally:\n' +
+            '    sys.stdout = __backend_omniscience_old_stdout\n' +
+            '__backend_omniscience_captured = __backend_omniscience_stdout.getvalue()\n',
+        )
+        const captured = await py.runPythonAsync('__backend_omniscience_captured')
+        if (typeof captured === 'string' && captured.trim()) {
+          logs.push(...captured.trimEnd().split('\n'))
+        }
         results.push({ name: t.name, pass: true })
       } catch (err) {
         const lines = String((err as Error)?.message || err).trim().split('\n')
         results.push({ name: t.name, pass: false, message: lines[lines.length - 1] || 'failed' })
       }
     }
-    ctx.postMessage({ results })
+    ctx.postMessage({ results, logs })
   } catch (err) {
     ctx.postMessage({ fatal: String((err as Error)?.message || err) })
   }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import {
   ArrowRight,
   BookOpen,
@@ -11,10 +11,12 @@ import {
   Flame,
   Home,
   ListChecks,
+  Moon,
   Play,
   RotateCcw,
   Search,
   SkipForward,
+  Sun,
   Trophy,
   Upload,
 } from 'lucide-react'
@@ -28,7 +30,8 @@ import {
   type Subject,
 } from './course'
 import { validateCourse } from './courseValidation'
-import { gradeJs, specs, type GradeResult } from './grader'
+import { applyEditorKey } from './editorKeys'
+import { allSpecs, grade, type GradeResult } from './grader'
 
 type ProgressState = {
   completed: string[]
@@ -40,6 +43,9 @@ type ProgressState = {
 }
 
 const storageKey = 'backend-omniscience-progress'
+const themeKey = 'backend-omniscience-theme'
+
+type Theme = 'light' | 'dark'
 
 const emptyProgress: ProgressState = {
   completed: [],
@@ -91,6 +97,17 @@ function getInitialLocation() {
   }
 }
 
+function loadTheme(): Theme {
+  return window.localStorage.getItem(themeKey) === 'dark' ? 'dark' : 'light'
+}
+
+function flameFavicon() {
+  const start = '#263238'
+  const end = '#2f80ed'
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${start}"/><stop offset="1" stop-color="${end}"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#g)"/><g transform="translate(14 14) scale(1.5)"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.6"/></g></svg>`
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`
+}
+
 function App() {
   const initialLocation = useMemo(() => getInitialLocation(), [])
   const [isHome, setIsHome] = useState(() => window.location.hash.replace('#', '') === '')
@@ -103,11 +120,20 @@ function App() {
   const [importMessage, setImportMessage] = useState('')
   const [gradeResults, setGradeResults] = useState<Record<string, GradeResult>>({})
   const [runningProblemId, setRunningProblemId] = useState('')
+  const [theme, setTheme] = useState<Theme>(() => loadTheme())
   const importInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     window.localStorage.setItem(storageKey, JSON.stringify(progress))
   }, [progress])
+
+  useEffect(() => {
+    window.localStorage.setItem(themeKey, theme)
+    document.documentElement.dataset.theme = theme
+    document
+      .querySelector<HTMLLinkElement>('link[rel="icon"]')
+      ?.setAttribute('href', flameFavicon())
+  }, [theme])
 
   useEffect(() => {
     const syncFromHash = () => {
@@ -137,7 +163,7 @@ function App() {
   )
   const completedCount = completedSet.size
   const specsByProblemId = useMemo(
-    () => new Map(specs.map((spec) => [spec.problemId, spec])),
+    () => new Map(allSpecs.map((spec) => [spec.problemId, spec])),
     [],
   )
   const gradableCount = specsByProblemId.size
@@ -320,7 +346,7 @@ function App() {
 
     setRunningProblemId(activeProblem.id)
     const code = progress.code[activeProblem.id] ?? spec.starter
-    const result = await gradeJs(code, spec.tests)
+    const result = await grade(spec, code)
     setGradeResults((current) => ({ ...current, [activeProblem.id]: result }))
     setRunningProblemId('')
 
@@ -394,8 +420,24 @@ function App() {
     openProblem(location.subject, location.problem)
   }
 
+  function handleCodeKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    const editor = event.currentTarget
+    const next = applyEditorKey(
+      {
+        end: editor.selectionEnd,
+        start: editor.selectionStart,
+        value: editor.value,
+      },
+      event.key,
+    )
+    if (!next) return
+    event.preventDefault()
+    updateCode(activeProblem.id, next.value)
+    requestAnimationFrame(() => editor.setSelectionRange(next.start, next.end))
+  }
+
   return (
-    <main className="app-shell">
+    <main className="app-shell" data-theme={theme}>
       <aside className="sidebar">
         <button className="brand brand-button" onClick={openHome} type="button">
           <div className="brand-mark">
@@ -410,6 +452,16 @@ function App() {
         <button className={`home-button ${isHome ? 'active' : ''}`} onClick={openHome} type="button">
           <Home size={17} />
           <span>Home</span>
+        </button>
+
+        <button
+          className="theme-toggle"
+          onClick={() => setTheme((current) => (current === 'light' ? 'dark' : 'light'))}
+          type="button"
+          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+        >
+          {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
+          <span>{theme === 'light' ? 'Dark mode' : 'Light mode'}</span>
         </button>
 
         <div className="progress-block">
@@ -828,7 +880,7 @@ function App() {
               <div className="coding-heading">
                 <div>
                   <h3>Coding Tests</h3>
-                  <p>{activeSpec.title} · JavaScript</p>
+                  <p>{activeSpec.title} · {activeSpec.language === 'py' ? 'Python' : 'JavaScript'}</p>
                 </div>
                 <button
                   className="run-button"
@@ -866,6 +918,7 @@ function App() {
                 className="code-editor"
                 value={activeCode}
                 onChange={(event) => updateCode(activeProblem.id, event.target.value)}
+                onKeyDown={handleCodeKeyDown}
                 spellCheck={false}
               />
 
@@ -887,6 +940,12 @@ function App() {
                       </li>
                     ))}
                   </ul>
+                  {activeGradeResult.logs && activeGradeResult.logs.length > 0 && (
+                    <div className="console-output">
+                      <strong>Console output</strong>
+                      <pre>{activeGradeResult.logs.join('\n')}</pre>
+                    </div>
+                  )}
                 </div>
               )}
             </section>

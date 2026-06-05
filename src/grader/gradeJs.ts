@@ -20,13 +20,13 @@ export function gradeJs(code: string, tests: TestCase[], timeoutMs = 3000): Prom
     worker.onmessage = (e: MessageEvent) => {
       clearTimeout(timer)
       worker.terminate()
-      const data = e.data as { results?: TestResult[]; fatal?: string }
+      const data = e.data as { results?: TestResult[]; fatal?: string; logs?: string[] }
       if (data.fatal) {
-        resolve({ passed: false, results: [], error: data.fatal })
+        resolve({ passed: false, results: [], error: data.fatal, logs: data.logs })
         return
       }
       const results = data.results || []
-      resolve({ passed: results.length > 0 && results.every((r) => r.pass), results })
+      resolve({ passed: results.length > 0 && results.every((r) => r.pass), results, logs: data.logs })
     }
 
     worker.onerror = (err: ErrorEvent) => {
