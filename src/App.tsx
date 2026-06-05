@@ -1092,7 +1092,7 @@ function App() {
             <textarea
               value={progress.notes[activeProblem.id] ?? ''}
               onChange={(event) => updateNote(activeProblem.id, event.target.value)}
-              placeholder="Optional notes, scratch work, or debugging thoughts."
+              placeholder=""
             />
           </section>
 
