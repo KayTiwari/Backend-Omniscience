@@ -2834,4 +2834,117 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Caching & reliability patterns ----------------------------------
+  {
+    problemId: 'cache-aside',
+    title: 'Cache-Aside (Lazy Load)',
+    language: 'js',
+    starter: 'function cacheAside(cache, key, loader) {\n  // return cached value, or load + store it (loader runs once per key)\n}\n',
+    tests: [
+      { name: 'loads once', body: "let calls = 0; const cache = {}; const load = (k) => { calls++; return k.toUpperCase(); }; assertEqual(cacheAside(cache, 'a', load), 'A'); assertEqual(cacheAside(cache, 'a', load), 'A'); assertEqual(calls, 1);" },
+    ],
+    reference: `function cacheAside(cache, key, loader) {
+  if (key in cache) return cache[key];
+  const value = loader(key);
+  cache[key] = value;
+  return value;
+}
+`,
+  },
+  {
+    problemId: 'cache-write-through',
+    title: 'Write-Through Cache',
+    language: 'js',
+    starter: 'function writeThrough(cache, store, key, value) {\n  // write to both cache and store; return value\n}\n',
+    tests: [
+      { name: 'writes both', body: "const c = {}, s = {}; writeThrough(c, s, 'x', 5); assertEqual(c, { x:5 }); assertEqual(s, { x:5 });" },
+    ],
+    reference: `function writeThrough(cache, store, key, value) {
+  cache[key] = value;
+  store[key] = value;
+  return value;
+}
+`,
+  },
+  {
+    problemId: 'cache-lfu',
+    title: 'LFU Cache',
+    language: 'js',
+    starter: 'class LFU {\n  constructor(capacity) {}\n  get(key) {}   // value or undefined; bumps frequency\n  put(key, value) {} // evicts least-frequently-used when full\n}\n',
+    tests: [
+      { name: 'evicts least used', body: "const c = new LFU(2); c.put('a',1); c.put('b',2); c.get('a'); c.get('a'); c.put('c',3); assertEqual(c.get('b'), undefined); assertEqual(c.get('a'), 1); assertEqual(c.get('c'), 3);" },
+    ],
+    reference: `class LFU {
+  constructor(capacity) { this.cap = capacity; this.map = new Map(); this.freq = new Map(); }
+  get(key) {
+    if (!this.map.has(key)) return undefined;
+    this.freq.set(key, (this.freq.get(key) || 0) + 1);
+    return this.map.get(key);
+  }
+  put(key, value) {
+    if (this.cap === 0) return;
+    if (!this.map.has(key) && this.map.size >= this.cap) {
+      let lfuKey = null, min = Infinity;
+      for (const [k, f] of this.freq) if (f < min) { min = f; lfuKey = k; }
+      this.map.delete(lfuKey); this.freq.delete(lfuKey);
+    }
+    this.map.set(key, value);
+    this.freq.set(key, (this.freq.get(key) || 0) + 1);
+  }
+}
+`,
+  },
+  {
+    problemId: 'reliability-retry-until',
+    title: 'Retry Until Success',
+    language: 'js',
+    starter: 'function retryUntil(results, maxAttempts) {\n  // results[i] = did attempt i succeed. return index of first success within maxAttempts, else -1\n}\n',
+    tests: [
+      { name: 'first success or -1', body: 'assertEqual(retryUntil([false, false, true], 5), 2); assertEqual(retryUntil([false, false], 3), -1); assertEqual(retryUntil([false, true], 1), -1);' },
+    ],
+    reference: `function retryUntil(results, maxAttempts) {
+  for (let i = 0; i < Math.min(results.length, maxAttempts); i++) {
+    if (results[i]) return i;
+  }
+  return -1;
+}
+`,
+  },
+  {
+    problemId: 'reliability-dedupe-window',
+    title: 'Dedupe Within A Window',
+    language: 'js',
+    starter: 'function dedupeWindow(events, windowMs) {\n  // events: [{key, t}]. drop a key seen again within windowMs. return kept keys\n}\n',
+    tests: [
+      { name: 'drops repeats in window', body: "assertEqual(dedupeWindow([{key:'a',t:0},{key:'a',t:100},{key:'a',t:1000},{key:'b',t:50}], 1000), ['a','a','b']);" },
+    ],
+    reference: `function dedupeWindow(events, windowMs) {
+  const lastSeen = {};
+  const out = [];
+  for (const e of events) {
+    const prev = lastSeen[e.key];
+    if (prev === undefined || e.t - prev >= windowMs) {
+      out.push(e.key);
+      lastSeen[e.key] = e.t;
+    }
+  }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'backpressure-bounded-queue',
+    title: 'Bounded Queue (Backpressure)',
+    language: 'js',
+    starter: 'function boundedEnqueue(queue, item, cap) {\n  // reject (do not grow) when at capacity. return { accepted, queue }\n}\n',
+    tests: [
+      { name: 'accepts then rejects', body: 'assertEqual(boundedEnqueue([1,2], 3, 3), { accepted:true, queue:[1,2,3] }); assertEqual(boundedEnqueue([1,2,3], 4, 3), { accepted:false, queue:[1,2,3] });' },
+    ],
+    reference: `function boundedEnqueue(queue, item, cap) {
+  if (queue.length >= cap) return { accepted: false, queue };
+  return { accepted: true, queue: [...queue, item] };
+}
+`,
+  },
 ]
