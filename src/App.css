@@ -1859,10 +1859,14 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .criterion-card,
 .app-shell[data-theme='dark'] .subject-card-icon,
 .app-shell[data-theme='dark'] .problem-type,
-.app-shell[data-theme='dark'] .problem-meta span,
 .app-shell[data-theme='dark'] .choice span,
 .app-shell[data-theme='dark'] .criterion-choice span {
   background: var(--surface-soft);
+}
+
+.app-shell[data-theme='dark'] .problem-meta span {
+  background: var(--surface-soft);
+  color: var(--muted);
 }
 
 .app-shell[data-theme='dark'] .choice.selected,
