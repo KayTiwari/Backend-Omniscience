@@ -32,6 +32,8 @@ type ProgressState = {
   completed: string[]
   notes: Record<string, string>
   selectedChoice: Record<string, number>
+  criterionChoice: Record<string, number>
+  checkedSolutions: Record<string, boolean>
   code: Record<string, string>
 }
 
@@ -41,6 +43,8 @@ const emptyProgress: ProgressState = {
   completed: [],
   notes: {},
   selectedChoice: {},
+  criterionChoice: {},
+  checkedSolutions: {},
   code: {},
 }
 
@@ -53,6 +57,8 @@ function loadProgress(): ProgressState {
       completed: parsed.completed ?? [],
       notes: parsed.notes ?? {},
       selectedChoice: parsed.selectedChoice ?? {},
+      criterionChoice: parsed.criterionChoice ?? {},
+      checkedSolutions: parsed.checkedSolutions ?? {},
       code: parsed.code ?? {},
     }
   } catch {
@@ -193,11 +199,10 @@ function App() {
     openProblem(subject, next)
   }
 
-  function toggleComplete(problemId: string) {
+  function markProblemComplete(problemId: string) {
     setProgress((current) => {
       const completed = new Set(current.completed)
-      if (completed.has(problemId)) completed.delete(problemId)
-      else completed.add(problemId)
+      completed.add(problemId)
       return { ...current, completed: [...completed] }
     })
   }
@@ -220,6 +225,18 @@ function App() {
     setProgress((current) => ({
       ...current,
       selectedChoice: { ...current.selectedChoice, [problemId]: choiceIndex },
+      checkedSolutions: { ...current.checkedSolutions, [problemId]: false },
+    }))
+  }
+
+  function selectCriterion(problemId: string, criterionIndex: number, choiceIndex: number) {
+    setProgress((current) => ({
+      ...current,
+      criterionChoice: {
+        ...current.criterionChoice,
+        [`${problemId}:${criterionIndex}`]: choiceIndex,
+      },
+      checkedSolutions: { ...current.checkedSolutions, [problemId]: false },
     }))
   }
 
@@ -256,6 +273,8 @@ function App() {
         ),
         notes: imported.notes ?? {},
         selectedChoice: imported.selectedChoice ?? {},
+        criterionChoice: imported.criterionChoice ?? {},
+        checkedSolutions: imported.checkedSolutions ?? {},
         code: imported.code ?? {},
       })
       setImportMessage('Progress imported.')
@@ -274,13 +293,20 @@ function App() {
     setGradeResults((current) => ({ ...current, [activeProblem.id]: result }))
     setRunningProblemId('')
 
-    if (result.passed && !completedSet.has(activeProblem.id)) {
-      toggleComplete(activeProblem.id)
+    if (
+      result.passed &&
+      solutionChecked &&
+      acceptanceCorrect &&
+      quizRequirementCorrect &&
+      !completedSet.has(activeProblem.id)
+    ) {
+      markProblemComplete(activeProblem.id)
     }
   }
 
   const selectedChoice = progress.selectedChoice[activeProblem.id]
-  const quizAnswered = selectedChoice !== undefined
+  const solutionChecked = progress.checkedSolutions[activeProblem.id] === true
+  const quizAnswered = selectedChoice !== undefined && solutionChecked
   const quizCorrect = selectedChoice === activeProblem.correctChoice
   const activeSpec = specsByProblemId.get(activeProblem.id)
   const activeCode = activeSpec ? (progress.code[activeProblem.id] ?? activeSpec.starter) : ''
@@ -288,6 +314,48 @@ function App() {
   const isRunningTests = runningProblemId === activeProblem.id
   const previousProblem = activeIndex > 0 ? allProblems[activeIndex - 1] : undefined
   const nextProblem = activeIndex < allProblems.length - 1 ? allProblems[activeIndex + 1] : undefined
+  const acceptanceChecks = useMemo(
+    () =>
+      activeProblem.checklist.map((item, index) => {
+        const distractors = [
+          'Skip this for now and rely on manual testing later.',
+          'Mention the concept by name without explaining how it behaves.',
+          'Assume the framework handles this automatically in production.',
+          'Only test the happy path and ignore failure behavior.',
+          ...activeProblem.checklist.filter((_, itemIndex) => itemIndex !== index),
+        ].filter((choice) => choice !== item)
+        const options = [item, ...distractors.slice(0, 3)]
+        const rotation = (activeProblem.id.length + index) % options.length
+        const rotated = [...options.slice(rotation), ...options.slice(0, rotation)]
+
+        return {
+          correctChoice: rotated.indexOf(item),
+          explanation: `Correct: ${item} This matters because it is one of the observable behaviors your solution must prove, not a passive checklist item.`,
+          options: rotated,
+          question: `Which answer best satisfies checkpoint ${index + 1}?`,
+        }
+      }),
+    [activeProblem],
+  )
+  const acceptanceCorrect = acceptanceChecks.every(
+    (check, index) =>
+      progress.criterionChoice[`${activeProblem.id}:${index}`] === check.correctChoice,
+  )
+  const quizRequirementCorrect =
+    !activeProblem.choices || activeProblem.correctChoice === undefined || quizCorrect
+  const codeRequirementCorrect = !activeSpec || activeGradeResult?.passed === true
+  const canComplete = acceptanceCorrect && quizRequirementCorrect && codeRequirementCorrect
+
+  function checkSolutions() {
+    setProgress((current) => ({
+      ...current,
+      checkedSolutions: { ...current.checkedSolutions, [activeProblem.id]: true },
+    }))
+
+    if (canComplete && !completedSet.has(activeProblem.id)) {
+      markProblemComplete(activeProblem.id)
+    }
+  }
 
   function openProblemById(problemId: string) {
     const location = findProblemLocation(problemId)
@@ -608,7 +676,7 @@ function App() {
                 {activeProblem.choices.map((choice, index) => {
                   const isSelected = selectedChoice === index
                   const isCorrect = activeProblem.correctChoice === index
-                  const reveal = quizAnswered && (isSelected || isCorrect)
+                  const reveal = solutionChecked && (isSelected || isCorrect)
 
                   return (
                     <button
@@ -625,9 +693,17 @@ function App() {
                   )
                 })}
               </div>
+              {solutionChecked && activeProblem.choices && selectedChoice === undefined && (
+                <p className="quiz-result fail">
+                  Choose an answer, then check solutions again. The explanation will appear here.
+                </p>
+              )}
               {quizAnswered && (
                 <p className={`quiz-result ${quizCorrect ? 'pass' : 'fail'}`}>
-                  {quizCorrect ? 'Correct.' : 'Not quite.'} {activeProblem.answer}
+                  {quizCorrect ? 'Correct.' : 'Not quite.'} Correct answer:{' '}
+                  {activeProblem.correctChoice !== undefined &&
+                    activeProblem.choices[activeProblem.correctChoice]}{' '}
+                  {activeProblem.answer}
                 </p>
               )}
             </section>
@@ -655,8 +731,8 @@ function App() {
                 <strong>Do this</strong>
                 <ol>
                   <li>Edit the function in the editor. Keep the function/class name exactly as shown.</li>
-                  <li>Use the prompt, example, and checklist above to decide the behavior.</li>
-                  <li>Click Run tests. Passing all tests marks this problem complete.</li>
+                  <li>Use the prompt, example, and solution checks to decide the behavior.</li>
+                  <li>Click Run tests. Passing tests plus correct solution checks completes this problem.</li>
                 </ol>
               </div>
 
@@ -713,37 +789,81 @@ function App() {
             </section>
           )}
 
-          <section className="checklist-block">
-            <h3>Acceptance Checklist</h3>
-            <ul>
-              {activeProblem.checklist.map((item) => (
-                <li key={item}>
-                  <Check size={15} />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
+          <section className="solution-check-block">
+            <div className="solution-heading">
+              <div>
+                <h3>Solution Checks</h3>
+                <p>Answer these to prove the acceptance criteria, then check your solutions.</p>
+              </div>
+              {solutionChecked && (
+                <strong className={canComplete ? 'pass' : 'fail'}>
+                  {canComplete ? 'Ready to move on.' : 'Review the misses.'}
+                </strong>
+              )}
+            </div>
+            <div className="criterion-list">
+              {acceptanceChecks.map((check, index) => {
+                const selected = progress.criterionChoice[`${activeProblem.id}:${index}`]
+                const answered = selected !== undefined
+                const correct = selected === check.correctChoice
+
+                return (
+                  <section key={check.question} className="criterion-card">
+                    <h4>{check.question}</h4>
+                    <div className="criterion-choices">
+                      {check.options.map((option, optionIndex) => {
+                        const isSelected = selected === optionIndex
+                        const isCorrect = check.correctChoice === optionIndex
+                        const reveal = solutionChecked && (isSelected || isCorrect)
+
+                        return (
+                          <button
+                            key={option}
+                            className={`criterion-choice ${isSelected ? 'selected' : ''} ${
+                              reveal && isCorrect ? 'correct' : ''
+                            } ${reveal && isSelected && !isCorrect ? 'wrong' : ''}`}
+                            onClick={() => selectCriterion(activeProblem.id, index, optionIndex)}
+                            type="button"
+                          >
+                            <span>{String.fromCharCode(65 + optionIndex)}</span>
+                            {option}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    {solutionChecked && !answered && (
+                      <p className="criterion-feedback fail">
+                        Pick an answer here. Correct answer: {check.options[check.correctChoice]}.
+                      </p>
+                    )}
+                    {solutionChecked && answered && (
+                      <p className={`criterion-feedback ${correct ? 'pass' : 'fail'}`}>
+                        {correct ? 'Correct.' : 'Not quite.'} {check.explanation}
+                      </p>
+                    )}
+                  </section>
+                )
+              })}
+            </div>
           </section>
 
           <section className="notes-block">
-            <h3>Your Answer / Notes</h3>
+            <h3>Notes</h3>
             <textarea
               value={progress.notes[activeProblem.id] ?? ''}
               onChange={(event) => updateNote(activeProblem.id, event.target.value)}
-              placeholder="Sketch your answer, paste code, or write your debugging path."
+              placeholder="Optional notes, scratch work, or debugging thoughts."
             />
           </section>
 
           <div className="actions">
             <button
-              className={`complete-button ${
-                completedSet.has(activeProblem.id) ? 'done' : ''
-              }`}
-              onClick={() => toggleComplete(activeProblem.id)}
+              className={`check-button ${completedSet.has(activeProblem.id) ? 'done' : ''}`}
+              onClick={checkSolutions}
               type="button"
             >
               <Check size={18} />
-              {completedSet.has(activeProblem.id) ? 'Marked complete' : 'Mark complete'}
+              {completedSet.has(activeProblem.id) ? 'Solutions passed' : 'Check solutions'}
             </button>
             <button className="reset-button" onClick={resetProgress} type="button">
               <RotateCcw size={17} />
