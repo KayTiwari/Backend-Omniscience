@@ -1643,4 +1643,272 @@ function intToIp(n) {
 }
 `,
   },
+
+  // ----- Encoding ---------------------------------------------------------
+  {
+    problemId: 'enc-base64url',
+    title: 'Base64URL Round-Trip',
+    language: 'js',
+    starter:
+      'function base64url(str) {}\nfunction unbase64url(s) {}\n// URL-safe base64: -_ instead of +/, no padding\n',
+    tests: [
+      {
+        name: 'encodes and round-trips',
+        body: `assertEqual(base64url('Hello'), 'SGVsbG8'); assertEqual(unbase64url(base64url('a/b+c?d')), 'a/b+c?d');`,
+      },
+    ],
+    reference: `function base64url(str) {
+  return btoa(str).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, '');
+}
+function unbase64url(s) {
+  s = s.replace(/-/g, '+').replace(/_/g, '/');
+  while (s.length % 4) s += '=';
+  return atob(s);
+}
+`,
+  },
+  {
+    problemId: 'enc-hex',
+    title: 'Hex Encode/Decode Bytes',
+    language: 'js',
+    starter:
+      'function toHex(bytes) {}\nfunction fromHex(s) {}\n// bytes are an array of 0..255\n',
+    tests: [
+      {
+        name: 'round-trips bytes',
+        body: `assertEqual(toHex([255, 0, 16]), 'ff0010'); assertEqual(fromHex('ff0010'), [255, 0, 16]);`,
+      },
+    ],
+    reference: `function toHex(bytes) {
+  return bytes.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+function fromHex(s) {
+  const out = [];
+  for (let i = 0; i < s.length; i += 2) out.push(parseInt(s.slice(i, i + 2), 16));
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'data-rle',
+    title: 'Run-Length Encode/Decode',
+    language: 'js',
+    starter:
+      "function rleEncode(s) {}\nfunction rleDecode(s) {}\n// 'aaabb' <-> 'a3b2' (lowercase letters)\n",
+    tests: [
+      {
+        name: 'encodes and decodes',
+        body: `assertEqual(rleEncode('aaabb'), 'a3b2'); assertEqual(rleDecode('a3b2'), 'aaabb'); assertEqual(rleDecode(rleEncode('abcabc')), 'abcabc');`,
+      },
+    ],
+    reference: `function rleEncode(s) {
+  let out = '', i = 0;
+  while (i < s.length) {
+    let j = i;
+    while (j < s.length && s[j] === s[i]) j++;
+    out += s[i] + (j - i);
+    i = j;
+  }
+  return out;
+}
+function rleDecode(s) {
+  let out = '';
+  const re = /([a-z])(\\d+)/g;
+  let m;
+  while ((m = re.exec(s))) out += m[1].repeat(Number(m[2]));
+  return out;
+}
+`,
+  },
+
+  // ----- Algorithms -------------------------------------------------------
+  {
+    problemId: 'algo-two-sum',
+    title: 'Two Sum',
+    language: 'js',
+    starter:
+      'function twoSum(nums, target) {\n  // return indices [i, j] that sum to target, or null\n}\n',
+    tests: [
+      {
+        name: 'finds the pair',
+        body: `assertEqual(twoSum([2,7,11,15], 9), [0, 1]); assertEqual(twoSum([1,2,3], 100), null);`,
+      },
+    ],
+    reference: `function twoSum(nums, target) {
+  const seen = new Map();
+  for (let i = 0; i < nums.length; i++) {
+    const need = target - nums[i];
+    if (seen.has(need)) return [seen.get(need), i];
+    seen.set(nums[i], i);
+  }
+  return null;
+}
+`,
+  },
+  {
+    problemId: 'algo-valid-parens',
+    title: 'Valid Parentheses',
+    language: 'js',
+    starter:
+      'function validParens(s) {\n  // balanced (), [], {} -> boolean\n}\n',
+    tests: [
+      {
+        name: 'checks balance and nesting',
+        body: `assert(validParens('([])') === true); assert(validParens('([)]') === false); assert(validParens('(') === false);`,
+      },
+    ],
+    reference: `function validParens(s) {
+  const pairs = { ')': '(', ']': '[', '}': '{' };
+  const st = [];
+  for (const c of s) {
+    if (c === '(' || c === '[' || c === '{') st.push(c);
+    else if (pairs[c]) { if (st.pop() !== pairs[c]) return false; }
+  }
+  return st.length === 0;
+}
+`,
+  },
+  {
+    problemId: 'algo-kth-largest',
+    title: 'Kth Largest',
+    language: 'js',
+    starter:
+      'function kthLargest(nums, k) {\n  // 1-based: the kth largest value\n}\n',
+    tests: [
+      {
+        name: 'returns the kth largest',
+        body: `assertEqual(kthLargest([3,1,4,1,5], 2), 4); assertEqual(kthLargest([1], 1), 1);`,
+      },
+    ],
+    reference: `function kthLargest(nums, k) {
+  return [...nums].sort((a, b) => b - a)[k - 1];
+}
+`,
+  },
+
+  // ----- DB & API helpers -------------------------------------------------
+  {
+    problemId: 'db-build-insert',
+    title: 'Build A Parameterized Insert',
+    language: 'js',
+    starter:
+      "function buildInsert(table, row) {\n  // return { text: 'INSERT ... VALUES ($1, $2)', values: [...] }\n}\n",
+    tests: [
+      {
+        name: 'uses placeholders, never interpolation',
+        body: `assertEqual(buildInsert('users', { name: 'Ada', age: 36 }), { text: 'INSERT INTO users (name, age) VALUES ($1, $2)', values: ['Ada', 36] });`,
+      },
+    ],
+    reference: `function buildInsert(table, row) {
+  const cols = Object.keys(row);
+  const values = cols.map((c) => row[c]);
+  const placeholders = cols.map((_, i) => '$' + (i + 1)).join(', ');
+  return { text: 'INSERT INTO ' + table + ' (' + cols.join(', ') + ') VALUES (' + placeholders + ')', values };
+}
+`,
+  },
+  {
+    problemId: 'security-mask-email',
+    title: 'Mask PII (Email)',
+    language: 'js',
+    starter:
+      "function maskEmail(email) {\n  // 'john@example.com' -> 'j***@example.com' (keep first char + domain)\n}\n",
+    tests: [
+      {
+        name: 'masks the local part',
+        body: `assertEqual(maskEmail('john.doe@example.com'), 'j***@example.com');`,
+      },
+    ],
+    reference: `function maskEmail(email) {
+  const [local, domain] = email.split('@');
+  return local[0] + '***@' + domain;
+}
+`,
+  },
+  {
+    problemId: 'http-status-class',
+    title: 'Status Class',
+    language: 'js',
+    starter:
+      "function statusClass(code) {\n  // 204 -> '2xx', 404 -> '4xx', 503 -> '5xx'\n}\n",
+    tests: [
+      {
+        name: 'buckets by hundreds',
+        body: `assertEqual(statusClass(204), '2xx'); assertEqual(statusClass(404), '4xx'); assertEqual(statusClass(503), '5xx');`,
+      },
+    ],
+    reference: `function statusClass(code) {
+  return Math.floor(code / 100) + 'xx';
+}
+`,
+  },
+
+  // ----- Observability & distributed primitives --------------------------
+  {
+    problemId: 'obs-apdex',
+    title: 'Apdex Score',
+    language: 'js',
+    starter:
+      'function apdex(latencies, threshold) {\n  // (satisfied + tolerating/2) / total; tolerating is <= 4*threshold; [] -> 1\n}\n',
+    tests: [
+      {
+        name: 'scores satisfaction',
+        body: `assertEqual(apdex([10, 20, 300, 2000], 100), 0.625); assertEqual(apdex([], 100), 1);`,
+      },
+    ],
+    reference: `function apdex(latencies, threshold) {
+  if (latencies.length === 0) return 1;
+  let sat = 0, tol = 0;
+  for (const l of latencies) {
+    if (l <= threshold) sat++;
+    else if (l <= 4 * threshold) tol++;
+  }
+  return (sat + tol / 2) / latencies.length;
+}
+`,
+  },
+  {
+    problemId: 'dist-quorum',
+    title: 'Quorum Consistency',
+    language: 'js',
+    starter:
+      'function hasQuorum(R, W, N) {\n  // strong consistency requires R + W > N\n}\n',
+    tests: [
+      {
+        name: 'checks the inequality',
+        body: `assert(hasQuorum(2, 2, 3) === true); assert(hasQuorum(1, 1, 3) === false);`,
+      },
+    ],
+    reference: `function hasQuorum(R, W, N) {
+  return R + W > N;
+}
+`,
+  },
+  {
+    problemId: 'dist-vector-clock',
+    title: 'Compare Vector Clocks',
+    language: 'js',
+    starter:
+      "function vcCompare(a, b) {\n  // return 'before' | 'after' | 'concurrent' | 'equal'\n}\n",
+    tests: [
+      {
+        name: 'orders and detects concurrency',
+        body: `assertEqual(vcCompare({a:1,b:0}, {a:1,b:1}), 'before'); assertEqual(vcCompare({a:2}, {a:1}), 'after'); assertEqual(vcCompare({a:1,b:0}, {a:0,b:1}), 'concurrent'); assertEqual(vcCompare({a:1}, {a:1}), 'equal');`,
+      },
+    ],
+    reference: `function vcCompare(a, b) {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+  let less = false, greater = false;
+  for (const k of keys) {
+    const av = a[k] || 0, bv = b[k] || 0;
+    if (av < bv) less = true;
+    if (av > bv) greater = true;
+  }
+  if (less && greater) return 'concurrent';
+  if (less) return 'before';
+  if (greater) return 'after';
+  return 'equal';
+}
+`,
+  },
 ]
