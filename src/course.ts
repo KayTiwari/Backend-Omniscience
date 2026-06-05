@@ -15,6 +15,7 @@ import { capstoneProblems } from './course.capstones'
 import { deepDiveProblems } from './course.deepdive'
 import { extraProblems, extraSubjects } from './course.extra'
 import { frameworkMasteryProblems } from './course.frameworkMastery'
+import { frameworkTutorialProblems } from './course.frameworkTutorials'
 import { graderDrillProblems } from './course.graderDrills'
 import { moreTutorialProblems } from './course.moreTutorials'
 import { oralExamProblems } from './course.oralExams'
@@ -672,7 +673,11 @@ export const subjects: Subject[] = [
   })),
   ...extraSubjects.map((subject) => ({
     ...subject,
-    problems: [...subject.problems, ...(frameworkMasteryProblems[subject.id] ?? [])],
+    problems: [
+      ...subject.problems,
+      ...(frameworkTutorialProblems[subject.id] ?? []),
+      ...(frameworkMasteryProblems[subject.id] ?? []),
+    ],
   })),
 ]
 
