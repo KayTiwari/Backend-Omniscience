@@ -568,4 +568,342 @@ export const backendSpecs: GradeSpec[] = [
       "  return lines.join('\\n') + '\\n\\n';\n" +
       "}\n",
   },
+
+  // ----- Networking & SSRF defense ---------------------------------------
+  {
+    problemId: 'net-cidr-contains',
+    title: 'CIDR Contains IP',
+    language: 'js',
+    starter:
+      "function cidrContains(cidr, ip) {\n  // does the IPv4 `ip` fall inside `cidr` (e.g. '10.0.0.0/8')?\n}\n",
+    tests: [
+      {
+        name: 'matches inside the range',
+        body: `assert(cidrContains('10.0.0.0/8', '10.5.4.3') === true); assert(cidrContains('192.168.1.0/24', '192.168.1.255') === true);`,
+      },
+      {
+        name: 'rejects outside the range',
+        body: `assert(cidrContains('10.0.0.0/8', '11.0.0.1') === false); assert(cidrContains('192.168.1.0/24', '192.168.2.1') === false);`,
+      },
+    ],
+    reference: `function cidrContains(cidr, ip) {
+  const [net, bitsStr] = cidr.split('/');
+  const bits = Number(bitsStr);
+  const toInt = (s) => s.split('.').reduce((a, o) => a * 256 + Number(o), 0);
+  const mask = bits === 0 ? 0 : (0xffffffff << (32 - bits)) >>> 0;
+  return ((toInt(ip) & mask) >>> 0) === ((toInt(net) & mask) >>> 0);
+}
+`,
+  },
+
+  // ----- Observability ----------------------------------------------------
+  {
+    problemId: 'obs-log-parse',
+    title: 'Parse An Access Log Line',
+    language: 'js',
+    starter:
+      "function parseLogLine(line) {\n  // '<ts> GET /api 200 34ms' -> { ts, method, path, status:Number, ms:Number }\n}\n",
+    tests: [
+      {
+        name: 'extracts typed fields',
+        body: `assertEqual(parseLogLine('2026-06-05T10:15:01Z GET /api 200 34ms'), { ts: '2026-06-05T10:15:01Z', method: 'GET', path: '/api', status: 200, ms: 34 });`,
+      },
+    ],
+    reference: `function parseLogLine(line) {
+  const [ts, method, path, status, lat] = line.split(' ');
+  return { ts, method, path, status: Number(status), ms: Number(lat.replace('ms', '')) };
+}
+`,
+  },
+  {
+    problemId: 'obs-error-rate',
+    title: 'Error Rate',
+    language: 'js',
+    starter:
+      'function errorRate(statuses) {\n  // fraction of statuses that are 5xx; [] -> 0\n}\n',
+    tests: [
+      {
+        name: 'computes the 5xx fraction',
+        body: `assertEqual(errorRate([200,500,200,503]), 0.5); assertEqual(errorRate([]), 0); assertEqual(errorRate([200,404]), 0);`,
+      },
+    ],
+    reference: `function errorRate(statuses) {
+  if (statuses.length === 0) return 0;
+  return statuses.filter((s) => s >= 500).length / statuses.length;
+}
+`,
+  },
+  {
+    problemId: 'obs-histogram',
+    title: 'Cumulative Histogram Buckets',
+    language: 'js',
+    starter:
+      'function bucketize(values, bounds) {\n  // Prometheus-style: count of values <= each ascending bound\n}\n',
+    tests: [
+      {
+        name: 'counts cumulatively per bound',
+        body: `assertEqual(bucketize([1,2,3,4], [2,4]), [2,4]); assertEqual(bucketize([5,6], [2,4]), [0,0]);`,
+      },
+    ],
+    reference: `function bucketize(values, bounds) {
+  return bounds.map((b) => values.filter((v) => v <= b).length);
+}
+`,
+  },
+
+  // ----- Messaging & partitioning ----------------------------------------
+  {
+    problemId: 'msg-partition',
+    title: 'Partition By Key',
+    language: 'js',
+    starter:
+      'function partition(key, n) {\n  // map a key to a partition [0, n) with a stable hash\n}\n',
+    tests: [
+      {
+        name: 'stable and in range',
+        body: `assert(partition('user-1', 4) === partition('user-1', 4), 'stable'); const p = partition('abc', 8); assert(p >= 0 && p < 8, 'range');`,
+      },
+    ],
+    reference: `function partition(key, n) {
+  let h = 5381;
+  for (let i = 0; i < key.length; i++) h = (((h << 5) + h) + key.charCodeAt(i)) >>> 0;
+  return h % n;
+}
+`,
+  },
+  {
+    problemId: 'msg-round-robin',
+    title: 'Round-Robin Assignment',
+    language: 'js',
+    starter:
+      'function roundRobin(items, workers) {\n  // return the worker index assigned to each item\n}\n',
+    tests: [
+      {
+        name: 'cycles through workers',
+        body: `assertEqual(roundRobin(['a','b','c','d'], 2), [0,1,0,1]); assertEqual(roundRobin([], 3), []);`,
+      },
+    ],
+    reference: `function roundRobin(items, workers) {
+  return items.map((_, i) => i % workers);
+}
+`,
+  },
+
+  // ----- Scaling & load shedding -----------------------------------------
+  {
+    problemId: 'scale-weighted-pick',
+    title: 'Weighted Pick',
+    language: 'js',
+    starter:
+      'function weightedPick(weights, r) {\n  // r in [0,1): return the index chosen by cumulative weight\n}\n',
+    tests: [
+      {
+        name: 'lands in the right band',
+        body: `assertEqual(weightedPick([1,1,2], 0.9), 2); assertEqual(weightedPick([1,1], 0.4), 0); assertEqual(weightedPick([1,1], 0.6), 1);`,
+      },
+    ],
+    reference: `function weightedPick(weights, r) {
+  const total = weights.reduce((a, b) => a + b, 0);
+  const target = r * total;
+  let acc = 0;
+  for (let i = 0; i < weights.length; i++) {
+    acc += weights[i];
+    if (target < acc) return i;
+  }
+  return weights.length - 1;
+}
+`,
+  },
+  {
+    problemId: 'scale-sliding-window',
+    title: 'Sliding-Window Rate Limiter',
+    language: 'js',
+    starter:
+      'function slidingWindow(times, limit, windowMs) {\n  // log-based sliding window. return booleans: allowed?\n}\n',
+    tests: [
+      {
+        name: 'evicts old entries as the window slides',
+        body: `assertEqual(slidingWindow([0,100,200,1100], 2, 1000), [true, true, false, true]);`,
+      },
+    ],
+    reference: `function slidingWindow(times, limit, windowMs) {
+  const log = [];
+  const out = [];
+  for (const t of times) {
+    while (log.length && log[0] <= t - windowMs) log.shift();
+    if (log.length < limit) { log.push(t); out.push(true); }
+    else out.push(false);
+  }
+  return out;
+}
+`,
+  },
+
+  // ----- Data integrity ---------------------------------------------------
+  {
+    problemId: 'data-luhn',
+    title: 'Luhn Checksum',
+    language: 'js',
+    starter:
+      'function luhnValid(num) {\n  // validate a numeric string with the Luhn algorithm\n}\n',
+    tests: [
+      {
+        name: 'accepts valid and rejects invalid',
+        body: `assert(luhnValid('79927398713') === true); assert(luhnValid('79927398710') === false);`,
+      },
+    ],
+    reference: `function luhnValid(num) {
+  let sum = 0, dbl = false;
+  for (let i = num.length - 1; i >= 0; i--) {
+    let d = Number(num[i]);
+    if (dbl) { d *= 2; if (d > 9) d -= 9; }
+    sum += d;
+    dbl = !dbl;
+  }
+  return sum % 10 === 0;
+}
+`,
+  },
+
+  // ----- JSON / config utilities -----------------------------------------
+  {
+    problemId: 'json-get-path',
+    title: 'Safe Nested Get',
+    language: 'js',
+    starter:
+      "function getPath(obj, path, dflt) {\n  // getPath({a:{b:1}}, 'a.b') -> 1; missing -> dflt\n}\n",
+    tests: [
+      {
+        name: 'reads nested and falls back',
+        body: `assertEqual(getPath({a:{b:{c:5}}}, 'a.b.c', 0), 5); assertEqual(getPath({a:{}}, 'a.b.c', 0), 0);`,
+      },
+    ],
+    reference: `function getPath(obj, path, dflt) {
+  let cur = obj;
+  for (const p of path.split('.')) {
+    if (cur == null || !(p in Object(cur))) return dflt;
+    cur = cur[p];
+  }
+  return cur;
+}
+`,
+  },
+  {
+    problemId: 'json-deep-equal',
+    title: 'Deep Equal',
+    language: 'js',
+    starter:
+      'function deepEqual(a, b) {\n  // recursive structural equality for JSON-like values\n}\n',
+    tests: [
+      {
+        name: 'compares nested structures',
+        body: `assert(deepEqual({a:[1,2]}, {a:[1,2]}) === true); assert(deepEqual({a:[1,2]}, {a:[1,3]}) === false); assert(deepEqual(1, 1) === true);`,
+      },
+    ],
+    reference: `function deepEqual(a, b) {
+  if (a === b) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || a == null || b == null) return false;
+  const ka = Object.keys(a), kb = Object.keys(b);
+  if (ka.length !== kb.length) return false;
+  return ka.every((k) => deepEqual(a[k], b[k]));
+}
+`,
+  },
+  {
+    problemId: 'json-deep-merge',
+    title: 'Deep Merge',
+    language: 'js',
+    starter:
+      'function deepMerge(a, b) {\n  // merge b into a recursively (b wins); arrays are replaced\n}\n',
+    tests: [
+      {
+        name: 'merges nested objects',
+        body: `assertEqual(deepMerge({a:1, b:{x:1}}, {b:{y:2}, c:3}), {a:1, b:{x:1, y:2}, c:3});`,
+      },
+    ],
+    reference: `function deepMerge(a, b) {
+  const out = { ...a };
+  for (const k of Object.keys(b)) {
+    const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);
+    out[k] = isObj(a[k]) && isObj(b[k]) ? deepMerge(a[k], b[k]) : b[k];
+  }
+  return out;
+}
+`,
+  },
+
+  // ----- Parsing ----------------------------------------------------------
+  {
+    problemId: 'parse-csv-line',
+    title: 'Parse A CSV Line',
+    language: 'js',
+    starter:
+      'function parseCsvLine(line) {\n  // handle quoted fields with embedded commas and "" escapes\n}\n',
+    tests: [
+      {
+        name: 'splits respecting quotes',
+        body: `assertEqual(parseCsvLine('a,"b,c",d'), ['a', 'b,c', 'd']);`,
+      },
+      {
+        name: 'unescapes doubled quotes',
+        body: `assertEqual(parseCsvLine('x,"he said ""hi"""'), ['x', 'he said "hi"']);`,
+      },
+    ],
+    reference: `function parseCsvLine(line) {
+  const out = [];
+  let cur = '', q = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (q) {
+      if (ch === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else q = false; }
+      else cur += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ',') { out.push(cur); cur = ''; }
+    else cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'parse-slugify',
+    title: 'Slugify',
+    language: 'js',
+    starter:
+      "function slugify(s) {\n  // 'Hello, World!' -> 'hello-world'\n}\n",
+    tests: [
+      {
+        name: 'lowercases and dasherizes',
+        body: `assertEqual(slugify('Hello, World!'), 'hello-world'); assertEqual(slugify('  Trim  Me  '), 'trim-me');`,
+      },
+    ],
+    reference: `function slugify(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+`,
+  },
+  {
+    problemId: 'parse-range-header',
+    title: 'Parse A Range Header',
+    language: 'js',
+    starter:
+      "function parseRange(header, size) {\n  // 'bytes=0-499' -> { start, end }; 'bytes=500-' / 'bytes=-200' supported\n}\n",
+    tests: [
+      {
+        name: 'handles all three forms',
+        body: `assertEqual(parseRange('bytes=0-499', 1000), { start: 0, end: 499 }); assertEqual(parseRange('bytes=500-', 1000), { start: 500, end: 999 }); assertEqual(parseRange('bytes=-200', 1000), { start: 800, end: 999 });`,
+      },
+    ],
+    reference: `function parseRange(header, size) {
+  const m = header.match(/^bytes=(\\d*)-(\\d*)$/);
+  if (!m) return null;
+  let start = m[1] === '' ? null : Number(m[1]);
+  let end = m[2] === '' ? null : Number(m[2]);
+  if (start === null) { start = size - end; end = size - 1; }
+  else if (end === null) end = size - 1;
+  return { start, end };
+}
+`,
+  },
 ]
