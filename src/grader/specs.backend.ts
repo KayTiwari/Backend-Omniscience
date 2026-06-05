@@ -2540,4 +2540,145 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Writing API code, part 2 ----------------------------------------
+  {
+    problemId: 'apidrill-path-params',
+    title: 'API: Extract Path Params',
+    language: 'js',
+    starter: "function extractPathParams(pattern, path) {\n  // '/users/:id' vs '/users/42' -> { id: '42' }; no match -> null\n}\n",
+    tests: [
+      { name: 'matches and extracts', body: "assertEqual(extractPathParams('/users/:id/posts/:postId', '/users/42/posts/7'), { id:'42', postId:'7' }); assertEqual(extractPathParams('/users/:id', '/posts/1'), null); assertEqual(extractPathParams('/a', '/a/b'), null);" },
+    ],
+    reference: `function extractPathParams(pattern, path) {
+  const pk = pattern.split('/'), pp = path.split('/');
+  if (pk.length !== pp.length) return null;
+  const params = {};
+  for (let i = 0; i < pk.length; i++) {
+    if (pk[i].startsWith(':')) params[pk[i].slice(1)] = pp[i];
+    else if (pk[i] !== pp[i]) return null;
+  }
+  return params;
+}
+`,
+  },
+  {
+    problemId: 'apidrill-rest-router',
+    title: 'API: A Router With Params',
+    language: 'js',
+    starter: 'function restRouter(routes, method, path) {\n  // routes: [{method, pattern, handler}]. return { handler, params } or null\n}\n',
+    tests: [
+      { name: 'routes with params', body: "assertEqual(restRouter([{method:'GET',pattern:'/users/:id',handler:'getUser'}], 'GET', '/users/9'), { handler:'getUser', params:{ id:'9' } }); assertEqual(restRouter([], 'GET', '/x'), null);" },
+    ],
+    reference: `function restRouter(routes, method, path) {
+  for (const r of routes) {
+    if (r.method !== method) continue;
+    const pk = r.pattern.split('/'), pp = path.split('/');
+    if (pk.length !== pp.length) continue;
+    const params = {};
+    let ok = true;
+    for (let i = 0; i < pk.length; i++) {
+      if (pk[i].startsWith(':')) params[pk[i].slice(1)] = pp[i];
+      else if (pk[i] !== pp[i]) { ok = false; break; }
+    }
+    if (ok) return { handler: r.handler, params };
+  }
+  return null;
+}
+`,
+  },
+  {
+    problemId: 'apidrill-pagination-links',
+    title: 'API: Pagination Links Object',
+    language: 'js',
+    starter: 'function paginationLinks(base, page, totalPages) {\n  // { self, first, last, next?, prev? } as ?page= URLs\n}\n',
+    tests: [
+      { name: 'middle page', body: "assertEqual(paginationLinks('/items', 2, 3), { self:'/items?page=2', first:'/items?page=1', last:'/items?page=3', next:'/items?page=3', prev:'/items?page=1' });" },
+    ],
+    reference: `function paginationLinks(base, page, totalPages) {
+  const link = (p) => base + '?page=' + p;
+  const out = { self: link(page), first: link(1), last: link(totalPages) };
+  if (page < totalPages) out.next = link(page + 1);
+  if (page > 1) out.prev = link(page - 1);
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'apidrill-merge-patch',
+    title: 'API: JSON Merge Patch',
+    language: 'js',
+    starter: 'function mergePatch(target, patch) {\n  // RFC 7386: null deletes a key, objects merge recursively, else replace\n}\n',
+    tests: [
+      { name: 'merges and deletes', body: "assertEqual(mergePatch({ a:1, b:2, c:{ x:1 } }, { b:null, c:{ y:2 }, d:3 }), { a:1, c:{ x:1, y:2 }, d:3 });" },
+    ],
+    reference: `function mergePatch(target, patch) {
+  const out = { ...target };
+  for (const k of Object.keys(patch)) {
+    const v = patch[k];
+    const mergeable = (x) => x && typeof x === 'object' && !Array.isArray(x);
+    if (v === null) delete out[k];
+    else if (mergeable(v) && mergeable(out[k])) out[k] = mergePatch(out[k], v);
+    else out[k] = v;
+  }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'apidrill-parse-sort',
+    title: 'API: Parse A Sort Param',
+    language: 'js',
+    starter: "function parseSort(s) {\n  // '-created,name' -> [{field:'created',dir:'desc'},{field:'name',dir:'asc'}]\n}\n",
+    tests: [
+      { name: 'parses fields and direction', body: "assertEqual(parseSort('-created,name'), [{ field:'created', dir:'desc' }, { field:'name', dir:'asc' }]); assertEqual(parseSort(''), []);" },
+    ],
+    reference: `function parseSort(s) {
+  if (!s) return [];
+  return s.split(',').map((part) =>
+    part.startsWith('-') ? { field: part.slice(1), dir: 'desc' } : { field: part, dir: 'asc' },
+  );
+}
+`,
+  },
+  {
+    problemId: 'apidrill-list-envelope',
+    title: 'API: List Envelope With Meta',
+    language: 'js',
+    starter: 'function listEnvelope(items, page, perPage, total) {\n  // { data, meta: { page, perPage, total, totalPages } }\n}\n',
+    tests: [
+      { name: 'wraps with meta', body: 'assertEqual(listEnvelope([1,2], 1, 2, 5), { data:[1,2], meta:{ page:1, perPage:2, total:5, totalPages:3 } });' },
+    ],
+    reference: `function listEnvelope(items, page, perPage, total) {
+  return { data: items, meta: { page, perPage, total, totalPages: Math.ceil(total / perPage) } };
+}
+`,
+  },
+  {
+    problemId: 'apidrill-require-fields',
+    title: 'API: Required Fields',
+    language: 'js',
+    starter: 'function requireFields(body, fields) {\n  // return the list of required fields that are missing/empty\n}\n',
+    tests: [
+      { name: 'finds missing', body: "assertEqual(requireFields({ name:'a' }, ['name','email']), ['email']); assertEqual(requireFields({ name:'a', email:'b' }, ['name','email']), []);" },
+    ],
+    reference: `function requireFields(body, fields) {
+  return fields.filter((f) => body[f] === undefined || body[f] === null || body[f] === '');
+}
+`,
+  },
+  {
+    problemId: 'apidrill-content-type',
+    title: 'API: Content-Type For Extension',
+    language: 'js',
+    starter: "function contentTypeFor(ext) {\n  // 'json' -> 'application/json'; unknown -> 'application/octet-stream'\n}\n",
+    tests: [
+      { name: 'maps extensions', body: "assertEqual(contentTypeFor('json'), 'application/json'); assertEqual(contentTypeFor('png'), 'image/png'); assertEqual(contentTypeFor('xyz'), 'application/octet-stream');" },
+    ],
+    reference: `function contentTypeFor(ext) {
+  const map = { json: 'application/json', html: 'text/html', css: 'text/css', js: 'application/javascript', png: 'image/png', txt: 'text/plain' };
+  return map[ext] || 'application/octet-stream';
+}
+`,
+  },
 ]
