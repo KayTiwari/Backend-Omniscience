@@ -12,6 +12,8 @@
     #f6f7f4;
   --brand-a: #263238;
   --brand-b: #2f80ed;
+  --brand-c: #19c6ff;
+  --brand-gradient: linear-gradient(135deg, var(--brand-a), var(--brand-b), var(--brand-c), var(--brand-a));
   --flame: #ff5a5f;
   --flame-dark: #b42338;
   --ember: #ff9700;
@@ -39,6 +41,8 @@
     #0d1211;
   --brand-a: #263238;
   --brand-b: #2f80ed;
+  --brand-c: #19c6ff;
+  --brand-gradient: linear-gradient(135deg, var(--brand-a), var(--brand-b), var(--brand-c), var(--brand-a));
   --ember-soft: #352715;
   --mint-soft: #112a21;
   --teal-soft: #102d2d;
@@ -102,13 +106,34 @@
   place-items: center;
   border-radius: 8px;
   color: #ffffff;
-  background: linear-gradient(135deg, var(--brand-a), var(--brand-b));
+  background-image: var(--brand-gradient);
+  background-size: 260% 260%;
+  background-position: 0% 50%;
   box-shadow: 0 12px 32px color-mix(in srgb, var(--brand-a) 26%, transparent);
+  animation: brand-gradient-drift 7s ease-in-out infinite;
 }
 
 .brand-button:hover .brand-mark {
   transform: translateY(-2px) rotate(-2deg) scale(1.04);
   box-shadow: 0 16px 36px color-mix(in srgb, var(--brand-a) 32%, transparent);
+}
+
+@keyframes brand-gradient-drift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark {
+    animation: none;
+  }
 }
 
 .eyebrow {
@@ -143,7 +168,8 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 10px 12px;
-  background: #ffffff;
+  background-color: var(--field);
+  background-image: none;
   color: var(--ink);
   font: inherit;
   font-size: 14px;
@@ -155,7 +181,8 @@ h1 {
 .home-button:hover,
 .theme-toggle:hover {
   border-color: var(--ink);
-  background: var(--ink);
+  background-color: var(--ink);
+  background-image: none;
   color: #ffffff;
   transform: translateY(-1px);
   box-shadow: var(--shadow-hover);
@@ -189,18 +216,20 @@ h1 {
   min-height: 34px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #ffffff;
+  background-color: var(--field);
+  background-image: none;
   color: var(--ink);
   font: inherit;
   font-size: 13px;
   font-weight: 900;
   cursor: pointer;
-  transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease, transform 150ms ease;
 }
 .progress-tools button:hover {
   border-color: var(--teal);
   color: var(--teal);
-  background: var(--teal-soft);
+  background-color: var(--teal-soft);
+  background-image: none;
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
 }
@@ -276,7 +305,8 @@ h1 {
   padding: 11px 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #ffffff;
+  background-color: var(--field);
+  background-image: none;
   color: var(--muted);
 }
 
@@ -325,7 +355,8 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 6px 10px;
-  background: #ffffff;
+  background-color: var(--field);
+  background-image: none;
   color: #52605d;
   font: inherit;
   font-size: 13px;
@@ -336,7 +367,8 @@ h1 {
 .filter-row button.active,
 .filter-row button:hover {
   border-color: var(--ink);
-  background: var(--ink);
+  background-color: var(--ink);
+  background-image: none;
   color: #ffffff;
   transform: translateY(-1px);
   box-shadow: var(--shadow-hover);
@@ -531,13 +563,15 @@ h1 {
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #ffffff;
+  background-color: var(--field);
+  background-image: none;
   color: #253131;
 }
 
 .icon-button:not(:disabled):hover {
   border-color: var(--brand-a);
-  background: var(--button-hover);
+  background-color: var(--button-hover);
+  background-image: none;
   color: var(--brand-a);
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
@@ -628,7 +662,8 @@ h1 {
   border: 1px solid var(--ink);
   border-radius: 8px;
   padding: 11px 15px;
-  background: var(--ink);
+  background-color: var(--ink);
+  background-image: none;
   color: #ffffff;
   font: inherit;
   font-weight: 900;
@@ -639,7 +674,10 @@ h1 {
 .run-button:hover,
 .check-button:hover {
   border-color: var(--brand-a);
-  background: linear-gradient(135deg, var(--brand-a), var(--brand-b));
+  background-color: var(--brand-a);
+  background-image: var(--brand-gradient);
+  background-size: 220% 220%;
+  background-position: 100% 50%;
   color: #ffffff;
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
@@ -757,7 +795,8 @@ h1 {
 
 .home-result:hover {
   border-color: var(--brand-b);
-  background: var(--button-hover);
+  background-color: var(--button-hover);
+  background-image: none;
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
 }
@@ -1028,7 +1067,8 @@ h1 {
 
 .learning-path > button:not(:disabled):hover {
   border-color: var(--brand-a);
-  background: var(--button-hover);
+  background-color: var(--button-hover);
+  background-image: none;
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
 }
@@ -1134,14 +1174,16 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 12px;
-  background: #ffffff;
+  background-color: var(--field);
+  background-image: none;
   color: var(--ink);
   text-align: left;
 }
 
 .choice:hover {
   border-color: var(--brand-a);
-  background: var(--button-hover);
+  background-color: var(--button-hover);
+  background-image: none;
   transform: translateX(3px);
   box-shadow: 0 10px 24px color-mix(in srgb, var(--brand-a) 10%, transparent);
 }
@@ -1242,7 +1284,8 @@ h1 {
   border: 1px solid var(--ink);
   border-radius: 8px;
   padding: 9px 13px;
-  background: var(--ink);
+  background-color: var(--ink);
+  background-image: none;
   color: #ffffff;
   font: inherit;
   font-weight: 900;
@@ -1467,7 +1510,8 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 10px;
-  background: #ffffff;
+  background-color: var(--field);
+  background-image: none;
   color: var(--ink);
   font: inherit;
   text-align: left;
@@ -1475,7 +1519,8 @@ h1 {
 
 .criterion-choice:hover {
   border-color: var(--brand-a);
-  background: var(--button-hover);
+  background-color: var(--button-hover);
+  background-image: none;
   transform: translateX(3px);
   box-shadow: 0 10px 24px color-mix(in srgb, var(--brand-a) 10%, transparent);
 }
@@ -1575,18 +1620,21 @@ h1 {
 
 .check-button {
   border: 1px solid var(--ink);
-  background: var(--ink);
+  background-color: var(--ink);
+  background-image: none;
   color: #ffffff;
 }
 
 .check-button.done {
   border-color: var(--mint);
-  background: var(--mint);
+  background-color: var(--mint);
+  background-image: none;
 }
 
 .reset-button {
   border: 1px solid var(--line);
-  background: #ffffff;
+  background-color: var(--field);
+  background-image: none;
   color: var(--ink);
 }
 
@@ -1680,7 +1728,10 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .theme-toggle:hover,
 .app-shell[data-theme='dark'] .filter-row button.active,
 .app-shell[data-theme='dark'] .filter-row button:hover {
-  background: linear-gradient(135deg, var(--brand-a), var(--brand-b));
+  background-color: var(--brand-a);
+  background-image: var(--brand-gradient);
+  background-size: 220% 220%;
+  background-position: 100% 50%;
   border-color: var(--brand-a);
   color: #ffffff;
 }
