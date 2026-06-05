@@ -1199,4 +1199,242 @@ function decodeVarint(bytes) {
 }
 `,
   },
+
+  // ----- Algorithms backends actually use --------------------------------
+  {
+    problemId: 'algo-binary-search',
+    title: 'Binary Search',
+    language: 'js',
+    starter:
+      'function binarySearch(arr, target) {\n  // sorted ascending. return index or -1\n}\n',
+    tests: [
+      {
+        name: 'finds and misses',
+        body: `assertEqual(binarySearch([1,3,5,7,9], 7), 3); assertEqual(binarySearch([1,3,5], 4), -1); assertEqual(binarySearch([], 1), -1);`,
+      },
+    ],
+    reference: `function binarySearch(arr, target) {
+  let lo = 0, hi = arr.length - 1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (arr[mid] === target) return mid;
+    if (arr[mid] < target) lo = mid + 1; else hi = mid - 1;
+  }
+  return -1;
+}
+`,
+  },
+  {
+    problemId: 'algo-merge-intervals',
+    title: 'Merge Overlapping Intervals',
+    language: 'js',
+    starter:
+      'function mergeIntervals(intervals) {\n  // [[1,3],[2,6]] -> [[1,6]]\n}\n',
+    tests: [
+      {
+        name: 'merges and keeps gaps',
+        body: `assertEqual(mergeIntervals([[1,3],[2,6],[8,10]]), [[1,6],[8,10]]); assertEqual(mergeIntervals([[1,4],[4,5]]), [[1,5]]);`,
+      },
+    ],
+    reference: `function mergeIntervals(intervals) {
+  const sorted = [...intervals].sort((a, b) => a[0] - b[0]);
+  const out = [];
+  for (const [s, e] of sorted) {
+    const last = out[out.length - 1];
+    if (last && s <= last[1]) last[1] = Math.max(last[1], e);
+    else out.push([s, e]);
+  }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'algo-merge-sorted',
+    title: 'Merge Two Sorted Arrays',
+    language: 'js',
+    starter:
+      'function mergeSorted(a, b) {\n  // merge two ascending arrays into one ascending array\n}\n',
+    tests: [
+      {
+        name: 'interleaves in order',
+        body: `assertEqual(mergeSorted([1,3,5], [2,4,6]), [1,2,3,4,5,6]); assertEqual(mergeSorted([], [1]), [1]);`,
+      },
+    ],
+    reference: `function mergeSorted(a, b) {
+  const out = [];
+  let i = 0, j = 0;
+  while (i < a.length && j < b.length) out.push(a[i] <= b[j] ? a[i++] : b[j++]);
+  while (i < a.length) out.push(a[i++]);
+  while (j < b.length) out.push(b[j++]);
+  return out;
+}
+`,
+  },
+
+  // ----- Networking & utilities ------------------------------------------
+  {
+    problemId: 'net-ip-int',
+    title: 'IPv4 To Int And Back',
+    language: 'js',
+    starter:
+      'function ipToInt(ip) {}\nfunction intToIp(n) {}\n// round-trip an IPv4 address through a 32-bit integer\n',
+    tests: [
+      {
+        name: 'converts both directions',
+        body: `assertEqual(ipToInt('1.0.0.0'), 16777216); assertEqual(intToIp(16777217), '1.0.0.1'); assertEqual(ipToInt(intToIp(3232235521)), 3232235521);`,
+      },
+    ],
+    reference: `function ipToInt(ip) {
+  return ip.split('.').reduce((a, o) => a * 256 + Number(o), 0);
+}
+function intToIp(n) {
+  return [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');
+}
+`,
+  },
+  {
+    problemId: 'util-semver-compare',
+    title: 'Compare Semantic Versions',
+    language: 'js',
+    starter:
+      "function semverCompare(a, b) {\n  // return -1, 0, or 1 comparing 'major.minor.patch'\n}\n",
+    tests: [
+      {
+        name: 'orders versions numerically',
+        body: `assertEqual(semverCompare('1.2.0', '1.10.0'), -1); assertEqual(semverCompare('2.0.0', '1.9.9'), 1); assertEqual(semverCompare('1.0.0', '1.0.0'), 0);`,
+      },
+    ],
+    reference: `function semverCompare(a, b) {
+  const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
+  for (let i = 0; i < 3; i++) { if (pa[i] > pb[i]) return 1; if (pa[i] < pb[i]) return -1; }
+  return 0;
+}
+`,
+  },
+  {
+    problemId: 'util-normalize-path',
+    title: 'Normalize A URL Path',
+    language: 'js',
+    starter:
+      "function normalizePath(p) {\n  // resolve '.' and '..' segments. '/a/b/../c' -> '/a/c'\n}\n",
+    tests: [
+      {
+        name: 'resolves dot segments',
+        body: `assertEqual(normalizePath('/a/b/../c'), '/a/c'); assertEqual(normalizePath('/a/./b'), '/a/b'); assertEqual(normalizePath('/a/../../x'), '/x');`,
+      },
+    ],
+    reference: `function normalizePath(p) {
+  const stack = [];
+  for (const seg of p.split('/')) {
+    if (seg === '' || seg === '.') continue;
+    if (seg === '..') stack.pop();
+    else stack.push(seg);
+  }
+  return '/' + stack.join('/');
+}
+`,
+  },
+  {
+    problemId: 'util-validate-email',
+    title: 'Validate An Email',
+    language: 'js',
+    starter:
+      'function validateEmail(s) {\n  // basic structural validation -> boolean\n}\n',
+    tests: [
+      {
+        name: 'accepts valid and rejects malformed',
+        body: `assert(validateEmail('a@b.com') === true); assert(validateEmail('a@b') === false); assert(validateEmail('a b@c.com') === false);`,
+      },
+    ],
+    reference: `function validateEmail(s) {
+  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(s);
+}
+`,
+  },
+  {
+    problemId: 'util-diff-arrays',
+    title: 'Diff Two Arrays',
+    language: 'js',
+    starter:
+      'function diffArrays(a, b) {\n  // return { added: in b not a, removed: in a not b }, preserving order\n}\n',
+    tests: [
+      {
+        name: 'reports adds and removes',
+        body: `assertEqual(diffArrays([1,2,3], [2,3,4]), { added: [4], removed: [1] });`,
+      },
+    ],
+    reference: `function diffArrays(a, b) {
+  const sa = new Set(a), sb = new Set(b);
+  return { added: b.filter((x) => !sa.has(x)), removed: a.filter((x) => !sb.has(x)) };
+}
+`,
+  },
+
+  // ----- API & HTTP semantics --------------------------------------------
+  {
+    problemId: 'http-method-idempotent',
+    title: 'Is The Method Idempotent?',
+    language: 'js',
+    starter:
+      "function isIdempotent(method) {\n  // GET/HEAD/PUT/DELETE/OPTIONS are idempotent; POST/PATCH are not\n}\n",
+    tests: [
+      {
+        name: 'classifies methods',
+        body: `assert(isIdempotent('GET') === true); assert(isIdempotent('PUT') === true); assert(isIdempotent('POST') === false); assert(isIdempotent('PATCH') === false);`,
+      },
+    ],
+    reference: `function isIdempotent(method) {
+  return ['GET', 'HEAD', 'PUT', 'DELETE', 'OPTIONS'].includes(method.toUpperCase());
+}
+`,
+  },
+  {
+    problemId: 'api-link-header',
+    title: 'Pagination Link Header',
+    language: 'js',
+    starter:
+      "function linkHeader(base, page, totalPages) {\n  // RFC5988-style. include next when not last, prev when not first.\n}\n",
+    tests: [
+      {
+        name: 'emits next and prev when in the middle',
+        body: `assertEqual(linkHeader('/items', 2, 3), '</items?page=3>; rel="next", </items?page=1>; rel="prev"');`,
+      },
+      {
+        name: 'first page has only next',
+        body: `assertEqual(linkHeader('/items', 1, 3), '</items?page=2>; rel="next"');`,
+      },
+    ],
+    reference: `function linkHeader(base, page, totalPages) {
+  const parts = [];
+  if (page < totalPages) parts.push('<' + base + '?page=' + (page + 1) + '>; rel="next"');
+  if (page > 1) parts.push('<' + base + '?page=' + (page - 1) + '>; rel="prev"');
+  return parts.join(', ');
+}
+`,
+  },
+
+  // ----- Observability math ----------------------------------------------
+  {
+    problemId: 'perf-ewma',
+    title: 'Exponential Moving Average',
+    language: 'js',
+    starter:
+      'function ewma(values, alpha) {\n  // smoothed series; first value seeds it\n}\n',
+    tests: [
+      {
+        name: 'smooths the series',
+        body: `assertEqual(ewma([1,2,3], 0.5), [1, 1.5, 2.25]); assertEqual(ewma([], 0.5), []);`,
+      },
+    ],
+    reference: `function ewma(values, alpha) {
+  const out = [];
+  let prev;
+  values.forEach((v, i) => {
+    prev = i === 0 ? v : alpha * v + (1 - alpha) * prev;
+    out.push(prev);
+  });
+  return out;
+}
+`,
+  },
 ]
