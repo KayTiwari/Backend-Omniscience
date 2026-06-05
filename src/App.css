@@ -1115,10 +1115,104 @@ h1 {
   background: var(--paper);
 }
 
+.recall-checks {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--brand-a) 8%, transparent), transparent 42%),
+    var(--paper);
+}
+
 .guided-tutorial-heading p {
   margin: 0;
   color: #31413f;
   line-height: 1.45;
+}
+
+.recall-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.recall-card {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--field);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.recall-card:hover {
+  border-color: var(--brand-a);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.recall-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.recall-card-heading span,
+.recall-card-heading strong {
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: color-mix(in srgb, var(--brand-b) 10%, var(--field));
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.recall-card-heading strong {
+  background: var(--mint);
+  color: #ffffff;
+}
+
+.recall-card h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.recall-card textarea {
+  min-height: 100px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.45;
+}
+
+.recall-card details {
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+
+.recall-card summary {
+  cursor: pointer;
+  color: var(--brand-b);
+  font-weight: 900;
+}
+
+.recall-card p {
+  margin: 8px 0 0;
+  color: #31413f;
+  line-height: 1.5;
 }
 
 .tutorial-card {
@@ -1607,6 +1701,7 @@ h1 {
 
 .criterion-list {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 12px;
 }
 
@@ -1794,6 +1889,8 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .time-stats span,
 .app-shell[data-theme='dark'] .visual-picture,
 .app-shell[data-theme='dark'] .lesson-grid section,
+.app-shell[data-theme='dark'] .recall-card,
+.app-shell[data-theme='dark'] .recall-card textarea,
 .app-shell[data-theme='dark'] .choice,
 .app-shell[data-theme='dark'] .criterion-choice,
 .app-shell[data-theme='dark'] .notes-block textarea,
@@ -1840,6 +1937,8 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .learn-first-heading p,
 .app-shell[data-theme='dark'] .visual-lesson p,
 .app-shell[data-theme='dark'] .practice-mode p,
+.app-shell[data-theme='dark'] .guided-tutorial-heading p,
+.app-shell[data-theme='dark'] .recall-card p,
 .app-shell[data-theme='dark'] .lesson-grid ul,
 .app-shell[data-theme='dark'] .lesson-grid ol,
 .app-shell[data-theme='dark'] .prompt-block p,

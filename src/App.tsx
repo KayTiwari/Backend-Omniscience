@@ -38,6 +38,7 @@ import { tutorials } from './tutorials'
 type ProgressState = {
   completed: string[]
   notes: Record<string, string>
+  recallAnswer: Record<string, string>
   selectedChoice: Record<string, number>
   criterionChoice: Record<string, number>
   tutorialChoice: Record<string, number>
@@ -53,6 +54,7 @@ type Theme = 'light' | 'dark'
 const emptyProgress: ProgressState = {
   completed: [],
   notes: {},
+  recallAnswer: {},
   selectedChoice: {},
   criterionChoice: {},
   tutorialChoice: {},
@@ -68,6 +70,7 @@ function loadProgress(): ProgressState {
     return {
       completed: parsed.completed ?? [],
       notes: parsed.notes ?? {},
+      recallAnswer: parsed.recallAnswer ?? {},
       selectedChoice: parsed.selectedChoice ?? {},
       criterionChoice: parsed.criterionChoice ?? {},
       tutorialChoice: parsed.tutorialChoice ?? {},
@@ -297,6 +300,16 @@ function App() {
     }))
   }
 
+  function updateRecallAnswer(problemId: string, promptIndex: number, value: string) {
+    setProgress((current) => ({
+      ...current,
+      recallAnswer: {
+        ...current.recallAnswer,
+        [`${problemId}:${promptIndex}`]: value,
+      },
+    }))
+  }
+
   function updateCode(problemId: string, value: string) {
     setProgress((current) => ({
       ...current,
@@ -366,6 +379,7 @@ function App() {
           problemIds.has(problemId),
         ),
         notes: imported.notes ?? {},
+        recallAnswer: imported.recallAnswer ?? {},
         selectedChoice: imported.selectedChoice ?? {},
         criterionChoice: imported.criterionChoice ?? {},
         tutorialChoice: imported.tutorialChoice ?? {},
@@ -391,6 +405,7 @@ function App() {
     if (
       result.passed &&
       solutionChecked &&
+      tutorialCorrect &&
       acceptanceCorrect &&
       quizRequirementCorrect &&
       !completedSet.has(activeProblem.id)
@@ -401,7 +416,7 @@ function App() {
 
   const selectedChoice = progress.selectedChoice[activeProblem.id]
   const solutionChecked = progress.checkedSolutions[activeProblem.id] === true
-  const quizAnswered = selectedChoice !== undefined && solutionChecked
+  const quizAnswered = selectedChoice !== undefined
   const quizCorrect = selectedChoice === activeProblem.correctChoice
   const activeSpec = specsByProblemId.get(activeProblem.id)
   const activeCode = activeSpec ? (progress.code[activeProblem.id] ?? activeSpec.starter) : ''
@@ -460,14 +475,35 @@ function App() {
       }),
     [activeProblem.id, activeSubject.id, activeSubject.title, teachingModel.tutorial],
   )
+  const recallPrompts = useMemo(
+    () =>
+      teachingModel.fundamentals.slice(0, 3).map((answer, index) => ({
+        answer,
+        prompt:
+          index === 0
+            ? 'Explain this idea like you are teaching someone who has never built a backend.'
+            : index === 1
+              ? 'Name what this idea does and one thing it does not do.'
+              : 'Write one production bug that could happen if you misunderstand this.',
+      })),
+    [teachingModel.fundamentals],
+  )
   const tutorialCorrect = tutorialChecks.every(
     (check, index) =>
       progress.tutorialChoice[`${activeProblem.id}:${index}`] === check.correctChoice,
   )
+  const tutorialCorrectCount = tutorialChecks.filter(
+    (check, index) =>
+      progress.tutorialChoice[`${activeProblem.id}:${index}`] === check.correctChoice,
+  ).length
   const acceptanceCorrect = acceptanceChecks.every(
     (check, index) =>
       progress.criterionChoice[`${activeProblem.id}:${index}`] === check.correctChoice,
   )
+  const acceptanceCorrectCount = acceptanceChecks.filter(
+    (check, index) =>
+      progress.criterionChoice[`${activeProblem.id}:${index}`] === check.correctChoice,
+  ).length
   const quizRequirementCorrect =
     !activeProblem.choices || activeProblem.correctChoice === undefined || quizCorrect
   const codeRequirementCorrect = !activeSpec || activeGradeResult?.passed === true
@@ -881,10 +917,46 @@ function App() {
               </section>
             </div>
 
+            <section className="recall-checks" aria-label="Quick write practice">
+              <div className="guided-tutorial-heading">
+                <h4>Quick Write</h4>
+                <p>Write first, then reveal the model answer. This is where the concept starts sticking.</p>
+              </div>
+              <div className="recall-grid">
+                {recallPrompts.map((item, index) => {
+                  const value = progress.recallAnswer[`${activeProblem.id}:${index}`] ?? ''
+                  const hasAnswer = value.trim().length > 0
+
+                  return (
+                    <section key={`${item.prompt}:${index}`} className="recall-card">
+                      <div className="recall-card-heading">
+                        <span>{hasAnswer ? 'Active recall logged' : 'Write before reveal'}</span>
+                        {hasAnswer && <strong>+5 XP</strong>}
+                      </div>
+                      <h4>{item.prompt}</h4>
+                      <textarea
+                        value={value}
+                        onChange={(event) =>
+                          updateRecallAnswer(activeProblem.id, index, event.target.value)
+                        }
+                        placeholder="Explain it in your own words."
+                      />
+                      <details>
+                        <summary>Reveal model answer</summary>
+                        <p>{item.answer}</p>
+                      </details>
+                    </section>
+                  )
+                })}
+              </div>
+            </section>
+
             <section className="guided-tutorial-checks" aria-label="Guided tutorial questions">
               <div className="guided-tutorial-heading">
                 <h4>Guided Tutorial Questions</h4>
-                <p>Answer these first. They turn the tutorial path into tiny checks before the main prompt.</p>
+                <p>
+                  {tutorialCorrectCount}/{tutorialChecks.length} locked. Each correct step gives instant feedback.
+                </p>
               </div>
               <div className="criterion-list">
                 {tutorialChecks.map((check, index) => {
@@ -899,7 +971,8 @@ function App() {
                         {check.options.map((option, optionIndex) => {
                           const isSelected = selected === optionIndex
                           const isCorrect = check.correctChoice === optionIndex
-                          const reveal = solutionChecked && (isSelected || isCorrect)
+                          const reveal =
+                            isSelected || (answered && isCorrect) || (solutionChecked && isCorrect)
 
                           return (
                             <button
@@ -918,17 +991,17 @@ function App() {
                           )
                         })}
                       </div>
-                      {solutionChecked && !answered && (
-                        <p className="criterion-feedback fail">
-                          Pick an answer here. Correct answer: {check.options[check.correctChoice]}.
-                        </p>
-                      )}
-                      {solutionChecked && answered && (
-                        <p className={`criterion-feedback ${correct ? 'pass' : 'fail'}`}>
-                          {correct ? 'Correct.' : 'Not quite.'} {check.explanation}
-                        </p>
-                      )}
-                    </section>
+                    {solutionChecked && !answered && (
+                      <p className="criterion-feedback fail">
+                        Pick an answer here. Correct answer: {check.options[check.correctChoice]}.
+                      </p>
+                    )}
+                    {answered && (
+                      <p className={`criterion-feedback ${correct ? 'pass' : 'fail'}`}>
+                        {correct ? 'Correct. +10 XP.' : 'Not quite.'} {check.explanation}
+                      </p>
+                    )}
+                  </section>
                   )
                 })}
               </div>
@@ -1037,7 +1110,10 @@ function App() {
                 {activeProblem.choices.map((choice, index) => {
                   const isSelected = selectedChoice === index
                   const isCorrect = activeProblem.correctChoice === index
-                  const reveal = solutionChecked && (isSelected || isCorrect)
+                  const reveal =
+                    isSelected ||
+                    (selectedChoice !== undefined && isCorrect) ||
+                    (solutionChecked && isCorrect)
 
                   return (
                     <button
@@ -1161,7 +1237,9 @@ function App() {
             <div className="solution-heading">
               <div>
                 <h3>Solution Checks</h3>
-                <p>Answer these to prove the acceptance criteria, then check your solutions.</p>
+                <p>
+                  {acceptanceCorrectCount}/{acceptanceChecks.length} locked. These prove the acceptance criteria one checkpoint at a time.
+                </p>
               </div>
               {solutionChecked && (
                 <strong className={canComplete ? 'pass' : 'fail'}>
@@ -1182,7 +1260,8 @@ function App() {
                       {check.options.map((option, optionIndex) => {
                         const isSelected = selected === optionIndex
                         const isCorrect = check.correctChoice === optionIndex
-                        const reveal = solutionChecked && (isSelected || isCorrect)
+                        const reveal =
+                          isSelected || (answered && isCorrect) || (solutionChecked && isCorrect)
 
                         return (
                           <button
@@ -1204,9 +1283,9 @@ function App() {
                         Pick an answer here. Correct answer: {check.options[check.correctChoice]}.
                       </p>
                     )}
-                    {solutionChecked && answered && (
+                    {answered && (
                       <p className={`criterion-feedback ${correct ? 'pass' : 'fail'}`}>
-                        {correct ? 'Correct.' : 'Not quite.'} {check.explanation}
+                        {correct ? 'Correct. +10 XP.' : 'Not quite.'} {check.explanation}
                       </p>
                     )}
                   </section>
