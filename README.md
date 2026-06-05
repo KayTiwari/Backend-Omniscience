@@ -1,4 +1,4 @@
-# Pro Backend Gauntlet
+# Backend Omniscience
 
 A repo-based backend training app for building backend omniscience through repeated drills, debugging prompts, design exercises, and capstone builds.
 

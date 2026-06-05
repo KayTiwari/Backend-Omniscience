@@ -21,7 +21,7 @@ type ProgressState = {
   selectedChoice: Record<string, number>
 }
 
-const storageKey = 'pro-backend-gauntlet-progress'
+const storageKey = 'backend-omniscience-progress'
 
 const emptyProgress: ProgressState = {
   completed: [],
@@ -132,8 +132,8 @@ function App() {
             <Flame size={22} />
           </div>
           <div>
-            <p className="eyebrow">Backend omniscience</p>
-            <h1>Pro Backend Gauntlet</h1>
+            <p className="eyebrow">Roadmap gauntlet</p>
+            <h1>Backend Omniscience</h1>
           </div>
         </div>
 
