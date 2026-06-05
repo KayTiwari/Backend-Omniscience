@@ -6,6 +6,153 @@ import { frameworkSpecs } from './specs.framework.ts'
 // tests assert behavior. Attach a spec to a course problem via `problemId`.
 const coreSpecs: GradeSpec[] = [
   {
+    problemId: 'api-json-response',
+    title: 'Build A JSON Response',
+    language: 'js',
+    starter:
+      "function buildJsonResponse(data, status = 200) {\n  // return { status, headers: { 'Content-Type': 'application/json' }, body }\n}\n",
+    tests: [
+      {
+        name: 'serializes data with JSON content type',
+        body:
+          "assertEqual(buildJsonResponse({ ok: true }, 201), { status: 201, headers: { 'Content-Type': 'application/json' }, body: '{\"ok\":true}' });",
+      },
+      {
+        name: 'defaults status to 200',
+        body:
+          "assertEqual(buildJsonResponse(['a']), { status: 200, headers: { 'Content-Type': 'application/json' }, body: '[\"a\"]' });",
+      },
+    ],
+    reference:
+      "function buildJsonResponse(data, status = 200) {\n" +
+      "  return { status, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) };\n" +
+      "}\n",
+  },
+  {
+    problemId: 'api-route-match',
+    title: 'Match Method And Path',
+    language: 'js',
+    starter:
+      "function matchRoute(method, path) {\n  // GET /users -> { name: 'listUsers', params: {} }\n  // POST /users -> { name: 'createUser', params: {} }\n  // GET /users/42 -> { name: 'getUser', params: { id: '42' } }\n  // otherwise null\n}\n",
+    tests: [
+      {
+        name: 'matches collection routes by method',
+        body:
+          "assertEqual(matchRoute('GET', '/users'), { name: 'listUsers', params: {} }); assertEqual(matchRoute('POST', '/users'), { name: 'createUser', params: {} });",
+      },
+      {
+        name: 'extracts user id route param',
+        body: "assertEqual(matchRoute('GET', '/users/42'), { name: 'getUser', params: { id: '42' } });",
+      },
+      {
+        name: 'returns null for unknown routes',
+        body: "assertEqual(matchRoute('DELETE', '/users/42'), null); assertEqual(matchRoute('GET', '/projects'), null);",
+      },
+    ],
+    reference:
+      "function matchRoute(method, path) {\n" +
+      "  if (method === 'GET' && path === '/users') return { name: 'listUsers', params: {} };\n" +
+      "  if (method === 'POST' && path === '/users') return { name: 'createUser', params: {} };\n" +
+      "  const match = path.match(/^\\/users\\/([^/]+)$/);\n" +
+      "  if (method === 'GET' && match) return { name: 'getUser', params: { id: match[1] } };\n" +
+      "  return null;\n" +
+      "}\n",
+  },
+  {
+    problemId: 'api-create-user-validation',
+    title: 'Validate Create User Input',
+    language: 'js',
+    starter:
+      "function validateCreateUser(body) {\n  // return errors like [{ field: 'email', message: 'valid email required' }]\n}\n",
+    tests: [
+      {
+        name: 'accepts valid create user input',
+        body: "assertEqual(validateCreateUser({ email: 'ada@example.com', name: 'Ada' }), []);",
+      },
+      {
+        name: 'rejects missing and malformed fields',
+        body:
+          "assertEqual(validateCreateUser({ email: 'nope', name: '' }), [{ field: 'email', message: 'valid email required' }, { field: 'name', message: 'name required' }]);",
+      },
+      {
+        name: 'handles missing body',
+        body:
+          "assertEqual(validateCreateUser(null), [{ field: 'email', message: 'valid email required' }, { field: 'name', message: 'name required' }]);",
+      },
+    ],
+    reference:
+      "function validateCreateUser(body) {\n" +
+      "  const input = body || {};\n" +
+      "  const errors = [];\n" +
+      "  if (typeof input.email !== 'string' || !input.email.includes('@')) errors.push({ field: 'email', message: 'valid email required' });\n" +
+      "  if (typeof input.name !== 'string' || input.name.trim() === '') errors.push({ field: 'name', message: 'name required' });\n" +
+      "  return errors;\n" +
+      "}\n",
+  },
+  {
+    problemId: 'api-result-to-response',
+    title: 'Map Service Results To HTTP',
+    language: 'js',
+    starter:
+      "function resultToResponse(result) {\n  // result kinds: ok, validation_error, not_found, conflict\n  // return { status, body }\n}\n",
+    tests: [
+      {
+        name: 'maps success',
+        body: "assertEqual(resultToResponse({ kind: 'ok', data: { id: 1 } }), { status: 200, body: { id: 1 } });",
+      },
+      {
+        name: 'maps client and domain errors',
+        body:
+          "assertEqual(resultToResponse({ kind: 'validation_error', errors: [{ field: 'email' }] }), { status: 400, body: { error: 'validation_error', details: [{ field: 'email' }] } }); assertEqual(resultToResponse({ kind: 'not_found', resource: 'user' }), { status: 404, body: { error: 'not_found', resource: 'user' } }); assertEqual(resultToResponse({ kind: 'conflict', message: 'email exists' }), { status: 409, body: { error: 'conflict', message: 'email exists' } });",
+      },
+    ],
+    reference:
+      "function resultToResponse(result) {\n" +
+      "  if (result.kind === 'ok') return { status: 200, body: result.data };\n" +
+      "  if (result.kind === 'validation_error') return { status: 400, body: { error: 'validation_error', details: result.errors } };\n" +
+      "  if (result.kind === 'not_found') return { status: 404, body: { error: 'not_found', resource: result.resource } };\n" +
+      "  if (result.kind === 'conflict') return { status: 409, body: { error: 'conflict', message: result.message } };\n" +
+      "  return { status: 500, body: { error: 'internal_error' } };\n" +
+      "}\n",
+  },
+  {
+    problemId: 'api-create-user-handler',
+    title: 'Tiny Create User Handler',
+    language: 'js',
+    starter:
+      "function handleCreateUser(req, users) {\n  // req = { body: { email, name } }, users = [{ id, email, name }]\n  // return { status, body }; mutate users only on success\n}\n",
+    tests: [
+      {
+        name: 'creates a user with the next id',
+        body:
+          "const users = [{ id: 1, email: 'a@example.com', name: 'A' }]; const res = handleCreateUser({ body: { email: 'b@example.com', name: 'B' } }, users); assertEqual(res, { status: 201, body: { id: 2, email: 'b@example.com', name: 'B' } }); assertEqual(users.length, 2);",
+      },
+      {
+        name: 'rejects invalid input without mutating',
+        body:
+          "const users = []; const res = handleCreateUser({ body: { email: 'bad', name: '' } }, users); assertEqual(res.status, 400); assertEqual(users, []); assertEqual(res.body.error, 'validation_error');",
+      },
+      {
+        name: 'rejects duplicate email',
+        body:
+          "const users = [{ id: 1, email: 'a@example.com', name: 'A' }]; assertEqual(handleCreateUser({ body: { email: 'a@example.com', name: 'Other' } }, users), { status: 409, body: { error: 'conflict', message: 'email already exists' } }); assertEqual(users.length, 1);",
+      },
+    ],
+    reference:
+      "function handleCreateUser(req, users) {\n" +
+      "  const body = (req && req.body) || {};\n" +
+      "  const errors = [];\n" +
+      "  if (typeof body.email !== 'string' || !body.email.includes('@')) errors.push({ field: 'email', message: 'valid email required' });\n" +
+      "  if (typeof body.name !== 'string' || body.name.trim() === '') errors.push({ field: 'name', message: 'name required' });\n" +
+      "  if (errors.length) return { status: 400, body: { error: 'validation_error', details: errors } };\n" +
+      "  if (users.some((user) => user.email === body.email)) return { status: 409, body: { error: 'conflict', message: 'email already exists' } };\n" +
+      "  const nextId = users.reduce((max, user) => Math.max(max, user.id), 0) + 1;\n" +
+      "  const user = { id: nextId, email: body.email, name: body.name };\n" +
+      "  users.push(user);\n" +
+      "  return { status: 201, body: user };\n" +
+      "}\n",
+  },
+  {
     problemId: 'api-pagination',
     title: 'Cursor Pagination',
     language: 'js',

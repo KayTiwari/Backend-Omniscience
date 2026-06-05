@@ -306,6 +306,108 @@ const coreSubjects: Subject[] = [
     color: '#f59f00',
     problems: [
       {
+        id: 'api-json-response',
+        title: 'Build A JSON Response',
+        type: 'coding',
+        difficulty: 'Warmup',
+        minutes: 18,
+        prompt:
+          'Implement buildJsonResponse(data, status). Return an object with status, JSON Content-Type header, and a string body made with JSON.stringify.',
+        explanation:
+          'Every API endpoint eventually has to turn backend data into an HTTP response. This drill teaches the smallest response shape: status code, headers, and serialized JSON body.',
+        questions: [
+          'Why does an API response need a Content-Type header?',
+          'Why should the response body be a string by the time it leaves the backend?',
+        ],
+        checklist: [
+          'Return the requested status code.',
+          'Set Content-Type to application/json.',
+          'Serialize the data into the body.',
+        ],
+      },
+      {
+        id: 'api-route-match',
+        title: 'Match Method And Path',
+        type: 'coding',
+        difficulty: 'Warmup',
+        minutes: 22,
+        prompt:
+          'Implement matchRoute(method, path). Recognize GET /users, POST /users, and GET /users/:id. Return a route name and params, or null when nothing matches.',
+        explanation:
+          'Routing is the first backend decision after HTTP parsing. The server uses the method and path to decide which handler should run.',
+        questions: [
+          'Why are GET /users and POST /users different routes even though the path is the same?',
+          'What does a path parameter represent?',
+        ],
+        checklist: [
+          'Use both method and path.',
+          'Extract the user id from /users/:id.',
+          'Return null for unknown routes.',
+        ],
+      },
+      {
+        id: 'api-create-user-validation',
+        title: 'Validate Create User Input',
+        type: 'coding',
+        difficulty: 'Core',
+        minutes: 28,
+        prompt:
+          'Implement validateCreateUser(body). It should require a non-empty email string containing @ and a non-empty name string. Return an array of field error objects.',
+        explanation:
+          'API code should not trust JSON just because it parsed. Validation turns unknown client input into something the service layer can safely use.',
+        questions: [
+          'Why should validation happen before calling database code?',
+          'Why is an array of field errors more useful than one vague error string?',
+        ],
+        checklist: [
+          'Reject missing or invalid email.',
+          'Reject missing or invalid name.',
+          'Return stable field-level error objects.',
+        ],
+      },
+      {
+        id: 'api-result-to-response',
+        title: 'Map Service Results To HTTP',
+        type: 'coding',
+        difficulty: 'Core',
+        minutes: 30,
+        prompt:
+          'Implement resultToResponse(result). Convert service results like ok, validation_error, not_found, and conflict into status codes and JSON response bodies.',
+        explanation:
+          'A service can return business outcomes without knowing HTTP. The API layer maps those outcomes into status codes and response shapes clients understand.',
+        questions: [
+          'Why should a validation failure usually be 400?',
+          'Why should a duplicate unique value often become 409 Conflict?',
+        ],
+        checklist: [
+          'Map success to 200.',
+          'Map validation errors to 400.',
+          'Map missing records to 404.',
+          'Map conflicts to 409.',
+        ],
+      },
+      {
+        id: 'api-create-user-handler',
+        title: 'Tiny Create User Handler',
+        type: 'coding',
+        difficulty: 'Core',
+        minutes: 40,
+        prompt:
+          'Implement handleCreateUser(req, users). Validate JSON body, reject duplicate emails, create a user with the next id, and return a JSON-style response object.',
+        explanation:
+          'This is the smallest full API handler loop: read request data, validate it, check existing state, perform the action, and return a clear HTTP result.',
+        questions: [
+          'What work belongs in the handler versus the service layer?',
+          'Why should duplicate email return a different response from invalid JSON?',
+        ],
+        checklist: [
+          'Validate body before writing.',
+          'Reject duplicate emails with 409.',
+          'Create the user and return 201.',
+          'Do not mutate input when validation fails.',
+        ],
+      },
+      {
         id: 'api-pagination',
         title: 'Cursor Pagination',
         type: 'coding',
