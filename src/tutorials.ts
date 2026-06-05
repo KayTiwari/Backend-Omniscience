@@ -1518,4 +1518,216 @@ exactly this, returning before/after/concurrent/equal.
 clock on the wall. Use logical or vector clocks when ordering across nodes must be
 reliable.`,
   },
+  {
+    id: 'tut-typescript-for-backend',
+    subjectId: 'typescript',
+    title: 'TypeScript for Backend Engineers',
+    minutes: 12,
+    body: `TypeScript adds a type layer on top of JavaScript that exists only at build
+time. Internalizing "compile-time vs runtime" is the whole game.
+
+    your code (.ts)             after build (.js)
+    -----------------   tsc -->  -----------------
+    types, interfaces            plain JavaScript
+    generics, enums              (all types ERASED)
+            ^
+            |
+    HTTP JSON / DB rows / env vars arrive here as untyped data
+    -> validate at the boundary, THEN the types are trustworthy
+
+**Types are erased.** At runtime there are no types, just values. So a type
+annotation never validates incoming JSON, a query result, or process.env. You
+must validate untrusted data at the boundary (with zod, a hand-written guard, or
+a schema) and only then hand typed data to your code.
+
+**The building blocks you will use daily:**
+- **interfaces / type aliases** describe object shapes (DTOs, config).
+- **unions + narrowing**: 'a | b', then if-checks refine the type. Discriminated
+  unions ({ kind: 'ok' } | { kind: 'err' }) model results and events.
+- **generics** write reusable, type-safe code: identity<T>, Repository<T>.
+- **utility types**: Partial, Required, Pick, Omit, Record reshape existing types.
+- **unknown vs any**: prefer 'unknown' at boundaries (forces you to narrow);
+  'any' silently disables checking.
+
+**Why it matters for backends:** types catch internal misuse (passing a UserId
+where a ProjectId is expected, forgetting a field) across refactors, which is
+exactly where large services rot. The TypeScript Drills track lets you write
+each of these features and run them.`,
+  },
+  {
+    id: 'tut-nodejs-runtime',
+    subjectId: 'nodejs',
+    title: 'The Node.js Runtime and Event Loop',
+    minutes: 12,
+    body: `Node runs your JavaScript on a single thread with an event loop. Almost every
+Node performance surprise comes from not respecting that.
+
+    one JS thread (the event loop)
+    +------------------------------------------+
+    | run JS -> hit async I/O -> hand to libuv |
+    |    ^                              |       |
+    |    |       callback queue  <------+       |
+    +------------------------------------------+
+       I/O (disk, network, timers) runs off-thread;
+       results come back as callbacks/promises.
+
+**I/O-bound vs CPU-bound.** Node is superb at I/O-bound work: thousands of
+concurrent requests waiting on the DB or network, because waiting does not block
+the thread. It is dangerous for CPU-bound work: a heavy synchronous loop (a big
+JSON.parse, image resize, crypto) blocks the one thread and stalls every other
+request.
+
+**Keep the loop free:**
+- Never do long synchronous CPU work in a request handler. Offload to
+  worker_threads, a queue/worker, or a native addon.
+- Prefer streaming over buffering whole payloads in memory (respect backpressure).
+- await your promises; an un-awaited rejection can crash the process.
+
+**Express in practice:** middleware runs in order; errors must reach an error
+handler (forward async errors with next(err) or an async wrapper). On SIGTERM,
+shut down gracefully: stop accepting connections, drain in-flight requests, close
+the DB pool. The Node drills make these mechanics concrete.`,
+  },
+  {
+    id: 'tut-python-for-backend',
+    subjectId: 'python',
+    title: 'Python for Backends: GIL, Async, Typing',
+    minutes: 12,
+    body: `Python is productive and readable; the backend gotchas are concurrency and
+runtime types.
+
+    CPU-bound work          I/O-bound work
+    --------------          --------------
+    threads DO NOT          threads/async DO
+    parallelize (GIL)       help (waiting releases)
+        |                        |
+        v                        v
+    use multiprocessing       use asyncio / threads
+    (separate processes)      (one loop, many awaits)
+
+**The GIL.** CPython's Global Interpreter Lock lets only one thread run Python
+bytecode at a time. So threads do not speed up CPU-bound work; use processes
+(multiprocessing / ProcessPoolExecutor). For I/O-bound work, threads and asyncio
+shine because waiting on I/O releases the lock.
+
+**asyncio.** 'async def' + 'await' run many I/O operations concurrently on one
+loop. Use asyncio.gather for fan-out, asyncio.wait_for for per-call timeouts, and
+a Semaphore to cap concurrency. Do not call blocking functions inside async code.
+
+**Types are hints.** Type annotations are not enforced at runtime; they power
+editors, mypy, and frameworks (FastAPI/pydantic use them for validation). Validate
+external data explicitly.
+
+**Reproducibility.** Isolate with a venv, pin dependencies (lockfile), and split
+runtime from dev deps so "works on my machine" stops happening. The Python Drills
+track builds the language mechanics (loops, comprehensions, dict/list methods)
+that everything else rests on.`,
+  },
+  {
+    id: 'tut-flask-lifecycle',
+    subjectId: 'flask',
+    title: 'Flask and the WSGI Request Lifecycle',
+    minutes: 11,
+    body: `Flask is a small, explicit WSGI framework. Knowing the request lifecycle keeps
+you out of context and session-leak traps.
+
+    client -> gunicorn (N workers) -> Flask app -> view -> response
+                  |                       |
+            sync per worker          app context + request context
+            (scale via workers)      (g, request are context-locals)
+
+**WSGI is synchronous.** A classic Flask worker handles one request at a time, so
+you scale with multiple workers/threads (gunicorn). request and g are
+context-locals bound to the active request, not true globals, which is why you can
+import 'request' anywhere and get the right one.
+
+**App factory + blueprints.** Build the app in create_app(config) and register
+blueprints by domain. This makes the app testable (each test builds an isolated
+app) and avoids import-time global state.
+
+**The classic bug: SQLAlchemy session leaks.** Tie the session to the request
+(scoped_session / Flask-SQLAlchemy) and remove/close it at request teardown.
+Long-lived module-level sessions exhaust the connection pool under load. Size
+pool_size + max_overflow for your worker count.
+
+**Validate at the edge.** Flask hands you raw request data; validate it
+(marshmallow/pydantic) before it reaches your services, and return a consistent
+error shape.`,
+  },
+  {
+    id: 'tut-django-flow',
+    subjectId: 'django',
+    title: 'Django: MTV, the ORM, and Request Flow',
+    minutes: 12,
+    body: `Django is batteries-included: routing, ORM, admin, auth. The two things to
+master early are the request flow and the ORM's query behavior.
+
+    request -> URLconf -> middleware -> view -> ORM -> database
+                                          |
+                                    serializer/template -> response
+
+**The ORM is the main performance lever.** Querysets are lazy (no SQL until you
+iterate). The number-one bug is N+1: looping over objects and touching a related
+field fires one query per row.
+
+    # N+1: one query per order for the customer
+    for o in Order.objects.all():
+        print(o.customer.name)
+
+    # fixed: one JOIN
+    for o in Order.objects.select_related('customer'):
+        print(o.customer.name)
+
+Use **select_related** for forward FK/one-to-one (a JOIN) and **prefetch_related**
+for reverse/many-to-many (a second query). Confirm with assertNumQueries or
+django-debug-toolbar.
+
+**Migrations.** Django generates schema migrations from model changes. Across a
+rolling deploy, keep them backward compatible (expand/contract): add columns
+nullable, backfill, then tighten. Avoid one migration the running old code cannot
+survive.
+
+**DRF for APIs.** Serializers validate input and shape output (list explicit
+fields so you do not over-expose), ViewSets + routers wire CRUD, and pagination
+should be on by default. Return DRF-standard error shapes.`,
+  },
+  {
+    id: 'tut-capstone-approach',
+    subjectId: 'capstone',
+    title: 'How to Approach a Capstone Build',
+    minutes: 10,
+    body: `A capstone combines many concepts into one production-style service. Work it in
+the order a senior engineer would, not front-to-back by feature.
+
+    1. model the data     -> 2. design the API    -> 3. implement thin
+       (entities, keys,        (resources, verbs,      (handlers call a
+        invariants)            errors, pagination)      service layer)
+              |                        |                      |
+              v                        v                      v
+    4. test (unit + integration) -> 5. harden (auth, rate limit,
+                                        idempotency, observability)
+
+**1. Model the data first.** Identify entities, their keys, and the invariants
+(an order total must equal its line items). Aggregate boundaries become your
+transaction boundaries.
+
+**2. Design the API as a contract.** Resources + verbs, a consistent error
+envelope, pagination from day one, and idempotency for unsafe writes (so client
+retries do not double-charge).
+
+**3. Implement in thin layers.** Keep handlers small; push logic into a service
+layer and data access into repositories. Easier to test and change.
+
+**4. Test the risky parts.** Unit-test the logic and edge cases; integration-test
+the wiring (real DB, real HTTP) where the subtle bugs live (bad SQL,
+serialization, migrations).
+
+**5. Harden for production.** Auth + authorization on every endpoint, rate
+limiting and graceful degradation, idempotent writes, structured logs with a
+request id, and metrics (rate, errors, p95). Then deploy with health checks and a
+rollback plan.
+
+The capstone problems (URL shortener, job queue, ledger API) are where the whole
+roadmap clicks together.`,
+  },
 ]
