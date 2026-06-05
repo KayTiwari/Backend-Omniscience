@@ -22,6 +22,7 @@ import {
   type ProblemType,
   type Subject,
 } from './course'
+import { validateCourse } from './courseValidation'
 
 type ProgressState = {
   completed: string[]
@@ -92,6 +93,7 @@ function App() {
     () => [...new Set(allProblems.map((problem) => problem.difficulty))],
     [],
   )
+  const courseWarnings = useMemo(() => validateCourse(subjects), [])
   const filteredProblemIds = useMemo(() => {
     const ids = new Set<string>()
     subjects.forEach((subject) => {
@@ -256,6 +258,17 @@ function App() {
           <span>{filteredProblemCount} showing</span>
           <span>{filteredCompletedCount} complete</span>
         </div>
+
+        {courseWarnings.length > 0 && (
+          <details className="warning-block">
+            <summary>{courseWarnings.length} curriculum warnings</summary>
+            <ul>
+              {courseWarnings.slice(0, 8).map((warning) => (
+                <li key={warning}>{warning}</li>
+              ))}
+            </ul>
+          </details>
+        )}
 
         <nav className="subject-list" aria-label="Course subjects">
           {filteredSubjects.map((subject) => {

@@ -27,3 +27,11 @@ Progress and notes are stored in browser localStorage.
 ## Expand The Course
 
 Add or edit subjects and problems in `src/course.ts`. The GUI updates automatically from that data.
+
+## Curriculum Authoring Rules
+
+- Keep every subject `id` and problem `id` unique.
+- Use stable IDs; progress is keyed by problem ID in localStorage.
+- Give every problem a prompt, a positive minute estimate, and at least one checklist item.
+- For quizzes, include at least two `choices` and a zero-based `correctChoice`.
+- Prefer small, forceful exercises over long passive lessons.

@@ -164,6 +164,28 @@ h1 {
   font-weight: 800;
 }
 
+.warning-block {
+  margin-bottom: 18px;
+  border: 1px solid #f59f00;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff8e8;
+  color: #5f4300;
+  font-size: 13px;
+}
+
+.warning-block summary {
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.warning-block ul {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding-left: 18px;
+}
+
 .subject-list {
   display: grid;
   gap: 12px;
