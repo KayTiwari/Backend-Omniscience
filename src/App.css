@@ -484,6 +484,7 @@ h1 {
 }
 
 .prompt-block,
+.learning-path,
 .explanation-block,
 .production-block,
 .walkthrough-block,
@@ -516,6 +517,70 @@ h1 {
   color: #2d3837;
   font-size: 20px;
   line-height: 1.55;
+}
+
+.learning-path {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 1.15fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.learning-path > button,
+.learning-path > div {
+  min-width: 0;
+  border: 1px solid #d9ded8;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8faf6;
+  color: #263238;
+  text-align: left;
+}
+
+.learning-path > button {
+  cursor: pointer;
+  font: inherit;
+}
+
+.learning-path > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.learning-path span,
+.learning-path small {
+  display: block;
+  color: #6a7673;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.learning-path strong {
+  display: block;
+  overflow: hidden;
+  margin-top: 6px;
+  color: #1d2525;
+  font-size: 14px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+}
+
+.learning-path button strong {
+  white-space: nowrap;
+}
+
+.learning-path div {
+  background: #eef3ea;
+}
+
+.learning-path div strong {
+  font-size: 15px;
+}
+
+.learning-path small {
+  margin-top: 8px;
+  color: #2f80ed;
 }
 
 .explanation-block {
@@ -897,6 +962,14 @@ input:focus-visible {
   .coding-heading {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .learning-path {
+    grid-template-columns: 1fr;
+  }
+
+  .learning-path button strong {
+    white-space: normal;
   }
 }
 

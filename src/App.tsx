@@ -286,6 +286,14 @@ function App() {
   const activeCode = activeSpec ? (progress.code[activeProblem.id] ?? activeSpec.starter) : ''
   const activeGradeResult = gradeResults[activeProblem.id]
   const isRunningTests = runningProblemId === activeProblem.id
+  const previousProblem = activeIndex > 0 ? allProblems[activeIndex - 1] : undefined
+  const nextProblem = activeIndex < allProblems.length - 1 ? allProblems[activeIndex + 1] : undefined
+
+  function openProblemById(problemId: string) {
+    const location = findProblemLocation(problemId)
+    if (!location) return
+    openProblem(location.subject, location.problem)
+  }
 
   return (
     <main className="app-shell">
@@ -521,6 +529,40 @@ function App() {
 
           <h2>{activeProblem.title}</h2>
           <p className="subject-subtitle">{activeSubject.subtitle}</p>
+
+          <section className="learning-path" aria-label="Learning path">
+            <button
+              type="button"
+              onClick={() => previousProblem && openProblemById(previousProblem.id)}
+              disabled={!previousProblem}
+            >
+              <span>Previous</span>
+              <strong>{previousProblem?.title ?? 'Start of course'}</strong>
+            </button>
+            <div>
+              <span>Now</span>
+              <strong>
+                {activeProblem.type === 'coding'
+                  ? 'Build it, run tests, then explain the failure modes'
+                  : activeProblem.type === 'quiz'
+                    ? 'Answer, justify, and connect it to production behavior'
+                    : activeProblem.type === 'debug'
+                      ? 'Diagnose, prove, fix, and add a regression test'
+                      : activeProblem.type === 'design'
+                        ? 'Design the contract, data path, failures, and rollout'
+                        : 'Learn the mental model, then write the smallest example'}
+              </strong>
+              {activeSpec && <small>Runnable assessment attached</small>}
+            </div>
+            <button
+              type="button"
+              onClick={() => nextProblem && openProblemById(nextProblem.id)}
+              disabled={!nextProblem}
+            >
+              <span>Next</span>
+              <strong>{nextProblem?.title ?? 'End of course'}</strong>
+            </button>
+          </section>
 
           <section className="prompt-block">
             <h3>Prompt</h3>
