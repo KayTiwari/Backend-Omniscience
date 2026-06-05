@@ -2681,4 +2681,157 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- SQL semantics as code (query operations on in-memory rows) ------
+  {
+    problemId: 'sqldrill-select-where',
+    title: 'SQL: SELECT ... WHERE',
+    language: 'js',
+    starter: 'function selectWhere(rows, predicate) {\n  // return rows matching the predicate (like a WHERE clause)\n}\n',
+    tests: [
+      { name: 'filters rows', body: 'assertEqual(selectWhere([{a:1},{a:2},{a:3}], (r) => r.a > 1), [{a:2},{a:3}]);' },
+    ],
+    reference: `function selectWhere(rows, predicate) {
+  return rows.filter(predicate);
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-project',
+    title: 'SQL: SELECT Specific Columns',
+    language: 'js',
+    starter: 'function project(rows, cols) {\n  // keep only the named columns from each row\n}\n',
+    tests: [
+      { name: 'projects columns', body: "assertEqual(project([{a:1,b:2,c:3}], ['a','c']), [{a:1,c:3}]);" },
+    ],
+    reference: `function project(rows, cols) {
+  return rows.map((r) => {
+    const o = {};
+    for (const c of cols) o[c] = r[c];
+    return o;
+  });
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-order-by',
+    title: 'SQL: ORDER BY',
+    language: 'js',
+    starter: "function orderBy(rows, key, dir) {\n  // sort rows by key; dir is 'asc' or 'desc'\n}\n",
+    tests: [
+      { name: 'asc and desc', body: "assertEqual(orderBy([{n:3},{n:1},{n:2}], 'n', 'asc'), [{n:1},{n:2},{n:3}]); assertEqual(orderBy([{n:1},{n:2}], 'n', 'desc'), [{n:2},{n:1}]);" },
+    ],
+    reference: `function orderBy(rows, key, dir) {
+  const sorted = [...rows].sort((x, y) => (x[key] < y[key] ? -1 : x[key] > y[key] ? 1 : 0));
+  return dir === 'desc' ? sorted.reverse() : sorted;
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-limit-offset',
+    title: 'SQL: LIMIT / OFFSET',
+    language: 'js',
+    starter: 'function limitOffset(rows, n, offset) {\n  // offset defaults to 0\n}\n',
+    tests: [
+      { name: 'slices', body: 'assertEqual(limitOffset([1,2,3,4], 2, 1), [2,3]); assertEqual(limitOffset([1,2,3], 2), [1,2]);' },
+    ],
+    reference: `function limitOffset(rows, n, offset) {
+  offset = offset || 0;
+  return rows.slice(offset, offset + n);
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-distinct',
+    title: 'SQL: SELECT DISTINCT',
+    language: 'js',
+    starter: 'function distinctBy(rows, key) {\n  // keep the first row per distinct key value\n}\n',
+    tests: [
+      { name: 'dedupes by key', body: 'assertEqual(distinctBy([{id:1},{id:1},{id:2}], "id"), [{id:1},{id:2}]);' },
+    ],
+    reference: `function distinctBy(rows, key) {
+  const seen = new Set();
+  const out = [];
+  for (const r of rows) {
+    if (!seen.has(r[key])) { seen.add(r[key]); out.push(r); }
+  }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-count-by',
+    title: 'SQL: COUNT GROUP BY',
+    language: 'js',
+    starter: 'function countBy(rows, key) {\n  // { value: count } for each distinct key value\n}\n',
+    tests: [
+      { name: 'counts groups', body: "assertEqual(countBy([{t:'a'},{t:'b'},{t:'a'}], 't'), {a:2, b:1});" },
+    ],
+    reference: `function countBy(rows, key) {
+  const out = {};
+  for (const r of rows) out[r[key]] = (out[r[key]] || 0) + 1;
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-sum',
+    title: 'SQL: SUM',
+    language: 'js',
+    starter: 'function sumBy(rows, key) {\n  pass\n}\n',
+    tests: [
+      { name: 'sums a column', body: 'assertEqual(sumBy([{n:1},{n:2},{n:3}], "n"), 6);' },
+    ],
+    reference: `function sumBy(rows, key) {
+  return rows.reduce((s, r) => s + r[key], 0);
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-avg',
+    title: 'SQL: AVG',
+    language: 'js',
+    starter: 'function avgBy(rows, key) {\n  // average of the column; [] -> 0\n}\n',
+    tests: [
+      { name: 'averages', body: 'assertEqual(avgBy([{n:2},{n:4}], "n"), 3); assertEqual(avgBy([], "n"), 0);' },
+    ],
+    reference: `function avgBy(rows, key) {
+  if (rows.length === 0) return 0;
+  return rows.reduce((s, r) => s + r[key], 0) / rows.length;
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-inner-join',
+    title: 'SQL: INNER JOIN',
+    language: 'js',
+    starter: 'function innerJoin(left, right, leftKey, rightKey) {\n  // join rows where left[leftKey] === right[rightKey], merging them\n}\n',
+    tests: [
+      { name: 'joins on keys', body: "assertEqual(innerJoin([{uid:1,a:'x'}], [{id:1,b:'y'},{id:2,b:'z'}], 'uid', 'id'), [{uid:1,a:'x',id:1,b:'y'}]);" },
+    ],
+    reference: `function innerJoin(left, right, leftKey, rightKey) {
+  const index = new Map();
+  for (const r of right) {
+    const k = r[rightKey];
+    (index.get(k) || index.set(k, []).get(k)).push(r);
+  }
+  const out = [];
+  for (const l of left) for (const r of index.get(l[leftKey]) || []) out.push({ ...l, ...r });
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-update-where',
+    title: 'SQL: UPDATE ... WHERE',
+    language: 'js',
+    starter: 'function updateWhere(rows, predicate, patch) {\n  // return new rows with patch applied to matching rows (immutable)\n}\n',
+    tests: [
+      { name: 'patches matches only', body: "assertEqual(updateWhere([{id:1,done:false},{id:2,done:false}], (r) => r.id === 1, {done:true}), [{id:1,done:true},{id:2,done:false}]);" },
+    ],
+    reference: `function updateWhere(rows, predicate, patch) {
+  return rows.map((r) => (predicate(r) ? { ...r, ...patch } : r));
+}
+`,
+  },
 ]
