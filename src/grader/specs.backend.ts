@@ -2947,4 +2947,92 @@ function rleDecode(s) {
 }
 `,
   },
+  {
+    problemId: 'reliability-timeout-budget',
+    title: 'Timeout Budget',
+    language: 'js',
+    starter: 'function timeoutBudget(totalMs, steps) {\n  // steps: [{ name, ms }]. return { ok, remaining, overBy }\n}\n',
+    tests: [
+      { name: 'tracks remaining and overrun', body: "assertEqual(timeoutBudget(1000, [{name:'db',ms:250},{name:'api',ms:300}]), { ok:true, remaining:450, overBy:0 }); assertEqual(timeoutBudget(500, [{name:'db',ms:300},{name:'api',ms:350}]), { ok:false, remaining:0, overBy:150 });" },
+    ],
+    reference: `function timeoutBudget(totalMs, steps) {
+  const spent = steps.reduce((sum, step) => sum + step.ms, 0);
+  return { ok: spent <= totalMs, remaining: Math.max(0, totalMs - spent), overBy: Math.max(0, spent - totalMs) };
+}
+`,
+  },
+  {
+    problemId: 'reliability-bulkhead-limit',
+    title: 'Bulkhead Capacity',
+    language: 'js',
+    starter: 'function bulkheadLimit(activeByPool, limits, request) {\n  // request: { pool }. return { allowed, reason }\n}\n',
+    tests: [
+      { name: 'allows below limit and rejects saturated pool', body: "assertEqual(bulkheadLimit({db:2,email:5}, {db:3,email:5}, {pool:'db'}), { allowed:true, reason:'ok' }); assertEqual(bulkheadLimit({db:2,email:5}, {db:3,email:5}, {pool:'email'}), { allowed:false, reason:'bulkhead_full' });" },
+    ],
+    reference: `function bulkheadLimit(activeByPool, limits, request) {
+  const active = activeByPool[request.pool] || 0;
+  const limit = limits[request.pool] || 0;
+  if (active >= limit) return { allowed: false, reason: 'bulkhead_full' };
+  return { allowed: true, reason: 'ok' };
+}
+`,
+  },
+  {
+    problemId: 'reliability-outbox-ready',
+    title: 'Outbox Ready Events',
+    language: 'js',
+    starter: 'function readyOutbox(events, now) {\n  // return ids for unpublished events whose availableAt <= now\n}\n',
+    tests: [
+      { name: 'selects ready unpublished events only', body: "assertEqual(readyOutbox([{id:1,published:false,availableAt:10},{id:2,published:true,availableAt:1},{id:3,published:false,availableAt:20}], 10), [1]);" },
+    ],
+    reference: `function readyOutbox(events, now) {
+  return events.filter((event) => !event.published && event.availableAt <= now).map((event) => event.id);
+}
+`,
+  },
+  {
+    problemId: 'reliability-idempotency-conflict',
+    title: 'Idempotency Conflict Check',
+    language: 'js',
+    starter: 'function idempotencyDecision(seen, key, requestHash) {\n  // seen maps key -> { requestHash, response }. return replay, conflict, or process\n}\n',
+    tests: [
+      { name: 'replays same hash and conflicts on changed payload', body: "const seen = { k1:{ requestHash:'abc', response:{status:201} } }; assertEqual(idempotencyDecision(seen, 'k1', 'abc'), { action:'replay', response:{status:201} }); assertEqual(idempotencyDecision(seen, 'k1', 'xyz'), { action:'conflict' }); assertEqual(idempotencyDecision(seen, 'k2', 'abc'), { action:'process' });" },
+    ],
+    reference: `function idempotencyDecision(seen, key, requestHash) {
+  const prior = seen[key];
+  if (!prior) return { action: 'process' };
+  if (prior.requestHash !== requestHash) return { action: 'conflict' };
+  return { action: 'replay', response: prior.response };
+}
+`,
+  },
+  {
+    problemId: 'reliability-retryable-error',
+    title: 'Retryable Error Classifier',
+    language: 'js',
+    starter: 'function retryableError(err) {\n  // err: { status?, code? }. Retry timeouts, 429, and 5xx; do not retry 4xx validation/auth errors\n}\n',
+    tests: [
+      { name: 'classifies transient failures', body: "assertEqual(retryableError({code:'ETIMEDOUT'}), true); assertEqual(retryableError({status:503}), true); assertEqual(retryableError({status:429}), true); assertEqual(retryableError({status:400}), false); assertEqual(retryableError({status:401}), false);" },
+    ],
+    reference: `function retryableError(err) {
+  if (err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET') return true;
+  if (err.status === 429) return true;
+  return err.status >= 500 && err.status < 600;
+}
+`,
+  },
+  {
+    problemId: 'reliability-dependency-result',
+    title: 'Dependency Result Envelope',
+    language: 'js',
+    starter: 'function dependencyResult(name, outcome) {\n  // outcome: { ok, value?, error?, ms }. return a stable success/failure envelope\n}\n',
+    tests: [
+      { name: 'normalizes success and failure', body: "assertEqual(dependencyResult('db', {ok:true,value:3,ms:12}), { dependency:'db', ok:true, value:3, durationMs:12 }); assertEqual(dependencyResult('stripe', {ok:false,error:'timeout',ms:250}), { dependency:'stripe', ok:false, error:'timeout', durationMs:250 });" },
+    ],
+    reference: `function dependencyResult(name, outcome) {
+  if (outcome.ok) return { dependency: name, ok: true, value: outcome.value, durationMs: outcome.ms };
+  return { dependency: name, ok: false, error: outcome.error, durationMs: outcome.ms };
+}
+`,
+  },
 ]
