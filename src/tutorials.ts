@@ -13,6 +13,166 @@ export type Tutorial = {
 
 export const tutorials: Tutorial[] = [
   {
+    id: 'tut-architecture-glossary',
+    subjectId: 'architecture',
+    title: 'Start Here: Architecture Words in Plain English',
+    minutes: 9,
+    body: `The architecture vocabulary, assuming you have never seen it.
+
+**Monolith.** One program that contains the whole application. Simple to build,
+run, and debug; everything ships together.
+
+**Microservices.** The app split into many small programs ("services") that talk
+over the network, each owning one area. More independence, much more complexity.
+
+**Service.** One running program with a clear job (for example, a payments
+service).
+
+**Queue.** A waiting line for work. A producer drops a message in; a worker picks
+it up later. This lets the app accept work fast and do slow parts in the
+background.
+
+**Message broker.** The software that runs the queue/stream (RabbitMQ, Kafka).
+
+**Event.** A record that something happened ("OrderPlaced"), which other parts of
+the system can react to.
+
+**Idempotent.** Safe to do more than once with the same result. Setting status to
+"paid" is idempotent; adding $10 is not. This matters because messages can be
+delivered twice.
+
+**Retry with backoff.** Trying a failed operation again, waiting longer each time
+so you do not pile onto a struggling service.
+
+**Circuit breaker.** After too many failures, stop calling a broken dependency for
+a while so one failure does not cascade.
+
+**DLQ (Dead-Letter Queue).** A side queue for messages that keep failing, so they
+stop blocking the line and you can inspect them.
+
+**Saga.** A multi-step process across services where, if a later step fails,
+earlier steps are undone with "compensating" actions.
+
+**CQRS / Event sourcing.** Advanced patterns: separating reads from writes (CQRS),
+and storing the list of events instead of just current state (event sourcing).`,
+  },
+  {
+    id: 'tut-devops-glossary',
+    subjectId: 'devops',
+    title: 'Start Here: DevOps Words in Plain English',
+    minutes: 9,
+    body: `Deployment and operations terms, from zero.
+
+**DevOps.** The practice of building, shipping, and running software smoothly and
+repeatably (instead of manual, error-prone steps).
+
+**CI (Continuous Integration).** Automatically building and testing your code on
+every change, so breakage is caught early.
+
+**CD (Continuous Delivery/Deployment).** Automatically shipping that tested code
+to staging or production.
+
+**Container.** A lightweight package holding your app plus everything it needs to
+run, so it behaves the same on every machine.
+
+**Docker.** The most common tool for building and running containers.
+
+**Image.** The built, read-only template a container starts from (like a snapshot).
+
+**Kubernetes.** A system that runs many containers across many machines, restarts
+crashed ones, and routes traffic to healthy ones.
+
+**Deploy.** Releasing a new version of your app.
+
+**Rollback.** Quickly switching back to the previous version when a deploy goes
+wrong.
+
+**Environment.** A place your app runs: dev (your machine), staging (a rehearsal),
+production (real users).
+
+**Config and secrets.** Settings that change per environment (config) and the
+sensitive subset like passwords and API keys (secrets). Both live outside the
+code, in environment variables or a secret manager.
+
+**Observability.** Being able to see what your running system is doing, via three
+signals: **logs** (events that happened), **metrics** (numbers over time like
+error rate), and **traces** (the path of one request across services).
+
+**Health check.** An endpoint the platform calls to ask "are you alive?"
+(liveness) and "are you ready for traffic?" (readiness).`,
+  },
+  {
+    id: 'tut-performance-glossary',
+    subjectId: 'performance',
+    title: 'Start Here: Performance Words in Plain English',
+    minutes: 8,
+    body: `Speed and scale terms, explained simply.
+
+**Latency.** How long one request takes (e.g. 120 milliseconds). Lower is better.
+
+**Throughput.** How many requests you handle per second. Higher is better.
+
+**Percentile (p95, p99).** A way to describe the slow tail. "p95 = 300ms" means
+95% of requests were faster than 300ms and 5% were slower. Averages hide this; the
+slow 5% is what users complain about.
+
+**Cache.** A fast, temporary store of results so you do not redo expensive work.
+A **cache hit** means the answer was already there; a **miss** means you had to
+compute it.
+
+**TTL (Time To Live).** How long a cached value stays valid before it expires.
+
+**N+1 query.** A classic slowness bug: fetching a list (1 query) then one more
+query per item (N queries) instead of fetching them together. 1 + N round trips.
+
+**Connection pool.** A small set of reused database connections, because opening a
+new connection per request is expensive and would overwhelm the database.
+
+**Load test.** Simulating many users to see how the system behaves under pressure
+before real traffic does.
+
+**Bottleneck.** The one slowest part that limits everything else; the thing worth
+fixing first. Usually the database.
+
+**Scaling.** Handling more load by using a bigger machine (**vertical**) or more
+machines behind a load balancer (**horizontal**).`,
+  },
+  {
+    id: 'tut-system-design-glossary',
+    subjectId: 'system-design',
+    title: 'Start Here: System Design Words in Plain English',
+    minutes: 9,
+    body: `The big-picture terms, from scratch.
+
+**Scalability.** The ability to handle growth (more users, more data) by adding
+resources.
+
+**Availability.** The share of time the system is up and working (often quoted as
+"99.9%"). High availability means few outages.
+
+**Consistency.** Whether everyone sees the same, latest data at the same time.
+Sometimes traded away for speed/availability.
+
+**Load balancer.** A traffic cop in front of many servers that spreads requests
+across them and skips unhealthy ones.
+
+**Replication.** Keeping copies of the data on multiple machines, for faster reads
+and survival if one dies. Copies can lag slightly behind ("replication lag").
+
+**Sharding.** Splitting data across machines by some key when one machine cannot
+hold it all.
+
+**CDN (Content Delivery Network).** A network of servers near users that caches
+content at the "edge" so it loads fast and offloads your origin server.
+
+**Rate limiter.** A control that caps how many requests a client may make, to
+prevent abuse and overload.
+
+**Real-time delivery.** Getting fresh data to clients quickly: **polling** (ask
+repeatedly), **SSE** (Server-Sent Events, a one-way stream), or **WebSockets** (a
+two-way live connection).`,
+  },
+  {
     id: 'tut-internet-glossary',
     subjectId: 'internet',
     title: 'Start Here: Web Words in Plain English',
