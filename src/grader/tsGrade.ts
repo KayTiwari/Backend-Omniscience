@@ -1,0 +1,40 @@
+import type { GradeResult, TestCase, TestResult } from './types'
+
+// Host-side entry point for TypeScript drills. Longer default timeout because the
+// first run downloads the TypeScript compiler from the CDN.
+export function gradeTs(code: string, tests: TestCase[], timeoutMs = 15000): Promise<GradeResult> {
+  return new Promise((resolve) => {
+    let worker: Worker
+    try {
+      worker = new Worker(new URL('./tsWorker.ts', import.meta.url), { type: 'module' })
+    } catch (err) {
+      resolve({ passed: false, results: [], error: 'Failed to start TypeScript runner: ' + String(err) })
+      return
+    }
+
+    const timer = setTimeout(() => {
+      worker.terminate()
+      resolve({ passed: false, results: [], timedOut: true })
+    }, timeoutMs)
+
+    worker.onmessage = (e: MessageEvent) => {
+      clearTimeout(timer)
+      worker.terminate()
+      const data = e.data as { results?: TestResult[]; fatal?: string; logs?: string[] }
+      if (data.fatal) {
+        resolve({ passed: false, results: [], error: data.fatal, logs: data.logs })
+        return
+      }
+      const results = data.results || []
+      resolve({ passed: results.length > 0 && results.every((r) => r.pass), results, logs: data.logs })
+    }
+
+    worker.onerror = (err: ErrorEvent) => {
+      clearTimeout(timer)
+      worker.terminate()
+      resolve({ passed: false, results: [], error: err.message || 'Runner error' })
+    }
+
+    worker.postMessage({ code, tests })
+  })
+}
