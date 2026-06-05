@@ -978,4 +978,291 @@ managed containers. Spiky, event-driven, or glue work: serverless functions.
 Static and cacheable: push it to the CDN. Most real systems combine all three: a
 CDN in front, app servers/containers for core traffic, and functions for events.`,
   },
+  {
+    id: 'tut-ddd',
+    subjectId: 'architecture',
+    title: 'Domain-Driven Design: Boundaries That Hold',
+    minutes: 11,
+    body: `DDD is less about fancy patterns and more about modeling software around the
+business and drawing boundaries that do not leak.
+
+**Ubiquitous language.** Code, conversations, and the database should use the same
+words the domain experts use. If the business says "shipment" and the code says
+"package record", every conversation pays a translation tax. Name things the way
+the domain does.
+
+**Bounded contexts.** A large domain is split into contexts, each with its own
+model. "Customer" in Billing (has a payment method) is not the same as "Customer"
+in Support (has tickets). Forcing one shared model creates a tangled mess; let
+each context own its meaning and translate at the edges.
+
+**Building blocks:**
+- **Entities** have identity over time (a User with an id).
+- **Value objects** are defined by their attributes and are immutable (Money,
+  an Address). Two value objects with the same fields are equal.
+- **Aggregates** are clusters with one root; you change the aggregate only through
+  its root, which enforces invariants (an Order controls its OrderLines so totals
+  stay consistent).
+- **Repositories** load and save aggregates, hiding the database.
+
+**Why it matters for backends.** Aggregate boundaries often map to transaction
+boundaries: one aggregate, one transaction. Bounded contexts often map to
+service boundaries when you split a monolith. Get the boundaries right and the
+system stays changeable; get them wrong and every feature touches everything.
+
+**Start simple.** You do not need the full toolkit on day one. The highest-value
+ideas are ubiquitous language and clear aggregate/context boundaries.`,
+  },
+  {
+    id: 'tut-cqrs-es',
+    subjectId: 'architecture',
+    title: 'CQRS and Event Sourcing',
+    minutes: 12,
+    body: `Two related but separate ideas, often confused. You can use either without the
+other.
+
+**CQRS (Command Query Responsibility Segregation).** Split the write model
+(commands that change state) from the read model (queries). They can use
+different shapes and even different stores.
+- **Why:** reads and writes have different needs. Writes enforce invariants;
+  reads want denormalized, fast-to-serve views. A complex domain write model
+  makes a terrible query model.
+- **Cost:** two models to keep in sync, usually eventually consistent (the read
+  side lags the write side briefly).
+
+**Event sourcing.** Instead of storing current state, store the **sequence of
+events** that produced it. Current state is a left-fold over the events:
+
+    events: Deposited(100), Withdrew(30)
+    balance = reduce(events) = 70
+
+The *Rebuild State From Events* drill is exactly this fold.
+- **Why:** a perfect audit log, time travel (rebuild state at any point), and you
+  can build new read models by replaying history.
+- **Cost:** more complexity, schema/versioning of events, and you usually keep
+  **snapshots** so you do not replay millions of events every time.
+
+**They pair well:** event sourcing on the write side, with projections building
+read models (CQRS) by consuming the event stream. The *CQRS projection* and
+*Transactional Outbox* problems connect here.
+
+**When to use.** Reach for these in complex domains where audit, temporal
+queries, or wildly different read/write needs justify the cost. For CRUD, plain
+state storage is simpler and correct.`,
+  },
+  {
+    id: 'tut-saga',
+    subjectId: 'architecture',
+    title: 'Distributed Transactions and the Saga Pattern',
+    minutes: 11,
+    body: `Across multiple services or databases you cannot wrap everything in one ACID
+transaction. The saga pattern coordinates a multi-step operation that can partly
+fail.
+
+**The problem.** "Place order" must reserve inventory, charge payment, and create
+a shipment, each owned by a different service. A classic distributed transaction
+(two-phase commit) is slow, locks resources, and couples services. 2PC exists
+(the *Two-Phase Commit Decision* drill models the vote) but is avoided at scale.
+
+**Sagas: a sequence with compensations.** Run the steps one by one. If a step
+fails, run **compensating actions** for the already-completed steps, in reverse,
+to undo their effects:
+
+    reserve inventory   -> compensate: release inventory
+    charge payment      -> compensate: refund payment
+    create shipment     -> (failed here)
+    => refund payment, release inventory
+
+The *Saga Compensation* drill implements exactly this rollback.
+
+**Two styles:**
+- **Orchestration:** a central coordinator tells each service what to do and
+  triggers compensations. Easier to reason about and monitor.
+- **Choreography:** services react to each other's events with no central brain.
+  More decoupled, harder to follow.
+
+**Make it safe.** Every step and every compensation must be **idempotent**,
+because retries and duplicate events are guaranteed. Compensation is not always a
+clean undo (you cannot un-send an email), so sometimes you compensate with a
+follow-up action (send a correction).
+
+**Bottom line:** embrace eventual consistency across services, and design the
+unhappy path (compensations) as carefully as the happy path.`,
+  },
+  {
+    id: 'tut-backpressure',
+    subjectId: 'performance',
+    title: 'Backpressure and Graceful Degradation',
+    minutes: 10,
+    body: `Systems do not fail gently by default; they fall over. Backpressure and graceful
+degradation are how you stay up under more load than you can handle.
+
+**Backpressure.** When a consumer cannot keep up, the system must signal
+"slow down" rather than buffer infinitely until it runs out of memory. A bounded
+queue is backpressure: when full, you reject or block the producer. An unbounded
+queue just delays the crash and hides the problem.
+
+**Load shedding.** Past capacity, it is better to serve some requests well than
+all requests badly. Reject excess early (429/503 with Retry-After) before the
+work piles up. Shed low-priority traffic first (health checks and critical paths
+survive; nice-to-haves get dropped).
+
+**Graceful degradation.** When a dependency is slow or down, degrade the feature
+instead of failing the whole request:
+- Serve stale cache data when the source is unavailable.
+- Return a partial response (skip the recommendations widget; still show the
+  product).
+- Use sensible defaults for a non-critical service.
+
+**Circuit breakers.** Stop hammering a failing dependency. After N consecutive
+failures, "open" the breaker and fail fast for a cooldown, then "half-open" to
+test recovery. This prevents one slow dependency from exhausting all your threads
+and cascading the outage. The *Circuit Breaker States* drill models the state
+machine.
+
+**Timeouts everywhere.** A call with no timeout can hang forever and tie up a
+worker. Every network call needs a timeout, and retries need backoff + jitter so
+recovery does not become a self-inflicted DDoS.
+
+**The mindset:** decide in advance what to drop, slow, or stale when you exceed
+capacity. Falling over is a choice you make by not planning.`,
+  },
+  {
+    id: 'tut-health-checks',
+    subjectId: 'devops',
+    title: 'Health Checks: Liveness vs Readiness',
+    minutes: 8,
+    body: `Two endpoints, two different questions. Confusing them causes restart loops and
+traffic sent to instances that cannot serve it.
+
+**Liveness ("am I alive?").** Is the process wedged and unrecoverable (deadlock,
+out of memory)? If liveness fails, the orchestrator **restarts** the container.
+Keep it cheap and dependency-free: a liveness probe that checks the database will
+restart your app during a database blip, turning a small problem into an outage.
+
+**Readiness ("can I serve traffic right now?").** Is the app warmed up and are its
+critical dependencies reachable? If readiness fails, the load balancer **stops
+sending traffic** but does not restart the process. Readiness may legitimately
+check the DB/cache, because if they are unreachable this instance cannot do
+useful work.
+
+**Why the distinction matters:**
+- On startup, readiness is false until migrations/caches/connections are ready,
+  so no requests hit a half-initialized app.
+- During a deploy, new instances only receive traffic once **ready**, and old
+  instances are drained before shutdown. This is what makes zero-downtime deploys
+  work (paired with graceful shutdown).
+
+**Practical shape:**
+
+    GET /livez   -> 200 if the process is running
+    GET /readyz  -> 200 only if dependencies are reachable and warm
+
+**Common mistake:** a single /health that checks everything and is used for both.
+A dependency hiccup then triggers restarts (liveness) when you only meant to pull
+the instance out of rotation (readiness).`,
+  },
+  {
+    id: 'tut-secrets-config',
+    subjectId: 'devops',
+    title: 'Secrets and Configuration',
+    minutes: 9,
+    body: `Config is everything that changes between environments; secrets are the subset
+that would hurt if leaked. Both belong outside your code.
+
+**Config in the environment.** Read settings from environment variables (or a
+config service), not from values baked into the build. The same artifact then
+runs in dev, staging, and prod with different config. This is a core twelve-factor
+rule.
+
+**Never commit secrets.** API keys, DB passwords, and signing keys in git are a
+breach, even in a private repo and even if later deleted (git history keeps
+them). Use a .gitignore for env files and scan for accidental commits.
+
+**Use a secret manager.** Vault, AWS Secrets Manager, or your platform's secret
+store: secrets are encrypted at rest, access-controlled, audited, and rotatable
+without a redeploy. The app fetches them at startup or runtime.
+
+**Rotation and least privilege.** Assume any secret can leak. Make rotation
+routine, and scope each credential to the minimum it needs (a read-only DB user
+for a reporting service, not the admin role).
+
+**Do not leak secrets at runtime either.** Keep them out of logs, error messages,
+and API responses (the error-envelope rule: generic messages to clients,
+details to your logs only).
+
+**Local dev.** A .gitignored .env file (loaded by your framework) is fine for
+local development, as long as it never holds production secrets and never gets
+committed.`,
+  },
+  {
+    id: 'tut-progressive-delivery',
+    subjectId: 'devops',
+    title: 'Blue-Green, Canary, and Feature Flags',
+    minutes: 10,
+    body: `Shipping is risky; these techniques shrink the blast radius and make rollback
+fast.
+
+**Rolling deploy (the baseline).** Replace instances a few at a time, only sending
+traffic to ready ones and draining old ones. Simple, but the new version goes to
+everyone as it rolls.
+
+**Blue-green.** Run two identical environments. Blue serves production; you deploy
+to green, test it, then flip the load balancer to green. Rollback is flipping
+back to blue, which is instant. Cost: double the infrastructure during the
+switch, and you must handle database compatibility across both (expand/contract).
+
+**Canary.** Release to a small slice of traffic (say 5%), watch error rate and
+latency, then ramp up if healthy or roll back if not. This catches problems real
+synthetic tests miss, with limited exposure. It needs good observability to
+decide automatically.
+
+**Feature flags.** Decouple **deploy** from **release**. Ship code dark behind a
+flag, then turn it on for a cohort or percentage at runtime, no redeploy. Flags
+enable canary-by-user, instant kill switches, and trunk-based development (merge
+incomplete work safely behind a flag).
+- **Discipline required:** flags are tech debt. Remove them once a feature is
+  fully rolled out, or you accumulate a combinatorial mess of stale conditionals.
+
+**The common thread:** make releasing reversible and incremental. The question is
+never "will something break" but "how fast can we limit and undo it".`,
+  },
+  {
+    id: 'tut-normalization',
+    subjectId: 'sql',
+    title: 'Normalization and Data Modeling',
+    minutes: 11,
+    body: `Normalization organizes a relational schema to avoid redundancy and the update
+anomalies it causes. Knowing the rules (and when to break them) is core data
+modeling.
+
+**The anomalies it prevents.** If a customer's address is copied onto every order
+row, changing the address means updating many rows (update anomaly), a new
+customer with no order has nowhere to live (insertion anomaly), and deleting the
+last order loses the customer (deletion anomaly). Normalization puts each fact in
+exactly one place.
+
+**The normal forms, briefly:**
+- **1NF:** atomic columns, no repeating groups (no "tags" column holding a CSV).
+- **2NF:** no non-key column depends on only part of a composite key.
+- **3NF:** no non-key column depends on another non-key column (no transitive
+  dependencies). "Every non-key fact depends on the key, the whole key, and
+  nothing but the key."
+
+In practice, aiming for **3NF** handles most cases: separate entities into their
+own tables and link them with foreign keys.
+
+**Model relationships explicitly.** One-to-many is a foreign key on the many side;
+many-to-many needs a join table (student_courses linking students and courses).
+
+**When to denormalize.** Normalization optimizes writes and integrity but can make
+read-heavy queries do many joins. Deliberately denormalize for performance when
+measured: cache computed aggregates, duplicate a hot column to avoid a join, or
+keep a read model (CQRS). The rule: normalize for correctness first, denormalize
+for proven performance needs, and know which copy is the source of truth.
+
+**NoSQL flips the default.** Document/wide-column stores often denormalize from
+the start, modeling around access patterns instead of relationships (see the
+NoSQL tutorial).`,
+  },
 ]
