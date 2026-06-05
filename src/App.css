@@ -134,6 +134,19 @@ h1 {
   text-align: center;
 }
 
+.test-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 8px;
+  padding: 8px;
+  background: #eef3ea;
+  color: #263238;
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .search-box {
   display: flex;
   align-items: center;
@@ -340,9 +353,15 @@ h1 {
 }
 
 .problem-link span {
+  flex: 1;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.problem-link > svg:last-child {
+  flex: 0 0 auto;
+  color: #2f80ed;
 }
 
 .workspace {

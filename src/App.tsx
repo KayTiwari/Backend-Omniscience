@@ -123,6 +123,11 @@ function App() {
     [problemIds, progress.completed],
   )
   const completedCount = completedSet.size
+  const specsByProblemId = useMemo(
+    () => new Map(specs.map((spec) => [spec.problemId, spec])),
+    [],
+  )
+  const gradableCount = specsByProblemId.size
   const totalMinutes = allProblems.reduce((sum, problem) => sum + problem.minutes, 0)
   const completedMinutes = allProblems
     .filter((problem) => completedSet.has(problem.id))
@@ -139,10 +144,6 @@ function App() {
     [],
   )
   const courseWarnings = useMemo(() => validateCourse(subjects), [])
-  const specsByProblemId = useMemo(
-    () => new Map(specs.map((spec) => [spec.problemId, spec])),
-    [],
-  )
   const filteredProblemIds = useMemo(() => {
     const ids = new Set<string>()
     subjects.forEach((subject) => {
@@ -312,6 +313,10 @@ function App() {
             <span>{Math.round(totalMinutes / 60)}h curriculum</span>
             <span>{Math.max(0, Math.round(remainingMinutes / 60))}h left</span>
           </div>
+          <div className="test-stats">
+            <Code2 size={15} />
+            <span>{gradableCount} runnable coding drills</span>
+          </div>
           <div className="progress-tools">
             <button onClick={exportProgress} type="button">
               <Download size={15} />
@@ -451,6 +456,7 @@ function App() {
                         >
                           {done ? <Check size={15} /> : <Circle size={15} />}
                           <span>{problem.title}</span>
+                          {specsByProblemId.has(problem.id) && <Code2 size={14} />}
                         </button>
                       )
                     })}
