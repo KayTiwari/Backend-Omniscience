@@ -32,6 +32,8 @@ import {
 import { validateCourse } from './courseValidation'
 import { applyEditorKey } from './editorKeys'
 import { allSpecs, grade, type GradeResult } from './grader'
+import { renderMarkdown } from './miniMarkdown'
+import { tutorials } from './tutorials'
 
 type ProgressState = {
   completed: string[]
@@ -877,6 +879,25 @@ function App() {
               <strong>{nextProblem?.title ?? 'End of course'}</strong>
             </button>
           </section>
+
+          {tutorials.some((tut) => tut.subjectId === activeSubject.id) && (
+            <section className="prompt-block learn-block">
+              <h3>Learn</h3>
+              {tutorials
+                .filter((tut) => tut.subjectId === activeSubject.id)
+                .map((tut) => (
+                  <details key={tut.id} className="learn-item">
+                    <summary>
+                      {tut.title} · {tut.minutes} min
+                    </summary>
+                    <div
+                      className="learn-body"
+                      dangerouslySetInnerHTML={{ __html: renderMarkdown(tut.body) }}
+                    />
+                  </details>
+                ))}
+            </section>
+          )}
 
           <section className="prompt-block">
             <h3>Prompt</h3>
