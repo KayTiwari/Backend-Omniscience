@@ -609,6 +609,27 @@ function App() {
                 </button>
               </div>
 
+              <div className="coding-instructions">
+                <strong>Do this</strong>
+                <ol>
+                  <li>Edit the function in the editor. Keep the function/class name exactly as shown.</li>
+                  <li>Use the prompt, example, and checklist above to decide the behavior.</li>
+                  <li>Click Run tests. Passing all tests marks this problem complete.</li>
+                </ol>
+              </div>
+
+              <div className="test-preview">
+                <strong>Tests you need to satisfy</strong>
+                <ul>
+                  {activeSpec.tests.map((test) => (
+                    <li key={test.name}>
+                      <Circle size={14} />
+                      <span>{test.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
               <textarea
                 className="code-editor"
                 value={activeCode}

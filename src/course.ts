@@ -15,6 +15,7 @@ import { capstoneProblems } from './course.capstones'
 import { deepDiveProblems } from './course.deepdive'
 import { extraProblems, extraSubjects } from './course.extra'
 import { graderDrillProblems } from './course.graderDrills'
+import { moreTutorialProblems } from './course.moreTutorials'
 import { oralExamProblems } from './course.oralExams'
 import { roadmapGapProblems } from './course.roadmapGaps'
 import { tutorialProblems } from './course.tutorials'
@@ -658,6 +659,7 @@ export const subjects: Subject[] = [
     problems: [
       ...subject.problems,
       ...(tutorialProblems[subject.id] ?? []),
+      ...(moreTutorialProblems[subject.id] ?? []),
       ...(longTutorialProblems[subject.id] ?? []),
       ...(deepDiveProblems[subject.id] ?? []),
       ...(roadmapGapProblems[subject.id] ?? []),

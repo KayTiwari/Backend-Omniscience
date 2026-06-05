@@ -73,7 +73,7 @@ const coreSpecs: GradeSpec[] = [
     title: 'Parse A Query String',
     language: 'js',
     starter:
-      "function parseQuery(qs) {\n  // 'a=1&b=2' -> { a: '1', b: '2' }; decode %20; '' -> {}\n}\n",
+      "function parseQuery(qs) {\n  // Return an object of decoded key/value pairs.\n  // Example: 'a=1&b=2' -> { a: '1', b: '2' }\n  // Example: '' -> {}\n}\n",
     tests: [
       {
         name: 'parses simple pairs',
