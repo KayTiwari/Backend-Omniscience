@@ -1911,4 +1911,256 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Strings ----------------------------------------------------------
+  {
+    problemId: 'str-anagram',
+    title: 'Anagram Check',
+    language: 'js',
+    starter:
+      'function isAnagram(a, b) {\n  // same letters, any order -> boolean\n}\n',
+    tests: [
+      {
+        name: 'detects anagrams',
+        body: `assert(isAnagram('listen', 'silent') === true); assert(isAnagram('rat', 'car') === false); assert(isAnagram('a', 'ab') === false);`,
+      },
+    ],
+    reference: `function isAnagram(a, b) {
+  const norm = (s) => s.split('').sort().join('');
+  return norm(a) === norm(b);
+}
+`,
+  },
+  {
+    problemId: 'str-lcp',
+    title: 'Longest Common Prefix',
+    language: 'js',
+    starter:
+      "function lcp(strs) {\n  // longest common prefix of an array of strings; [] -> ''\n}\n",
+    tests: [
+      {
+        name: 'finds the shared prefix',
+        body: `assertEqual(lcp(['flower','flow','flight']), 'fl'); assertEqual(lcp(['a','b']), ''); assertEqual(lcp([]), '');`,
+      },
+    ],
+    reference: `function lcp(strs) {
+  if (!strs.length) return '';
+  let p = strs[0];
+  for (const s of strs) {
+    while (s.indexOf(p) !== 0) p = p.slice(0, -1);
+    if (!p) return '';
+  }
+  return p;
+}
+`,
+  },
+
+  // ----- Caching & conditional requests ----------------------------------
+  {
+    problemId: 'cache-ttl',
+    title: 'TTL Cache',
+    language: 'js',
+    starter:
+      'class TTLCache {\n  set(key, value, expiresAt) {}\n  get(key, now) {} // undefined if missing or expired\n}\n',
+    tests: [
+      {
+        name: 'expires entries by time',
+        body: `const c = new TTLCache(); c.set('a', 1, 100); assertEqual(c.get('a', 50), 1); assertEqual(c.get('a', 150), undefined); assertEqual(c.get('x', 0), undefined);`,
+      },
+    ],
+    reference: `class TTLCache {
+  constructor() { this.m = new Map(); }
+  set(key, value, expiresAt) { this.m.set(key, { value, expiresAt }); }
+  get(key, now) {
+    const e = this.m.get(key);
+    if (!e) return undefined;
+    if (e.expiresAt <= now) { this.m.delete(key); return undefined; }
+    return e.value;
+  }
+}
+`,
+  },
+  {
+    problemId: 'http-conditional-get',
+    title: 'Conditional GET (ETag)',
+    language: 'js',
+    starter:
+      'function conditionalStatus(etag, ifNoneMatch) {\n  // 304 when the ETag matches, else 200\n}\n',
+    tests: [
+      {
+        name: 'returns 304 on match',
+        body: `assertEqual(conditionalStatus('abc', 'abc'), 304); assertEqual(conditionalStatus('abc', 'xyz'), 200); assertEqual(conditionalStatus('abc', null), 200);`,
+      },
+    ],
+    reference: `function conditionalStatus(etag, ifNoneMatch) {
+  return ifNoneMatch === etag ? 304 : 200;
+}
+`,
+  },
+
+  // ----- Security ---------------------------------------------------------
+  {
+    problemId: 'security-safe-join',
+    title: 'Path Traversal Defense',
+    language: 'js',
+    starter:
+      'function safeJoin(base, userPath) {\n  // join base + userPath; return null if it escapes base\n}\n',
+    tests: [
+      {
+        name: 'blocks escaping the base',
+        body: `assertEqual(safeJoin('/var/www', 'a/b'), '/var/www/a/b'); assertEqual(safeJoin('/var/www', '../etc/passwd'), null); assertEqual(safeJoin('/var/www', './x'), '/var/www/x');`,
+      },
+    ],
+    reference: `function safeJoin(base, userPath) {
+  const norm = (p) => {
+    const st = [];
+    for (const s of p.split('/')) {
+      if (s === '' || s === '.') continue;
+      if (s === '..') st.pop();
+      else st.push(s);
+    }
+    return '/' + st.join('/');
+  };
+  const b = norm(base);
+  const full = norm(base + '/' + userPath);
+  return full === b || full.startsWith(b + '/') ? full : null;
+}
+`,
+  },
+  {
+    problemId: 'security-csrf-double-submit',
+    title: 'CSRF Double-Submit',
+    language: 'js',
+    starter:
+      'function csrfOk(cookieToken, headerToken) {\n  // both present and equal -> true\n}\n',
+    tests: [
+      {
+        name: 'requires matching non-empty tokens',
+        body: `assert(csrfOk('t', 't') === true); assert(csrfOk('t', 'x') === false); assert(csrfOk('', '') === false);`,
+      },
+    ],
+    reference: `function csrfOk(cookieToken, headerToken) {
+  return Boolean(cookieToken) && cookieToken === headerToken;
+}
+`,
+  },
+  {
+    problemId: 'net-is-private-ip',
+    title: 'Private IP Range Check',
+    language: 'js',
+    starter:
+      'function isPrivateIp(ip) {\n  // 10/8, 172.16-31, 192.168, 127/8 -> true\n}\n',
+    tests: [
+      {
+        name: 'classifies private vs public',
+        body: `assert(isPrivateIp('10.0.0.1') === true); assert(isPrivateIp('192.168.1.1') === true); assert(isPrivateIp('172.20.0.1') === true); assert(isPrivateIp('8.8.8.8') === false); assert(isPrivateIp('172.32.0.1') === false);`,
+      },
+    ],
+    reference: `function isPrivateIp(ip) {
+  const [a, b] = ip.split('.').map(Number);
+  if (a === 10 || a === 127) return true;
+  if (a === 192 && b === 168) return true;
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  return false;
+}
+`,
+  },
+
+  // ----- DB & distributed -------------------------------------------------
+  {
+    problemId: 'db-in-clause',
+    title: 'Build An IN Clause',
+    language: 'js',
+    starter:
+      "function inClause(column, n, start) {\n  // inClause('id', 3) -> 'id IN ($1, $2, $3)'. start defaults to 1.\n}\n",
+    tests: [
+      {
+        name: 'numbers the placeholders',
+        body: `assertEqual(inClause('id', 3), 'id IN ($1, $2, $3)'); assertEqual(inClause('id', 2, 5), 'id IN ($5, $6)');`,
+      },
+    ],
+    reference: `function inClause(column, n, start) {
+  start = start || 1;
+  const ph = Array.from({ length: n }, (_, i) => '$' + (start + i)).join(', ');
+  return column + ' IN (' + ph + ')';
+}
+`,
+  },
+  {
+    problemId: 'db-optimistic-lock',
+    title: 'Optimistic Lock Check',
+    language: 'js',
+    starter:
+      'function canUpdate(currentVersion, expectedVersion) {\n  // update only if the row version still matches\n}\n',
+    tests: [
+      {
+        name: 'matches versions',
+        body: `assert(canUpdate(3, 3) === true); assert(canUpdate(3, 2) === false);`,
+      },
+    ],
+    reference: `function canUpdate(currentVersion, expectedVersion) {
+  return currentVersion === expectedVersion;
+}
+`,
+  },
+  {
+    problemId: 'dist-leader-election',
+    title: 'Leader Election (Bully)',
+    language: 'js',
+    starter:
+      'function electLeader(nodeIds) {\n  // highest id wins\n}\n',
+    tests: [
+      {
+        name: 'picks the max id',
+        body: `assertEqual(electLeader([3, 1, 5, 2]), 5); assertEqual(electLeader([7]), 7);`,
+      },
+    ],
+    reference: `function electLeader(nodeIds) {
+  return Math.max(...nodeIds);
+}
+`,
+  },
+
+  // ----- Algorithms & data -----------------------------------------------
+  {
+    problemId: 'algo-gcd',
+    title: 'Greatest Common Divisor',
+    language: 'js',
+    starter:
+      'function gcd(a, b) {\n  // Euclid\n}\n',
+    tests: [
+      {
+        name: 'computes gcd',
+        body: `assertEqual(gcd(12, 18), 6); assertEqual(gcd(7, 1), 1); assertEqual(gcd(0, 5), 5);`,
+      },
+    ],
+    reference: `function gcd(a, b) {
+  while (b) { [a, b] = [b, a % b]; }
+  return a;
+}
+`,
+  },
+  {
+    problemId: 'data-csv-to-objects',
+    title: 'CSV To Objects',
+    language: 'js',
+    starter:
+      "function csvToObjects(lines) {\n  // first line is the header. ['a,b','1,2'] -> [{a:'1',b:'2'}]\n}\n",
+    tests: [
+      {
+        name: 'maps rows onto headers',
+        body: `assertEqual(csvToObjects(['a,b', '1,2', '3,4']), [{ a: '1', b: '2' }, { a: '3', b: '4' }]);`,
+      },
+    ],
+    reference: `function csvToObjects(lines) {
+  const header = lines[0].split(',');
+  return lines.slice(1).map((line) => {
+    const cells = line.split(',');
+    const o = {};
+    header.forEach((h, i) => { o[h] = cells[i]; });
+    return o;
+  });
+}
+`,
+  },
 ]
