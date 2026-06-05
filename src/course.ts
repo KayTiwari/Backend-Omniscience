@@ -11,6 +11,7 @@ import {
   Workflow,
   type LucideIcon,
 } from 'lucide-react'
+import { capstoneProblems } from './course.capstones'
 import { deepDiveProblems } from './course.deepdive'
 import { extraProblems, extraSubjects } from './course.extra'
 import { graderDrillProblems } from './course.graderDrills'
@@ -629,6 +630,7 @@ export const subjects: Subject[] = [
       ...(roadmapGapProblems[subject.id] ?? []),
       ...(graderDrillProblems[subject.id] ?? []),
       ...(extraProblems[subject.id] ?? []),
+      ...(capstoneProblems[subject.id] ?? []),
     ],
   })),
   ...extraSubjects,
