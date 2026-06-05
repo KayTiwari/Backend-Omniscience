@@ -1,5 +1,6 @@
 import type { GradeSpec } from './types'
 import { backendSpecs } from './specs.backend.ts'
+import { frameworkSpecs } from './specs.framework.ts'
 
 // Auto-gradable drills. Each is a pure JS function the learner implements; the
 // tests assert behavior. Attach a spec to a course problem via `problemId`.
@@ -259,4 +260,4 @@ const coreSpecs: GradeSpec[] = [
   },
 ]
 
-export const specs: GradeSpec[] = [...coreSpecs, ...backendSpecs]
+export const specs: GradeSpec[] = [...coreSpecs, ...backendSpecs, ...frameworkSpecs]

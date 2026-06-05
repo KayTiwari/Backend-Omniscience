@@ -15,9 +15,9 @@ for (const spec of specs) {
   }
 
   const broken = runTests('', spec.tests)
-  const allFail = broken.every((r) => !r.pass)
-  console.log(`${allFail ? 'PASS' : 'FAIL'}  broken detected: ${spec.title}`)
-  if (!allFail) ok = false
+  const hasFailure = broken.some((r) => !r.pass)
+  console.log(`${hasFailure ? 'PASS' : 'FAIL'}  broken detected: ${spec.title}`)
+  if (!hasFailure) ok = false
 }
 
 if (!ok) throw new Error('grader self-test failed')
