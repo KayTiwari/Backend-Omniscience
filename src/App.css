@@ -659,7 +659,17 @@ h1 {
 }
 
 .choice.selected {
-  border-color: #52616b;
+  border-color: #2f80ed;
+  background: #edf5ff;
+  box-shadow:
+    inset 5px 0 0 #2f80ed,
+    0 0 0 1px rgba(47, 128, 237, 0.18);
+  color: #102947;
+}
+
+.choice.selected span {
+  background: #2f80ed;
+  color: #ffffff;
 }
 
 .choice.correct {
@@ -667,9 +677,19 @@ h1 {
   background: #effaf5;
 }
 
+.choice.correct span {
+  background: #00a878;
+  color: #ffffff;
+}
+
 .choice.wrong {
   border-color: #e84a5f;
   background: #fff1f3;
+}
+
+.choice.wrong span {
+  background: #e84a5f;
+  color: #ffffff;
 }
 
 .quiz-result {
@@ -948,7 +968,17 @@ h1 {
 }
 
 .criterion-choice.selected {
-  border-color: #52616b;
+  border-color: #2f80ed;
+  background: #edf5ff;
+  box-shadow:
+    inset 5px 0 0 #2f80ed,
+    0 0 0 1px rgba(47, 128, 237, 0.18);
+  color: #102947;
+}
+
+.criterion-choice.selected span {
+  background: #2f80ed;
+  color: #ffffff;
 }
 
 .criterion-choice.correct {
@@ -956,9 +986,19 @@ h1 {
   background: #effaf5;
 }
 
+.criterion-choice.correct span {
+  background: #00a878;
+  color: #ffffff;
+}
+
 .criterion-choice.wrong {
   border-color: #e84a5f;
   background: #fff1f3;
+}
+
+.criterion-choice.wrong span {
+  background: #e84a5f;
+  color: #ffffff;
 }
 
 .criterion-feedback {
