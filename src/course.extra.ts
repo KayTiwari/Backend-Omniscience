@@ -732,4 +732,23 @@ export const extraSubjects: Subject[] = [
       drill('apidrill-crud-handler', 'API: A Real CRUD Handler', 'Hard'),
     ],
   },
+  {
+    id: 'sql-drills',
+    title: 'SQL Drills',
+    subtitle: 'Auto-graded query semantics in code: SELECT, WHERE, ORDER BY, GROUP BY, JOIN, UPDATE.',
+    icon: Braces,
+    color: '#336791',
+    problems: [
+      drill('sqldrill-select-where', 'SQL: SELECT ... WHERE', 'Warmup'),
+      drill('sqldrill-project', 'SQL: SELECT Specific Columns', 'Warmup'),
+      drill('sqldrill-order-by', 'SQL: ORDER BY', 'Warmup'),
+      drill('sqldrill-limit-offset', 'SQL: LIMIT / OFFSET', 'Warmup'),
+      drill('sqldrill-distinct', 'SQL: SELECT DISTINCT', 'Warmup'),
+      drill('sqldrill-count-by', 'SQL: COUNT GROUP BY'),
+      drill('sqldrill-sum', 'SQL: SUM', 'Warmup'),
+      drill('sqldrill-avg', 'SQL: AVG', 'Warmup'),
+      drill('sqldrill-update-where', 'SQL: UPDATE ... WHERE'),
+      drill('sqldrill-inner-join', 'SQL: INNER JOIN', 'Hard'),
+    ],
+  },
 ]
