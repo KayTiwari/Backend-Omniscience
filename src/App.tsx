@@ -40,6 +40,7 @@ type ProgressState = {
   notes: Record<string, string>
   selectedChoice: Record<string, number>
   criterionChoice: Record<string, number>
+  tutorialChoice: Record<string, number>
   checkedSolutions: Record<string, boolean>
   code: Record<string, string>
 }
@@ -54,6 +55,7 @@ const emptyProgress: ProgressState = {
   notes: {},
   selectedChoice: {},
   criterionChoice: {},
+  tutorialChoice: {},
   checkedSolutions: {},
   code: {},
 }
@@ -68,6 +70,7 @@ function loadProgress(): ProgressState {
       notes: parsed.notes ?? {},
       selectedChoice: parsed.selectedChoice ?? {},
       criterionChoice: parsed.criterionChoice ?? {},
+      tutorialChoice: parsed.tutorialChoice ?? {},
       checkedSolutions: parsed.checkedSolutions ?? {},
       code: parsed.code ?? {},
     }
@@ -320,6 +323,17 @@ function App() {
     }))
   }
 
+  function selectTutorialStep(problemId: string, stepIndex: number, choiceIndex: number) {
+    setProgress((current) => ({
+      ...current,
+      tutorialChoice: {
+        ...current.tutorialChoice,
+        [`${problemId}:${stepIndex}`]: choiceIndex,
+      },
+      checkedSolutions: { ...current.checkedSolutions, [problemId]: false },
+    }))
+  }
+
   function resetProgress() {
     setProgress(emptyProgress)
   }
@@ -354,6 +368,7 @@ function App() {
         notes: imported.notes ?? {},
         selectedChoice: imported.selectedChoice ?? {},
         criterionChoice: imported.criterionChoice ?? {},
+        tutorialChoice: imported.tutorialChoice ?? {},
         checkedSolutions: imported.checkedSolutions ?? {},
         code: imported.code ?? {},
       })
@@ -421,6 +436,34 @@ function App() {
       }),
     [activeProblem],
   )
+  const tutorialChecks = useMemo(
+    () =>
+      teachingModel.tutorial.map((item, index) => {
+        const distractors = [
+          'Skip the model and jump straight to the final answer.',
+          'Memorize the keyword only, without describing what it does.',
+          'Assume the framework hides this detail from production engineers.',
+          'Only handle the happy path and ignore how this can fail.',
+          ...teachingModel.tutorial.filter((_, itemIndex) => itemIndex !== index),
+        ].filter((choice) => choice !== item)
+        const options = [item, ...distractors.slice(0, 3)]
+        const rotation =
+          (activeSubject.id.length + activeProblem.id.length + index) % options.length
+        const rotated = [...options.slice(rotation), ...options.slice(0, rotation)]
+
+        return {
+          correctChoice: rotated.indexOf(item),
+          explanation: `Correct: ${item} This is the next small move because ${activeSubject.title} should be learned one boundary, input, or behavior at a time before the main drill.`,
+          options: rotated,
+          question: `Guided step ${index + 1}: what should you do next?`,
+        }
+      }),
+    [activeProblem.id, activeSubject.id, activeSubject.title, teachingModel.tutorial],
+  )
+  const tutorialCorrect = tutorialChecks.every(
+    (check, index) =>
+      progress.tutorialChoice[`${activeProblem.id}:${index}`] === check.correctChoice,
+  )
   const acceptanceCorrect = acceptanceChecks.every(
     (check, index) =>
       progress.criterionChoice[`${activeProblem.id}:${index}`] === check.correctChoice,
@@ -428,7 +471,8 @@ function App() {
   const quizRequirementCorrect =
     !activeProblem.choices || activeProblem.correctChoice === undefined || quizCorrect
   const codeRequirementCorrect = !activeSpec || activeGradeResult?.passed === true
-  const canComplete = acceptanceCorrect && quizRequirementCorrect && codeRequirementCorrect
+  const canComplete =
+    tutorialCorrect && acceptanceCorrect && quizRequirementCorrect && codeRequirementCorrect
 
   function checkSolutions() {
     setProgress((current) => ({
@@ -804,7 +848,7 @@ function App() {
 
             <div className="lesson-grid">
               <section>
-                <h4>Fundamentals</h4>
+                <h4>Plain-English Fundamentals</h4>
                 <ul>
                   {teachingModel.fundamentals.map((item) => (
                     <li key={item}>{item}</li>
@@ -836,6 +880,59 @@ function App() {
                 </ul>
               </section>
             </div>
+
+            <section className="guided-tutorial-checks" aria-label="Guided tutorial questions">
+              <div className="guided-tutorial-heading">
+                <h4>Guided Tutorial Questions</h4>
+                <p>Answer these first. They turn the tutorial path into tiny checks before the main prompt.</p>
+              </div>
+              <div className="criterion-list">
+                {tutorialChecks.map((check, index) => {
+                  const selected = progress.tutorialChoice[`${activeProblem.id}:${index}`]
+                  const answered = selected !== undefined
+                  const correct = selected === check.correctChoice
+
+                  return (
+                    <section key={check.question} className="criterion-card tutorial-card">
+                      <h4>{check.question}</h4>
+                      <div className="criterion-choices">
+                        {check.options.map((option, optionIndex) => {
+                          const isSelected = selected === optionIndex
+                          const isCorrect = check.correctChoice === optionIndex
+                          const reveal = solutionChecked && (isSelected || isCorrect)
+
+                          return (
+                            <button
+                              key={option}
+                              className={`criterion-choice ${isSelected ? 'selected' : ''} ${
+                                reveal && isCorrect ? 'correct' : ''
+                              } ${reveal && isSelected && !isCorrect ? 'wrong' : ''}`}
+                              onClick={() =>
+                                selectTutorialStep(activeProblem.id, index, optionIndex)
+                              }
+                              type="button"
+                            >
+                              <span>{String.fromCharCode(65 + optionIndex)}</span>
+                              {option}
+                            </button>
+                          )
+                        })}
+                      </div>
+                      {solutionChecked && !answered && (
+                        <p className="criterion-feedback fail">
+                          Pick an answer here. Correct answer: {check.options[check.correctChoice]}.
+                        </p>
+                      )}
+                      {solutionChecked && answered && (
+                        <p className={`criterion-feedback ${correct ? 'pass' : 'fail'}`}>
+                          {correct ? 'Correct.' : 'Not quite.'} {check.explanation}
+                        </p>
+                      )}
+                    </section>
+                  )
+                })}
+              </div>
+            </section>
 
             <div className="practice-mode">
               <strong>How to use this problem</strong>
