@@ -9,6 +9,8 @@ import type { TestCase, TestResult } from './types'
 // single-user learning tool. For untrusted code, swap in a WASM executor
 // (see README). Each test runs in its own try/catch so one failure does not
 // abort the rest.
+// Returns TestResult[]. Console output is captured by the worker (which overrides
+// the global console), so runTests stays a pure results runner.
 export function runTests(code: string, tests: TestCase[]): TestResult[] {
   function assert(cond: unknown, msg?: string): void {
     if (!cond) throw new Error(msg || 'assertion failed')
