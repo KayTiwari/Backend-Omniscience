@@ -123,3 +123,7 @@ The experience must *grade*, not let the learner mark themselves done.
   rings and full `prefers-reduced-motion` support. Import it once and apply the
   classes to buttons, cards, nav items, and links. Because it reads `--accent`,
   effects automatically turn orange in dark mode.
+
+## Editor syntax highlighting
+- `src/highlight.ts` `highlight(code, lang)` -> escaped HTML with `.tok-*` spans (js/ts/py). `src/highlight.css` has light + dark token colors.
+- Codex wires the "highlighted textarea": a `<pre aria-hidden>` backdrop behind a transparent-text `<textarea>` (same monospace font/metrics, scroll-synced); set `pre.innerHTML = highlight(code, lang)` on change. Pairs with the `applyEditorKey` helper for bracket auto-close.

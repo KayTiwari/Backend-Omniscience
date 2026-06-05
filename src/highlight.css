@@ -1,0 +1,20 @@
+/*
+ * Token colors for the highlighted-textarea editor backdrop. Light defaults plus
+ * brighter dark-theme variants (keyed on data-theme="dark"). The editor must use
+ * the same monospace font and metrics on the <pre> backdrop and the <textarea>
+ * so characters line up exactly.
+ */
+
+.tok-keyword { color: #b4309e; font-weight: 600; }
+.tok-string { color: #117a3d; }
+.tok-number { color: #b4530a; }
+.tok-comment { color: #7b8794; font-style: italic; }
+.tok-function { color: #1d6fe0; }
+.tok-literal { color: #b4530a; }
+
+[data-theme='dark'] .tok-keyword { color: #f0a6e6; }
+[data-theme='dark'] .tok-string { color: #6fd58f; }
+[data-theme='dark'] .tok-number { color: #ffb066; }
+[data-theme='dark'] .tok-comment { color: #8a94a3; }
+[data-theme='dark'] .tok-function { color: #79b8ff; }
+[data-theme='dark'] .tok-literal { color: #ffb066; }
