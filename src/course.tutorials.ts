@@ -106,7 +106,7 @@ export const tutorialProblems: Record<string, Problem[]> = {
       explanation:
         'Backend code gets easier when responsibilities have homes. The entrypoint starts the process, routes translate HTTP, services encode business rules, repositories talk to storage, config loads environment, and tests prove behavior.',
       production:
-        'A clear service shape reduces incident debugging time. You can find where a request enters, where data is written, where config is loaded, and where the business rule actually lives.',
+        'A clear service shape reduces incident debugging time. You can find where a request enters, where data is written, where config is loaded, and where the business rule lives.',
       walkthrough: [
         'Start at the process entrypoint and identify startup config.',
         'Find a route/controller and trace how it parses input.',

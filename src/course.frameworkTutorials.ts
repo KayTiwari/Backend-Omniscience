@@ -11,7 +11,7 @@ export const frameworkTutorialProblems: Record<string, Problem[]> = {
       prompt:
         'Walk through a Node backend request from socket accept to JSON response. Then sketch a tiny Express-style app with routing, validation, service logic, persistence, and error handling.',
       explanation:
-        'A Node backend is not just a route handler. The runtime accepts connections, the HTTP layer parses bytes into request objects, middleware enriches or rejects the request, the route maps intent to application logic, the service enforces business rules, repositories talk to storage, and an error layer turns failures into stable responses. If you can name each layer, you can debug where a bug actually lives.',
+        'A Node backend is not just a route handler. The runtime accepts connections, the HTTP layer parses bytes into request objects, middleware enriches or rejects the request, the route maps intent to application logic, the service enforces business rules, repositories talk to storage, and an error layer turns failures into stable responses. If you can name each layer, you can debug where a bug lives.',
       production:
         'Production failures are usually layer-confusion failures: validation in the service but not at the boundary, database errors leaking through the route, missing timeouts around downstream calls, or logs without request IDs. This lesson gives you the map you need before the Node mastery drills start drilling the pieces.',
       walkthrough: [
@@ -238,7 +238,7 @@ export const frameworkTutorialProblems: Record<string, Problem[]> = {
       explanation:
         'Django and DRF give you a lot of machinery. Mastery means knowing where each decision happens: middleware wraps the whole request, auth identifies the user, permissions decide access, serializers validate and represent data, viewsets orchestrate actions, and the ORM talks to the database lazily.',
       production:
-        'DRF bugs often come from putting business logic in serializers, forgetting queryset scoping, triggering N+1 queries, or assuming authentication automatically means authorization. A request map helps you place checks where they actually protect the system.',
+        'DRF bugs often come from putting business logic in serializers, forgetting queryset scoping, triggering N+1 queries, or assuming authentication automatically means authorization. A request map helps you place checks where they protect the system.',
       walkthrough: [
         'Start at urls.py: route names, path params, router-generated actions.',
         'Identify middleware order: security, sessions, CSRF, auth, custom request ID.',

@@ -20,7 +20,12 @@ const subjectTeaching: Record<string, SubjectTeaching> = {
     picture: 'Client -> DNS -> TCP -> TLS -> HTTP -> Proxy -> App -> Database -> JSON',
     mentalModel:
       'The web stack is a layered delivery system. Each layer has one job: find the server, connect to it, protect bytes, describe the request, route it, execute backend code, read/write data, then return a response.',
-    fundamentals: ['DNS maps names to IPs', 'TCP creates reliable ordered byte streams', 'TLS authenticates/encrypts the connection', 'HTTP carries methods, paths, headers, status, and bodies'],
+    fundamentals: [
+      'DNS (Domain Name System) is the internet phonebook: it turns a human name like api.example.com into an IP address a computer can connect to.',
+      'TCP (Transmission Control Protocol) opens a reliable connection between two machines, keeps bytes in order, and resends missing data when packets are lost.',
+      'TLS (Transport Layer Security) sits on top of TCP for HTTPS: it verifies the server certificate and encrypts traffic so intermediaries cannot read or tamper with it.',
+      'HTTP (Hypertext Transfer Protocol) is the web request/response language: it defines methods like GET/POST, paths like /users/42, headers, status codes, and response bodies such as JSON.',
+    ],
     diagram: ['URL', 'DNS', 'TCP', 'TLS', 'HTTP', 'Proxy', 'App', 'DB', 'Response'],
     tutorial: ['Read the URL into scheme, host, path, and query.', 'Name what each network layer adds before the app sees anything.', 'Separate infrastructure behavior from application code.', 'End by explaining response status, headers, body, and caching.'],
     advanced: ['HTTP/2 multiplexing', 'CDN/cache validation', 'proxy timeouts', 'TLS termination', 'trace propagation'],

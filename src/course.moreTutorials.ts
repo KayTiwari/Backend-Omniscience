@@ -52,7 +52,7 @@ export const moreTutorialProblems: Record<string, Problem[]> = {
         'Set Access-Control-Allow-Origin to the exact allowed origin for credentialed requests.',
         'Enable credentials on both client and server when cookies are required.',
         'Check Set-Cookie attributes: HttpOnly, Secure, SameSite, Domain, Path.',
-        'Verify the browser actually stores and sends the cookie.',
+        'Verify the browser stores and sends the cookie.',
       ],
       questions: [
         'Why can a server-to-server request ignore CORS?',

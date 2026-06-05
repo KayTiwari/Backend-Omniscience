@@ -71,7 +71,7 @@ export const extraProblems: Record<string, Problem[]> = {
     },
     {
       id: 'internet-tls-handshake',
-      title: 'What TLS Actually Buys You',
+      title: 'What TLS Buys You',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 15,
@@ -446,7 +446,7 @@ export const extraSubjects: Subject[] = [
         difficulty: 'Core',
         minutes: 12,
         prompt:
-          'You need to speed up a CPU-bound function across cores in CPython. What actually helps?',
+          'You need to speed up a CPU-bound function across cores in CPython. What helps?',
         choices: [
           'threading.Thread — more threads, more cores',
           'asyncio — it is concurrent',
