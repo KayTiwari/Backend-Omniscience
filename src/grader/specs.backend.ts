@@ -2163,4 +2163,184 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- JavaScript fundamentals (loops & common methods, ground up) -----
+  {
+    problemId: 'jsf-sum-for',
+    title: 'For Loop: Sum',
+    language: 'js',
+    starter: 'function sumLoop(nums) {\n  // add them with a for loop\n}\n',
+    tests: [{ name: 'sums', body: 'assertEqual(sumLoop([1, 2, 3]), 6); assertEqual(sumLoop([]), 0);' }],
+    reference: `function sumLoop(nums) {
+  let total = 0;
+  for (let i = 0; i < nums.length; i++) total += nums[i];
+  return total;
+}
+`,
+  },
+  {
+    problemId: 'jsf-countdown-while',
+    title: 'While Loop: Countdown',
+    language: 'js',
+    starter: 'function countdown(n) {\n  // [n, n-1, ..., 1] with a while loop\n}\n',
+    tests: [{ name: 'counts down', body: 'assertEqual(countdown(3), [3, 2, 1]); assertEqual(countdown(0), []);' }],
+    reference: `function countdown(n) {
+  const out = [];
+  while (n > 0) { out.push(n); n--; }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'jsf-map-double',
+    title: 'Array.map',
+    language: 'js',
+    starter: 'function doubleAll(nums) {\n  // use map\n}\n',
+    tests: [{ name: 'doubles', body: 'assertEqual(doubleAll([1, 2, 3]), [2, 4, 6]);' }],
+    reference: `function doubleAll(nums) {
+  return nums.map((x) => x * 2);
+}
+`,
+  },
+  {
+    problemId: 'jsf-filter-evens',
+    title: 'Array.filter',
+    language: 'js',
+    starter: 'function evens(nums) {\n  // keep the even numbers\n}\n',
+    tests: [{ name: 'filters', body: 'assertEqual(evens([1, 2, 3, 4]), [2, 4]);' }],
+    reference: `function evens(nums) {
+  return nums.filter((x) => x % 2 === 0);
+}
+`,
+  },
+  {
+    problemId: 'jsf-reduce-product',
+    title: 'Array.reduce',
+    language: 'js',
+    starter: 'function product(nums) {\n  // multiply them all; [] -> 1\n}\n',
+    tests: [{ name: 'multiplies', body: 'assertEqual(product([1, 2, 3, 4]), 24); assertEqual(product([]), 1);' }],
+    reference: `function product(nums) {
+  return nums.reduce((a, b) => a * b, 1);
+}
+`,
+  },
+  {
+    problemId: 'jsf-foreach-total',
+    title: 'Array.forEach',
+    language: 'js',
+    starter: 'function total(nums) {\n  // sum using forEach\n}\n',
+    tests: [{ name: 'totals', body: 'assertEqual(total([1, 2, 3]), 6);' }],
+    reference: `function total(nums) {
+  let s = 0;
+  nums.forEach((n) => { s += n; });
+  return s;
+}
+`,
+  },
+  {
+    problemId: 'jsf-shout',
+    title: 'String.toUpperCase',
+    language: 'js',
+    starter: 'function shout(s) {\n  pass\n}\n',
+    tests: [{ name: 'uppercases', body: "assertEqual(shout('hi'), 'HI');" }],
+    reference: `function shout(s) {
+  return s.toUpperCase();
+}
+`,
+  },
+  {
+    problemId: 'jsf-join-csv',
+    title: 'Array.join',
+    language: 'js',
+    starter: 'function joinCsv(items) {\n  pass\n}\n',
+    tests: [{ name: 'joins', body: "assertEqual(joinCsv(['a', 'b', 'c']), 'a,b,c');" }],
+    reference: `function joinCsv(items) {
+  return items.join(',');
+}
+`,
+  },
+  {
+    problemId: 'jsf-contains',
+    title: 'Array.includes',
+    language: 'js',
+    starter: 'function contains(arr, x) {\n  pass\n}\n',
+    tests: [{ name: 'membership', body: 'assert(contains([1, 2], 2) === true); assert(contains([1], 3) === false);' }],
+    reference: `function contains(arr, x) {
+  return arr.includes(x);
+}
+`,
+  },
+  {
+    problemId: 'jsf-position-of',
+    title: 'Array.indexOf',
+    language: 'js',
+    starter: 'function positionOf(arr, x) {\n  // index, or -1\n}\n',
+    tests: [{ name: 'finds index', body: "assertEqual(positionOf(['a', 'b'], 'b'), 1); assertEqual(positionOf([], 'x'), -1);" }],
+    reference: `function positionOf(arr, x) {
+  return arr.indexOf(x);
+}
+`,
+  },
+  {
+    problemId: 'jsf-first-n',
+    title: 'Array.slice',
+    language: 'js',
+    starter: 'function firstN(items, n) {\n  pass\n}\n',
+    tests: [{ name: 'takes prefix', body: 'assertEqual(firstN([1, 2, 3, 4], 2), [1, 2]);' }],
+    reference: `function firstN(items, n) {
+  return items.slice(0, n);
+}
+`,
+  },
+  {
+    problemId: 'jsf-key-count',
+    title: 'Object.keys',
+    language: 'js',
+    starter: 'function keyCount(obj) {\n  pass\n}\n',
+    tests: [{ name: 'counts keys', body: 'assertEqual(keyCount({ a: 1, b: 2 }), 2); assertEqual(keyCount({}), 0);' }],
+    reference: `function keyCount(obj) {
+  return Object.keys(obj).length;
+}
+`,
+  },
+  {
+    problemId: 'jsf-entries',
+    title: 'Object.entries',
+    language: 'js',
+    starter: 'function toPairs(obj) {\n  pass\n}\n',
+    tests: [{ name: 'pairs', body: "assertEqual(toPairs({ a: 1, b: 2 }), [['a', 1], ['b', 2]]);" }],
+    reference: `function toPairs(obj) {
+  return Object.entries(obj);
+}
+`,
+  },
+  {
+    problemId: 'jsf-reverse-str',
+    title: 'Reverse A String',
+    language: 'js',
+    starter: 'function reverseStr(s) {\n  pass\n}\n',
+    tests: [{ name: 'reverses', body: "assertEqual(reverseStr('abc'), 'cba');" }],
+    reference: `function reverseStr(s) {
+  return s.split('').reverse().join('');
+}
+`,
+  },
+  {
+    problemId: 'jsf-fizzbuzz',
+    title: 'FizzBuzz',
+    language: 'js',
+    starter: "function fizzbuzz(n) {\n  // 1..n with Fizz/Buzz/FizzBuzz, numbers as strings\n}\n",
+    tests: [{ name: 'classic', body: "assertEqual(fizzbuzz(5), ['1', '2', 'Fizz', '4', 'Buzz']); assertEqual(fizzbuzz(15)[14], 'FizzBuzz');" }],
+    reference: `function fizzbuzz(n) {
+  const out = [];
+  for (let i = 1; i <= n; i++) {
+    if (i % 15 === 0) out.push('FizzBuzz');
+    else if (i % 3 === 0) out.push('Fizz');
+    else if (i % 5 === 0) out.push('Buzz');
+    else out.push(String(i));
+  }
+  return out;
+}
+`,
+  },
 ]
