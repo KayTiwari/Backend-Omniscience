@@ -13,6 +13,224 @@ export type Tutorial = {
 
 export const tutorials: Tutorial[] = [
   {
+    id: 'tut-language-glossary',
+    subjectId: 'language',
+    title: 'Start Here: Programming Words in Plain English',
+    minutes: 10,
+    body: `The absolute basics of writing code, assuming you have never programmed.
+
+**Variable.** A named box that holds a value, like name = "Ada". You can read it
+and change it later.
+
+**Value / type.** The data itself. Common types: numbers (42), strings (text,
+"hi"), booleans (true/false), lists/arrays ([1, 2, 3]), and objects/dictionaries
+(key/value pairs, { name: "Ada" }).
+
+**Function.** A reusable block of code with a name that takes inputs and gives
+back a result. add(2, 3) returns 5. Inputs are called **parameters** (in the
+definition) or **arguments** (the actual values you pass). **return** sends a
+value back to the caller.
+
+**Conditional (if/else).** Doing different things based on a test: if balance > 0
+do X, else do Y.
+
+**Loop.** Repeating work. A **for** loop runs a set number of times or over a
+list; a **while** loop runs until a condition stops being true.
+
+**Array / list.** An ordered collection: [10, 20, 30]. You access items by
+position (index), starting at 0.
+
+**Object / dictionary.** A collection of key/value pairs: { id: 1, name: "Ada" }.
+You look values up by key.
+
+**Null / undefined.** Special "no value" markers. Reading something that does not
+exist often gives one of these.
+
+**Error / exception.** When something goes wrong (dividing by zero, missing file),
+the program raises an error you can catch and handle.
+
+**Module / package.** A file or library of reusable code you import into your
+program instead of rewriting it.`,
+  },
+  {
+    id: 'tut-nodejs-glossary',
+    subjectId: 'nodejs',
+    title: 'Start Here: Node.js Words in Plain English',
+    minutes: 9,
+    body: `Node terms, from zero.
+
+**Node.js.** A program that runs JavaScript outside the browser, so you can build
+servers and tools in JavaScript.
+
+**Runtime.** The environment that executes your code (Node is a JavaScript
+runtime).
+
+**npm (Node Package Manager).** The tool that installs reusable libraries
+("packages") and runs project scripts. 'npm install express' adds the Express
+library.
+
+**package.json.** A file listing your project's dependencies and scripts.
+
+**Module.** A file of code you import. Node uses 'require(...)' (older) or
+'import ...' (modern) to load modules.
+
+**Event loop.** Node runs your JavaScript on one thread and uses an event loop to
+juggle many waiting operations (network, disk) without blocking. Great for I/O,
+bad for heavy CPU work on that thread.
+
+**Callback / Promise / async-await.** Ways to handle work that finishes later. A
+**callback** is a function called when done; a **Promise** represents a future
+value; **async/await** is the modern, readable way to wait for Promises.
+
+**Express.** The most popular Node web framework for defining routes and handling
+requests.
+
+**Middleware.** A function that runs on a request before your handler (for logging,
+auth, parsing the body), in a chain.`,
+  },
+  {
+    id: 'tut-python-glossary',
+    subjectId: 'python',
+    title: 'Start Here: Python Words in Plain English',
+    minutes: 9,
+    body: `Python terms, assuming no background.
+
+**Python.** A readable, widely used programming language, popular for backends,
+scripting, and data work.
+
+**Interpreter.** The program that runs your Python code line by line.
+
+**pip.** Python's package installer: 'pip install flask' adds a library.
+
+**Virtual environment (venv).** An isolated, per-project set of installed packages
+so projects do not clash.
+
+**Indentation.** Python uses spaces/indentation (not braces) to group code. The
+lines inside a function or loop are indented; getting this wrong is a syntax error.
+
+**def.** The keyword that defines a function: def add(a, b): return a + b.
+
+**List, dict, tuple, set.** Core collections: a **list** is an ordered, changeable
+sequence [1, 2]; a **dict** maps keys to values { "a": 1 }; a **tuple** is an
+ordered, unchangeable sequence (1, 2); a **set** is an unordered collection of
+unique values.
+
+**f-string.** A handy way to build text with values inside: f"Hi {name}".
+
+**Comprehension.** A compact way to build a list/dict from a loop:
+[x * x for x in nums].
+
+**Module / import.** Reusable code you bring in with 'import'.
+
+**PEP 8.** Python's style guide (naming, spacing) that keeps code consistent.`,
+  },
+  {
+    id: 'tut-flask-glossary',
+    subjectId: 'flask',
+    title: 'Start Here: Flask Words in Plain English',
+    minutes: 8,
+    body: `Flask terms, from scratch.
+
+**Flask.** A small, beginner-friendly Python web framework for building APIs and
+websites.
+
+**Route.** A URL your app responds to, tied to a function. '/users' maps to a
+function that returns users.
+
+**Decorator.** A line starting with '@' that attaches behavior to a function. In
+Flask, '@app.route("/users")' registers the function below it as the handler for
+that URL.
+
+**View function.** The function that handles a route and returns a response.
+
+**Request / response.** 'request' holds the incoming data (query, body, headers);
+your view returns the response (often JSON).
+
+**Blueprint.** A way to group related routes into a module so a big app stays
+organized.
+
+**App factory.** A function create_app() that builds and configures the app, which
+makes testing and multiple environments easier.
+
+**WSGI (Web Server Gateway Interface).** The standard that connects Python web
+apps to web servers (like gunicorn). Classic Flask handles one request at a time
+per worker, so you run several workers to handle load.
+
+**Template (Jinja).** Flask's HTML templating system, for server-rendered pages
+(less relevant for pure JSON APIs).`,
+  },
+  {
+    id: 'tut-django-glossary',
+    subjectId: 'django',
+    title: 'Start Here: Django Words in Plain English',
+    minutes: 9,
+    body: `Django terms, assuming none.
+
+**Django.** A "batteries-included" Python web framework: it ships with an ORM,
+admin site, auth, and more.
+
+**Model.** A Python class that describes a database table. Each attribute is a
+column; Django creates and queries the table for you.
+
+**ORM (Object-Relational Mapper).** The layer that lets you work with database
+rows as Python objects instead of writing raw SQL. User.objects.get(id=1) runs a
+query and returns an object.
+
+**QuerySet.** A lazy, chainable description of a database query
+(User.objects.filter(active=True)). No SQL runs until you use the results.
+
+**Migration.** A generated, versioned change to your database schema, created when
+you change models. You run migrations to apply them.
+
+**View.** A function/class that takes a request and returns a response.
+
+**Template.** Django's HTML rendering system. The MTV pattern is Model (data),
+Template (presentation), View (logic).
+
+**URLconf.** The file mapping URLs to views.
+
+**Admin.** A built-in web UI to manage your data, generated from your models.
+
+**DRF (Django REST Framework).** A popular add-on for building JSON APIs:
+serializers (shape/validate data), viewsets, routers, and pagination.`,
+  },
+  {
+    id: 'tut-typescript-glossary',
+    subjectId: 'typescript',
+    title: 'Start Here: TypeScript Words in Plain English',
+    minutes: 9,
+    body: `TypeScript terms, from zero.
+
+**TypeScript.** JavaScript with a type system added. You write types; a compiler
+checks them and then removes them, producing plain JavaScript.
+
+**Type annotation.** Saying what kind of value something is: let age: number = 30.
+The ': number' is the annotation.
+
+**Type inference.** TypeScript often figures out the type for you, so you do not
+have to annotate everything.
+
+**interface / type alias.** Two ways to name the shape of an object:
+interface User { name: string }. Used for DTOs and contracts.
+
+**Union.** "One of these": let id: number | string. A value can be either.
+
+**Generic.** A type placeholder so code works for many types: Array<T>,
+identity<T>(x: T): T. The T is filled in when used.
+
+**enum.** A named set of constant values (Status.Active).
+
+**any vs unknown.** 'any' turns off type checking (avoid it); 'unknown' means
+"untyped, must be checked before use" (safer at boundaries).
+
+**tsc.** The TypeScript compiler that checks types and outputs JavaScript.
+
+**.ts / .tsx.** TypeScript file extensions (.tsx includes React JSX).
+
+**Key idea:** types exist only while coding/compiling. At runtime there are no
+types, so you still validate data that arrives from outside (HTTP, the database).`,
+  },
+  {
     id: 'tut-architecture-glossary',
     subjectId: 'architecture',
     title: 'Start Here: Architecture Words in Plain English',
