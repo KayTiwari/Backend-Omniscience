@@ -1437,4 +1437,210 @@ function intToIp(n) {
 }
 `,
   },
+
+  // ----- Auth & HTTP parsing ---------------------------------------------
+  {
+    problemId: 'http-parse-auth',
+    title: 'Parse An Authorization Header',
+    language: 'js',
+    starter:
+      "function parseAuth(header) {\n  // 'Bearer abc' -> { scheme: 'Bearer', token: 'abc' }; '' -> null\n}\n",
+    tests: [
+      {
+        name: 'splits scheme and token',
+        body: `assertEqual(parseAuth('Bearer abc'), { scheme: 'Bearer', token: 'abc' }); assertEqual(parseAuth('Basic dXNlcg=='), { scheme: 'Basic', token: 'dXNlcg==' }); assertEqual(parseAuth(''), null);`,
+      },
+    ],
+    reference: `function parseAuth(header) {
+  if (!header) return null;
+  const [scheme, ...rest] = header.split(' ');
+  return { scheme, token: rest.join(' ') };
+}
+`,
+  },
+  {
+    problemId: 'auth-has-scope',
+    title: 'Scope Check',
+    language: 'js',
+    starter:
+      'function hasScope(granted, required) {\n  // true if every required scope is in granted\n}\n',
+    tests: [
+      {
+        name: 'requires all scopes',
+        body: `assert(hasScope(['read','write'], ['read']) === true); assert(hasScope(['read'], ['read','write']) === false); assert(hasScope(['a'], []) === true);`,
+      },
+    ],
+    reference: `function hasScope(granted, required) {
+  return required.every((r) => granted.includes(r));
+}
+`,
+  },
+
+  // ----- Caching & rate limiting -----------------------------------------
+  {
+    problemId: 'cache-evict-expired',
+    title: 'Evict Expired Entries',
+    language: 'js',
+    starter:
+      'function evictExpired(entries, now) {\n  // entries: { key, expiresAt }. return keys still valid at `now`.\n}\n',
+    tests: [
+      {
+        name: 'keeps only unexpired keys',
+        body: `assertEqual(evictExpired([{key:'a',expiresAt:100},{key:'b',expiresAt:50}], 75), ['a']);`,
+      },
+    ],
+    reference: `function evictExpired(entries, now) {
+  return entries.filter((e) => e.expiresAt > now).map((e) => e.key);
+}
+`,
+  },
+  {
+    problemId: 'ratelimit-leaky-bucket',
+    title: 'Leaky Bucket Limiter',
+    language: 'js',
+    starter:
+      'function leakyBucket(times, capacity, leakPerSec) {\n  // water rises per request and leaks over time; allowed while level <= capacity\n}\n',
+    tests: [
+      {
+        name: 'fills then leaks',
+        body: `assertEqual(leakyBucket([0,0,0], 2, 1), [true, true, false]); assertEqual(leakyBucket([0,1000], 1, 1), [true, true]);`,
+      },
+    ],
+    reference: `function leakyBucket(times, capacity, leakPerSec) {
+  let level = 0, last = null;
+  const out = [];
+  for (const t of times) {
+    if (last !== null) level = Math.max(0, level - ((t - last) / 1000) * leakPerSec);
+    last = t;
+    if (level + 1 <= capacity) { level += 1; out.push(true); } else out.push(false);
+  }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'reliability-retry-schedule',
+    title: 'Retry Schedule',
+    language: 'js',
+    starter:
+      'function retrySchedule(maxRetries, base, cap) {\n  // return the array of backoff delays for each retry\n}\n',
+    tests: [
+      {
+        name: 'doubles and caps each delay',
+        body: `assertEqual(retrySchedule(3, 100, 1000), [100, 200, 400]); assertEqual(retrySchedule(5, 100, 300), [100, 200, 300, 300, 300]);`,
+      },
+    ],
+    reference: `function retrySchedule(maxRetries, base, cap) {
+  return Array.from({ length: maxRetries }, (_, i) => Math.min(cap, base * Math.pow(2, i)));
+}
+`,
+  },
+
+  // ----- Load balancing & SLAs -------------------------------------------
+  {
+    problemId: 'lb-expand-weights',
+    title: 'Expand Weighted Pool',
+    language: 'js',
+    starter:
+      'function expandWeights(items) {\n  // [{id,weight}] -> a flat list repeating each id `weight` times\n}\n',
+    tests: [
+      {
+        name: 'repeats by weight',
+        body: `assertEqual(expandWeights([{id:'a',weight:2},{id:'b',weight:1}]), ['a','a','b']);`,
+      },
+    ],
+    reference: `function expandWeights(items) {
+  const out = [];
+  for (const it of items) for (let i = 0; i < it.weight; i++) out.push(it.id);
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'sla-error-budget',
+    title: 'Error Budget',
+    language: 'js',
+    starter:
+      'function errorBudgetMs(slaPercent, periodMs) {\n  // allowed downtime in ms for an SLA over a period (rounded)\n}\n',
+    tests: [
+      {
+        name: 'computes allowed downtime',
+        body: `assertEqual(errorBudgetMs(99.9, 2592000000), 2592000); assertEqual(errorBudgetMs(99, 1000), 10);`,
+      },
+    ],
+    reference: `function errorBudgetMs(slaPercent, periodMs) {
+  return Math.round((1 - slaPercent / 100) * periodMs);
+}
+`,
+  },
+
+  // ----- JSON & parsing utilities ----------------------------------------
+  {
+    problemId: 'json-stable-stringify',
+    title: 'Stable JSON Stringify',
+    language: 'js',
+    starter:
+      'function stableStringify(v) {\n  // deterministic JSON with object keys sorted recursively\n}\n',
+    tests: [
+      {
+        name: 'sorts keys at every level',
+        body: `assertEqual(stableStringify({ b: 1, a: 2 }), '{"a":2,"b":1}'); assertEqual(stableStringify({ z: [3, { y: 1, x: 2 }] }), '{"z":[3,{"x":2,"y":1}]}');`,
+      },
+    ],
+    reference: `function stableStringify(v) {
+  if (v === null || typeof v !== 'object') return JSON.stringify(v);
+  if (Array.isArray(v)) return '[' + v.map(stableStringify).join(',') + ']';
+  return '{' + Object.keys(v).sort().map((k) => JSON.stringify(k) + ':' + stableStringify(v[k])).join(',') + '}';
+}
+`,
+  },
+  {
+    problemId: 'json-flatten',
+    title: 'Flatten Nested Object',
+    language: 'js',
+    starter:
+      "function flatten(obj) {\n  // { a: { b: 1 }, c: 2 } -> { 'a.b': 1, 'c': 2 }\n}\n",
+    tests: [
+      {
+        name: 'dots nested keys',
+        body: `assertEqual(flatten({ a: { b: 1 }, c: 2 }), { 'a.b': 1, c: 2 }); assertEqual(flatten({ a: { b: { c: 3 } } }), { 'a.b.c': 3 });`,
+      },
+    ],
+    reference: `function flatten(obj, prefix) {
+  prefix = prefix || '';
+  const out = {};
+  for (const k of Object.keys(obj)) {
+    const key = prefix ? prefix + '.' + k : k;
+    const v = obj[k];
+    if (v && typeof v === 'object' && !Array.isArray(v)) Object.assign(out, flatten(v, key));
+    else out[key] = v;
+  }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'parse-duration',
+    title: 'Parse A Duration',
+    language: 'js',
+    starter:
+      "function parseDuration(s) {\n  // '1h30m' -> seconds (5400). supports h, m, s.\n}\n",
+    tests: [
+      {
+        name: 'sums the units',
+        body: `assertEqual(parseDuration('90s'), 90); assertEqual(parseDuration('2m'), 120); assertEqual(parseDuration('1h30m'), 5400);`,
+      },
+    ],
+    reference: `function parseDuration(s) {
+  let total = 0;
+  const re = /(\\d+)([hms])/g;
+  let m;
+  while ((m = re.exec(s))) {
+    const n = Number(m[1]);
+    total += m[2] === 'h' ? n * 3600 : m[2] === 'm' ? n * 60 : n;
+  }
+  return total;
+}
+`,
+  },
 ]
