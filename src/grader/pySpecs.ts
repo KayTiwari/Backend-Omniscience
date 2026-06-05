@@ -491,4 +491,147 @@ assert len(calls) == 1`,
     return all(x > 0 for x in nums)
 `,
   },
+
+  // ----- Intermediate: classes, JSON, collections, lambdas ---------------
+  {
+    problemId: 'py-class-counter',
+    title: 'Class: A Counter',
+    language: 'py',
+    starter: 'class Counter:\n    # increment() returns the new count; .count holds it\n    pass\n',
+    tests: [
+      { name: 'counts up', body: 'c = Counter()\nassert c.increment() == 1\nassert c.increment() == 2\nassert c.count == 2' },
+    ],
+    reference: `class Counter:
+    def __init__(self):
+        self.count = 0
+    def increment(self):
+        self.count += 1
+        return self.count
+`,
+  },
+  {
+    problemId: 'py-json-roundtrip',
+    title: 'JSON: Round-Trip',
+    language: 'py',
+    starter: 'import json\n\ndef roundtrip(obj):\n    # serialize to JSON text and parse it back\n    pass\n',
+    tests: [
+      { name: 'survives a round trip', body: "assert roundtrip({'a': [1, 2]}) == {'a': [1, 2]}" },
+    ],
+    reference: `import json
+
+def roundtrip(obj):
+    return json.loads(json.dumps(obj))
+`,
+  },
+  {
+    problemId: 'py-sort-dicts',
+    title: 'Sort A List Of Dicts',
+    language: 'py',
+    starter: 'def sort_by(items, key):\n    # sort dicts ascending by the given key\n    pass\n',
+    tests: [
+      { name: 'orders by key', body: "assert sort_by([{'n':3},{'n':1},{'n':2}], 'n') == [{'n':1},{'n':2},{'n':3}]" },
+    ],
+    reference: `def sort_by(items, key):
+    return sorted(items, key=lambda x: x[key])
+`,
+  },
+  {
+    problemId: 'py-dedupe-order',
+    title: 'Dedupe Preserving Order',
+    language: 'py',
+    starter: 'def dedupe(items):\n    # remove duplicates but keep first-seen order\n    pass\n',
+    tests: [
+      { name: 'keeps order', body: 'assert dedupe([1, 2, 1, 3, 2]) == [1, 2, 3]' },
+    ],
+    reference: `def dedupe(items):
+    seen = set()
+    out = []
+    for x in items:
+        if x not in seen:
+            seen.add(x)
+            out.append(x)
+    return out
+`,
+  },
+  {
+    problemId: 'py-zip-dict',
+    title: 'Build A Dict From Two Lists',
+    language: 'py',
+    starter: 'def to_dict(keys, values):\n    # pair them into a dict\n    pass\n',
+    tests: [
+      { name: 'zips into a dict', body: "assert to_dict(['a', 'b'], [1, 2]) == {'a': 1, 'b': 2}" },
+    ],
+    reference: `def to_dict(keys, values):
+    return dict(zip(keys, values))
+`,
+  },
+  {
+    problemId: 'py-flatten',
+    title: 'Flatten A Nested List',
+    language: 'py',
+    starter: 'def flatten(nested):\n    # [[1,2],[3]] -> [1,2,3]\n    pass\n',
+    tests: [
+      { name: 'flattens one level', body: 'assert flatten([[1, 2], [3], [4, 5]]) == [1, 2, 3, 4, 5]' },
+    ],
+    reference: `def flatten(nested):
+    out = []
+    for sub in nested:
+        for x in sub:
+            out.append(x)
+    return out
+`,
+  },
+  {
+    problemId: 'py-string-format',
+    title: 'f-strings',
+    language: 'py',
+    starter: 'def greet(name, count):\n    # return "<name> has <count> items"\n    pass\n',
+    tests: [
+      { name: 'formats text', body: "assert greet('Ada', 3) == 'Ada has 3 items'" },
+    ],
+    reference: `def greet(name, count):
+    return f"{name} has {count} items"
+`,
+  },
+  {
+    problemId: 'py-defaultdict-group',
+    title: 'collections.defaultdict',
+    language: 'py',
+    starter: 'from collections import defaultdict\n\ndef group_items(items, key_fn):\n    # group into a normal dict of lists\n    pass\n',
+    tests: [
+      { name: 'groups', body: "assert group_items([1, 2, 3, 4], lambda x: 'e' if x % 2 == 0 else 'o') == {'o': [1, 3], 'e': [2, 4]}" },
+    ],
+    reference: `from collections import defaultdict
+
+def group_items(items, key_fn):
+    out = defaultdict(list)
+    for x in items:
+        out[key_fn(x)].append(x)
+    return dict(out)
+`,
+  },
+  {
+    problemId: 'py-filter-lambda',
+    title: 'filter() With A Lambda',
+    language: 'py',
+    starter: 'def positives(nums):\n    # keep the positive numbers using filter\n    pass\n',
+    tests: [
+      { name: 'filters', body: 'assert positives([-1, 2, -3, 4]) == [2, 4]' },
+    ],
+    reference: `def positives(nums):
+    return list(filter(lambda x: x > 0, nums))
+`,
+  },
+  {
+    problemId: 'py-max-by-key',
+    title: 'max() With A Key',
+    language: 'py',
+    starter: 'def max_by(items, key_fn):\n    # the item with the largest key_fn value\n    pass\n',
+    tests: [
+      { name: 'longest string', body: "assert max_by(['a', 'ccc', 'bb'], len) == 'ccc'" },
+    ],
+    reference: `def max_by(items, key_fn):
+    return max(items, key=key_fn)
+`,
+  },
 ]
