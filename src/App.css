@@ -107,14 +107,15 @@
   border-radius: 8px;
   color: #ffffff;
   background: linear-gradient(135deg, var(--brand-a), var(--brand-b), var(--brand-a));
-  background-size: 200%;
+  background-size: 200% 200%;
   box-shadow: 0 12px 32px color-mix(in srgb, var(--brand-a) 26%, transparent);
-  animation: brand-shift 4s linear infinite;
+  animation: brand-shift 8s ease-in-out infinite;
 }
 
 @keyframes brand-shift {
-  from { background-position: 0% 50%; }
-  to   { background-position: 200% 50%; }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
