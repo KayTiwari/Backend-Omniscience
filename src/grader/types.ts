@@ -25,7 +25,7 @@ export type GradeResult = {
 export type GradeSpec = {
   problemId: string
   title: string
-  language: 'js'
+  language: 'js' | 'py'
   starter: string
   tests: TestCase[]
   // A known-good solution. Doubles as the "show a correct solution" reveal that
