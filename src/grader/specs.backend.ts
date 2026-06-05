@@ -906,4 +906,297 @@ export const backendSpecs: GradeSpec[] = [
 }
 `,
   },
+
+  // ----- Reliability & distributed systems -------------------------------
+  {
+    problemId: 'reliability-full-jitter',
+    title: 'Backoff With Full Jitter',
+    language: 'js',
+    starter:
+      'function retryFullJitter(attempt, base, cap, rand) {\n  // full jitter: rand in [0,1) scales the capped exponential delay\n}\n',
+    tests: [
+      {
+        name: 'scales the capped delay by rand',
+        body: `assertEqual(retryFullJitter(2, 100, 1000, 0.5), 200); assertEqual(retryFullJitter(0, 100, 1000, 0), 0); assertEqual(retryFullJitter(5, 100, 1000, 0.5), 500);`,
+      },
+    ],
+    reference: `function retryFullJitter(attempt, base, cap, rand) {
+  return rand * Math.min(cap, base * Math.pow(2, attempt));
+}
+`,
+  },
+  {
+    problemId: 'tpc-decision',
+    title: 'Two-Phase Commit Decision',
+    language: 'js',
+    starter:
+      "function tpcDecision(votes) {\n  // 'commit' only if every participant voted 'yes', else 'abort'\n}\n",
+    tests: [
+      {
+        name: 'commits only on unanimous yes',
+        body: `assertEqual(tpcDecision(['yes','yes']), 'commit'); assertEqual(tpcDecision(['yes','no']), 'abort'); assertEqual(tpcDecision([]), 'commit');`,
+      },
+    ],
+    reference: `function tpcDecision(votes) {
+  return votes.every((v) => v === 'yes') ? 'commit' : 'abort';
+}
+`,
+  },
+  {
+    problemId: 'arch-event-sourcing',
+    title: 'Rebuild State From Events',
+    language: 'js',
+    starter:
+      "function balanceFrom(events) {\n  // events: { type:'deposit'|'withdraw', amount }. withdraw only if funds suffice.\n}\n",
+    tests: [
+      {
+        name: 'folds events into a balance',
+        body: `assertEqual(balanceFrom([{type:'deposit',amount:100},{type:'withdraw',amount:30},{type:'withdraw',amount:1000}]), 70);`,
+      },
+    ],
+    reference: `function balanceFrom(events) {
+  let bal = 0;
+  for (const e of events) {
+    if (e.type === 'deposit') bal += e.amount;
+    else if (e.type === 'withdraw' && bal >= e.amount) bal -= e.amount;
+  }
+  return bal;
+}
+`,
+  },
+  {
+    problemId: 'arch-saga',
+    title: 'Saga Compensation',
+    language: 'js',
+    starter:
+      'function runSaga(steps) {\n  // steps: { name, ok }. On first failure, compensate completed steps in reverse.\n  // return { completed, compensated, failedAt }\n}\n',
+    tests: [
+      {
+        name: 'compensates in reverse on failure',
+        body: `assertEqual(runSaga([{name:'a',ok:true},{name:'b',ok:true},{name:'c',ok:false},{name:'d',ok:true}]), { completed: ['a','b'], compensated: ['b','a'], failedAt: 'c' });`,
+      },
+      {
+        name: 'no compensation when all succeed',
+        body: `assertEqual(runSaga([{name:'a',ok:true}]), { completed: ['a'], compensated: [], failedAt: null });`,
+      },
+    ],
+    reference: `function runSaga(steps) {
+  const completed = [];
+  for (const s of steps) {
+    if (s.ok) completed.push(s.name);
+    else return { completed, compensated: [...completed].reverse(), failedAt: s.name };
+  }
+  return { completed, compensated: [], failedAt: null };
+}
+`,
+  },
+  {
+    problemId: 'dist-consistent-hash',
+    title: 'Consistent Hashing Ring',
+    language: 'js',
+    starter:
+      'function assignNode(nodes, key) {\n  // place nodes on a hash ring; return the node a key maps to (clockwise)\n}\n',
+    tests: [
+      {
+        name: 'stable and returns a real node',
+        body: `const nodes = ['a','b','c']; assert(nodes.includes(assignNode(nodes, 'user-42')), 'member'); assert(assignNode(nodes, 'k') === assignNode(nodes, 'k'), 'stable');`,
+      },
+    ],
+    reference: `function assignNode(nodes, key) {
+  const hash = (s) => { let h = 5381; for (let i = 0; i < s.length; i++) h = (((h << 5) + h) + s.charCodeAt(i)) >>> 0; return h; };
+  const ring = nodes.map((n) => ({ h: hash(n), n })).sort((a, b) => a.h - b.h);
+  const kh = hash(key);
+  for (const p of ring) if (p.h >= kh) return p.n;
+  return ring[0].n;
+}
+`,
+  },
+
+  // ----- Data structures --------------------------------------------------
+  {
+    problemId: 'ds-trie-autocomplete',
+    title: 'Trie Autocomplete',
+    language: 'js',
+    starter:
+      'class Trie {\n  insert(word) {}\n  startsWith(prefix) {} // sorted array of words with that prefix\n}\n',
+    tests: [
+      {
+        name: 'returns words under a prefix',
+        body: `const t = new Trie(); ['car','cart','dog'].forEach((w) => t.insert(w)); assertEqual(t.startsWith('car'), ['car','cart']); assertEqual(t.startsWith('do'), ['dog']); assertEqual(t.startsWith('z'), []);`,
+      },
+    ],
+    reference: `class Trie {
+  constructor() { this.root = {}; }
+  insert(word) {
+    let node = this.root;
+    for (const c of word) node = node[c] = node[c] || {};
+    node.$ = true;
+  }
+  startsWith(prefix) {
+    let node = this.root;
+    for (const c of prefix) { if (!node[c]) return []; node = node[c]; }
+    const out = [];
+    const dfs = (n, pre) => {
+      if (n.$) out.push(pre);
+      for (const c of Object.keys(n)) if (c !== '$') dfs(n[c], pre + c);
+    };
+    dfs(node, prefix);
+    return out.sort();
+  }
+}
+`,
+  },
+  {
+    problemId: 'ds-moving-average',
+    title: 'Moving Average',
+    language: 'js',
+    starter:
+      'function movingAverage(values, window) {\n  // sliding average; output length = values.length - window + 1 (or [])\n}\n',
+    tests: [
+      {
+        name: 'computes the windowed mean',
+        body: `assertEqual(movingAverage([1,2,3,4], 2), [1.5, 2.5, 3.5]); assertEqual(movingAverage([1], 2), []);`,
+      },
+    ],
+    reference: `function movingAverage(values, window) {
+  const out = [];
+  for (let i = window - 1; i < values.length; i++) {
+    let s = 0;
+    for (let j = i - window + 1; j <= i; j++) s += values[j];
+    out.push(s / window);
+  }
+  return out;
+}
+`,
+  },
+
+  // ----- Protocols --------------------------------------------------------
+  {
+    problemId: 'protocol-varint',
+    title: 'Varint Encode/Decode',
+    language: 'js',
+    starter:
+      'function encodeVarint(n) {}\nfunction decodeVarint(bytes) {}\n// LEB128 unsigned, like protobuf/gRPC field lengths\n',
+    tests: [
+      {
+        name: 'encodes 300 to two bytes',
+        body: `assertEqual(encodeVarint(300), [0xac, 0x02]); assertEqual(encodeVarint(0), [0]);`,
+      },
+      {
+        name: 'round-trips',
+        body: `assertEqual(decodeVarint([0xac, 0x02]), 300); assertEqual(decodeVarint(encodeVarint(1000000)), 1000000);`,
+      },
+    ],
+    reference: `function encodeVarint(n) {
+  const out = [];
+  do {
+    let b = n & 0x7f;
+    n = Math.floor(n / 128);
+    if (n > 0) b |= 0x80;
+    out.push(b);
+  } while (n > 0);
+  return out;
+}
+function decodeVarint(bytes) {
+  let result = 0, shift = 0;
+  for (const b of bytes) {
+    result += (b & 0x7f) * Math.pow(2, shift);
+    if ((b & 0x80) === 0) break;
+    shift += 7;
+  }
+  return result;
+}
+`,
+  },
+
+  // ----- HTTP / API / caching / DB ---------------------------------------
+  {
+    problemId: 'http-build-query',
+    title: 'Build A Query URL',
+    language: 'js',
+    starter:
+      "function buildQueryUrl(base, params) {\n  // sorted, URL-encoded params; no '?' when params is empty\n}\n",
+    tests: [
+      {
+        name: 'sorts and encodes params',
+        body: `assertEqual(buildQueryUrl('/x', { b: 2, a: 1 }), '/x?a=1&b=2'); assertEqual(buildQueryUrl('/s', { q: 'a b' }), '/s?q=a%20b'); assertEqual(buildQueryUrl('/x', {}), '/x');`,
+      },
+    ],
+    reference: `function buildQueryUrl(base, params) {
+  const keys = Object.keys(params).sort();
+  const qs = keys.map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(params[k])).join('&');
+  return qs ? base + '?' + qs : base;
+}
+`,
+  },
+  {
+    problemId: 'http-parse-cache-control',
+    title: 'Parse Cache-Control',
+    language: 'js',
+    starter:
+      "function parseCacheControl(header) {\n  // 'max-age=60, no-cache' -> { 'max-age': '60', 'no-cache': true }\n}\n",
+    tests: [
+      {
+        name: 'parses directives and flags',
+        body: `assertEqual(parseCacheControl('max-age=60, no-cache'), { 'max-age': '60', 'no-cache': true });`,
+      },
+    ],
+    reference: `function parseCacheControl(header) {
+  const out = {};
+  for (const part of header.split(',')) {
+    const p = part.trim();
+    if (!p) continue;
+    const i = p.indexOf('=');
+    if (i >= 0) out[p.slice(0, i)] = p.slice(i + 1);
+    else out[p] = true;
+  }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'http-decode-chunked',
+    title: 'Decode Chunked Transfer',
+    language: 'js',
+    starter:
+      "function decodeChunked(s) {\n  // '4\\r\\nWiki\\r\\n0\\r\\n\\r\\n' -> 'Wiki' (hex sizes, CRLF framing)\n}\n",
+    tests: [
+      {
+        name: 'reassembles the chunks',
+        body: `assertEqual(decodeChunked('4\\r\\nWiki\\r\\n5\\r\\npedia\\r\\n0\\r\\n\\r\\n'), 'Wikipedia');`,
+      },
+    ],
+    reference: `function decodeChunked(s) {
+  let out = '', i = 0;
+  while (i < s.length) {
+    const nl = s.indexOf('\\r\\n', i);
+    const size = parseInt(s.slice(i, nl), 16);
+    if (size === 0) break;
+    const start = nl + 2;
+    out += s.slice(start, start + size);
+    i = start + size + 2;
+  }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'db-keyset-pagination',
+    title: 'Keyset Pagination',
+    language: 'js',
+    starter:
+      'function keysetPaginate(rows, afterId, limit) {\n  // rows sorted by id asc. return { rows: <=limit after afterId, nextAfter }\n}\n',
+    tests: [
+      {
+        name: 'pages by last seen id',
+        body: `assertEqual(keysetPaginate([{id:1},{id:2},{id:3},{id:4}], 2, 2), { rows: [{id:3},{id:4}], nextAfter: 4 }); assertEqual(keysetPaginate([{id:1}], 9, 2), { rows: [], nextAfter: null });`,
+      },
+    ],
+    reference: `function keysetPaginate(rows, afterId, limit) {
+  const page = rows.filter((r) => r.id > afterId).slice(0, limit);
+  const nextAfter = page.length ? page[page.length - 1].id : null;
+  return { rows: page, nextAfter };
+}
+`,
+  },
 ]
