@@ -259,6 +259,7 @@ function App() {
     setExpandedSubjectId(subject.id)
     setActiveProblemId(problem.id)
     window.history.replaceState(null, '', `#${problem.id}`)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // Sidebar accordion: expand a subject, or collapse it on a second click,
