@@ -15,6 +15,8 @@ import {
   Workflow,
   type LucideIcon,
 } from 'lucide-react'
+import type { ComponentType } from 'react'
+import { NodeJsIcon, PythonIcon, FlaskIcon, DjangoIcon } from './TechIcons'
 
 export type ProblemType = 'lesson' | 'coding' | 'quiz' | 'debug' | 'design'
 export type Difficulty = 'Warmup' | 'Core' | 'Hard' | 'Boss'
@@ -37,7 +39,7 @@ export type Subject = {
   id: string
   title: string
   subtitle: string
-  icon: LucideIcon
+  icon: LucideIcon | ComponentType<{ size?: number; className?: string }>
   color: string
   problems: Problem[]
 }
@@ -298,6 +300,21 @@ export const extraProblems: Record<string, Problem[]> = {
 // New framework tracks: Node.js, Python, Flask, Django.
 // ---------------------------------------------------------------------------
 
+// Compact builder for auto-graded coding problems. The id MUST match a grader
+// spec problemId (tsSpecs / pySpecs) so the editor + Check solutions appear.
+export function drill(id: string, title: string, difficulty: Difficulty = 'Core', minutes = 12): Problem {
+  return {
+    id,
+    title,
+    type: 'coding',
+    difficulty,
+    minutes,
+    prompt:
+      'Coding drill: ' + title + '. Write your solution in the editor, then click Check solutions to run the tests.',
+    checklist: ['All tests pass when you click Check solutions.'],
+  }
+}
+
 export const extraSubjects: Subject[] = [
   {
     id: 'typescript',
@@ -358,7 +375,7 @@ export const extraSubjects: Subject[] = [
     id: 'nodejs',
     title: 'Node.js',
     subtitle: 'Event loop, streams, async patterns, and Express in production.',
-    icon: ServerCog,
+    icon: NodeJsIcon,
     color: '#43853d',
     problems: [
       {
@@ -422,7 +439,7 @@ export const extraSubjects: Subject[] = [
     id: 'python',
     title: 'Python',
     subtitle: 'GIL, asyncio, typing, packaging, and pragmatic concurrency.',
-    icon: Braces,
+    icon: PythonIcon,
     color: '#3776ab',
     problems: [
       {
@@ -486,7 +503,7 @@ export const extraSubjects: Subject[] = [
     id: 'flask',
     title: 'Flask',
     subtitle: 'App factory, blueprints, request context, and SQLAlchemy sessions.',
-    icon: Workflow,
+    icon: FlaskIcon,
     color: '#5c5c5c',
     problems: [
       {
@@ -550,7 +567,7 @@ export const extraSubjects: Subject[] = [
     id: 'django',
     title: 'Django',
     subtitle: 'ORM performance, migrations, and Django REST Framework APIs.',
-    icon: Cloud,
+    icon: DjangoIcon,
     color: '#0c4b33',
     problems: [
       {

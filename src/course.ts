@@ -11,6 +11,7 @@ import {
   Workflow,
   type LucideIcon,
 } from 'lucide-react'
+import type { ComponentType } from 'react'
 import { capstoneProblems } from './course.capstones'
 import { deepDiveProblems } from './course.deepdive'
 import { extraProblems, extraSubjects } from './course.extra'
@@ -23,6 +24,7 @@ import { graderDrillProblems } from './course.graderDrills'
 import { moreTutorialProblems } from './course.moreTutorials'
 import { nodeFundamentalProblems } from './course.nodeFundamentals'
 import { oralExamProblems } from './course.oralExams'
+import { progressionProblems } from './course.progression'
 import { roadmapGapProblems } from './course.roadmapGaps'
 import { typescriptFundamentalProblems } from './course.typescriptFundamentals'
 import { tutorialProblems } from './course.tutorials'
@@ -54,7 +56,7 @@ export type Subject = {
   id: string
   title: string
   subtitle: string
-  icon: LucideIcon
+  icon: LucideIcon | ComponentType<{ size?: number; className?: string }>
   color: string
   problems: Problem[]
 }
@@ -101,8 +103,30 @@ const coreSubjects: Subject[] = [
         minutes: 18,
         prompt:
           'Explain every major hop between typing https://api.example.com/users/42 and receiving JSON. Include DNS, TCP, TLS, HTTP, the reverse proxy, the app server, and the database.',
+        explanation:
+          'A request is a chain of translations and handoffs. DNS turns the hostname api.example.com into an IP address. TCP opens a reliable byte stream to that IP and port. TLS wraps that stream so the client can verify the server and encrypt the bytes. HTTP is the message format sent over that connection: method, path, headers, and sometimes a body. A load balancer or reverse proxy receives the HTTP request first in many production systems, chooses an app instance, and forwards the request with useful headers like request id or original client IP. The app server routes GET /users/42 to code, checks auth, validates input, queries a database or cache, serializes JSON, and sends an HTTP response back through the same layers.',
+        production:
+          'When production is slow or broken, you debug this chain one boundary at a time. DNS can point at the wrong place, TCP can fail because a port is closed, TLS can fail because a certificate is expired, proxies can timeout, app code can throw, databases can be slow, and clients can misunderstand status codes or response headers. The senior move is naming the layer before guessing the fix.',
+        walkthrough: [
+          'Start with the URL: scheme https, hostname api.example.com, path /users/42.',
+          'Check DNS: the client needs an IP address for the hostname. DNS does not return the path, method, headers, or JSON.',
+          'Open TCP: the client connects to the server IP on port 443. TCP gives reliable ordered bytes, not encryption.',
+          'Negotiate TLS: the server presents a certificate, keys are negotiated, and the connection becomes encrypted.',
+          'Send HTTP: the client sends a request line, headers such as Host and Authorization, and optionally a body.',
+          'Pass through infrastructure: CDN, load balancer, or reverse proxy may terminate TLS, add headers, route, cache, or reject.',
+          'Run backend code: the app route validates the request, checks permissions, calls services, and reads or writes storage.',
+          'Return response: the backend serializes JSON, sets status and headers, then bytes travel back to the client.',
+        ],
         example:
           'Browser cache miss -> recursive DNS lookup -> TCP handshake -> TLS handshake -> HTTP request -> load balancer -> app route -> database query -> JSON response.',
+        questions: [
+          'Which layer turns a hostname into an IP address?',
+          'What does TCP provide that UDP does not?',
+          'What does TLS add on top of TCP?',
+          'Where do HTTP headers enter the request?',
+          'Which layer would you inspect first for an expired certificate error?',
+          'Which layer would you inspect first for a slow SQL query?',
+        ],
         checklist: [
           'Mention what DNS resolves and what it does not resolve.',
           'Separate TCP connection setup from TLS negotiation.',
@@ -665,6 +689,7 @@ export const subjects: Subject[] = [
     ...subject,
     problems: [
       ...subject.problems,
+      ...(progressionProblems[subject.id] ?? []),
       ...(tutorialProblems[subject.id] ?? []),
       ...(moreTutorialProblems[subject.id] ?? []),
       ...(longTutorialProblems[subject.id] ?? []),
@@ -680,6 +705,7 @@ export const subjects: Subject[] = [
     ...subject,
     problems: [
       ...subject.problems,
+      ...(progressionProblems[subject.id] ?? []),
       ...(subject.id === 'typescript' ? typescriptFundamentalProblems : []),
       ...(subject.id === 'nodejs' ? nodeFundamentalProblems : []),
       ...(frameworkTutorialProblems[subject.id] ?? []),
