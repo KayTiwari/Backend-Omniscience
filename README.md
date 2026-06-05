@@ -24,6 +24,12 @@ npm run dev
 
 Progress and notes are stored in browser localStorage.
 
+Run all local checks with:
+
+```bash
+npm run check
+```
+
 ## Expand The Course
 
 Add or edit subjects and problems in `src/course.ts`. The GUI updates automatically from that data.
