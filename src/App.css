@@ -1734,6 +1734,14 @@ input:focus-visible {
     grid-template-columns: 1fr;
   }
 
+  .home-result {
+    grid-template-columns: 1fr;
+  }
+
+  .home-result-meta {
+    justify-content: flex-start;
+  }
+
   .home-hero {
     align-items: stretch;
     padding: 22px;

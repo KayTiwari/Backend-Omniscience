@@ -114,6 +114,7 @@ function App() {
   const [activeSubjectId, setActiveSubjectId] = useState(initialLocation.subject.id)
   const [activeProblemId, setActiveProblemId] = useState(initialLocation.problem.id)
   const [query, setQuery] = useState('')
+  const [homeQuery, setHomeQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<ProblemType | 'all'>('all')
   const [difficultyFilter, setDifficultyFilter] = useState<ProblemDifficulty | 'all'>('all')
   const [progress, setProgress] = useState<ProgressState>(() => loadProgress())
@@ -219,6 +220,31 @@ function App() {
       percent: Math.round((done / subject.problems.length) * 100),
     }
   })
+  const homeSearchResults = useMemo(() => {
+    const term = homeQuery.trim().toLowerCase()
+    if (!term) return []
+
+    return allProblems
+      .map((problem) => {
+        const subject = subjects.find((item) => item.id === problem.subjectId)
+        return { problem, subject }
+      })
+      .filter(({ problem, subject }) => {
+        const searchable = [
+          subject?.title,
+          subject?.subtitle,
+          problem.title,
+          problem.type,
+          problem.difficulty,
+          problem.prompt,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+        return searchable.includes(term)
+      })
+      .slice(0, 12)
+  }, [homeQuery])
 
   function openProblem(subject: Subject, problem: Problem) {
     setIsHome(false)
@@ -711,6 +737,48 @@ function App() {
                 <span>{completionPercent}%</span>
                 <strong>Complete</strong>
               </div>
+            </section>
+
+            <section className="home-search-section" aria-label="Search the course">
+              <label className="home-search-box">
+                <Search size={18} />
+                <input
+                  value={homeQuery}
+                  onChange={(event) => setHomeQuery(event.target.value)}
+                  placeholder="Search problems, subjects, drills, concepts..."
+                />
+              </label>
+
+              {homeQuery.trim() && (
+                <div className="home-search-results">
+                  <div className="home-search-summary">
+                    <strong>{homeSearchResults.length} results</strong>
+                    <span>Top matches for "{homeQuery.trim()}"</span>
+                  </div>
+                  {homeSearchResults.length > 0 ? (
+                    homeSearchResults.map(({ problem, subject }) => (
+                      <button
+                        key={problem.id}
+                        className="home-result"
+                        onClick={() => subject && openProblem(subject, problem)}
+                        type="button"
+                      >
+                        <span className="home-result-main">
+                          <strong>{problem.title}</strong>
+                          <small>{subject?.title}</small>
+                        </span>
+                        <span className="home-result-meta">
+                          <span>{problem.type}</span>
+                          <span>{problem.difficulty}</span>
+                          {specsByProblemId.has(problem.id) && <Code2 size={14} />}
+                        </span>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="home-empty-search">No matches yet. Try a subject, framework, or backend concept.</p>
+                  )}
+                </div>
+              )}
             </section>
 
             <section className="home-section">
