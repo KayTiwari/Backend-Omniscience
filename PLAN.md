@@ -110,3 +110,16 @@ The experience must *grade*, not let the learner mark themselves done.
   migrate checklists to MCQ acceptance criteria.
 - Claude: keep adding coding drills (with explanations) and tutorials.
 - Add broader capstones that combine several sections into one production-style build.
+
+## Theming & interactivity
+
+- **Theme toggle (Codex):** light = **blue flame**, dark = **orange flame**.
+  Set `data-theme="light|dark"` on `<html>`; define theme vars (especially
+  `--accent`: blue in light, orange in dark) under `:root` and `[data-theme="dark"]`.
+  Swap the flame asset on the same toggle. Persist choice in localStorage.
+- **Hover/interaction effects (Claude):** `src/effects.css` is a theme-agnostic
+  library of `.fx-*` classes (lift, grow, glow, press, card, link-underline,
+  icon nudge/spin, pulse, sheen) that recolor from `--accent`, plus focus-visible
+  rings and full `prefers-reduced-motion` support. Import it once and apply the
+  classes to buttons, cards, nav items, and links. Because it reads `--accent`,
+  effects automatically turn orange in dark mode.

@@ -1,0 +1,146 @@
+/*
+ * Interaction effects library (additive, theme-agnostic).
+ * Import once (e.g. in main.tsx) and apply the .fx-* classes to elements.
+ * Colors come from --accent / --accent-strong, so they adapt to whatever the
+ * active theme sets (blue flame in light mode, orange flame in dark mode).
+ *
+ * Theme contract these effects assume (Codex owns the toggle + flame asset swap):
+ *   :root            -> light theme vars, including --accent (blue)
+ *   [data-theme="dark"] -> dark theme vars, --accent (orange)
+ * Set data-theme on <html> and these effects recolor automatically.
+ */
+
+:root {
+  --fx-ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --fx-accent: var(--accent, #29b6e8);
+  --fx-accent-soft: color-mix(in srgb, var(--fx-accent) 30%, transparent);
+}
+
+/* Baseline: anything interactive transitions smoothly. */
+.fx,
+.fx-lift,
+.fx-grow,
+.fx-glow,
+.fx-press,
+.fx-bg,
+.fx-border,
+.fx-link,
+.fx-icon {
+  transition:
+    transform 0.16s var(--fx-ease),
+    box-shadow 0.18s var(--fx-ease),
+    background-color 0.16s var(--fx-ease),
+    border-color 0.16s var(--fx-ease),
+    color 0.16s var(--fx-ease);
+  will-change: transform;
+}
+
+/* Lift on hover, settle on press. */
+.fx-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+.fx-lift:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.16);
+}
+
+/* Subtle scale. */
+.fx-grow:hover { transform: scale(1.03); }
+.fx-grow:active { transform: scale(0.99); }
+
+/* Accent glow halo. */
+.fx-glow:hover { box-shadow: 0 0 0 3px var(--fx-accent-soft), 0 6px 18px var(--fx-accent-soft); }
+
+/* Tactile press for buttons. */
+.fx-press:active { transform: translateY(1px) scale(0.99); }
+
+/* Background warms toward the accent on hover. */
+.fx-bg:hover { background-color: color-mix(in srgb, var(--fx-accent) 12%, transparent); }
+
+/* Border lights up. */
+.fx-border:hover { border-color: var(--fx-accent); }
+
+/* Card: lift + accent border + glow together. */
+.fx-card {
+  transition:
+    transform 0.18s var(--fx-ease),
+    box-shadow 0.2s var(--fx-ease),
+    border-color 0.18s var(--fx-ease);
+}
+.fx-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--fx-accent);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+}
+
+/* Link with an underline that grows from the left. */
+.fx-link {
+  position: relative;
+  text-decoration: none;
+}
+.fx-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  height: 2px;
+  width: 100%;
+  background: var(--fx-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.18s var(--fx-ease);
+}
+.fx-link:hover::after { transform: scaleX(1); }
+.fx-link:hover { color: var(--fx-accent); }
+
+/* Icon nudge / spin on hover of the parent .fx-icon. */
+.fx-icon:hover .fx-icon__spin { transform: rotate(90deg); }
+.fx-icon:hover .fx-icon__nudge { transform: translateX(3px); }
+.fx-icon__spin,
+.fx-icon__nudge { transition: transform 0.18s var(--fx-ease); }
+
+/* Visible keyboard focus on anything interactive. */
+.fx-lift:focus-visible,
+.fx-grow:focus-visible,
+.fx-press:focus-visible,
+.fx-card:focus-visible,
+.fx-link:focus-visible {
+  outline: 2px solid var(--fx-accent);
+  outline-offset: 2px;
+}
+
+/* A gentle pulse for "new" / live elements. */
+.fx-pulse { animation: fx-pulse 2s var(--fx-ease) infinite; }
+@keyframes fx-pulse {
+  0% { box-shadow: 0 0 0 0 var(--fx-accent-soft); }
+  70% { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* Sheen sweep across a button on hover. */
+.fx-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.fx-sheen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(110deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  transition: left 0.5s var(--fx-ease);
+}
+.fx-sheen:hover::before { left: 130%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fx, .fx-lift, .fx-grow, .fx-glow, .fx-press, .fx-bg, .fx-border,
+  .fx-card, .fx-link, .fx-icon, .fx-icon__spin, .fx-icon__nudge,
+  .fx-pulse, .fx-sheen::before, .fx-link::after {
+    transition: none;
+    animation: none;
+  }
+  .fx-lift:hover, .fx-grow:hover, .fx-card:hover, .fx-press:active { transform: none; }
+}
