@@ -31,6 +31,7 @@ import {
 import { validateCourse } from './courseValidation'
 import { applyEditorKey } from './editorKeys'
 import { allSpecs, grade, type GradeResult } from './grader'
+import { InteractiveDiagram } from './InteractiveDiagram'
 import { renderMarkdown } from './miniMarkdown'
 import { getTeachingModel } from './problemTeaching'
 import { tutorials } from './tutorials'
@@ -937,33 +938,11 @@ function App() {
             </div>
 
             <div className="visual-lesson">
-              <div className="visual-picture" aria-label={teachingModel.picture}>
-                {teachingModel.diagram.map((node, index) => (
-                  <span key={`${node}:${index}`}>
-                    <strong>{node}</strong>
-                    {index < teachingModel.diagram.length - 1 && <i aria-hidden="true">→</i>}
-                  </span>
-                ))}
-              </div>
+              <InteractiveDiagram
+                nodes={teachingModel.diagram}
+                explanations={teachingModel.diagramExplanations}
+              />
               <p>{teachingModel.mentalModel}</p>
-              {teachingModel.diagramExplanations && (
-                <div className="diagram-explainer-grid">
-                  {teachingModel.diagram.map((node, index) => {
-                    const explanation = teachingModel.diagramExplanations?.[index]
-                    if (!explanation) return null
-
-                    return (
-                      <details key={`${node}:explain`} className="diagram-explainer">
-                        <summary>
-                          <span>{index + 1}</span>
-                          <strong>{node}</strong>
-                        </summary>
-                        <p>{explanation}</p>
-                      </details>
-                    )
-                  })}
-                </div>
-              )}
             </div>
 
             <div className="lesson-grid">

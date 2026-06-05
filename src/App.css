@@ -1144,6 +1144,95 @@ h1 {
   gap: 12px;
 }
 
+.interactive-diagram {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--paper);
+}
+
+.diagram-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.diagram-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.diagram-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 7px 11px;
+  background: color-mix(in srgb, var(--brand-b) 12%, var(--field));
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.diagram-pill:hover {
+  border-color: var(--brand-a);
+  background: color-mix(in srgb, var(--brand-a) 14%, var(--field));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--brand-a) 12%, transparent);
+}
+
+.diagram-pill.active {
+  border-color: var(--brand-b);
+  background: var(--brand-b);
+  color: #ffffff;
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--brand-b) 20%, transparent);
+}
+
+.diagram-arrow {
+  color: var(--brand-b);
+  font-style: normal;
+  font-weight: 900;
+}
+
+.diagram-panel {
+  display: grid;
+  gap: 8px;
+  border: 1px solid color-mix(in srgb, var(--brand-b) 22%, var(--line));
+  border-radius: 8px;
+  padding: 12px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--brand-b) 8%, transparent), transparent 44%),
+    var(--field);
+}
+
+.diagram-panel-label {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: var(--brand-b);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.diagram-panel p {
+  margin: 0;
+  color: #31413f;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
 .visual-picture {
   display: flex;
   flex-wrap: wrap;
@@ -2042,6 +2131,8 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .time-stats span,
 .app-shell[data-theme='dark'] .mastery-panel,
 .app-shell[data-theme='dark'] .mastery-steps span,
+.app-shell[data-theme='dark'] .interactive-diagram,
+.app-shell[data-theme='dark'] .diagram-panel,
 .app-shell[data-theme='dark'] .visual-picture,
 .app-shell[data-theme='dark'] .diagram-explainer,
 .app-shell[data-theme='dark'] .lesson-grid section,
@@ -2094,6 +2185,7 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .subject-subtitle,
 .app-shell[data-theme='dark'] .learn-first-heading p,
 .app-shell[data-theme='dark'] .visual-lesson p,
+.app-shell[data-theme='dark'] .diagram-panel p,
 .app-shell[data-theme='dark'] .diagram-explainer p,
 .app-shell[data-theme='dark'] .practice-mode p,
 .app-shell[data-theme='dark'] .guided-tutorial-heading p,
