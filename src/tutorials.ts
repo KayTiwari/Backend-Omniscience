@@ -716,4 +716,266 @@ in the Django track and the *N+1 Query Hunt* drill cover this.
 and ordering (inject a clock or seed, as the jitter and rate-limit drills do) so a
 test passes or fails for real reasons only.`,
   },
+  {
+    id: 'tut-git-workflows',
+    subjectId: 'language',
+    title: 'Git Workflows That Scale With a Team',
+    minutes: 9,
+    body: `Git is easy alone and chaotic in a team without a convention. Pick one and be
+consistent.
+
+**The mental model.** A commit is a snapshot plus a parent pointer. A branch is
+just a movable label pointing at a commit. Merging combines histories; rebasing
+replays your commits on top of another branch for a linear history.
+
+**Trunk-based (recommended for most teams).** Short-lived feature branches off
+main, small PRs, merge often behind feature flags. This minimizes long-running
+divergence and painful merges. Long-lived branches rot.
+
+**Commit hygiene.** Small, focused commits with messages that explain **why**, not
+just what. A good message: "Fix oversold inventory by making decrement atomic"
+beats "fix bug".
+
+**Rebase vs merge.** Rebase your own local feature branch to keep history clean,
+but never rebase shared/public branches others have based work on. Merge to
+integrate; rebase to tidy before integrating.
+
+**Resolve conflicts at the source.** A conflict means two changes touched the
+same lines. Understand both intents before resolving; do not blindly accept one
+side.
+
+**Protect main.** Require PR review and green CI before merge. The point of the
+workflow is that main is always deployable.`,
+  },
+  {
+    id: 'tut-oauth',
+    subjectId: 'security',
+    title: 'OAuth and OpenID Connect, Demystified',
+    minutes: 12,
+    body: `OAuth 2.0 is about **delegated authorization** ("let this app act on my behalf
+without my password"). OpenID Connect (OIDC) adds **authentication** ("who is
+this user") on top.
+
+**The roles.** Resource owner (the user), client (your app), authorization server
+(issues tokens), resource server (the API). Tokens, not passwords, flow between
+them.
+
+**Authorization Code flow (the one to use for web/mobile).**
+1. App redirects the user to the authorization server.
+2. User authenticates and consents there (your app never sees the password).
+3. The server redirects back with a short-lived **authorization code**.
+4. Your **backend** exchanges that code (plus a client secret) for an access
+   token. Doing the exchange server-side keeps the secret off the client.
+
+**PKCE.** For public clients (SPAs, mobile) that cannot hold a secret, PKCE adds
+a one-time code verifier/challenge so an intercepted authorization code is
+useless. Use Authorization Code + PKCE for those.
+
+**Tokens.**
+- **Access token:** short-lived, sent to the API as a Bearer token.
+- **Refresh token:** longer-lived, used to get new access tokens without
+  re-login. Store it carefully.
+- **ID token (OIDC):** a JWT proving who the user is, for your app to read.
+
+**Anti-patterns:** the Implicit and Resource Owner Password flows are deprecated;
+do not use them. And remember an access token is a Bearer credential: anyone
+holding it can use it, so always send it over TLS and keep lifetimes short.`,
+  },
+  {
+    id: 'tut-api-styles',
+    subjectId: 'api',
+    title: 'REST vs GraphQL vs gRPC',
+    minutes: 11,
+    body: `Three ways for systems to talk, each strongest in a different setting.
+
+**REST (resources over HTTP).** Nouns and verbs, cacheable via HTTP, ubiquitous.
+- **Strengths:** simple, debuggable with curl, HTTP caching, huge tooling.
+- **Pain:** over-fetching (you get fields you do not need) and under-fetching
+  (N round trips to assemble a screen).
+
+**GraphQL (a query language for your API).** The client asks for exactly the
+fields it needs from a typed schema, in one request.
+- **Strengths:** no over/under-fetching, great for rich frontends with varied
+  data needs, strong typing and introspection.
+- **Pain:** HTTP caching is harder (usually one POST endpoint), and the
+  notorious **N+1**: a naive resolver fires a query per item. Solve it with
+  batching/dataloaders. Server complexity and query-cost limiting are real.
+
+**gRPC (contract-first RPC over HTTP/2).** Define services and messages in
+protobuf; generate typed clients/servers. Binary, fast, streaming.
+- **Strengths:** performance, strong contracts, bidirectional streaming, ideal
+  for **internal service-to-service** calls.
+- **Pain:** not natively browser-friendly (needs a proxy), binary payloads are
+  harder to eyeball.
+
+**How to choose.** Public/partner API or simple CRUD: **REST**. Complex,
+data-hungry frontends: **GraphQL**. High-performance internal microservice
+traffic: **gRPC**. Many systems use REST/GraphQL at the edge and gRPC between
+services.`,
+  },
+  {
+    id: 'tut-owasp',
+    subjectId: 'security',
+    title: 'The OWASP Risks You Will Actually Hit',
+    minutes: 12,
+    body: `The OWASP Top 10 catalogs the most common web vulnerabilities. A handful show up
+constantly in backends.
+
+**Broken access control (the #1 risk).** The user is authenticated but you forgot
+to check they are allowed to touch *this* resource. The classic is IDOR:
+GET /orders/123 returns someone else's order because you only checked login, not
+ownership. **Fix:** authorize every request against the specific resource, not
+just "is logged in".
+
+**Injection (SQL, command, etc.).** Untrusted input concatenated into a query or
+shell. **Fix:** parameterized queries / prepared statements, always:
+
+    -- vulnerable
+    db.query("SELECT * FROM users WHERE email = '" + email + "'");
+    -- safe
+    db.query("SELECT * FROM users WHERE email = $1", [email]);
+
+**XSS.** Untrusted data rendered into HTML executes as script. **Fix:** escape on
+output (the *Escape HTML* drill) and set a Content-Security-Policy.
+
+**SSRF.** Your server fetches a user-supplied URL and an attacker points it at
+internal services or the cloud metadata endpoint. **Fix:** validate the scheme,
+resolve and block private/link-local ranges, disable redirects, use an allowlist
+(the *SSRF In The Image Fetcher* problem).
+
+**Security misconfiguration & secrets.** Default credentials, verbose error
+stacks leaked to clients, secrets committed to git. **Fix:** least privilege,
+generic error bodies, secrets in env/secret managers, dependency scanning.
+
+**The throughline:** never trust input, authorize every action, and fail closed.`,
+  },
+  {
+    id: 'tut-connection-pooling',
+    subjectId: 'performance',
+    title: 'Connection Pooling and Why It Saves You',
+    minutes: 9,
+    body: `Opening a database connection is expensive (TCP + TLS + auth + backend process).
+Doing it per request will melt your database. A pool reuses a small set of
+connections.
+
+**How it works.** The app keeps N open connections. A request borrows one, runs
+its queries, and returns it. If all are busy, the request waits (up to a timeout)
+for one to free up.
+
+**The QueuePool error.** "QueuePool limit reached" or "too many connections"
+means demand exceeded the pool and nothing freed up in time. Causes:
+- Sessions/connections not released (leaked) because of a missing close on an
+  error path. Tie connection lifetime to the request and release in a finally /
+  teardown hook (the *Session Leaks* problem in the Flask track).
+- Long-running queries or transactions holding connections.
+- Pool too small for the concurrency.
+
+**Sizing.** More connections is not always better: each one consumes memory and a
+backend process. A common starting point is a small pool per instance, sized so
+(instances x pool) stays well under the database's max_connections. Add a
+**pgbouncer**-style external pooler when you have many instances.
+
+**Rules:** keep transactions short, never do network calls while holding a
+connection, and always release on every path. The pool turns "thousands of
+expensive connects" into "a few reused ones".`,
+  },
+  {
+    id: 'tut-migrations',
+    subjectId: 'sql',
+    title: 'Schema Migrations Without Downtime',
+    minutes: 11,
+    body: `Changing a schema while the app is live, across a rolling deploy, is where many
+outages happen. The safe technique is **expand/contract** (a.k.a. parallel
+change).
+
+**The problem.** During a rolling deploy, old and new code run **at the same
+time**. A migration that the old code cannot tolerate (a dropped/renamed column)
+breaks the still-running old instances.
+
+**Expand/contract for a rename:**
+1. **Expand:** add the new column (nullable). Old code ignores it.
+2. **Dual-write:** deploy code that writes both old and new columns, reads old.
+3. **Backfill:** copy existing data into the new column in batches (avoid one
+   giant locking update).
+4. **Switch reads:** deploy code that reads the new column.
+5. **Contract:** once nothing uses the old column, drop it.
+
+Each step is backward compatible with the previous release, so a rollback is
+always safe.
+
+**Locking gotchas (Postgres).** Adding a NOT NULL column with a volatile default,
+or adding a constraint, can take a heavy lock and block writes on a large table.
+Add the column nullable, backfill in batches, then add the constraint as
+NOT VALID and VALIDATE separately (which takes a lighter lock). The
+*Zero-Downtime Column Add* problem drills this.
+
+**Golden rule:** never make a single migration that the currently-running code
+cannot survive.`,
+  },
+  {
+    id: 'tut-scaling',
+    subjectId: 'system-design',
+    title: 'Scaling: Vertical, Horizontal, and Load Balancing',
+    minutes: 11,
+    body: `Scaling is about removing the current bottleneck, in order, without adding
+complexity you do not yet need.
+
+**Vertical scaling (scale up).** Bigger machine: more CPU, RAM, faster disk.
+Simple and often the right first move, but it has a ceiling and a single point of
+failure.
+
+**Horizontal scaling (scale out).** More machines behind a load balancer. Nearly
+unlimited, and it adds redundancy. The prerequisite: **stateless app instances**
+(no important in-memory state), so any instance can serve any request. Move
+sessions/state to a shared store (see twelve-factor).
+
+**Load balancing.** A balancer spreads traffic across instances. Algorithms:
+round-robin (simple), least-connections (favors idle instances), and
+hashing/sticky (route a key/user to the same instance). It also health-checks
+instances and stops sending traffic to unhealthy or not-ready ones.
+
+**The database is usually the real bottleneck.** App servers scale out easily;
+the database does not. The progression: optimize queries and indexes, add a
+cache, add read replicas for read-heavy load, and only **shard** when one node
+genuinely cannot hold the data or write load.
+
+**Protect under overload.** When demand exceeds capacity, degrade gracefully:
+rate limit, shed load (reject early with 429/503), use circuit breakers to stop
+hammering a failing dependency, and apply backpressure via queues. Falling over
+cleanly beats collapsing entirely.
+
+**Order of operations:** measure to find the real bottleneck, then scale that.
+Do not shard a database that an index would have fixed.`,
+  },
+  {
+    id: 'tut-serverless-cdn',
+    subjectId: 'devops',
+    title: 'Serverless, CDNs, and Where Code Runs',
+    minutes: 9,
+    body: `Not all backend code has to run on a server you manage. Knowing the options keeps
+you from over- or under-engineering.
+
+**CDN (content delivery network).** Caches static assets (and increasingly
+responses) at edge locations near users. It cuts latency and offloads your
+origin. Cache static assets aggressively with content-hashed filenames and long
+max-age + immutable; be careful caching dynamic/auth'd responses.
+
+**Serverless functions (FaaS).** You deploy a function; the platform runs it on
+demand and scales to zero.
+- **Strengths:** no servers to manage, pay-per-use, automatic scaling, great for
+  spiky or event-driven workloads (webhooks, image processing, cron jobs).
+- **Trade-offs:** **cold starts** (first invocation after idle is slow),
+  execution time limits, and statelessness (no in-memory state between calls; use
+  external stores). Database connections are tricky at high concurrency; use a
+  pooler.
+
+**Managed containers / PaaS.** A middle ground: you ship a container, the
+platform runs and scales it. Less ops than raw VMs/Kubernetes, more control than
+FaaS.
+
+**How to choose.** Steady, latency-sensitive traffic: long-running servers or
+managed containers. Spiky, event-driven, or glue work: serverless functions.
+Static and cacheable: push it to the CDN. Most real systems combine all three: a
+CDN in front, app servers/containers for core traffic, and functions for events.`,
+  },
 ]
