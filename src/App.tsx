@@ -62,9 +62,26 @@ function ProblemTypeIcon({ type }: { type: ProblemType }) {
   return <BookOpen size={18} />
 }
 
+function findProblemLocation(problemId: string) {
+  for (const subject of subjects) {
+    const problem = subject.problems.find((item) => item.id === problemId)
+    if (problem) return { subject, problem }
+  }
+  return undefined
+}
+
+function getInitialLocation() {
+  const hashProblemId = window.location.hash.replace('#', '')
+  return findProblemLocation(hashProblemId) ?? {
+    subject: subjects[0],
+    problem: subjects[0].problems[0],
+  }
+}
+
 function App() {
-  const [activeSubjectId, setActiveSubjectId] = useState(subjects[0].id)
-  const [activeProblemId, setActiveProblemId] = useState(subjects[0].problems[0].id)
+  const initialLocation = useMemo(() => getInitialLocation(), [])
+  const [activeSubjectId, setActiveSubjectId] = useState(initialLocation.subject.id)
+  const [activeProblemId, setActiveProblemId] = useState(initialLocation.problem.id)
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<ProblemType | 'all'>('all')
   const [difficultyFilter, setDifficultyFilter] = useState<ProblemDifficulty | 'all'>('all')
@@ -75,6 +92,18 @@ function App() {
   useEffect(() => {
     window.localStorage.setItem(storageKey, JSON.stringify(progress))
   }, [progress])
+
+  useEffect(() => {
+    const syncFromHash = () => {
+      const location = findProblemLocation(window.location.hash.replace('#', ''))
+      if (!location) return
+      setActiveSubjectId(location.subject.id)
+      setActiveProblemId(location.problem.id)
+    }
+
+    window.addEventListener('hashchange', syncFromHash)
+    return () => window.removeEventListener('hashchange', syncFromHash)
+  }, [])
 
   const activeSubject = subjects.find((subject) => subject.id === activeSubjectId) ?? subjects[0]
   const activeProblem =
@@ -126,6 +155,7 @@ function App() {
   function openProblem(subject: Subject, problem: Problem) {
     setActiveSubjectId(subject.id)
     setActiveProblemId(problem.id)
+    window.history.replaceState(null, '', `#${problem.id}`)
   }
 
   function moveProblem(direction: -1 | 1) {

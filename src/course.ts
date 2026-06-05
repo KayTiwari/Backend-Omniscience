@@ -11,6 +11,7 @@ import {
   Workflow,
   type LucideIcon,
 } from 'lucide-react'
+import { extraProblems, extraSubjects } from './course.extra'
 
 export type ProblemType = 'lesson' | 'coding' | 'quiz' | 'debug' | 'design'
 
@@ -39,7 +40,7 @@ export type Subject = {
   problems: Problem[]
 }
 
-export const subjects: Subject[] = [
+const coreSubjects: Subject[] = [
   {
     id: 'internet',
     title: 'Internet & HTTP',
@@ -596,6 +597,14 @@ export const subjects: Subject[] = [
       },
     ],
   },
+]
+
+export const subjects: Subject[] = [
+  ...coreSubjects.map((subject) => ({
+    ...subject,
+    problems: [...subject.problems, ...(extraProblems[subject.id] ?? [])],
+  })),
+  ...extraSubjects,
 ]
 
 export const allProblems = subjects.flatMap((subject) =>
