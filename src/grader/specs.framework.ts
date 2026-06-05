@@ -877,4 +877,301 @@ export const frameworkSpecs: GradeSpec[] = [
       "  return { ok: actual <= budget, overBy: Math.max(0, actual - budget) };\n" +
       "}\n",
   },
+  {
+    problemId: 'node-fundamentals-01-sum-with-for-loop',
+    title: 'Sum With A For Loop',
+    language: 'js',
+    starter: "function sumNumbers(nums) {\n  // use a for loop and return the total\n}\n",
+    tests: [
+      { name: 'sums positive numbers', body: 'assertEqual(sumNumbers([2, 3, 5]), 10);' },
+      { name: 'handles empty arrays and negatives', body: 'assertEqual(sumNumbers([]), 0); assertEqual(sumNumbers([-2, 5]), 3);' },
+    ],
+    reference: "function sumNumbers(nums) {\n  let total = 0;\n  for (let i = 0; i < nums.length; i++) total += nums[i];\n  return total;\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-02-count-even-numbers',
+    title: 'Count Even Numbers',
+    language: 'js',
+    starter: "function countEvens(nums) {\n  // count numbers divisible by 2\n}\n",
+    tests: [
+      { name: 'counts even values', body: 'assertEqual(countEvens([1, 2, 4, 7]), 2);' },
+      { name: 'handles zero and negatives', body: 'assertEqual(countEvens([0, -2, -3]), 2);' },
+    ],
+    reference: "function countEvens(nums) {\n  let count = 0;\n  for (const n of nums) if (n % 2 === 0) count++;\n  return count;\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-03-while-countdown',
+    title: 'While Countdown',
+    language: 'js',
+    starter: "function countdown(n) {\n  // return [n, n-1, ... 1]\n}\n",
+    tests: [
+      { name: 'counts down from n', body: 'assertEqual(countdown(4), [4, 3, 2, 1]);' },
+      { name: 'non-positive values return empty array', body: 'assertEqual(countdown(0), []); assertEqual(countdown(-2), []);' },
+    ],
+    reference: "function countdown(n) {\n  const out = [];\n  while (n > 0) out.push(n--);\n  return out;\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-04-map-user-names',
+    title: 'Map User Names',
+    language: 'js',
+    starter: "function userNames(users) {\n  // return each user's name\n}\n",
+    tests: [
+      { name: 'maps names in order', body: "assertEqual(userNames([{ name: 'Ada' }, { name: 'Lin' }]), ['Ada', 'Lin']);" },
+      { name: 'empty input returns empty output', body: 'assertEqual(userNames([]), []);' },
+    ],
+    reference: "function userNames(users) {\n  return users.map((user) => user.name);\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-05-filter-active-users',
+    title: 'Filter Active Users',
+    language: 'js',
+    starter: "function activeUsers(users) {\n  // return users where active is true\n}\n",
+    tests: [
+      { name: 'filters active users', body: "assertEqual(activeUsers([{ id: 1, active: true }, { id: 2, active: false }]), [{ id: 1, active: true }]);" },
+      { name: 'requires true, not truthy', body: "assertEqual(activeUsers([{ id: 1, active: 1 }, { id: 2, active: true }]), [{ id: 2, active: true }]);" },
+    ],
+    reference: "function activeUsers(users) {\n  return users.filter((user) => user.active === true);\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-06-find-by-id',
+    title: 'Find By ID',
+    language: 'js',
+    starter: "function findById(items, id) {\n  // return matching item or null\n}\n",
+    tests: [
+      { name: 'finds matching item', body: "assertEqual(findById([{ id: 'a' }, { id: 'b' }], 'b'), { id: 'b' });" },
+      { name: 'returns null when missing', body: "assertEqual(findById([{ id: 'a' }], 'x'), null);" },
+    ],
+    reference: "function findById(items, id) {\n  return items.find((item) => item.id === id) || null;\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-07-count-by-status',
+    title: 'Count By Status',
+    language: 'js',
+    starter: "function countByStatus(rows) {\n  // return { status: count }\n}\n",
+    tests: [
+      { name: 'counts statuses', body: "assertEqual(countByStatus([{ status: 'open' }, { status: 'open' }, { status: 'done' }]), { open: 2, done: 1 });" },
+      { name: 'empty rows return empty object', body: 'assertEqual(countByStatus([]), {});' },
+    ],
+    reference: "function countByStatus(rows) {\n  const counts = {};\n  for (const row of rows) counts[row.status] = (counts[row.status] || 0) + 1;\n  return counts;\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-08-safe-json-parse',
+    title: 'Safe JSON Parse',
+    language: 'js',
+    starter: "function safeJsonParse(text) {\n  // return { ok: true, value } or { ok: false, error: 'invalid json' }\n}\n",
+    tests: [
+      { name: 'parses valid json', body: "assertEqual(safeJsonParse('{\"a\":1}'), { ok: true, value: { a: 1 } });" },
+      { name: 'returns controlled failure', body: "assertEqual(safeJsonParse('{bad'), { ok: false, error: 'invalid json' });" },
+    ],
+    reference: "function safeJsonParse(text) {\n  try { return { ok: true, value: JSON.parse(text) }; }\n  catch { return { ok: false, error: 'invalid json' }; }\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-09-require-fields',
+    title: 'Require Fields',
+    language: 'js',
+    starter: "function requireFields(obj, fields) {\n  // return missing field names\n}\n",
+    tests: [
+      { name: 'returns missing fields', body: "assertEqual(requireFields({ email: 'a@b.com' }, ['email', 'name']), ['name']);" },
+      { name: 'treats null and undefined as missing', body: "assertEqual(requireFields({ a: null, b: undefined, c: 0 }, ['a', 'b', 'c']), ['a', 'b']);" },
+    ],
+    reference: "function requireFields(obj, fields) {\n  return fields.filter((field) => obj[field] == null);\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-10-normalize-email',
+    title: 'Normalize Email',
+    language: 'js',
+    starter: "function normalizeEmail(email) {\n  // trim and lowercase\n}\n",
+    tests: [
+      { name: 'normalizes whitespace and case', body: "assertEqual(normalizeEmail(' Ada@Example.COM '), 'ada@example.com');" },
+      { name: 'keeps already-normal input', body: "assertEqual(normalizeEmail('a@b.com'), 'a@b.com');" },
+    ],
+    reference: "function normalizeEmail(email) {\n  return email.trim().toLowerCase();\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-11-slug-from-title',
+    title: 'Slug From Title',
+    language: 'js',
+    starter: "function slugFromTitle(title) {\n  // lowercase, hyphenate, strip edge hyphens\n}\n",
+    tests: [
+      { name: 'creates url-safe slug', body: "assertEqual(slugFromTitle(' Hello, API World! '), 'hello-api-world');" },
+      { name: 'collapses repeated punctuation', body: "assertEqual(slugFromTitle('Node---Streams'), 'node-streams');" },
+    ],
+    reference: "function slugFromTitle(title) {\n  return title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-12-parse-integer-param',
+    title: 'Parse Integer Param',
+    language: 'js',
+    starter: "function parsePositiveInt(value) {\n  // return positive integer or null\n}\n",
+    tests: [
+      { name: 'parses positive integer strings', body: "assertEqual(parsePositiveInt('42'), 42);" },
+      { name: 'rejects zero, decimals, and junk', body: "assertEqual(parsePositiveInt('0'), null); assertEqual(parsePositiveInt('4.2'), null); assertEqual(parsePositiveInt('abc'), null);" },
+    ],
+    reference: "function parsePositiveInt(value) {\n  if (!/^\\d+$/.test(String(value))) return null;\n  const n = Number(value);\n  return Number.isInteger(n) && n > 0 ? n : null;\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-13-build-query-string',
+    title: 'Build Query String',
+    language: 'js',
+    starter: "function toQueryString(params) {\n  // encode non-null params\n}\n",
+    tests: [
+      { name: 'encodes keys and values', body: "assertEqual(toQueryString({ q: 'hello world', page: 2 }), 'q=hello%20world&page=2');" },
+      { name: 'skips nullish values', body: "assertEqual(toQueryString({ a: 1, b: null, c: undefined }), 'a=1');" },
+    ],
+    reference: "function toQueryString(params) {\n  return Object.entries(params).filter(([, v]) => v != null).map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(String(v))).join('&');\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-14-read-header-case-insensitive',
+    title: 'Read Header Case-Insensitive',
+    language: 'js',
+    starter: "function getHeader(headers, name) {\n  // return matching header value regardless of case\n}\n",
+    tests: [
+      { name: 'reads mixed-case header', body: "assertEqual(getHeader({ 'Content-Type': 'application/json' }, 'content-type'), 'application/json');" },
+      { name: 'returns undefined when absent', body: "assertEqual(getHeader({ Accept: 'json' }, 'authorization'), undefined);" },
+    ],
+    reference: "function getHeader(headers, name) {\n  const target = name.toLowerCase();\n  for (const key of Object.keys(headers)) if (key.toLowerCase() === target) return headers[key];\n  return undefined;\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-15-basic-auth-parser',
+    title: 'Basic Auth Parser',
+    language: 'js',
+    starter: "function parseBasicAuth(header) {\n  // Basic base64(username:password) -> { username, password }\n}\n",
+    tests: [
+      { name: 'parses basic credentials', body: "assertEqual(parseBasicAuth('Basic YWRhOnNlY3JldA=='), { username: 'ada', password: 'secret' });" },
+      { name: 'rejects missing or non-basic header', body: "assertEqual(parseBasicAuth('Bearer token'), null); assertEqual(parseBasicAuth(''), null);" },
+    ],
+    reference: "function parseBasicAuth(header) {\n  if (!header || !header.startsWith('Basic ')) return null;\n  const decoded = atob(header.slice(6));\n  const index = decoded.indexOf(':');\n  if (index < 0) return null;\n  return { username: decoded.slice(0, index), password: decoded.slice(index + 1) };\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-16-error-envelope',
+    title: 'Error Envelope',
+    language: 'js',
+    starter: "function makeError(status, code, message, requestId) {\n  // return stable API error object\n}\n",
+    tests: [
+      { name: 'builds stable error object', body: "assertEqual(makeError(400, 'VALIDATION', 'bad input', 'r1'), { error: { status: 400, code: 'VALIDATION', message: 'bad input', requestId: 'r1' } });" },
+    ],
+    reference: "function makeError(status, code, message, requestId) {\n  return { error: { status, code, message, requestId } };\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-17-compose-middleware',
+    title: 'Compose Middleware',
+    language: 'js',
+    starter: "function runMiddleware(req, middleware) {\n  // run each (req, next) middleware in order and return req\n}\n",
+    tests: [
+      {
+        name: 'runs middleware in order',
+        body: "const req = runMiddleware({}, [(req, next) => { req.steps = ['auth']; next(); }, (req, next) => { req.steps.push('route'); next(); }]); assertEqual(req, { steps: ['auth', 'route'] });",
+      },
+      {
+        name: 'stops when next is not called',
+        body: "const req = runMiddleware({}, [(req) => { req.blocked = true; }, (req, next) => { req.after = true; next(); }]); assertEqual(req, { blocked: true });",
+      },
+    ],
+    reference:
+      "function runMiddleware(req, middleware) {\n" +
+      "  let index = 0;\n" +
+      "  function next() {\n" +
+      "    const fn = middleware[index++];\n" +
+      "    if (fn) fn(req, next);\n" +
+      "  }\n" +
+      "  next();\n" +
+      "  return req;\n" +
+      "}\n",
+  },
+  {
+    problemId: 'node-fundamentals-18-promise-all-settled-summary',
+    title: 'Promise Results Summary',
+    language: 'js',
+    starter: "function summarizeSettled(results) {\n  // count fulfilled/rejected and collect fulfilled values\n}\n",
+    tests: [
+      { name: 'summarizes settled results', body: "assertEqual(summarizeSettled([{ status: 'fulfilled', value: 1 }, { status: 'rejected', reason: 'x' }]), { fulfilled: 1, rejected: 1, values: [1] });" },
+    ],
+    reference: "function summarizeSettled(results) {\n  return { fulfilled: results.filter((r) => r.status === 'fulfilled').length, rejected: results.filter((r) => r.status === 'rejected').length, values: results.filter((r) => r.status === 'fulfilled').map((r) => r.value) };\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-19-timeout-race-shape',
+    title: 'Timeout Result Shape',
+    language: 'js',
+    starter: "function timeoutResult(ms) {\n  // return a predictable timeout error shape\n}\n",
+    tests: [
+      { name: 'returns stable timeout shape', body: "assertEqual(timeoutResult(250), { timeoutMs: 250, error: 'timeout' });" },
+      { name: 'preserves caller-provided duration', body: "assertEqual(timeoutResult(5000), { timeoutMs: 5000, error: 'timeout' });" },
+    ],
+    reference: "function timeoutResult(ms) {\n  return { timeoutMs: ms, error: 'timeout' };\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-20-retryable-status',
+    title: 'Retryable Status',
+    language: 'js',
+    starter: "function isRetryableStatus(status) {\n  // true for 408, 429, and 5xx\n}\n",
+    tests: [
+      { name: 'allows transient statuses', body: 'assertEqual(isRetryableStatus(408), true); assertEqual(isRetryableStatus(429), true); assertEqual(isRetryableStatus(503), true);' },
+      { name: 'rejects client and success statuses', body: 'assertEqual(isRetryableStatus(400), false); assertEqual(isRetryableStatus(200), false);' },
+    ],
+    reference: "function isRetryableStatus(status) {\n  return status === 408 || status === 429 || status >= 500;\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-21-buffer-byte-length',
+    title: 'Byte Length',
+    language: 'js',
+    starter: "function byteLength(value) {\n  // return the UTF-8 byte length of a string\n}\n",
+    tests: [
+      { name: 'counts ascii bytes', body: "assertEqual(byteLength('hello'), 5);" },
+      { name: 'counts utf-8 bytes, not characters', body: "assertEqual(byteLength('é'), 2);" },
+    ],
+    reference: "function byteLength(value) {\n  return new TextEncoder().encode(value).length;\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-22-chunk-array-for-batches',
+    title: 'Chunk Array For Batches',
+    language: 'js',
+    starter: "function chunkForBatches(items, size) {\n  // split into ordered batches\n}\n",
+    tests: [
+      { name: 'chunks into batches', body: 'assertEqual(chunkForBatches([1,2,3,4,5], 2), [[1,2],[3,4],[5]]);' },
+      { name: 'empty input returns empty array', body: 'assertEqual(chunkForBatches([], 3), []);' },
+    ],
+    reference: "function chunkForBatches(items, size) {\n  const out = [];\n  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));\n  return out;\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-23-idempotency-key',
+    title: 'Idempotency Key',
+    language: 'js',
+    starter: "function idempotencyKey(method, path, bodyHash) {\n  // return METHOD:path:bodyHash with a normalized method\n}\n",
+    tests: [
+      { name: 'builds stable key', body: "assertEqual(idempotencyKey('POST', '/orders', 'abc'), 'POST:/orders:abc');" },
+      { name: 'normalizes method casing', body: "assertEqual(idempotencyKey('post', '/orders', 'abc'), 'POST:/orders:abc');" },
+    ],
+    reference: "function idempotencyKey(method, path, bodyHash) {\n  return `${method.toUpperCase()}:${path}:${bodyHash}`;\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-24-redact-secret-fields',
+    title: 'Redact Secret Fields',
+    language: 'js',
+    starter: "function redactSecrets(obj) {\n  // copy object and redact password/token/secret fields\n}\n",
+    tests: [
+      { name: 'redacts sensitive fields', body: "assertEqual(redactSecrets({ email: 'a', password: 'pw', token: 't', secret: 's' }), { email: 'a', password: '[redacted]', token: '[redacted]', secret: '[redacted]' });" },
+      { name: 'does not mutate original object', body: "const input = { password: 'pw' }; redactSecrets(input); assertEqual(input, { password: 'pw' });" },
+    ],
+    reference: "function redactSecrets(obj) {\n  const out = { ...obj };\n  for (const key of ['password', 'token', 'secret']) if (key in out) out[key] = '[redacted]';\n  return out;\n}\n",
+  },
+  {
+    problemId: 'node-fundamentals-25-request-log-line',
+    title: 'Request Log Line',
+    language: 'js',
+    starter: "function requestLog(req, res, durationMs) {\n  // return { method, path, status, durationMs }\n}\n",
+    tests: [
+      {
+        name: 'creates structured request log',
+        body: "assertEqual(requestLog({ method: 'GET', path: '/health' }, { status: 200 }, 12), { method: 'GET', path: '/health', status: 200, durationMs: 12 });",
+      },
+      {
+        name: 'does not include request body or headers',
+        body: "assertEqual(requestLog({ method: 'POST', path: '/login', body: { password: 'pw' } }, { status: 401 }, 44), { method: 'POST', path: '/login', status: 401, durationMs: 44 });",
+      },
+    ],
+    reference:
+      "function requestLog(req, res, durationMs) {\n" +
+      "  return { method: req.method, path: req.path, status: res.status, durationMs };\n" +
+      "}\n",
+  },
 ]

@@ -21,8 +21,10 @@ import { frameworkReviewProblems } from './course.frameworkReview'
 import { frameworkTutorialProblems } from './course.frameworkTutorials'
 import { graderDrillProblems } from './course.graderDrills'
 import { moreTutorialProblems } from './course.moreTutorials'
+import { nodeFundamentalProblems } from './course.nodeFundamentals'
 import { oralExamProblems } from './course.oralExams'
 import { roadmapGapProblems } from './course.roadmapGaps'
+import { typescriptFundamentalProblems } from './course.typescriptFundamentals'
 import { tutorialProblems } from './course.tutorials'
 import { tutorials as longTutorials } from './tutorials'
 
@@ -678,6 +680,8 @@ export const subjects: Subject[] = [
     ...subject,
     problems: [
       ...subject.problems,
+      ...(subject.id === 'typescript' ? typescriptFundamentalProblems : []),
+      ...(subject.id === 'nodejs' ? nodeFundamentalProblems : []),
       ...(frameworkTutorialProblems[subject.id] ?? []),
       ...(frameworkReviewProblems[subject.id] ?? []),
       ...(frameworkMasteryProblems[subject.id] ?? []),

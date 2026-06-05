@@ -300,6 +300,61 @@ export const extraProblems: Record<string, Problem[]> = {
 
 export const extraSubjects: Subject[] = [
   {
+    id: 'typescript',
+    title: 'TypeScript',
+    subtitle: 'Types, narrowing, DTOs, runtime validation, and safer Node backends.',
+    icon: Braces,
+    color: '#0f8b8d',
+    problems: [
+      {
+        id: 'typescript-why-before-node',
+        title: 'Why TypeScript Before Node',
+        type: 'lesson',
+        difficulty: 'Warmup',
+        minutes: 15,
+        prompt:
+          'Explain why TypeScript belongs before serious Node.js backend work: contracts, refactors, DTOs, config, service boundaries, and safer async code.',
+        example:
+          'TypeScript catches internal misuse like passing a ProjectId where a UserId is expected, but HTTP JSON still needs runtime validation.',
+        checklist: [
+          'Explain compile-time types vs runtime data.',
+          'Name three backend boundaries that should be typed.',
+          'Explain why runtime validation is still required.',
+        ],
+      },
+      {
+        id: 'typescript-request-dto',
+        title: 'Request DTO Shape',
+        type: 'coding',
+        difficulty: 'Warmup',
+        minutes: 25,
+        prompt:
+          'Define a CreateUserInput type and sketch a validator that accepts unknown JSON before a service receives typed data.',
+        checklist: [
+          'Use unknown at the HTTP boundary.',
+          'Validate required fields.',
+          'Return a typed object only after validation.',
+          'Do not leak raw request bodies into services.',
+        ],
+      },
+      {
+        id: 'typescript-discriminated-result',
+        title: 'Discriminated Result',
+        type: 'coding',
+        difficulty: 'Core',
+        minutes: 25,
+        prompt:
+          'Model a Result<T> union with ok true/false branches, then explain how a route maps each branch to HTTP responses.',
+        checklist: [
+          'Use a discriminator.',
+          'Type success payloads generically.',
+          'Type expected errors explicitly.',
+          'Handle every branch exhaustively.',
+        ],
+      },
+    ],
+  },
+  {
     id: 'nodejs',
     title: 'Node.js',
     subtitle: 'Event loop, streams, async patterns, and Express in production.',
