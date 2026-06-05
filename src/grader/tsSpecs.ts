@@ -329,4 +329,127 @@ function isHigh(l: Level): boolean {
   return null
 }`,
   },
+
+  // ----- Batch 3: generic classes, Result, exhaustiveness, helpers -------
+  {
+    problemId: 'ts-stack-class',
+    title: 'Generic Class: Stack<T>',
+    language: 'ts',
+    starter: 'class Stack<T> {\n  push(x: T): void {}\n  pop(): T | undefined {}\n  peek(): T | undefined {}\n  size(): number {}\n}\n',
+    tests: [
+      { name: 'LIFO behavior', body: 'const s = new Stack(); s.push(1); s.push(2); assertEqual(s.peek(), 2); assertEqual(s.pop(), 2); assertEqual(s.size(), 1);' },
+    ],
+    reference: `class Stack<T> {
+  private items: T[] = []
+  push(x: T): void { this.items.push(x) }
+  pop(): T | undefined { return this.items.pop() }
+  peek(): T | undefined { return this.items[this.items.length - 1] }
+  size(): number { return this.items.length }
+}`,
+  },
+  {
+    problemId: 'ts-result-map',
+    title: 'Result Type: map',
+    language: 'ts',
+    starter: "type Result<T> = { ok: true; value: T } | { ok: false; error: string }\n\nfunction mapResult<T, U>(r: Result<T>, fn: (v: T) => U): Result<U> {\n  // transform the value on ok; pass errors through\n}\n",
+    tests: [
+      { name: 'maps ok, passes error', body: "assertEqual(mapResult({ ok:true, value:2 }, (x) => x * 10), { ok:true, value:20 }); assertEqual(mapResult({ ok:false, error:'x' }, (x) => x), { ok:false, error:'x' });" },
+    ],
+    reference: `type Result<T> = { ok: true; value: T } | { ok: false; error: string }
+
+function mapResult<T, U>(r: Result<T>, fn: (v: T) => U): Result<U> {
+  return r.ok ? { ok: true, value: fn(r.value) } : r
+}`,
+  },
+  {
+    problemId: 'ts-compact',
+    title: 'Type Guard Filter: compact',
+    language: 'ts',
+    starter: 'function compact<T>(arr: (T | null | undefined)[]): T[] {\n  // drop null and undefined, keeping the narrowed type\n}\n',
+    tests: [
+      { name: 'removes nullish', body: 'assertEqual(compact([1, null, 2, undefined, 3]), [1, 2, 3]);' },
+    ],
+    reference: `function compact<T>(arr: (T | null | undefined)[]): T[] {
+  return arr.filter((x): x is T => x !== null && x !== undefined)
+}`,
+  },
+  {
+    problemId: 'ts-from-entries',
+    title: 'Generic fromEntries',
+    language: 'ts',
+    starter: 'function fromEntries<T>(entries: [string, T][]): Record<string, T> {\n  pass\n}\n',
+    tests: [
+      { name: 'builds a record', body: "assertEqual(fromEntries([['a',1],['b',2]]), { a:1, b:2 });" },
+    ],
+    reference: `function fromEntries<T>(entries: [string, T][]): Record<string, T> {
+  const out: Record<string, T> = {}
+  for (const [k, v] of entries) out[k] = v
+  return out
+}`,
+  },
+  {
+    problemId: 'ts-exhaustive',
+    title: 'Exhaustive Switch (never)',
+    language: 'ts',
+    starter: "type Shape = { kind: 'circle'; r: number } | { kind: 'square'; s: number }\n\nfunction area(shape: Shape): number {\n  // handle every kind; the default should be a never check\n}\n",
+    tests: [
+      { name: 'covers each case', body: "assertEqual(area({ kind:'square', s:3 }), 9); assertEqual(area({ kind:'circle', r:2 }), 12);" },
+    ],
+    reference: `type Shape = { kind: 'circle'; r: number } | { kind: 'square'; s: number }
+
+function area(shape: Shape): number {
+  switch (shape.kind) {
+    case 'circle': return Math.round(shape.r * shape.r * 3)
+    case 'square': return shape.s * shape.s
+    default: {
+      const _exhaustive: never = shape
+      return _exhaustive
+    }
+  }
+}`,
+  },
+  {
+    problemId: 'ts-group-by',
+    title: 'Generic groupBy',
+    language: 'ts',
+    starter: 'function groupBy<T>(items: T[], keyFn: (x: T) => string): Record<string, T[]> {\n  pass\n}\n',
+    tests: [
+      { name: 'buckets by key', body: "assertEqual(groupBy([1,2,3,4], (x) => (x % 2 === 0 ? 'e' : 'o')), { o:[1,3], e:[2,4] });" },
+    ],
+    reference: `function groupBy<T>(items: T[], keyFn: (x: T) => string): Record<string, T[]> {
+  const out: Record<string, T[]> = {}
+  for (const item of items) {
+    const k = keyFn(item)
+    if (!out[k]) out[k] = []
+    out[k].push(item)
+  }
+  return out
+}`,
+  },
+  {
+    problemId: 'ts-pick-keys',
+    title: 'Generic pickKeys',
+    language: 'ts',
+    starter: 'function pickKeys<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {\n  pass\n}\n',
+    tests: [
+      { name: 'keeps chosen keys', body: "assertEqual(pickKeys({ a:1, b:2, c:3 }, ['a','c']), { a:1, c:3 });" },
+    ],
+    reference: `function pickKeys<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
+  const out = {} as Pick<T, K>
+  for (const k of keys) out[k] = obj[k]
+  return out
+}`,
+  },
+  {
+    problemId: 'ts-merge',
+    title: 'Intersection Merge (A & B)',
+    language: 'ts',
+    starter: 'function merge<A extends object, B extends object>(a: A, b: B): A & B {\n  pass\n}\n',
+    tests: [
+      { name: 'combines objects', body: 'assertEqual(merge({ a:1 }, { b:2 }), { a:1, b:2 });' },
+    ],
+    reference: `function merge<A extends object, B extends object>(a: A, b: B): A & B {
+  return { ...a, ...b }
+}`,
+  },
 ]
