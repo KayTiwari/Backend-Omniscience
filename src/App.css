@@ -1030,16 +1030,16 @@ h1 {
 }
 
 .choice.selected {
-  border-color: var(--ember);
-  background: var(--ember-soft);
+  border-color: var(--brand-b);
+  background: color-mix(in srgb, var(--brand-b) 12%, #ffffff);
   box-shadow:
-    inset 5px 0 0 var(--flame),
-    0 0 0 1px rgba(245, 159, 0, 0.22);
-  color: #37230a;
+    inset 5px 0 0 var(--brand-a),
+    0 0 0 1px color-mix(in srgb, var(--brand-b) 28%, transparent);
+  color: var(--ink);
 }
 
 .choice.selected span {
-  background: var(--flame);
+  background: var(--brand-b);
   color: #ffffff;
 }
 
@@ -1364,16 +1364,16 @@ h1 {
 }
 
 .criterion-choice.selected {
-  border-color: var(--ember);
-  background: var(--ember-soft);
+  border-color: var(--brand-b);
+  background: color-mix(in srgb, var(--brand-b) 12%, #ffffff);
   box-shadow:
-    inset 5px 0 0 var(--flame),
-    0 0 0 1px rgba(245, 159, 0, 0.22);
-  color: #37230a;
+    inset 5px 0 0 var(--brand-a),
+    0 0 0 1px color-mix(in srgb, var(--brand-b) 28%, transparent);
+  color: var(--ink);
 }
 
 .criterion-choice.selected span {
-  background: var(--flame);
+  background: var(--brand-b);
   color: #ffffff;
 }
 
@@ -1554,7 +1554,8 @@ input:focus-visible {
 
 .app-shell[data-theme='dark'] .choice.selected,
 .app-shell[data-theme='dark'] .criterion-choice.selected {
-  color: #fff4dc;
+  background: color-mix(in srgb, var(--brand-b) 18%, var(--field));
+  color: var(--ink);
 }
 
 .app-shell[data-theme='dark'] .reset-button:hover {
