@@ -10,7 +10,7 @@ export const explanations: Record<string, string> = {
   'internet-build-response':
     'A raw response is a status line, headers (CRLF-separated), a blank line, then the body. Content-Length must be the byte length (not character count) so the client knows when the body ends. Get the framing wrong and clients hang or truncate.',
   'internet-content-negotiation':
-    'Accept lists media types with optional q-weights (default 1). You sort by q descending and pick the first type you can actually serve. This is how one endpoint serves JSON or HTML based on what the client asked for.',
+    'Accept lists media types with optional q-weights (default 1). You sort by q descending and pick the first type you can serve. This is how one endpoint serves JSON or HTML based on what the client asked for.',
   'api-pagination':
     'Cursor pagination returns an opaque pointer to "where you left off" instead of an offset. It stays correct when rows are inserted or deleted between pages, which is exactly where offset pagination drifts and skips or repeats rows.',
   'api-offset-paginate':
@@ -60,7 +60,7 @@ export const explanations: Record<string, string> = {
   'db-keyset-pagination':
     'Keyset pages by "id greater than the last one I saw" instead of an offset. It uses the index directly, so page N is as fast as page 1 and it does not drift under inserts.',
   'perf-percentile':
-    'Averages hide the tail; percentiles do not. p95/p99 tell you what your slowest real users experience, which is what SLOs and capacity decisions are actually about.',
+    'Averages hide the tail; percentiles do not. p95/p99 tell you what your slowest real users experience, which is what SLOs and capacity decisions are about.',
   'perf-topk':
     'Counting then sorting by frequency surfaces the heavy hitters (hot keys, top endpoints). Tie-breaking deterministically keeps the output stable, which matters for tests and dashboards.',
   'scale-sliding-window':

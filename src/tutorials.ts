@@ -13,9 +13,179 @@ export type Tutorial = {
 
 export const tutorials: Tutorial[] = [
   {
+    id: 'tut-internet-glossary',
+    subjectId: 'internet',
+    title: 'Start Here: Web Words in Plain English',
+    minutes: 10,
+    body: `Before anything else, here is every term in this section explained as if you
+have never seen it. No prior knowledge needed.
+
+**IP address (Internet Protocol address).** A computer's address on a network,
+like 142.250.72.14. Every server has one. Think of it as the street address of a
+house.
+
+**DNS (Domain Name System).** The internet's phone book. You type a name like
+google.com; DNS looks up the matching IP address so your computer knows where to
+send the request. Names are for humans; IP addresses are for machines.
+
+**Port.** A numbered door on one computer. A single server (one IP) can run many
+services, each behind a port number. Websites use port 80 (plain) or 443 (secure).
+
+**TCP (Transmission Control Protocol).** A way for two computers to send data
+reliably and in order. It opens a connection (a "handshake"), then guarantees
+every chunk arrives, arrives once, and in the right order. Like a phone call: you
+both agree you are connected, then talk without losing words.
+
+**TLS (Transport Layer Security).** The lock on the connection. It encrypts the
+data (eavesdroppers see gibberish) and proves the server is who it claims to be
+(using a certificate). The "S" in HTTPS is TLS. It does NOT prove who YOU are;
+that is a separate login step.
+
+**HTTP (HyperText Transfer Protocol).** The language browsers and servers speak.
+A request says what you want; a response says what you got. Each message has:
+- a **method** (the verb): GET (read), POST (create), PUT/PATCH (update), DELETE (remove).
+- a **path** (which thing): /users/42.
+- **headers** (extra info): content type, authentication, and so on.
+- a **status code** (how it went): 200 OK, 404 Not Found, 500 Server Error.
+- a **body** (the data): often JSON.
+
+**HTTPS.** HTTP running inside TLS: the same language, but encrypted and verified.
+
+**URL (Uniform Resource Locator).** The full address you type, like
+https://api.example.com:443/users/42?page=2. It bundles the protocol (https), the
+host (api.example.com), the port (443), the path (/users/42), and the query
+(?page=2).
+
+**Putting it together:** you type a URL, DNS turns the name into an IP address,
+TCP opens a reliable connection to that IP and port, TLS locks it, and HTTP
+carries your request and the server's response. The next lessons walk each step.`,
+  },
+  {
+    id: 'tut-sql-glossary',
+    subjectId: 'sql',
+    title: 'Start Here: Database Words in Plain English',
+    minutes: 9,
+    body: `Every database term in this section, from zero.
+
+**Database.** An organized place to store data so you can save, find, and change
+it reliably. Think of a giant, smart spreadsheet program.
+
+**SQL (Structured Query Language).** The language you use to talk to a relational
+database: ask for data, add it, change it, delete it. Said "sequel" or "S-Q-L".
+
+**Table.** A grid of data about one kind of thing, like "users" or "orders". Like
+one sheet in a spreadsheet.
+
+**Row (record).** One entry in a table: one user, one order. Like one line in the
+sheet.
+
+**Column (field).** One attribute every row has, like "email" or "created_at".
+Like one column header in the sheet.
+
+**Primary key.** A column whose value uniquely identifies each row (usually "id").
+No two rows share it. It is how you point to exactly one record.
+
+**Foreign key.** A column in one table that holds the primary key of another,
+linking them. An "order" row stores the "user_id" of the user who placed it.
+
+**Index.** A sorted lookup structure the database keeps so it can find rows fast
+without scanning every row, like the index at the back of a book.
+
+**Query.** A request written in SQL, e.g. SELECT email FROM users WHERE id = 42.
+
+**Transaction.** A group of changes that all succeed together or all undo
+together, so you never end up half-done. Moving money between accounts is one
+transaction.
+
+**ACID.** Four guarantees transactions give: Atomicity (all-or-nothing),
+Consistency (rules stay true), Isolation (concurrent transactions do not corrupt
+each other), Durability (committed data survives a crash).
+
+**JOIN.** Combining rows from two tables using a key, e.g. show each order with
+its user's name by joining orders to users on user_id.`,
+  },
+  {
+    id: 'tut-api-glossary',
+    subjectId: 'api',
+    title: 'Start Here: API Words in Plain English',
+    minutes: 8,
+    body: `What the API terms mean, assuming no background.
+
+**API (Application Programming Interface).** A defined way for one program to ask
+another for data or actions. A backend API is the set of URLs your server exposes
+so apps can use it. Like a restaurant menu: it lists what you can order and how,
+without showing the kitchen.
+
+**Endpoint.** One specific URL plus method the API offers, like GET /users/42.
+Each endpoint does one job.
+
+**REST.** A common style for APIs: model your data as "resources" (nouns like
+users, orders) and act on them with HTTP methods (GET to read, POST to create,
+PUT/PATCH to update, DELETE to remove).
+
+**JSON (JavaScript Object Notation).** The usual text format for sending data,
+made of key/value pairs: {"id": 42, "name": "Ada"}. Both humans and machines read
+it easily.
+
+**Request and response.** The client sends a request (method + path + optional
+body); the server sends back a response (status code + body). One round trip.
+
+**Status code.** A number saying how the request went: 200 OK, 201 Created, 400
+Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 429 Too Many
+Requests, 500 Server Error.
+
+**Pagination.** Returning a long list in pages instead of all at once, so
+responses stay fast.
+
+**Authentication.** Proving who the caller is (a token or login) so the API knows
+whether to trust the request.`,
+  },
+  {
+    id: 'tut-security-glossary',
+    subjectId: 'security',
+    title: 'Start Here: Security Words in Plain English',
+    minutes: 9,
+    body: `The security vocabulary, from scratch.
+
+**Authentication (authn).** Proving WHO you are, like logging in with a password.
+Answers "are you really Ada?"
+
+**Authorization (authz).** Deciding WHAT you may do once you are known. Answers
+"is Ada allowed to delete this?" It is different from authentication, and you need
+both.
+
+**Hashing.** Turning data (like a password) into a fixed scrambled string that
+cannot be reversed. You store the hash, not the password; at login you hash the
+input and compare. Use slow password hashers (bcrypt, scrypt, Argon2).
+
+**Encryption.** Scrambling data so only someone with the key can read it. Unlike
+hashing, encryption is reversible with the key. TLS encrypts data in transit.
+
+**Token.** A string the server gives a logged-in client to present on later
+requests instead of the password, proving it is still them.
+
+**JWT (JSON Web Token).** A common token format: a signed (not secret) bundle of
+claims like user id and expiry. Anyone can read it; only the server can forge a
+valid one. Never put secrets inside it.
+
+**Session and cookie.** A session is server-side memory of a logged-in user; a
+cookie is a small value the browser stores and sends back automatically (often
+holding the session id or token).
+
+**CORS (Cross-Origin Resource Sharing).** Browser rules that control which other
+websites may call your API from a page.
+
+**CSRF (Cross-Site Request Forgery).** An attack where another site tricks a
+logged-in user's browser into making requests to your site; defenses include CSRF
+tokens and SameSite cookies.
+
+**Rate limiting.** Capping how many requests a client can make in a window, to
+stop abuse and overload (429 Too Many Requests).`,
+  },
+  {
     id: 'tut-request-lifecycle',
     subjectId: 'internet',
-    title: 'How an HTTP Request Actually Travels',
+    title: 'How an HTTP Request Travels',
     minutes: 12,
     body: `When you call an API, a lot happens between "send" and "response". Knowing
 each hop is what lets you debug latency and failures instead of guessing.
@@ -62,7 +232,7 @@ at 95%" smells like a query/lock problem, not the network. The drill
   {
     id: 'tut-status-codes',
     subjectId: 'internet',
-    title: 'Status Codes That Actually Matter',
+    title: 'Status Codes That Matter',
     minutes: 8,
     body: `Status codes are an API contract. Clients branch on them, so getting them
 right is not pedantry.
@@ -579,7 +749,7 @@ to react to the same stream of facts, possibly replaying them? A log like Kafka.
   {
     id: 'tut-containers',
     subjectId: 'devops',
-    title: 'Containers vs VMs, and What Docker Actually Does',
+    title: 'Containers vs VMs, and What Docker Does',
     minutes: 10,
     body: `Containers package your app with its dependencies so it runs the same
 everywhere. Understanding the model prevents a lot of "works locally" pain.
@@ -816,7 +986,7 @@ services.`,
   {
     id: 'tut-owasp',
     subjectId: 'security',
-    title: 'The OWASP Risks You Will Actually Hit',
+    title: 'The OWASP Risks You Will Hit',
     minutes: 12,
     body: `The OWASP Top 10 catalogs the most common web vulnerabilities. A handful show up
 constantly in backends.
@@ -1302,7 +1472,7 @@ Use a unique constraint on the key (the second insert fails) or a lock, so exact
 one wins.
 
 **Takeaway:** assume at-least-once everywhere, make handlers idempotent, and you
-get the exactly-once behavior users actually care about, without pretending the
+get the exactly-once behavior users care about, without pretending the
 network is reliable.`,
   },
   {
@@ -1363,7 +1533,7 @@ or too many queries. Two patterns dominate:
 - Remove blocking work from the request path; push it to a queue.
 - Watch for accidental O(n^2) in code and serialization of large payloads.
 
-**Profile, do not guess.** Use a profiler / APM to see where time actually goes
+**Profile, do not guess.** Use a profiler / APM to see where time goes
 (DB vs CPU vs external call). The biggest mistake is optimizing the part that was
 never the bottleneck.
 
