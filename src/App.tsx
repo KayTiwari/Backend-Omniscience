@@ -405,6 +405,7 @@ function App() {
     if (
       result.passed &&
       solutionChecked &&
+      recallComplete &&
       tutorialCorrect &&
       acceptanceCorrect &&
       quizRequirementCorrect &&
@@ -488,6 +489,10 @@ function App() {
       })),
     [teachingModel.fundamentals],
   )
+  const recallAnsweredCount = recallPrompts.filter(
+    (_, index) => (progress.recallAnswer[`${activeProblem.id}:${index}`] ?? '').trim().length > 0,
+  ).length
+  const recallComplete = recallAnsweredCount === recallPrompts.length
   const tutorialCorrect = tutorialChecks.every(
     (check, index) =>
       progress.tutorialChoice[`${activeProblem.id}:${index}`] === check.correctChoice,
@@ -508,7 +513,44 @@ function App() {
     !activeProblem.choices || activeProblem.correctChoice === undefined || quizCorrect
   const codeRequirementCorrect = !activeSpec || activeGradeResult?.passed === true
   const canComplete =
-    tutorialCorrect && acceptanceCorrect && quizRequirementCorrect && codeRequirementCorrect
+    recallComplete &&
+    tutorialCorrect &&
+    acceptanceCorrect &&
+    quizRequirementCorrect &&
+    codeRequirementCorrect
+  const masterySteps = [
+    {
+      label: 'Recall',
+      detail: `${recallAnsweredCount}/${recallPrompts.length}`,
+      done: recallComplete,
+    },
+    {
+      label: 'Guided',
+      detail: `${tutorialCorrectCount}/${tutorialChecks.length}`,
+      done: tutorialCorrect,
+    },
+    {
+      label: activeSpec ? 'Code' : activeProblem.choices ? 'Quiz' : 'Apply',
+      detail: activeSpec
+        ? activeGradeResult?.passed
+          ? 'passed'
+          : 'run tests'
+        : activeProblem.choices
+          ? quizCorrect
+            ? 'correct'
+            : 'answer'
+          : 'read prompt',
+      done: activeSpec ? codeRequirementCorrect : quizRequirementCorrect,
+    },
+    {
+      label: 'Checks',
+      detail: `${acceptanceCorrectCount}/${acceptanceChecks.length}`,
+      done: acceptanceCorrect,
+    },
+  ]
+  const masteryDone = masterySteps.filter((step) => step.done).length
+  const masteryPercent = Math.round((masteryDone / masterySteps.length) * 100)
+  const nextMasteryStep = masterySteps.find((step) => !step.done)
 
   function checkSolutions() {
     setProgress((current) => ({
@@ -861,6 +903,30 @@ function App() {
           <h2>{activeProblem.title}</h2>
           <p className="subject-subtitle">{activeSubject.subtitle}</p>
 
+          <section className="mastery-panel" aria-label="Problem mastery progress">
+            <div className="mastery-copy">
+              <span>Mastery loop</span>
+              <strong>{nextMasteryStep ? `Next: ${nextMasteryStep.label}` : 'Problem locked in'}</strong>
+              <p>
+                {nextMasteryStep
+                  ? `${nextMasteryStep.detail} complete. Finish this step to unlock the next hit of progress.`
+                  : 'Everything for this problem is complete. Check solutions to move on.'}
+              </p>
+            </div>
+            <div className="mastery-meter" aria-label={`${masteryPercent}% mastered`}>
+              <div style={{ width: `${masteryPercent}%` }} />
+            </div>
+            <div className="mastery-steps">
+              {masterySteps.map((step) => (
+                <span key={step.label} className={step.done ? 'done' : ''}>
+                  {step.done ? <Check size={14} /> : <Circle size={14} />}
+                  <strong>{step.label}</strong>
+                  <small>{step.detail}</small>
+                </span>
+              ))}
+            </div>
+          </section>
+
           <section className="learn-first-block" aria-label="Learn first">
             <div className="learn-first-heading">
               <div>
@@ -880,6 +946,24 @@ function App() {
                 ))}
               </div>
               <p>{teachingModel.mentalModel}</p>
+              {teachingModel.diagramExplanations && (
+                <div className="diagram-explainer-grid">
+                  {teachingModel.diagram.map((node, index) => {
+                    const explanation = teachingModel.diagramExplanations?.[index]
+                    if (!explanation) return null
+
+                    return (
+                      <details key={`${node}:explain`} className="diagram-explainer">
+                        <summary>
+                          <span>{index + 1}</span>
+                          <strong>{node}</strong>
+                        </summary>
+                        <p>{explanation}</p>
+                      </details>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="lesson-grid">
