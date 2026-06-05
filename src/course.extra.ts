@@ -10,9 +10,6 @@
 
 import {
   Braces,
-  Cloud,
-  ServerCog,
-  Workflow,
   type LucideIcon,
 } from 'lucide-react'
 import type { ComponentType } from 'react'
