@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   BookOpen,
   Check,
@@ -6,12 +6,14 @@ import {
   ChevronRight,
   Circle,
   Code2,
+  Download,
   Flame,
   ListChecks,
   RotateCcw,
   Search,
   SkipForward,
   Trophy,
+  Upload,
 } from 'lucide-react'
 import './App.css'
 import {
@@ -67,6 +69,8 @@ function App() {
   const [typeFilter, setTypeFilter] = useState<ProblemType | 'all'>('all')
   const [difficultyFilter, setDifficultyFilter] = useState<ProblemDifficulty | 'all'>('all')
   const [progress, setProgress] = useState<ProgressState>(() => loadProgress())
+  const [importMessage, setImportMessage] = useState('')
+  const importInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     window.localStorage.setItem(storageKey, JSON.stringify(progress))
@@ -169,6 +173,42 @@ function App() {
     setProgress(emptyProgress)
   }
 
+  function exportProgress() {
+    const payload = {
+      app: 'Backend Omniscience',
+      exportedAt: new Date().toISOString(),
+      progress,
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'backend-omniscience-progress.json'
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function importProgress(file: File | undefined) {
+    if (!file) return
+    try {
+      const text = await file.text()
+      const parsed = JSON.parse(text) as { progress?: Partial<ProgressState> }
+      const imported = parsed.progress ?? {}
+      setProgress({
+        completed: [...new Set(imported.completed ?? [])].filter((problemId) =>
+          problemIds.has(problemId),
+        ),
+        notes: imported.notes ?? {},
+        selectedChoice: imported.selectedChoice ?? {},
+      })
+      setImportMessage('Progress imported.')
+    } catch {
+      setImportMessage('Import failed. Choose a Backend Omniscience progress JSON file.')
+    }
+  }
+
   const selectedChoice = progress.selectedChoice[activeProblem.id]
   const quizAnswered = selectedChoice !== undefined
   const quizCorrect = selectedChoice === activeProblem.correctChoice
@@ -195,6 +235,26 @@ function App() {
             <div style={{ width: `${completionPercent}%` }} />
           </div>
           <strong>{completionPercent}% complete</strong>
+          <div className="progress-tools">
+            <button onClick={exportProgress} type="button">
+              <Download size={15} />
+              Export
+            </button>
+            <button onClick={() => importInputRef.current?.click()} type="button">
+              <Upload size={15} />
+              Import
+            </button>
+            <input
+              ref={importInputRef}
+              accept="application/json"
+              type="file"
+              onChange={(event) => {
+                void importProgress(event.target.files?.[0])
+                event.target.value = ''
+              }}
+            />
+          </div>
+          {importMessage && <span className="import-message">{importMessage}</span>}
         </div>
 
         <label className="search-box">

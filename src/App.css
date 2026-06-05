@@ -66,6 +66,37 @@ h1 {
   background: #f9faf6;
 }
 
+.progress-tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.progress-tools button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  border: 1px solid #d9ded8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #263238;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.progress-tools input {
+  display: none;
+}
+
+.import-message {
+  color: #5f6d69;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .progress-copy {
   display: flex;
   justify-content: space-between;
