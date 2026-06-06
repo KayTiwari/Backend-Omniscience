@@ -2628,7 +2628,8 @@ input:focus-visible {
 }
 
 .app-shell[data-theme='dark'] .check-button,
-.app-shell[data-theme='dark'] .continue-button {
+.app-shell[data-theme='dark'] .continue-button,
+.app-shell[data-theme='dark'] .run-button {
   border-color: color-mix(in srgb, var(--brand-b) 28%, var(--line));
   background: #172225;
   color: #ffffff;
