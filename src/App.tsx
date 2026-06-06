@@ -478,17 +478,38 @@ function App() {
     [activeProblem.id, activeSubject.id, activeSubject.title, teachingModel.tutorial],
   )
   const recallPrompts = useMemo(
-    () =>
-      teachingModel.fundamentals.slice(0, 3).map((answer, index) => ({
-        answer,
-        prompt:
-          index === 0
-            ? 'Explain this idea like you are teaching someone who has never built a backend.'
-            : index === 1
-              ? 'Name what this idea does and one thing it does not do.'
-              : 'Write one production bug that could happen if you misunderstand this.',
-      })),
-    [teachingModel.fundamentals],
+    () => {
+      const firstFundamental = teachingModel.fundamentals[0] ?? teachingModel.mentalModel
+      const secondFundamental = teachingModel.fundamentals[1] ?? teachingModel.fundamentals[0]
+      const firstTutorialStep = teachingModel.tutorial[0] ?? activeProblem.checklist[0]
+      const firstChecklistItem = activeProblem.checklist[0] ?? activeProblem.prompt
+      const productionRisk =
+        activeProblem.production ??
+        teachingModel.advanced[0] ??
+        'In production, misunderstanding this creates bugs that are hard to debug because the symptom shows up far away from the root cause.'
+
+      return [
+        {
+          answer: `A strong beginner answer for ${activeProblem.title}: ${firstFundamental} Start by naming the concept, then say what problem it solves before using implementation details.`,
+          badge: 'Define it',
+          placeholder: `Define ${activeProblem.title} in 2-4 plain-English sentences.`,
+          prompt: `For "${activeProblem.title}", what is the first concept a total beginner needs to understand?`,
+        },
+        {
+          answer: `A strong answer should include: ${secondFundamental} For this problem, your next move is: ${firstTutorialStep}`,
+          badge: 'Use it',
+          placeholder: `Name what it does, what it does not do, and the next step you would take.`,
+          prompt: `For "${activeProblem.title}", what does this concept do, what does it not do, and what should you do next?`,
+        },
+        {
+          answer: `A strong production answer connects the concept to observable behavior: ${productionRisk} The solution should prove this checkpoint: ${firstChecklistItem}`,
+          badge: 'Production',
+          placeholder: `Write one realistic bug, the symptom you would see, and what you would check first.`,
+          prompt: `For "${activeProblem.title}", what bug could happen in production if you misunderstand this?`,
+        },
+      ]
+    },
+    [activeProblem, teachingModel],
   )
   const recallAnsweredCount = recallPrompts.filter(
     (_, index) => (progress.recallAnswer[`${activeProblem.id}:${index}`] ?? '').trim().length > 0,
@@ -983,7 +1004,9 @@ function App() {
             <section className="recall-checks" aria-label="Quick write practice">
               <div className="guided-tutorial-heading">
                 <h4>Quick Write</h4>
-                <p>Write first, then reveal the model answer. This is where the concept starts sticking.</p>
+                <p>
+                  Answer the targeted prompt first, then compare it with the model answer.
+                </p>
               </div>
               <div className="recall-grid">
                 {recallPrompts.map((item, index) => {
@@ -993,7 +1016,7 @@ function App() {
                   return (
                     <section key={`${item.prompt}:${index}`} className="recall-card">
                       <div className="recall-card-heading">
-                        <span>{hasAnswer ? 'Active recall logged' : 'Write before reveal'}</span>
+                        <span>{item.badge}</span>
                         {hasAnswer && <strong>+5 XP</strong>}
                       </div>
                       <h4>{item.prompt}</h4>
@@ -1002,7 +1025,7 @@ function App() {
                         onChange={(event) =>
                           updateRecallAnswer(activeProblem.id, index, event.target.value)
                         }
-                        placeholder="Explain it in your own words."
+                        placeholder={item.placeholder}
                       />
                       <details>
                         <summary>Reveal model answer</summary>
