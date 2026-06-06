@@ -1,15 +1,15 @@
 .app-shell {
-  --ink: #1c1714;
-  --muted: #6b6258;
-  --line: #ddd6cb;
-  --paper: #f5f0e8;
-  --paper-strong: #ede7dc;
-  --field: #faf7f3;
-  --surface-hover: #e8e1d6;
-  --surface-soft: #f0ebe2;
-  --app-bg: linear-gradient(135deg, rgba(47, 128, 237, 0.05), transparent 30%),
-    linear-gradient(225deg, rgba(15, 139, 141, 0.05), transparent 30%),
-    #ede8de;
+  --ink: #111318;
+  --muted: #5e6470;
+  --line: #e2e4e9;
+  --paper: #f0f1f5;
+  --paper-strong: #e8e9ef;
+  --field: #f7f8fa;
+  --surface-hover: #e4e6ec;
+  --surface-soft: #ecedf2;
+  --app-bg: linear-gradient(135deg, rgba(47, 128, 237, 0.06), transparent 35%),
+    linear-gradient(225deg, rgba(15, 139, 141, 0.05), transparent 35%),
+    #eceef4;
   --brand-a: #263238;
   --brand-b: #2f80ed;
   --brand-c: #19c6ff;
@@ -17,14 +17,14 @@
   --flame: #ff5a5f;
   --flame-dark: #b42338;
   --ember: #f59300;
-  --ember-soft: #fdf0d8;
+  --ember-soft: #fef3d8;
   --mint: #00a878;
-  --mint-soft: #e4f7ef;
+  --mint-soft: #e3f9f0;
   --teal: #0f8b8d;
-  --teal-soft: #e0f4f4;
-  --shadow: 0 18px 50px rgba(38, 28, 18, 0.10);
-  --shadow-hover: 0 20px 44px rgba(47, 128, 237, 0.16);
-  --button-hover: #eef3ff;
+  --teal-soft: #dff4f4;
+  --shadow: 0 18px 50px rgba(17, 19, 24, 0.09);
+  --shadow-hover: 0 20px 44px rgba(47, 128, 237, 0.18);
+  --button-hover: #edf1ff;
 }
 
 .app-shell[data-theme='dark'] {
