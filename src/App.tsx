@@ -37,6 +37,7 @@ import { interviewAnswers } from './interviewAnswers'
 import { renderMarkdown } from './miniMarkdown'
 import { getTeachingModel } from './problemTeaching'
 import { projects } from './projects'
+import { quickWrites } from './quickWrite'
 import { requestLifecycle } from './requestLifecycle'
 import { tutorials } from './tutorials'
 
@@ -48,6 +49,7 @@ type ProgressState = {
   criterionChoice: Record<string, number>
   tutorialChoice: Record<string, number>
   checkedSolutions: Record<string, boolean>
+  defended: Record<string, boolean>
   code: Record<string, string>
 }
 
@@ -72,6 +74,7 @@ const emptyProgress: ProgressState = {
   criterionChoice: {},
   tutorialChoice: {},
   checkedSolutions: {},
+  defended: {},
   code: {},
 }
 
@@ -88,6 +91,7 @@ function loadProgress(): ProgressState {
       criterionChoice: parsed.criterionChoice ?? {},
       tutorialChoice: parsed.tutorialChoice ?? {},
       checkedSolutions: parsed.checkedSolutions ?? {},
+      defended: parsed.defended ?? {},
       code: parsed.code ?? {},
     }
   } catch {
@@ -160,6 +164,7 @@ function App() {
   const [gradeResults, setGradeResults] = useState<Record<string, GradeResult>>({})
   const [runningProblemId, setRunningProblemId] = useState('')
   const [theme, setTheme] = useState<Theme>(() => loadTheme())
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const importInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -206,7 +211,8 @@ function App() {
     [problemIds, progress.completed],
   )
   function getProblemConfidence(problem: Problem): ConfidenceLevel {
-    if (completedSet.has(problem.id)) return 'Can defend'
+    if (completedSet.has(problem.id) && progress.defended[problem.id]) return 'Can defend'
+    if (completedSet.has(problem.id)) return 'Can build'
 
     const spec = specsByProblemId.get(problem.id)
     if (spec && gradeResults[problem.id]?.passed) return 'Can build'
@@ -319,6 +325,10 @@ function App() {
   )
   const activeInterviewAnswers = useMemo(
     () => interviewAnswers.filter((answer) => answer.subjectId === activeSubject.id),
+    [activeSubject.id],
+  )
+  const activeQuickWrites = useMemo(
+    () => quickWrites.filter((item) => item.subjectId === activeSubject.id),
     [activeSubject.id],
   )
 
@@ -434,6 +444,13 @@ function App() {
     }))
   }
 
+  function markDefended(problemId: string) {
+    setProgress((current) => ({
+      ...current,
+      defended: { ...current.defended, [problemId]: true },
+    }))
+  }
+
   function resetProgress() {
     setProgress(emptyProgress)
   }
@@ -471,6 +488,7 @@ function App() {
         criterionChoice: imported.criterionChoice ?? {},
         tutorialChoice: imported.tutorialChoice ?? {},
         checkedSolutions: imported.checkedSolutions ?? {},
+        defended: imported.defended ?? {},
         code: imported.code ?? {},
       })
       setImportMessage('Progress imported.')
@@ -565,6 +583,16 @@ function App() {
   )
   const recallPrompts = useMemo(
     () => {
+      if (activeQuickWrites.length > 0) {
+        return activeQuickWrites.map((item, index) => ({
+          badge: index === 0 ? 'Interview recall' : 'Production recall',
+          expected: item.expected,
+          placeholder: 'Write the answer you would say out loud in an interview.',
+          productionAnchor: item.productionAnchor,
+          prompt: item.prompt,
+        }))
+      }
+
       const firstFundamental = teachingModel.fundamentals[0] ?? teachingModel.mentalModel
       const secondFundamental = teachingModel.fundamentals[1] ?? teachingModel.fundamentals[0]
       const firstTutorialStep = teachingModel.tutorial[0] ?? activeProblem.checklist[0]
@@ -576,26 +604,44 @@ function App() {
 
       return [
         {
-          answer: `A strong beginner answer for ${activeProblem.title}: ${firstFundamental} Start by naming the concept, then say what problem it solves before using implementation details.`,
           badge: 'Define it',
+          expected: [
+            `A strong beginner answer for ${activeProblem.title}: ${firstFundamental}`,
+            'Name the concept before using implementation details.',
+            'Say what problem it solves.',
+          ],
           placeholder: `Define ${activeProblem.title} in 2-4 plain-English sentences.`,
+          productionAnchor:
+            'In production, a clear definition helps you choose the right layer to inspect before changing code.',
           prompt: `For "${activeProblem.title}", what is the first concept a total beginner needs to understand?`,
         },
         {
-          answer: `A strong answer should include: ${secondFundamental} For this problem, your next move is: ${firstTutorialStep}`,
           badge: 'Use it',
+          expected: [
+            `A strong answer should include: ${secondFundamental}`,
+            `For this problem, your next move is: ${firstTutorialStep}`,
+            'Mention one thing the concept does not do.',
+          ],
           placeholder: `Name what it does, what it does not do, and the next step you would take.`,
+          productionAnchor:
+            'In production, knowing the boundary prevents you from blaming a framework or service for work it never promised to do.',
           prompt: `For "${activeProblem.title}", what does this concept do, what does it not do, and what should you do next?`,
         },
         {
-          answer: `A strong production answer connects the concept to observable behavior: ${productionRisk} The solution should prove this checkpoint: ${firstChecklistItem}`,
           badge: 'Production',
+          expected: [
+            `Connect the concept to observable behavior: ${productionRisk}`,
+            `Prove this checkpoint: ${firstChecklistItem}`,
+            'Name the symptom you would look for first.',
+          ],
           placeholder: `Write one realistic bug, the symptom you would see, and what you would check first.`,
+          productionAnchor:
+            'A production answer should move from symptom to likely layer to the evidence you would collect.',
           prompt: `For "${activeProblem.title}", what bug could happen in production if you misunderstand this?`,
         },
       ]
     },
-    [activeProblem, teachingModel],
+    [activeProblem, activeQuickWrites, teachingModel],
   )
   const recallAnsweredCount = recallPrompts.filter(
     (_, index) => (progress.recallAnswer[`${activeProblem.id}:${index}`] ?? '').trim().length > 0,
@@ -634,12 +680,21 @@ function App() {
   const quizRequirementCorrect =
     !activeProblem.choices || activeProblem.correctChoice === undefined || quizCorrect
   const codeRequirementCorrect = !activeSpec || activeGradeResult?.passed === true
+  const applyRequirementDone = activeSpec
+    ? codeRequirementCorrect
+    : activeProblem.choices
+      ? quizRequirementCorrect
+      : solutionChecked
   const canComplete =
     recallComplete &&
     tutorialCorrect &&
     acceptanceCorrect &&
-    quizRequirementCorrect &&
-    codeRequirementCorrect
+    applyRequirementDone
+  const canCompleteAfterCheck =
+    recallComplete &&
+    tutorialCorrect &&
+    acceptanceCorrect &&
+    (activeSpec ? codeRequirementCorrect : activeProblem.choices ? quizRequirementCorrect : true)
   const masterySteps = [
     {
       label: 'Recall',
@@ -661,8 +716,10 @@ function App() {
           ? quizCorrect
             ? 'correct'
             : 'answer'
-          : 'read prompt',
-      done: activeSpec ? codeRequirementCorrect : quizRequirementCorrect,
+          : solutionChecked
+            ? 'checked'
+            : 'check prompt',
+      done: applyRequirementDone,
     },
     {
       label: 'Checks',
@@ -674,7 +731,9 @@ function App() {
   const masteryPercent = Math.round((masteryDone / masterySteps.length) * 100)
   const nextMasteryStep = masterySteps.find((step) => !step.done)
   const activeConfidence: ConfidenceLevel = canComplete
-    ? 'Can defend'
+    ? progress.defended[activeProblem.id]
+      ? 'Can defend'
+      : 'Can build'
     : codeRequirementCorrect
       ? 'Can build'
       : recallComplete && tutorialCorrect
@@ -689,7 +748,7 @@ function App() {
       checkedSolutions: { ...current.checkedSolutions, [activeProblem.id]: true },
     }))
 
-    if (canComplete && !completedSet.has(activeProblem.id)) {
+    if (canCompleteAfterCheck && !completedSet.has(activeProblem.id)) {
       markProblemComplete(activeProblem.id)
     }
   }
@@ -717,7 +776,10 @@ function App() {
   }
 
   return (
-    <main className="app-shell" data-theme={theme}>
+    <main
+      className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}
+      data-theme={theme}
+    >
       <ScrollProgress />
       <aside className="sidebar">
         <button className="brand brand-button" onClick={openHome} type="button">
@@ -863,6 +925,14 @@ function App() {
 
       <section className="workspace">
         <header className="topbar">
+          <button
+            className="icon-button sidebar-toggle"
+            onClick={() => setSidebarCollapsed((current) => !current)}
+            aria-label={sidebarCollapsed ? 'Show navigation' : 'Hide navigation'}
+            type="button"
+          >
+            {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </button>
           <button
             className="icon-button"
             onClick={() => moveProblem(-1)}
@@ -1244,7 +1314,17 @@ function App() {
                       />
                       <details>
                         <summary>Reveal model answer</summary>
-                        <p>{item.answer}</p>
+                        <div className="quick-write-answer">
+                          <strong>Expected answer should hit:</strong>
+                          <ul>
+                            {item.expected.map((point) => (
+                              <li key={point}>{point}</li>
+                            ))}
+                          </ul>
+                          <p>
+                            <strong>Production/debug anchor:</strong> {item.productionAnchor}
+                          </p>
+                        </div>
                       </details>
                     </section>
                   )
@@ -1346,6 +1426,27 @@ function App() {
                     </div>
                   </details>
                 ))}
+              </div>
+              <div className="defend-action">
+                <div>
+                  <strong>
+                    {progress.defended[activeProblem.id]
+                      ? 'Defend practice logged'
+                      : 'Lock the top confidence rung'}
+                  </strong>
+                  <p>
+                    Say one Simple, one Senior, and one System Design answer out loud for this
+                    subject, then mark it practiced.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => markDefended(activeProblem.id)}
+                  className={progress.defended[activeProblem.id] ? 'done' : ''}
+                >
+                  <Trophy size={16} />
+                  {progress.defended[activeProblem.id] ? 'Can defend' : 'Mark defended'}
+                </button>
               </div>
             </section>
           )}

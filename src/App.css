@@ -59,6 +59,10 @@
   color: var(--ink);
 }
 
+.app-shell.sidebar-collapsed {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+
 .app-shell *,
 .app-shell *::before,
 .app-shell *::after {
@@ -79,6 +83,17 @@
   border-right: 1px solid var(--line);
   background: var(--paper);
   padding: 24px;
+}
+
+.app-shell.sidebar-collapsed .sidebar {
+  border-right: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.app-shell.sidebar-collapsed .sidebar > * {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .brand {
@@ -534,7 +549,7 @@ h1 {
   top: 0;
   z-index: 1;
   display: grid;
-  grid-template-columns: 44px 1fr auto;
+  grid-template-columns: 44px 44px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   max-width: 980px;
@@ -549,6 +564,10 @@ h1 {
 .topbar-actions {
   display: flex;
   gap: 8px;
+}
+
+.sidebar-toggle {
+  flex: 0 0 auto;
 }
 
 .icon-button {
@@ -1689,6 +1708,29 @@ h1 {
   line-height: 1.5;
 }
 
+.quick-write-answer {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  color: #31413f;
+  line-height: 1.45;
+}
+
+.quick-write-answer strong {
+  color: var(--ink);
+}
+
+.quick-write-answer ul {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.quick-write-answer p {
+  margin: 0;
+}
+
 .tutorial-card {
   background: color-mix(in srgb, var(--brand-b) 5%, var(--field));
 }
@@ -1801,6 +1843,54 @@ h1 {
   margin: 0;
   color: #31413f;
   line-height: 1.45;
+}
+
+.defend-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--surface-soft);
+}
+
+.defend-action strong,
+.defend-action p {
+  display: block;
+  margin: 0;
+}
+
+.defend-action p {
+  margin-top: 4px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.defend-action button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--brand-b);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--brand-b);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.defend-action button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.defend-action button.done {
+  border-color: var(--mint);
+  background: var(--mint);
 }
 
 .learning-path {
@@ -2452,6 +2542,7 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .interview-panel,
 .app-shell[data-theme='dark'] .interview-answer-card,
 .app-shell[data-theme='dark'] .interview-answer-grid section,
+.app-shell[data-theme='dark'] .defend-action,
 .app-shell[data-theme='dark'] .choice,
 .app-shell[data-theme='dark'] .criterion-choice,
 .app-shell[data-theme='dark'] .notes-block textarea,
@@ -2510,7 +2601,9 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .practice-mode p,
 .app-shell[data-theme='dark'] .guided-tutorial-heading p,
 .app-shell[data-theme='dark'] .recall-card p,
+.app-shell[data-theme='dark'] .quick-write-answer,
 .app-shell[data-theme='dark'] .interview-answer-grid p,
+.app-shell[data-theme='dark'] .defend-action p,
 .app-shell[data-theme='dark'] .lesson-grid ul,
 .app-shell[data-theme='dark'] .lesson-grid ol,
 .app-shell[data-theme='dark'] .prompt-block p,

@@ -210,20 +210,23 @@ the two open UX threads.
       ~927 kB bundle.
 
 **Codex (UI + course.ts):**
-- [ ] Quick Write TODO: render `quickWrites` (prompt -> user writes -> reveal
+- [x] Quick Write TODO: render `quickWrites` (prompt -> user writes -> reveal
       expected bullets + production anchor). Replaces the generic recall text.
 - [x] Add progressive one-at-a-time unlocks for existing guided/solution MCQ stacks.
 - [ ] Add quiz variety beyond MCQ where data supports it: short-answer compare,
       ordering/matching, predict-the-output, and small scenario cards.
 - [ ] Keep instant per-question feedback visible for every quiz/check interaction.
-- [ ] Wire the confidence ladder's **"Can defend"** rung to the oral-exam /
+- [x] Wire the confidence ladder's **"Can defend"** rung to the oral-exam /
       interview-triad content.
+- [x] Make the top page progress bar visibly readable.
+- [x] Add a collapsible sidebar/nav so lessons can take center stage.
+- [x] Fix the `Apply` mastery step so it is not automatically checked before the learner attempts/checks the prompt.
 
 **Current UX audit**
 - Per-question feedback exists for guided tutorial checks, solution checks, and normal quiz choices.
 - Existing guided/solution MCQ stacks now reveal progressively instead of dumping every question at once.
 - The open gap is richer interaction variety beyond MCQ.
-- `Can defend` currently reflects completion-derived confidence; it still needs a real defend prompt gate.
+- `Can defend` is now explicitly gated by marking interview/defense practice after reviewing the triad.
 
 ## Status log (append one line per change)
 - 2026-06-05 Claude: created this plan.
@@ -233,4 +236,5 @@ the two open UX threads.
 - 2026-06-05 Claude: shipped P3 Files & Object Storage (subject `files-storage`: 8 graded drills, glossary tutorial, interview triad). 0 orphans. Remaining for Codex: master ordering (P0), render P1/P2 layers, caching/CDN lessons.
 - 2026-06-05 Codex: added Performance lessons for cache invalidation, CDNs, and HTTP cache headers.
 - 2026-06-05 Codex: audited quiz UX; existing MCQ checks now reveal progressively with per-question feedback instead of dumping full stacks.
+- 2026-06-05 Codex: rendered Claude's `quickWrites`, gated `Can defend` behind interview practice, improved scroll progress visibility, added collapsible sidebar, and fixed auto-checked Apply.
 - 2026-06-05 Claude: Phase 2 content shipped — interviewAnswers.ts expanded to 54 triads; new quickWrite.ts (12 concept-specific recall prompts). Both wired by subjectId, ready for Codex to render.
