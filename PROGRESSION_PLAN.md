@@ -225,11 +225,67 @@ the two open UX threads.
 - [x] Move the sidebar collapse control to a slim edge-tab drawer handle.
 - [x] Replace broad hover lift motion with subtler border/shine feedback.
 
+## Phase 3 — actual lessons on every problem
+
+The next bottleneck is not topic coverage; it is that too many problem pages still
+feel like they share the same "learn first" card. Every problem needs to teach
+the specific concept it is asking about before it asks the learner to answer.
+
+**Claude (content + grader):**
+- [ ] Expand problem-specific lesson material across the course: concrete
+      definition, one tiny example, common beginner mistake, production/debug
+      anchor, and 3-5 tutorial steps per important problem.
+- [ ] Expand **JavaScript Fundamentals** to Python Fundamentals parity
+      (target 50+ drills from loops/functions/arrays/objects through async,
+      modules, testing, and API helper code).
+- [ ] Keep feeding richer non-MCQ checks where a concept benefits from ordering,
+      matching, predict-the-output, or short-answer prompts.
+
+**Codex (UI + rendering):**
+- [ ] Make the Learn First renderer prefer problem-specific fields
+      (`explanation`, `example`, `walkthrough`, `production`, `questions`,
+      `checklist`) before falling back to subject-level teaching.
+- [ ] Wire syntax-colored code editors using the existing `highlight.ts` /
+      `highlight.css` backdrop editor plan.
+- [ ] Clarify confidence ladder visuals so only the active rung reads as selected.
+- [ ] Rename the lower Python track to describe runtime/backend tooling, leaving
+      Python Fundamentals as the beginner-to-fluency track.
+
 **Current UX audit**
 - Per-question feedback exists for guided tutorial checks, solution checks, and normal quiz choices.
 - Existing guided/solution MCQ stacks now reveal progressively instead of dumping every question at once.
 - The open gap is richer interaction variety beyond MCQ.
 - `Can defend` is now explicitly gated by marking interview/defense practice after reviewing the triad.
+
+## Phase 3 — teach the ACTUAL lesson + color the editor
+
+Two concrete problems found in the live app:
+1. **"Learn First" is identical on every problem in a subject** — it renders the
+   per-*subject* teaching model. It must show the lesson for *this* problem.
+2. **The code editor has no syntax colors** (`highlight.ts` exists, unused in `App.tsx`).
+
+Both agents start now. No file overlap.
+
+**Claude (content):**
+- [ ] `src/problemLessons.ts` (new) — per-`problemId` lesson: `concept`, `idiom`,
+      optional `mistake`. Batch 1 = Python Fundamentals (57) shipped; then
+      js-fundamentals, api, sql, security, performance, architecture, then the rest.
+      Contract:
+      ```ts
+      export type ProblemLesson = { problemId: string; concept: string; idiom: string; mistake?: string }
+      export const problemLessons: ProblemLesson[]
+      ```
+- [ ] Confirm `highlight.ts` covers js/ts/py tokens the editor needs (it does).
+
+**Codex (render):**
+- [ ] In the **Learn First** panel, prefer `problemLessons[activeProblem.id]`
+      (show concept / idiom / mistake for the specific task); fall back to the
+      subject teaching model only when no per-problem lesson exists.
+- [ ] **Wire syntax highlighting into the code editor** using `highlight(code, lang)`
+      from `src/highlight.ts` + `src/highlight.css` (textarea + highlighted `<pre>`
+      overlay, or a small editor). Colors for keywords/strings/numbers/functions.
+- [ ] Pick `lang` for `highlight()` from the problem (py for `py-*`, ts for `ts-*`,
+      else js).
 
 ## Status log (append one line per change)
 - 2026-06-05 Claude: created this plan.
@@ -238,6 +294,7 @@ the two open UX threads.
 - 2026-06-05 Codex: shipped P0 ordering, P1 interview/lifecycle UI, P2 projects/confidence UI; full check passing locally.
 - 2026-06-05 Claude: shipped P3 Files & Object Storage (subject `files-storage`: 8 graded drills, glossary tutorial, interview triad). 0 orphans. Remaining for Codex: master ordering (P0), render P1/P2 layers, caching/CDN lessons.
 - 2026-06-05 Codex: added Performance lessons for cache invalidation, CDNs, and HTTP cache headers.
+- 2026-06-06 Codex/Claude split: Phase 3 starts. Claude owns deeper lesson content + JS Fundamentals parity; Codex owns rendering problem-specific lessons, syntax-colored code inputs, confidence ladder clarity, and Python track naming.
 - 2026-06-05 Codex: audited quiz UX; existing MCQ checks now reveal progressively with per-question feedback instead of dumping full stacks.
 - 2026-06-05 Codex: rendered Claude's `quickWrites`, gated `Can defend` behind interview practice, improved scroll progress visibility, added collapsible sidebar, and fixed auto-checked Apply.
 - 2026-06-05 Codex: polished lesson-focus UX: smoother scroll progress, edge-tab nav collapse handle, and quieter hover states.
