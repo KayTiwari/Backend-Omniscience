@@ -1228,7 +1228,7 @@ h1 {
 
 .diagram-panel p {
   margin: 0;
-  color: #31413f;
+  color: var(--muted);
   font-size: 14px;
   line-height: 1.55;
 }
