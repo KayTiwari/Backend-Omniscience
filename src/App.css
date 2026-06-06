@@ -2242,6 +2242,17 @@ h1 {
   gap: 12px;
 }
 
+.unlock-note {
+  margin: 2px 0 0;
+  border: 1px dashed color-mix(in srgb, var(--brand-b) 32%, var(--line));
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--brand-b) 6%, var(--field));
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
 .criterion-card {
   display: grid;
   gap: 10px;

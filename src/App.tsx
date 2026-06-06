@@ -609,6 +609,12 @@ function App() {
     (check, index) =>
       progress.tutorialChoice[`${activeProblem.id}:${index}`] === check.correctChoice,
   ).length
+  const firstIncompleteTutorialIndex = tutorialChecks.findIndex(
+    (check, index) =>
+      progress.tutorialChoice[`${activeProblem.id}:${index}`] !== check.correctChoice,
+  )
+  const visibleTutorialCount =
+    firstIncompleteTutorialIndex === -1 ? tutorialChecks.length : firstIncompleteTutorialIndex + 1
   const acceptanceCorrect = acceptanceChecks.every(
     (check, index) =>
       progress.criterionChoice[`${activeProblem.id}:${index}`] === check.correctChoice,
@@ -617,6 +623,14 @@ function App() {
     (check, index) =>
       progress.criterionChoice[`${activeProblem.id}:${index}`] === check.correctChoice,
   ).length
+  const firstIncompleteAcceptanceIndex = acceptanceChecks.findIndex(
+    (check, index) =>
+      progress.criterionChoice[`${activeProblem.id}:${index}`] !== check.correctChoice,
+  )
+  const visibleAcceptanceCount =
+    firstIncompleteAcceptanceIndex === -1
+      ? acceptanceChecks.length
+      : firstIncompleteAcceptanceIndex + 1
   const quizRequirementCorrect =
     !activeProblem.choices || activeProblem.correctChoice === undefined || quizCorrect
   const codeRequirementCorrect = !activeSpec || activeGradeResult?.passed === true
@@ -1242,11 +1256,11 @@ function App() {
               <div className="guided-tutorial-heading">
                 <h4>Guided Tutorial Questions</h4>
                 <p>
-                  {tutorialCorrectCount}/{tutorialChecks.length} locked. Each correct step gives instant feedback.
+                  {tutorialCorrectCount}/{tutorialChecks.length} locked. Correct answers unlock the next step.
                 </p>
               </div>
               <div className="criterion-list">
-                {tutorialChecks.map((check, index) => {
+                {tutorialChecks.slice(0, visibleTutorialCount).map((check, index) => {
                   const selected = progress.tutorialChoice[`${activeProblem.id}:${index}`]
                   const answered = selected !== undefined
                   const correct = selected === check.correctChoice
@@ -1292,6 +1306,12 @@ function App() {
                   )
                 })}
               </div>
+              {visibleTutorialCount < tutorialChecks.length && (
+                <p className="unlock-note">
+                  {tutorialChecks.length - visibleTutorialCount} more guided question
+                  {tutorialChecks.length - visibleTutorialCount === 1 ? '' : 's'} waiting.
+                </p>
+              )}
             </section>
 
             <div className="practice-mode">
@@ -1555,7 +1575,7 @@ function App() {
               <div>
                 <h3>Solution Checks</h3>
                 <p>
-                  {acceptanceCorrectCount}/{acceptanceChecks.length} locked. These prove the acceptance criteria one checkpoint at a time.
+                  {acceptanceCorrectCount}/{acceptanceChecks.length} locked. Correct answers unlock the next checkpoint.
                 </p>
               </div>
               {solutionChecked && (
@@ -1565,7 +1585,7 @@ function App() {
               )}
             </div>
             <div className="criterion-list">
-              {acceptanceChecks.map((check, index) => {
+              {acceptanceChecks.slice(0, visibleAcceptanceCount).map((check, index) => {
                 const selected = progress.criterionChoice[`${activeProblem.id}:${index}`]
                 const answered = selected !== undefined
                 const correct = selected === check.correctChoice
@@ -1609,6 +1629,12 @@ function App() {
                 )
               })}
             </div>
+            {visibleAcceptanceCount < acceptanceChecks.length && (
+              <p className="unlock-note">
+                {acceptanceChecks.length - visibleAcceptanceCount} more solution check
+                {acceptanceChecks.length - visibleAcceptanceCount === 1 ? '' : 's'} waiting.
+              </p>
+            )}
           </section>
 
           <section className="notes-block">

@@ -246,4 +246,305 @@ export const interviewAnswers: InterviewAnswer[] = [
     systemDesign:
       'Serve reads through a CDN, keep buckets private behind signed URLs, use multipart upload for large files, and apply lifecycle rules to expire temp objects; sanitize keys to block path traversal.',
   },
+
+  {
+    key: 'dns',
+    topic: 'DNS',
+    subjectId: 'internet',
+    simple: 'DNS turns a domain name into the IP address of a server.',
+    senior:
+      'A recursive resolver walks root, TLD, and authoritative servers and caches answers by TTL; A/AAAA/CNAME/MX records map names to addresses and services.',
+    systemDesign:
+      'DNS is also a routing tool: low-TTL failover, geo/latency routing, and weighted records for blue-green, but resolver caching means changes are not instant.',
+  },
+  {
+    key: 'http-methods',
+    topic: 'HTTP methods',
+    subjectId: 'internet',
+    simple: 'GET reads, POST creates, PUT/PATCH update, DELETE removes.',
+    senior:
+      'GET is safe (no side effects); GET, PUT, and DELETE are idempotent; POST is neither, which matters for retries and caching.',
+    systemDesign:
+      'Idempotent methods are safe to retry through proxies and load balancers, so design writes around it (PUT with a client-supplied id, or POST plus an idempotency key).',
+  },
+  {
+    key: 'validation',
+    topic: 'Input validation',
+    subjectId: 'api',
+    simple: 'Check incoming data is well-formed before you use it.',
+    senior:
+      'Validate at the boundary against a schema, coerce types, and return a per-field error map; treat the body as unknown until validated.',
+    systemDesign:
+      'Boundary validation keeps bad data out of services and the DB, turns 500s into 400s, and is a security control against injection and oversized payloads.',
+  },
+  {
+    key: 'api-versioning',
+    topic: 'API versioning',
+    subjectId: 'api',
+    simple: 'Version your API so changes do not break existing clients.',
+    senior:
+      'Version via URL (/v2) or header; add fields backward-compatibly and bump the version only for breaking changes.',
+    systemDesign:
+      'Run versions side by side, deprecate on a timeline using usage metrics, and prefer additive evolution so a hard version bump is rare.',
+  },
+  {
+    key: 'webhooks',
+    topic: 'Webhooks',
+    subjectId: 'api',
+    simple: 'Your server gets called by another service when an event happens.',
+    senior:
+      'Verify the signature over the raw body, ack fast with 2xx and process async, and dedupe by event id because providers retry.',
+    systemDesign:
+      'Treat webhooks as at-least-once: idempotent handlers, a queue behind the endpoint, a dead-letter path, and a replay tool for missed events.',
+  },
+  {
+    key: 'oauth',
+    topic: 'OAuth 2.0',
+    subjectId: 'security',
+    simple: 'OAuth lets an app act on your behalf without seeing your password.',
+    senior:
+      'The authorization-code flow swaps a short-lived code for access and refresh tokens scoped to specific permissions; the app never holds the credentials.',
+    systemDesign:
+      'Use PKCE for public clients, keep access tokens short with refresh rotation, validate scope on every call, and add OpenID Connect when you need identity.',
+  },
+  {
+    key: 'sql-injection',
+    topic: 'SQL injection',
+    subjectId: 'security',
+    simple: 'Attacker input changes the meaning of your SQL query.',
+    senior:
+      'Never concatenate input into SQL; use parameterized queries so input is always data, never code.',
+    systemDesign:
+      'Parameterize everywhere, run least-privilege DB users, and layer validation and an ORM; defense in depth limits the blast radius if one layer slips.',
+  },
+  {
+    key: 'xss',
+    topic: 'Cross-site scripting (XSS)',
+    subjectId: 'security',
+    simple: 'Attacker input runs as a script in the browser of another user.',
+    senior:
+      'Untrusted data rendered as HTML executes; escape on output by context and set a Content-Security-Policy.',
+    systemDesign:
+      'Encode per context (HTML, attribute, JS, URL), prefer auto-escaping frameworks, use CSP as a backstop, and set cookies HttpOnly so stolen scripts cannot read them.',
+  },
+  {
+    key: 'csrf',
+    topic: 'Cross-site request forgery (CSRF)',
+    subjectId: 'security',
+    simple: 'Another site tricks the browser of a logged-in user into calling your API.',
+    senior:
+      'Cookies are sent automatically, so defend cookie auth with SameSite cookies plus a CSRF token, or use header-based tokens.',
+    systemDesign:
+      'SameSite=Lax/Strict plus a double-submit or synchronizer token; APIs using the Authorization header are largely immune since browsers do not attach it automatically.',
+  },
+  {
+    key: 'cors',
+    topic: 'CORS',
+    subjectId: 'security',
+    simple: 'Browser rules for which sites may call your API from a page.',
+    senior:
+      'The browser preflights cross-origin requests and blocks the response unless your server returns the right Access-Control-Allow-* headers.',
+    systemDesign:
+      'Allowlist specific origins (never reflect arbitrary ones with credentials), and remember CORS is a browser protection, not server authorization, which you still enforce.',
+  },
+  {
+    key: 'secrets-management',
+    topic: 'Secrets management',
+    subjectId: 'security',
+    simple: 'Keep passwords and keys out of your code.',
+    senior:
+      'Load secrets from the environment or a secret manager, never commit them, and scope each to least privilege.',
+    systemDesign:
+      'Encrypt at rest, rotate routinely, audit access, and keep secrets out of logs and responses; assume any secret can leak and make rotation cheap.',
+  },
+  {
+    key: 'normalization',
+    topic: 'Normalization',
+    subjectId: 'sql',
+    simple: 'Organize tables so each fact lives in exactly one place.',
+    senior:
+      'Normal forms remove redundancy and update anomalies; aim for 3NF, then denormalize deliberately for read performance.',
+    systemDesign:
+      'Normalize for write integrity, denormalize (aggregates, read models) for proven read hotspots, and always know which copy is the source of truth.',
+  },
+  {
+    key: 'orm',
+    topic: 'ORMs',
+    subjectId: 'sql',
+    simple: 'A library that maps database rows to objects so you write less SQL.',
+    senior:
+      'ORMs speed up CRUD and migrations but hide query cost; lazy loading is the classic N+1 trap.',
+    systemDesign:
+      'Use the ORM for the common 90% and drop to raw SQL for hot or complex queries; always inspect the generated SQL and query counts under load.',
+  },
+  {
+    key: 'connection-pooling',
+    topic: 'Connection pooling',
+    subjectId: 'sql',
+    simple: 'Reuse a small set of DB connections instead of opening one per request.',
+    senior:
+      'Connections are expensive and the DB caps them; a pool bounds concurrency and reuses them.',
+    systemDesign:
+      'Size the pool to the DB limit divided across instances; many replicas times a big pool exhausts the DB, so add a proxy like PgBouncer at scale.',
+  },
+  {
+    key: 'sql-vs-nosql',
+    topic: 'SQL vs NoSQL',
+    subjectId: 'sql',
+    simple: 'SQL is structured tables with relations; NoSQL trades that for flexibility and scale.',
+    senior:
+      'Relational gives joins, transactions, and strong consistency; document and wide-column stores model around access patterns and scale horizontally, often eventually consistent.',
+    systemDesign:
+      'Choose by access pattern: relational by default for transactional integrity, NoSQL for massive scale, flexible schema, or a key-value/document shape, accepting denormalization.',
+  },
+  {
+    key: 'replication',
+    topic: 'Replication',
+    subjectId: 'sql',
+    simple: 'Keep copies of the database on multiple servers.',
+    senior:
+      'A primary takes writes and streams to read replicas, which can lag, so reads may be stale.',
+    systemDesign:
+      'Scale reads with replicas and survive failure with failover; route read-after-write to the primary or wait for replication, and watch replication lag.',
+  },
+  {
+    key: 'cdn',
+    topic: 'CDN',
+    subjectId: 'performance',
+    simple: 'Servers near users that cache your content for fast delivery.',
+    senior:
+      'The CDN caches static and cacheable responses at the edge, cutting latency and origin load; cache keys and TTLs control freshness.',
+    systemDesign:
+      'Push static and cacheable dynamic content to the edge, use cache-control plus content hashing for immutability, and purge or version on deploy.',
+  },
+  {
+    key: 'http-cache-headers',
+    topic: 'HTTP cache headers',
+    subjectId: 'performance',
+    simple: 'Headers that tell clients and proxies how long to cache a response.',
+    senior:
+      'Cache-Control sets max-age and public/private; ETag and Last-Modified enable cheap 304 revalidation.',
+    systemDesign:
+      'Long max-age plus immutable for content-hashed assets, short max-age plus must-revalidate plus ETag for changing data, and no-store only for truly sensitive responses.',
+  },
+  {
+    key: 'dead-letter-queue',
+    topic: 'Dead-letter queues',
+    subjectId: 'architecture',
+    simple: 'A side queue for messages that keep failing.',
+    senior:
+      'After bounded retries, move the poison message to a DLQ with context so the main queue keeps flowing.',
+    systemDesign:
+      'Alert on DLQ depth, store enough context to debug, and provide a replay path once fixed; without a DLQ one bad message blocks everything.',
+  },
+  {
+    key: 'outbox',
+    topic: 'Transactional outbox',
+    subjectId: 'architecture',
+    simple: 'Write the event in the same transaction as the data, then publish it.',
+    senior:
+      'The outbox avoids the dual-write problem: a relay reads committed outbox rows and publishes them, so you never lose or phantom-publish events.',
+    systemDesign:
+      'Pairs with idempotent consumers for exactly-once effects; the relay is at-least-once, so dedupe downstream.',
+  },
+  {
+    key: 'saga',
+    topic: 'Sagas',
+    subjectId: 'architecture',
+    simple: 'A multi-step workflow across services that undoes itself on failure.',
+    senior:
+      'Each step has a compensating action; on failure you run compensations in reverse instead of one ACID transaction you cannot have across services.',
+    systemDesign:
+      'Choreography (events) or orchestration (a coordinator); every step and compensation must be idempotent, and you accept temporary inconsistency.',
+  },
+  {
+    key: 'scheduled-jobs',
+    topic: 'Scheduled jobs',
+    subjectId: 'architecture',
+    simple: 'Run work on a schedule, like a nightly cleanup.',
+    senior:
+      'Cron-style triggers enqueue jobs; make them idempotent and guard against overlapping runs.',
+    systemDesign:
+      'In a cluster use a distributed lock or a single scheduler so a job runs once, not once per instance; monitor for missed and long-running runs.',
+  },
+  {
+    key: 'ci-cd',
+    topic: 'CI/CD',
+    subjectId: 'devops',
+    simple: 'Automatically build, test, and ship code on every change.',
+    senior:
+      'CI runs tests on each push; CD promotes one immutable artifact through environments.',
+    systemDesign:
+      'Gate deploys on tests, ship the same artifact to staging then prod, make rollback a button, and pair with progressive delivery to limit blast radius.',
+  },
+  {
+    key: 'health-checks',
+    topic: 'Health checks',
+    subjectId: 'devops',
+    simple: 'Endpoints that tell the platform if your app is alive and ready.',
+    senior:
+      'Liveness failure restarts the container; readiness failure pulls it from the load balancer without restarting.',
+    systemDesign:
+      'Keep liveness cheap and dependency-free; readiness checks dependencies so traffic only hits warmed instances, which is what makes zero-downtime deploys work.',
+  },
+  {
+    key: 'progressive-delivery',
+    topic: 'Blue-green and canary',
+    subjectId: 'devops',
+    simple: 'Ways to release new code with low risk.',
+    senior:
+      'Blue-green flips traffic between two full environments for instant rollback; canary ramps a small traffic slice while watching metrics.',
+    systemDesign:
+      'Both need DB backward compatibility (expand/contract) and good observability; feature flags decouple deploy from release for per-user rollout and kill switches.',
+  },
+  {
+    key: 'cap-theorem',
+    topic: 'CAP theorem',
+    subjectId: 'system-design',
+    simple: 'Under a network partition you cannot have both consistency and availability.',
+    senior:
+      'When partitioned you choose CP (reject to stay consistent) or AP (serve possibly stale data); with no partition you can have both.',
+    systemDesign:
+      'Pick per use case: payments lean CP, feeds and carts often AP with eventual consistency; most systems mix both per data type.',
+  },
+  {
+    key: 'sharding',
+    topic: 'Sharding',
+    subjectId: 'system-design',
+    simple: 'Split data across servers when one cannot hold or serve it all.',
+    senior:
+      'Partition by a shard key (hash or range); the key decides balance and whether cross-shard queries are needed.',
+    systemDesign:
+      'Pick a high-cardinality key to avoid hotspots, avoid cross-shard transactions, and plan resharding (consistent hashing limits key movement).',
+  },
+  {
+    key: 'api-gateway',
+    topic: 'API gateway',
+    subjectId: 'system-design',
+    simple: 'A single entry point in front of your services.',
+    senior:
+      'It handles routing, auth, rate limiting, and TLS termination so each service does not reimplement them.',
+    systemDesign:
+      'Centralizes cross-cutting concerns and a stable client contract; keep business logic out of it to avoid a new monolith, and run it highly available.',
+  },
+  {
+    key: 'consensus-quorum',
+    topic: 'Consensus and quorums',
+    subjectId: 'distributed',
+    simple: 'Nodes agree on a value by majority.',
+    senior:
+      'Quorum reads/writes (R + W > N) guarantee overlap so you read the latest write; consensus protocols like Raft elect a leader and replicate a log.',
+    systemDesign:
+      'Used for leader election and consistent replication; tune R and W for read- vs write-heavy, accepting higher latency for stronger consistency.',
+  },
+  {
+    key: 'consistent-hashing',
+    topic: 'Consistent hashing',
+    subjectId: 'distributed',
+    simple: 'A way to spread keys across nodes so adding one moves few keys.',
+    senior:
+      'Place nodes and keys on a hash ring and walk clockwise; adding or removing a node only remaps keys between two ring points, not all of them.',
+    systemDesign:
+      'Used by caches and sharded stores to scale without mass remapping; virtual nodes smooth out hotspots and uneven distribution.',
+  },
 ]

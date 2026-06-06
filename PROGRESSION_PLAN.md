@@ -188,6 +188,44 @@ Most audit rows are already ✅. Genuinely thin / missing:
 - [x] Claude: Files/Object Storage subject — 8 drills + from-zero glossary + interview triad. DONE.
 - [x] Codex: Caching-invalidation / CDN / HTTP-cache-headers lessons (drills + interview triad already exist).
 
+## Phase 2 — deepen the wedge (interview fluency)
+
+The skeleton is shipped. Phase 2 makes the interview-fluency angle real and closes
+the two open UX threads.
+
+**Claude (content + grader):**
+- [ ] Expand `interviewAnswers.ts` to cover the key concept of every spine subject
+      (target ~50 triads, up from ~24).
+- [ ] Author concept-specific **Quick Write** content in `src/quickWrite.ts` (new)
+      to feed Codex's Quick Write TODO. Contract:
+      ```ts
+      export type QuickWrite = {
+        subjectId: string
+        prompt: string           // concept-specific recall prompt (not "explain this idea")
+        expected: string[]       // bullets a strong answer must hit
+        productionAnchor: string // a real production/debug situation it maps to
+      }
+      export const quickWrites: QuickWrite[]
+      ```
+- [ ] (optional) Code-split the grader (dynamic-import Pyodide / TS CDN) to cut the
+      ~927 kB bundle.
+
+**Codex (UI + course.ts):**
+- [ ] Quick Write TODO: render `quickWrites` (prompt -> user writes -> reveal
+      expected bullets + production anchor). Replaces the generic recall text.
+- [x] Add progressive one-at-a-time unlocks for existing guided/solution MCQ stacks.
+- [ ] Add quiz variety beyond MCQ where data supports it: short-answer compare,
+      ordering/matching, predict-the-output, and small scenario cards.
+- [ ] Keep instant per-question feedback visible for every quiz/check interaction.
+- [ ] Wire the confidence ladder's **"Can defend"** rung to the oral-exam /
+      interview-triad content.
+
+**Current UX audit**
+- Per-question feedback exists for guided tutorial checks, solution checks, and normal quiz choices.
+- Existing guided/solution MCQ stacks now reveal progressively instead of dumping every question at once.
+- The open gap is richer interaction variety beyond MCQ.
+- `Can defend` currently reflects completion-derived confidence; it still needs a real defend prompt gate.
+
 ## Status log (append one line per change)
 - 2026-06-05 Claude: created this plan.
 - TODO Codex: loop through every Quick Write prompt/model answer and replace generic "this idea" style recall with concept-specific prompts, concrete expected-answer bullets, and production/debug anchors.
@@ -195,3 +233,4 @@ Most audit rows are already ✅. Genuinely thin / missing:
 - 2026-06-05 Codex: shipped P0 ordering, P1 interview/lifecycle UI, P2 projects/confidence UI; full check passing locally.
 - 2026-06-05 Claude: shipped P3 Files & Object Storage (subject `files-storage`: 8 graded drills, glossary tutorial, interview triad). 0 orphans. Remaining for Codex: master ordering (P0), render P1/P2 layers, caching/CDN lessons.
 - 2026-06-05 Codex: added Performance lessons for cache invalidation, CDNs, and HTTP cache headers.
+- 2026-06-05 Codex: audited quiz UX; existing MCQ checks now reveal progressively with per-question feedback instead of dumping full stacks.

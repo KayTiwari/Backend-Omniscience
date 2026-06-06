@@ -8,12 +8,15 @@
 //   2) append extraSubjects to the subjects array.
 // Once merged, you can delete the local types and import them from './course'.
 
-import {
-  Braces,
-  type LucideIcon,
-} from 'lucide-react'
+import { type LucideIcon } from 'lucide-react'
 import type { ComponentType } from 'react'
-import { NodeJsIcon, PythonIcon, FlaskIcon, DjangoIcon } from './TechIcons'
+import {
+  NodeJsIcon, PythonIcon, FlaskIcon, DjangoIcon,
+  TypeScriptIcon, JavaScriptIcon, PostgreSQLIcon,
+  ApiIcon, BinaryTreeIcon, HttpIcon,
+  WrenchIcon, DistributedIcon, ObservabilityIcon,
+  PadlockIcon, CloudStorageIcon,
+} from './TechIcons'
 
 export type ProblemType = 'lesson' | 'coding' | 'quiz' | 'debug' | 'design'
 export type Difficulty = 'Warmup' | 'Core' | 'Hard' | 'Boss'
@@ -317,7 +320,7 @@ export const extraSubjects: Subject[] = [
     id: 'typescript',
     title: 'TypeScript',
     subtitle: 'Types, narrowing, DTOs, runtime validation, and safer Node backends.',
-    icon: Braces,
+    icon: TypeScriptIcon,
     color: '#0f8b8d',
     problems: [
       {
@@ -620,7 +623,7 @@ export const extraSubjects: Subject[] = [
     id: 'typescript-drills',
     title: 'TypeScript Drills',
     subtitle: 'Auto-graded TypeScript: typed functions, generics, unions, and utility types.',
-    icon: Braces,
+    icon: TypeScriptIcon,
     color: '#3178c6',
     problems: [
       drill('ts-typed-sum', 'Typed Function: Sum', 'Warmup'),
@@ -725,7 +728,7 @@ export const extraSubjects: Subject[] = [
     id: 'api-drills',
     title: 'API Drills',
     subtitle: 'Auto-graded practice writing real API code: routing, handlers, validation, responses.',
-    icon: Braces,
+    icon: ApiIcon,
     color: '#e84a5f',
     problems: [
       drill('apidrill-route-match', 'API: Match A Route', 'Warmup'),
@@ -754,7 +757,7 @@ export const extraSubjects: Subject[] = [
     id: 'sql-drills',
     title: 'SQL Drills',
     subtitle: 'Auto-graded query semantics in code: SELECT, WHERE, ORDER BY, GROUP BY, JOIN, UPDATE.',
-    icon: Braces,
+    icon: PostgreSQLIcon,
     color: '#336791',
     problems: [
       drill('sqldrill-select-where', 'SQL: SELECT ... WHERE', 'Warmup'),
@@ -773,7 +776,7 @@ export const extraSubjects: Subject[] = [
     id: 'js-fundamentals',
     title: 'JavaScript Fundamentals',
     subtitle: 'Auto-graded JS basics: loops, map/filter/reduce, and common methods.',
-    icon: Braces,
+    icon: JavaScriptIcon,
     color: '#e8a400',
     problems: [
       drill('jsf-sum-for', "For Loop: Sum"),
@@ -797,7 +800,7 @@ export const extraSubjects: Subject[] = [
     id: 'algorithms',
     title: 'Algorithms & Data Structures',
     subtitle: 'Auto-graded classics: search, sort/merge, two-sum, parentheses, tries.',
-    icon: Braces,
+    icon: BinaryTreeIcon,
     color: '#8957e5',
     problems: [
       drill('ds-trie-autocomplete', "Trie Autocomplete"),
@@ -815,7 +818,7 @@ export const extraSubjects: Subject[] = [
     id: 'http-networking',
     title: 'HTTP & Networking Drills',
     subtitle: 'Auto-graded HTTP and networking: queries, cache-control, CIDR, ranges.',
-    icon: Braces,
+    icon: HttpIcon,
     color: '#e84a5f',
     problems: [
       drill('net-cidr-contains', "CIDR Contains IP"),
@@ -835,7 +838,7 @@ export const extraSubjects: Subject[] = [
     id: 'utilities',
     title: 'Utilities & Parsing Drills',
     subtitle: 'Auto-graded helpers: JSON utils, encoding, parsing, string tools.',
-    icon: Braces,
+    icon: WrenchIcon,
     color: '#0f8b8d',
     problems: [
       drill('data-luhn', "Luhn Checksum"),
@@ -860,7 +863,7 @@ export const extraSubjects: Subject[] = [
     id: 'distributed',
     title: 'Distributed Systems Drills',
     subtitle: 'Auto-graded distributed primitives: hashing, quorum, clocks, sagas.',
-    icon: Braces,
+    icon: DistributedIcon,
     color: '#2f80ed',
     problems: [
       drill('msg-partition', "Partition By Key"),
@@ -895,7 +898,7 @@ export const extraSubjects: Subject[] = [
     id: 'observability-ops',
     title: 'Observability & Ops Drills',
     subtitle: 'Auto-graded ops math: log parsing, error rate, histograms, apdex, TTL.',
-    icon: Braces,
+    icon: ObservabilityIcon,
     color: '#00a878',
     problems: [
       drill('obs-log-parse', "Parse An Access Log Line"),
@@ -919,7 +922,7 @@ export const extraSubjects: Subject[] = [
     id: 'security-drills',
     title: 'Security Drills',
     subtitle: 'Auto-graded security helpers: PII masking, path safety, CSRF.',
-    icon: Braces,
+    icon: PadlockIcon,
     color: '#b42338',
     problems: [
       drill('security-mask-email', "Mask PII (Email)"),
@@ -931,7 +934,7 @@ export const extraSubjects: Subject[] = [
     id: 'files-storage',
     title: 'Files & Object Storage',
     subtitle: 'Auto-graded uploads and object storage: keys, validation, signed URLs, multipart, lifecycle.',
-    icon: Braces,
+    icon: CloudStorageIcon,
     color: '#7048e8',
     problems: [
       drill('storage-object-key', 'Storage: Build An Object Key', 'Warmup'),

@@ -1,17 +1,19 @@
 import {
-  Braces,
-  Cloud,
-  Database,
-  Gauge,
-  GitBranch,
-  KeyRound,
-  Network,
-  ServerCog,
-  ShieldCheck,
-  Workflow,
   type LucideIcon,
 } from 'lucide-react'
 import type { ComponentType } from 'react'
+import {
+  HttpIcon,
+  TerminalIcon,
+  PostgreSQLIcon,
+  ApiIcon,
+  PadlockIcon,
+  ArchitectureIcon,
+  DevOpsIcon,
+  LightningIcon,
+  ServerClusterIcon,
+  TrophyIcon,
+} from './TechIcons'
 import { capstoneProblems } from './course.capstones'
 import { deepDiveProblems } from './course.deepdive'
 import { extraProblems, extraSubjects } from './course.extra'
@@ -92,7 +94,7 @@ const coreSubjects: Subject[] = [
     id: 'internet',
     title: 'Internet & HTTP',
     subtitle: 'DNS, TCP, HTTP, requests, status codes, and the web stack.',
-    icon: Network,
+    icon: HttpIcon,
     color: '#e84a5f',
     problems: [
       {
@@ -190,7 +192,7 @@ const coreSubjects: Subject[] = [
     id: 'language',
     title: 'Backend Language Core',
     subtitle: 'Error handling, files, tests, concurrency, and process boundaries.',
-    icon: Braces,
+    icon: TerminalIcon,
     color: '#2f80ed',
     problems: [
       {
@@ -245,7 +247,7 @@ const coreSubjects: Subject[] = [
     id: 'sql',
     title: 'SQL & PostgreSQL',
     subtitle: 'Schemas, indexes, joins, transactions, isolation, and query plans.',
-    icon: Database,
+    icon: PostgreSQLIcon,
     color: '#00a878',
     problems: [
       {
@@ -302,7 +304,7 @@ const coreSubjects: Subject[] = [
     id: 'api',
     title: 'API Design',
     subtitle: 'REST, contracts, validation, pagination, versioning, and clients.',
-    icon: GitBranch,
+    icon: ApiIcon,
     color: '#f59f00',
     problems: [
       {
@@ -458,7 +460,7 @@ const coreSubjects: Subject[] = [
     id: 'security',
     title: 'Auth & Security',
     subtitle: 'Sessions, JWTs, OAuth, hashing, CORS, CSRF, rate limits, secrets.',
-    icon: ShieldCheck,
+    icon: PadlockIcon,
     color: '#7c3aed',
     problems: [
       {
@@ -518,7 +520,7 @@ const coreSubjects: Subject[] = [
     id: 'architecture',
     title: 'Architecture',
     subtitle: 'Boundaries, queues, events, retries, idempotency, and monoliths.',
-    icon: Workflow,
+    icon: ArchitectureIcon,
     color: '#10a6a6',
     problems: [
       {
@@ -572,7 +574,7 @@ const coreSubjects: Subject[] = [
     id: 'devops',
     title: 'DevOps For Backend',
     subtitle: 'Linux, Docker, CI, deployment, logs, metrics, and cloud basics.',
-    icon: Cloud,
+    icon: DevOpsIcon,
     color: '#52616b',
     problems: [
       {
@@ -626,7 +628,7 @@ const coreSubjects: Subject[] = [
     id: 'performance',
     title: 'Performance & Scale',
     subtitle: 'Caching, profiling, load testing, N+1 queries, pools, and queues.',
-    icon: Gauge,
+    icon: LightningIcon,
     color: '#d9480f',
     problems: [
       {
@@ -770,7 +772,7 @@ const coreSubjects: Subject[] = [
     id: 'system-design',
     title: 'System Design',
     subtitle: 'End-to-end backend systems with production constraints.',
-    icon: ServerCog,
+    icon: ServerClusterIcon,
     color: '#364fc7',
     problems: [
       {
@@ -824,7 +826,7 @@ const coreSubjects: Subject[] = [
     id: 'capstone',
     title: 'Capstone Gauntlet',
     subtitle: 'Build complete systems that combine multiple backend muscles.',
-    icon: KeyRound,
+    icon: TrophyIcon,
     color: '#0b7285',
     problems: [
       {
