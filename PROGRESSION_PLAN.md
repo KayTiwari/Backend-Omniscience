@@ -185,10 +185,11 @@ Most audit rows are already ✅. Genuinely thin / missing:
 - [ ] Codex: Projects view + confidence ladder.
 
 **P3 — fill thin gaps:**
-- [ ] Files/Object Storage subject + drills.
-- [ ] Caching-invalidation / CDN / HTTP-cache-headers lessons.
+- [x] Claude: Files/Object Storage subject — 8 drills + from-zero glossary + interview triad. DONE.
+- [ ] Codex: Caching-invalidation / CDN / HTTP-cache-headers lessons (drills + interview triad already exist).
 
 ## Status log (append one line per change)
 - 2026-06-05 Claude: created this plan.
 - TODO Codex: loop through every Quick Write prompt/model answer and replace generic "this idea" style recall with concept-specific prompts, concrete expected-answer bullets, and production/debug anchors.
 - 2026-06-05 Claude: shipped P1 content (`interviewAnswers.ts`, `requestLifecycle.ts`) + P2 content (`projects.ts`). All type-clean; project drillIds validated. Codex can render against the contracts above.
+- 2026-06-05 Claude: shipped P3 Files & Object Storage (subject `files-storage`: 8 graded drills, glossary tutorial, interview triad). 0 orphans. Remaining for Codex: master ordering (P0), render P1/P2 layers, caching/CDN lessons.
