@@ -172,7 +172,7 @@ Most audit rows are already ✅. Genuinely thin / missing:
 **P0 — fix the spine (do first):**
 - [x] Codex: reorder `subjects` to the canonical track order.
 - [x] Codex: phase-sort problems within each subject.
-- [ ] Claude: reorder `course.extra.ts` subjects; confirm fundamentals/practice land sensibly.
+- [x] Claude: course.extra subject order — moot. Codex centralized ordering in a `subjectOrder` map in `course.ts` (fundamentals ranked early), so order inside `course.extra.ts` no longer matters. Confirmed sensible.
 
 **P1 — the interview wedge:**
 - [x] Claude: `src/interviewAnswers.ts` — 22 concept triads across the spine subjects. READY TO RENDER.
