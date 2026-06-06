@@ -630,6 +630,96 @@ const coreSubjects: Subject[] = [
     color: '#d9480f',
     problems: [
       {
+        id: 'performance-cache-invalidation-lesson',
+        title: 'Cache Invalidation From Zero',
+        type: 'lesson',
+        difficulty: 'Warmup',
+        minutes: 22,
+        prompt:
+          'Explain cache invalidation to a beginner. Include what a cache stores, why stale data happens, and three ways to keep cached data correct enough.',
+        explanation:
+          'A cache is a faster copy of data that normally lives somewhere slower, such as a database or an upstream API. Invalidation is the act of removing, replacing, or aging out that copy when the real data changes. The hard part is choosing how fresh the copy must be: a product image can be stale for minutes, but an account balance cannot.',
+        production:
+          'Bad invalidation causes users to see old prices, wrong permissions, outdated inventory, or privacy leaks. Good invalidation starts from the business rule: how stale can this data be before it becomes incorrect or dangerous?',
+        walkthrough: [
+          'Name the source of truth, such as PostgreSQL or an upstream service.',
+          'Name the cached copy, such as browser cache, CDN, process memory, or Redis.',
+          'Choose a freshness rule: explicit delete on write, versioned keys, short TTL, or stale-while-revalidate.',
+          'Define the failure mode: serving stale data, stampede on miss, or deleting too much cache.',
+        ],
+        questions: [
+          'When is a short TTL enough?',
+          'When should a write explicitly delete or replace a cache key?',
+          'Why is cache invalidation a correctness problem, not only a speed problem?',
+        ],
+        checklist: [
+          'Define cache, source of truth, and stale data.',
+          'Compare TTL, explicit invalidation, and versioned keys.',
+          'Name one production bug caused by stale cache.',
+          'Tie the strategy to the data freshness requirement.',
+        ],
+      },
+      {
+        id: 'performance-cdn-lesson',
+        title: 'CDNs From Zero',
+        type: 'lesson',
+        difficulty: 'Warmup',
+        minutes: 24,
+        prompt:
+          'Explain what a CDN is and when a backend should use one. Include static assets, API responses, cache keys, and private data risk.',
+        explanation:
+          'A CDN (Content Delivery Network) is a global network of edge servers that stores and serves content close to users. Instead of every request crossing the internet to your origin server, cacheable responses can be served from a nearby edge location. CDNs are excellent for static assets and carefully cacheable public responses.',
+        production:
+          'A CDN reduces latency and origin load, but it can also spread mistakes globally. The dangerous bug is caching private user data with public headers or forgetting that Authorization, cookies, query strings, and locale can change the correct response.',
+        walkthrough: [
+          'Use a CDN for immutable static assets like app.abcd1234.js, images, and public downloads.',
+          'Cache public API reads only when the response is safe to share across users.',
+          'Define the cache key: host, path, query params, headers, cookies, or auth state.',
+          'Plan purge or versioning before deploy so bad content can be removed quickly.',
+        ],
+        questions: [
+          'Why are content-hashed assets good CDN targets?',
+          'Why should authenticated user data usually avoid public CDN caching?',
+          'What belongs in a CDN cache key?',
+        ],
+        checklist: [
+          'Define CDN as edge caching close to users.',
+          'Separate static assets from dynamic API responses.',
+          'Mention cache-key correctness and private data risk.',
+          'Explain purge, versioning, or short TTL as a rollback path.',
+        ],
+      },
+      {
+        id: 'performance-http-cache-headers-lesson',
+        title: 'HTTP Cache Headers From Zero',
+        type: 'lesson',
+        difficulty: 'Core',
+        minutes: 28,
+        prompt:
+          'Teach the HTTP headers that control caching. Explain Cache-Control, max-age, private/public, no-store, ETag, If-None-Match, and 304.',
+        explanation:
+          'HTTP cache headers are instructions attached to responses. Cache-Control says whether a browser, proxy, or CDN may store the response and for how long. ETag gives the response a version label; later, the client can send If-None-Match with that label, and the server can answer 304 Not Modified instead of resending the body.',
+        production:
+          'Correct headers make repeated reads fast without changing app code. Wrong headers can leak private pages, pin old JavaScript in browsers, overload origins with unnecessary revalidation, or make clients ignore fresh data.',
+        walkthrough: [
+          'Use Cache-Control: no-store for secrets, account pages, and responses that must not be saved.',
+          'Use private when a browser may cache a response but shared caches must not.',
+          'Use public, max-age, and immutable for content-hashed static assets.',
+          'Use ETag plus If-None-Match when clients should revalidate cheaply before downloading a body again.',
+        ],
+        questions: [
+          'What is the difference between no-store and max-age=0?',
+          'Why does private matter when cookies or Authorization are involved?',
+          'How does ETag avoid resending an unchanged response body?',
+        ],
+        checklist: [
+          'Define Cache-Control and max-age.',
+          'Separate public, private, and no-store.',
+          'Explain ETag, If-None-Match, and 304.',
+          'Give one safe header policy for static assets and one for private data.',
+        ],
+      },
+      {
         id: 'performance-n-plus-one',
         title: 'N+1 Query Hunt',
         type: 'debug',
@@ -795,6 +885,7 @@ const subjectOrder = [
   'sql',
   'performance',
   'architecture',
+  'files-storage',
   'files',
   'observability-ops',
   'devops',

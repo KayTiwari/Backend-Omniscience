@@ -170,26 +170,28 @@ Most audit rows are already ✅. Genuinely thin / missing:
 ## Phased rollout (check off as done)
 
 **P0 — fix the spine (do first):**
-- [ ] Codex: reorder `subjects` to the canonical track order.
-- [ ] Codex: phase-sort problems within each subject.
+- [x] Codex: reorder `subjects` to the canonical track order.
+- [x] Codex: phase-sort problems within each subject.
 - [ ] Claude: reorder `course.extra.ts` subjects; confirm fundamentals/practice land sensibly.
 
 **P1 — the interview wedge:**
 - [x] Claude: `src/interviewAnswers.ts` — 22 concept triads across the spine subjects. READY TO RENDER.
-- [ ] Codex: render the interview triad panel.
+- [x] Codex: render the interview triad panel.
 - [x] Claude: `src/requestLifecycle.ts` — 11 ordered hops with failure modes + subjectId links. READY TO RENDER.
-- [ ] Codex: "follow the request" view.
+- [x] Codex: "follow the request" view.
 
 **P2 — projects + confidence:**
 - [x] Claude: `src/projects.ts` — 6 projects, all step `drillId`s validated against existing specs. READY TO RENDER.
-- [ ] Codex: Projects view + confidence ladder.
+- [x] Codex: Projects view + confidence ladder.
 
 **P3 — fill thin gaps:**
 - [x] Claude: Files/Object Storage subject — 8 drills + from-zero glossary + interview triad. DONE.
-- [ ] Codex: Caching-invalidation / CDN / HTTP-cache-headers lessons (drills + interview triad already exist).
+- [x] Codex: Caching-invalidation / CDN / HTTP-cache-headers lessons (drills + interview triad already exist).
 
 ## Status log (append one line per change)
 - 2026-06-05 Claude: created this plan.
 - TODO Codex: loop through every Quick Write prompt/model answer and replace generic "this idea" style recall with concept-specific prompts, concrete expected-answer bullets, and production/debug anchors.
 - 2026-06-05 Claude: shipped P1 content (`interviewAnswers.ts`, `requestLifecycle.ts`) + P2 content (`projects.ts`). All type-clean; project drillIds validated. Codex can render against the contracts above.
+- 2026-06-05 Codex: shipped P0 ordering, P1 interview/lifecycle UI, P2 projects/confidence UI; full check passing locally.
 - 2026-06-05 Claude: shipped P3 Files & Object Storage (subject `files-storage`: 8 graded drills, glossary tutorial, interview triad). 0 orphans. Remaining for Codex: master ordering (P0), render P1/P2 layers, caching/CDN lessons.
+- 2026-06-05 Codex: added Performance lessons for cache invalidation, CDNs, and HTTP cache headers.
