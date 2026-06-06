@@ -1,4 +1,5 @@
 import type { Problem, Subject } from './course'
+import { interviewAnswers } from './interviewAnswers'
 
 type SubjectTeaching = {
   picture: string
@@ -492,9 +493,18 @@ function modeFor(problem: Problem) {
 
 export function getTeachingModel(subject: Subject, problem: Problem): TeachingModel {
   const base = subjectTeaching[subject.id] ?? fallback
+  const matchingInterviewTopics = interviewAnswers
+    .filter((answer) => answer.subjectId === subject.id)
+    .slice(0, 3)
+    .map((answer) => `Practice the interview triad for ${answer.topic}: simple, senior, then system design.`)
+
   return {
     ...base,
+    interview:
+      matchingInterviewTopics.length > 0
+        ? [...base.interview, ...matchingInterviewTopics]
+        : base.interview,
     practiceMode: modeFor(problem),
-    problemIntro: `No prior knowledge assumed. For "${problem.title}", start with the plain-English ${subject.title} model before answering. This problem is a ${problem.type} exercise, so the target is understanding first, then proof.`,
+    problemIntro: `For "${problem.title}", start with the plain-English ${subject.title} model before answering. This problem is a ${problem.type} exercise, so the target is understanding first, then proof.`,
   }
 }

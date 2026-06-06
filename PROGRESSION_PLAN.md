@@ -190,4 +190,5 @@ Most audit rows are already ✅. Genuinely thin / missing:
 
 ## Status log (append one line per change)
 - 2026-06-05 Claude: created this plan.
+- TODO Codex: loop through every Quick Write prompt/model answer and replace generic "this idea" style recall with concept-specific prompts, concrete expected-answer bullets, and production/debug anchors.
 - 2026-06-05 Claude: shipped P1 content (`interviewAnswers.ts`, `requestLifecycle.ts`) + P2 content (`projects.ts`). All type-clean; project drillIds validated. Codex can render against the contracts above.

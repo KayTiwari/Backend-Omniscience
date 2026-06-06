@@ -715,6 +715,100 @@ h1 {
   text-transform: uppercase;
 }
 
+.request-lifecycle-view {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.home-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.home-section-heading h3 {
+  margin: 0 0 5px;
+  color: var(--ink);
+  font-size: 15px;
+  text-transform: uppercase;
+}
+
+.home-section-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.lifecycle-track {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.lifecycle-hop {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lifecycle-hop:hover {
+  border-color: var(--brand-b);
+  background: color-mix(in srgb, var(--brand-b) 7%, var(--field));
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.lifecycle-hop span {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 4px 7px;
+  background: color-mix(in srgb, var(--brand-b) 12%, var(--field));
+  color: var(--brand-b);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.lifecycle-hop strong {
+  line-height: 1.2;
+}
+
+.lifecycle-hop p,
+.lifecycle-hop small {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.lifecycle-hop small {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.lifecycle-hop em {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: var(--surface-hover);
+  color: var(--ink);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
 .home-search-section {
   display: grid;
   gap: 12px;
@@ -1468,6 +1562,7 @@ h1 {
 
 .prompt-block,
 .learning-path,
+.interview-panel,
 .explanation-block,
 .production-block,
 .walkthrough-block,
@@ -1481,6 +1576,7 @@ h1 {
 }
 
 .prompt-block h3,
+.interview-panel h3,
 .explanation-block h3,
 .production-block h3,
 .walkthrough-block h3,
@@ -1500,6 +1596,67 @@ h1 {
   color: #2d3837;
   font-size: 20px;
   line-height: 1.55;
+}
+
+.interview-panel {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--paper);
+}
+
+.interview-answer-list {
+  display: grid;
+  gap: 10px;
+}
+
+.interview-answer-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+}
+
+.interview-answer-card:hover {
+  border-color: var(--brand-b);
+  box-shadow: var(--shadow-hover);
+}
+
+.interview-answer-card summary {
+  cursor: pointer;
+  padding: 12px;
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.interview-answer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  padding: 12px;
+}
+
+.interview-answer-grid section {
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--surface-soft);
+}
+
+.interview-answer-grid span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--brand-b);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.interview-answer-grid p {
+  margin: 0;
+  color: #31413f;
+  line-height: 1.45;
 }
 
 .learning-path {
@@ -2125,6 +2282,8 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .time-stats span,
 .app-shell[data-theme='dark'] .mastery-panel,
 .app-shell[data-theme='dark'] .mastery-steps span,
+.app-shell[data-theme='dark'] .request-lifecycle-view,
+.app-shell[data-theme='dark'] .lifecycle-hop,
 .app-shell[data-theme='dark'] .interactive-diagram,
 .app-shell[data-theme='dark'] .diagram-panel,
 .app-shell[data-theme='dark'] .visual-picture,
@@ -2132,6 +2291,9 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .lesson-grid section,
 .app-shell[data-theme='dark'] .recall-card,
 .app-shell[data-theme='dark'] .recall-card textarea,
+.app-shell[data-theme='dark'] .interview-panel,
+.app-shell[data-theme='dark'] .interview-answer-card,
+.app-shell[data-theme='dark'] .interview-answer-grid section,
 .app-shell[data-theme='dark'] .choice,
 .app-shell[data-theme='dark'] .criterion-choice,
 .app-shell[data-theme='dark'] .notes-block textarea,
@@ -2176,6 +2338,9 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .home-result-main small,
 .app-shell[data-theme='dark'] .home-result-meta,
 .app-shell[data-theme='dark'] .home-empty-search,
+.app-shell[data-theme='dark'] .home-section-heading p,
+.app-shell[data-theme='dark'] .lifecycle-hop p,
+.app-shell[data-theme='dark'] .lifecycle-hop small,
 .app-shell[data-theme='dark'] .subject-subtitle,
 .app-shell[data-theme='dark'] .learn-first-heading p,
 .app-shell[data-theme='dark'] .visual-lesson p,
@@ -2184,6 +2349,7 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .practice-mode p,
 .app-shell[data-theme='dark'] .guided-tutorial-heading p,
 .app-shell[data-theme='dark'] .recall-card p,
+.app-shell[data-theme='dark'] .interview-answer-grid p,
 .app-shell[data-theme='dark'] .lesson-grid ul,
 .app-shell[data-theme='dark'] .lesson-grid ol,
 .app-shell[data-theme='dark'] .prompt-block p,

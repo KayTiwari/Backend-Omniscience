@@ -786,10 +786,81 @@ const coreSubjects: Subject[] = [
   },
 ]
 
-export const subjects: Subject[] = [
+const subjectOrder = [
+  'language',
+  'js-fundamentals',
+  'internet',
+  'api',
+  'security',
+  'sql',
+  'performance',
+  'architecture',
+  'files',
+  'observability-ops',
+  'devops',
+  'distributed',
+  'system-design',
+  'typescript',
+  'nodejs',
+  'python',
+  'flask',
+  'django',
+  'typescript-drills',
+  'python-drills',
+  'api-drills',
+  'sql-drills',
+  'security-drills',
+  'http-networking',
+  'utilities',
+  'algorithms',
+  'capstone',
+]
+
+const subjectRank = new Map(subjectOrder.map((id, index) => [id, index]))
+
+function getProblemPhaseRank(problem: Problem) {
+  const title = problem.title.toLowerCase()
+  const id = problem.id.toLowerCase()
+
+  if (id.includes('glossary') || title.includes('glossary')) return 0
+  if (id.includes('tutorial') || title.startsWith('tutorial:')) return 0
+  if (problem.type === 'lesson') return 1
+  if (problem.type === 'quiz') return 2
+  if (problem.type === 'coding') return 3
+  if (problem.type === 'debug') return 4
+  if (problem.type === 'design') {
+    if (id.includes('project') || id.includes('capstone') || title.includes('project')) return 6
+    return 5
+  }
+  if (id.includes('oral') || title.includes('oral exam')) return 7
+  return 8
+}
+
+function sortProblemsByPhase(problems: Problem[]) {
+  return problems
+    .map((problem, index) => ({ problem, index }))
+    .sort((left, right) => {
+      const rankDelta = getProblemPhaseRank(left.problem) - getProblemPhaseRank(right.problem)
+      return rankDelta || left.index - right.index
+    })
+    .map(({ problem }) => problem)
+}
+
+function sortSubjectsByTrack(items: Subject[]) {
+  return items
+    .map((subject, index) => ({ subject, index }))
+    .sort((left, right) => {
+      const leftRank = subjectRank.get(left.subject.id) ?? subjectOrder.length + left.index
+      const rightRank = subjectRank.get(right.subject.id) ?? subjectOrder.length + right.index
+      return leftRank - rightRank
+    })
+    .map(({ subject }) => subject)
+}
+
+const mergedSubjects: Subject[] = [
   ...coreSubjects.map((subject) => ({
     ...subject,
-    problems: [
+    problems: sortProblemsByPhase([
       ...subject.problems,
       ...(progressionProblems[subject.id] ?? []),
       ...(tutorialProblems[subject.id] ?? []),
@@ -801,11 +872,11 @@ export const subjects: Subject[] = [
       ...(extraProblems[subject.id] ?? []),
       ...(oralExamProblems[subject.id] ?? []),
       ...(capstoneProblems[subject.id] ?? []),
-    ],
+    ]),
   })),
   ...extraSubjects.map((subject) => ({
     ...subject,
-    problems: [
+    problems: sortProblemsByPhase([
       ...subject.problems,
       ...(progressionProblems[subject.id] ?? []),
       ...(subject.id === 'typescript' ? typescriptFundamentalProblems : []),
@@ -815,9 +886,11 @@ export const subjects: Subject[] = [
       ...(frameworkMasteryProblems[subject.id] ?? []),
       ...(frameworkRapidReviewProblems[subject.id] ?? []),
       ...(frameworkCapstoneProjectProblems[subject.id] ?? []),
-    ],
+    ]),
   })),
 ]
+
+export const subjects: Subject[] = sortSubjectsByTrack(mergedSubjects)
 
 export const allProblems = subjects.flatMap((subject) =>
   subject.problems.map((problem) => ({ ...problem, subjectId: subject.id })),

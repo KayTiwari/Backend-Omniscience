@@ -32,8 +32,10 @@ import { validateCourse } from './courseValidation'
 import { applyEditorKey } from './editorKeys'
 import { allSpecs, grade, type GradeResult } from './grader'
 import { InteractiveDiagram } from './InteractiveDiagram'
+import { interviewAnswers } from './interviewAnswers'
 import { renderMarkdown } from './miniMarkdown'
 import { getTeachingModel } from './problemTeaching'
+import { requestLifecycle } from './requestLifecycle'
 import { tutorials } from './tutorials'
 
 type ProgressState = {
@@ -256,6 +258,18 @@ function App() {
       })
       .slice(0, 12)
   }, [homeQuery])
+  const lifecycleHops = useMemo(
+    () =>
+      requestLifecycle.map((hop) => ({
+        ...hop,
+        subject: subjects.find((subject) => subject.id === hop.subjectId),
+      })),
+    [],
+  )
+  const activeInterviewAnswers = useMemo(
+    () => interviewAnswers.filter((answer) => answer.subjectId === activeSubject.id),
+    [activeSubject.id],
+  )
 
   function openProblem(subject: Subject, problem: Problem) {
     setIsHome(false)
@@ -299,6 +313,12 @@ function App() {
     const location = findProblemLocation(problemId)
     if (!location) return
     openProblem(location.subject, location.problem)
+  }
+
+  function openSubjectById(subjectId: string) {
+    const subject = subjects.find((item) => item.id === subjectId)
+    if (!subject) return
+    openProblem(subject, subject.problems[0])
   }
 
   function markProblemComplete(problemId: string) {
@@ -853,6 +873,31 @@ function App() {
               </div>
             </section>
 
+            <section className="request-lifecycle-view" aria-label="Follow the request">
+              <div className="home-section-heading">
+                <div>
+                  <h3>Follow The Request</h3>
+                  <p>One request, every backend layer, and the failure mode to watch.</p>
+                </div>
+              </div>
+              <div className="lifecycle-track">
+                {lifecycleHops.map((hop, index) => (
+                  <button
+                    key={hop.id}
+                    className="lifecycle-hop"
+                    onClick={() => openSubjectById(hop.subjectId)}
+                    type="button"
+                  >
+                    <span>{String(index + 1).padStart(2, '0')}</span>
+                    <strong>{hop.label}</strong>
+                    <p>{hop.blurb}</p>
+                    <small>{hop.failureMode}</small>
+                    {hop.subject && <em>{hop.subject.title}</em>}
+                  </button>
+                ))}
+              </div>
+            </section>
+
             <section className="home-search-section" aria-label="Search the course">
               <label className="home-search-box">
                 <Search size={18} />
@@ -1125,6 +1170,36 @@ function App() {
               <p>{teachingModel.practiceMode}</p>
             </div>
           </section>
+
+          {activeInterviewAnswers.length > 0 && (
+            <section className="interview-panel" aria-label="Explain it in an interview">
+              <div className="guided-tutorial-heading">
+                <h3>Explain It In An Interview</h3>
+                <p>Practice the same concept at junior, senior, and system-design depth.</p>
+              </div>
+              <div className="interview-answer-list">
+                {activeInterviewAnswers.map((answer) => (
+                  <details key={answer.key} className="interview-answer-card">
+                    <summary>{answer.topic}</summary>
+                    <div className="interview-answer-grid">
+                      <section>
+                        <span>Simple</span>
+                        <p>{answer.simple}</p>
+                      </section>
+                      <section>
+                        <span>Senior</span>
+                        <p>{answer.senior}</p>
+                      </section>
+                      <section>
+                        <span>System design</span>
+                        <p>{answer.systemDesign}</p>
+                      </section>
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </section>
+          )}
 
           <section className="learning-path" aria-label="Learning path">
             <button
