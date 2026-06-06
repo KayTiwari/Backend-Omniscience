@@ -1,5 +1,10 @@
 # Backend Omniscience — Build Plan & Agent Coordination
 
+> **Active initiative:** see `PROGRESSION_PLAN.md` for the learning-progression +
+> positioning overhaul (interview-answer triad, request-lifecycle spine, projects,
+> confidence scoring) and the Codex/Claude task split. Read it before reworking
+> ordering or teaching.
+
 Goal: cover **every concept in the roadmap.sh/backend roadmap** with three kinds
 of practice — **explanations (lessons), quizzes (MCQ), and coding questions where
 the learner writes real code that is auto-graded.**
