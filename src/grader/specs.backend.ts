@@ -3127,4 +3127,118 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Files & object storage ------------------------------------------
+  {
+    problemId: 'storage-object-key',
+    title: 'Storage: Build An Object Key',
+    language: 'js',
+    starter: "function buildKey(parts) {\n  // join parts into a clean key: trim stray slashes, drop empties\n}\n",
+    tests: [
+      { name: 'joins cleanly', body: "assertEqual(buildKey(['users', '42', 'avatar.png']), 'users/42/avatar.png'); assertEqual(buildKey(['/a/', '', 'b']), 'a/b');" },
+    ],
+    reference: `function buildKey(parts) {
+  return parts
+    .map((p) => String(p).replace(/^\\/+|\\/+$/g, ''))
+    .filter((p) => p.length > 0)
+    .join('/');
+}
+`,
+  },
+  {
+    problemId: 'storage-validate-upload',
+    title: 'Storage: Validate An Upload',
+    language: 'js',
+    starter: 'function validateUpload(file, rules) {\n  // file {size, type}, rules {maxSize, allowed[]}. size first, then type. { ok, error }\n}\n',
+    tests: [
+      { name: 'size then type', body: "assertEqual(validateUpload({size:100,type:'image/png'}, {maxSize:1000,allowed:['image/png']}), {ok:true,error:null}); assertEqual(validateUpload({size:5000,type:'image/png'}, {maxSize:1000,allowed:['image/png']}), {ok:false,error:'too_large'}); assertEqual(validateUpload({size:10,type:'text/plain'}, {maxSize:1000,allowed:['image/png']}), {ok:false,error:'bad_type'});" },
+    ],
+    reference: `function validateUpload(file, rules) {
+  if (file.size > rules.maxSize) return { ok: false, error: 'too_large' };
+  if (!rules.allowed.includes(file.type)) return { ok: false, error: 'bad_type' };
+  return { ok: true, error: null };
+}
+`,
+  },
+  {
+    problemId: 'storage-presign-valid',
+    title: 'Storage: Is A Signed URL Still Valid?',
+    language: 'js',
+    starter: 'function isPresignValid(issuedAt, ttl, now) {\n  // valid while now is within issuedAt + ttl (inclusive)\n}\n',
+    tests: [
+      { name: 'expiry window', body: 'assertEqual(isPresignValid(1000, 60, 1050), true); assertEqual(isPresignValid(1000, 60, 1060), true); assertEqual(isPresignValid(1000, 60, 1100), false);' },
+    ],
+    reference: `function isPresignValid(issuedAt, ttl, now) {
+  return now <= issuedAt + ttl;
+}
+`,
+  },
+  {
+    problemId: 'storage-multipart-assemble',
+    title: 'Storage: Assemble Multipart Upload',
+    language: 'js',
+    starter: 'function assembleParts(parts) {\n  // parts: [{partNumber, etag}]. return etags ordered by partNumber\n}\n',
+    tests: [
+      { name: 'orders by part number', body: "assertEqual(assembleParts([{partNumber:2,etag:'b'},{partNumber:1,etag:'a'},{partNumber:3,etag:'c'}]), ['a','b','c']);" },
+    ],
+    reference: `function assembleParts(parts) {
+  return [...parts].sort((a, b) => a.partNumber - b.partNumber).map((p) => p.etag);
+}
+`,
+  },
+  {
+    problemId: 'storage-content-disposition',
+    title: 'Storage: Content-Disposition Header',
+    language: 'js',
+    starter: "function contentDisposition(filename) {\n  // force a download with the given name; strip quotes from the name\n}\n",
+    tests: [
+      { name: 'builds the header', body: "assertEqual(contentDisposition('report.pdf'), 'attachment; filename=\"report.pdf\"'); assertEqual(contentDisposition('a\"b.txt'), 'attachment; filename=\"ab.txt\"');" },
+    ],
+    reference: `function contentDisposition(filename) {
+  const safe = filename.replace(/"/g, '');
+  return 'attachment; filename="' + safe + '"';
+}
+`,
+  },
+  {
+    problemId: 'storage-lifecycle-expire',
+    title: 'Storage: Lifecycle Expiry',
+    language: 'js',
+    starter: 'function expiredKeys(objects, maxAgeDays) {\n  // objects: [{key, ageDays}]. return keys older than maxAgeDays\n}\n',
+    tests: [
+      { name: 'finds expired', body: "assertEqual(expiredKeys([{key:'a',ageDays:10},{key:'b',ageDays:40},{key:'c',ageDays:31}], 30), ['b','c']);" },
+    ],
+    reference: `function expiredKeys(objects, maxAgeDays) {
+  return objects.filter((o) => o.ageDays > maxAgeDays).map((o) => o.key);
+}
+`,
+  },
+  {
+    problemId: 'storage-cdn-url',
+    title: 'Storage: Build A CDN URL',
+    language: 'js',
+    starter: 'function cdnUrl(base, bucket, key) {\n  // join into base/bucket/key with no double slashes\n}\n',
+    tests: [
+      { name: 'joins url parts', body: "assertEqual(cdnUrl('https://cdn.example.com/', 'assets', 'img/logo.png'), 'https://cdn.example.com/assets/img/logo.png');" },
+    ],
+    reference: `function cdnUrl(base, bucket, key) {
+  return base.replace(/\\/+$/, '') + '/' + bucket + '/' + key;
+}
+`,
+  },
+  {
+    problemId: 'storage-safe-key',
+    title: 'Storage: Reject Path Traversal',
+    language: 'js',
+    starter: "function safeKey(key) {\n  // reject keys containing . or .. segments (return null); strip a leading slash\n}\n",
+    tests: [
+      { name: 'blocks traversal', body: "assertEqual(safeKey('users/42/a.png'), 'users/42/a.png'); assertEqual(safeKey('users/../secrets'), null); assertEqual(safeKey('/a/b'), 'a/b');" },
+    ],
+    reference: `function safeKey(key) {
+  const parts = key.split('/');
+  if (parts.some((p) => p === '..' || p === '.')) return null;
+  return key.replace(/^\\/+/, '');
+}
+`,
+  },
 ]
