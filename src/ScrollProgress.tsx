@@ -1,16 +1,25 @@
 import { useEffect, useState } from 'react'
 
 export function ScrollProgress() {
-  const [pct, setPct] = useState(0)
+  const [progress, setProgress] = useState(0)
 
   useEffect(() => {
+    let frame = 0
     const update = () => {
-      const scrollable = document.documentElement.scrollHeight - window.innerHeight
-      setPct(scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0)
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        const scrollable = document.documentElement.scrollHeight - window.innerHeight
+        setProgress(scrollable > 0 ? window.scrollY / scrollable : 0)
+      })
     }
     window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
     update()
-    return () => window.removeEventListener('scroll', update)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
   }, [])
 
   return (
@@ -27,10 +36,11 @@ export function ScrollProgress() {
     }}>
       <div style={{
         height: '100%',
-        width: `${pct}%`,
         background: 'linear-gradient(90deg, var(--brand-a), var(--brand-b), var(--brand-c))',
         boxShadow: '0 0 16px color-mix(in srgb, var(--brand-b) 55%, transparent)',
-        transition: 'width 80ms linear',
+        transform: `scaleX(${progress})`,
+        transformOrigin: 'left center',
+        willChange: 'transform',
       }} />
     </div>
   )

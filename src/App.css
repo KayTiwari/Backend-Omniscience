@@ -60,7 +60,7 @@
 }
 
 .app-shell.sidebar-collapsed {
-  grid-template-columns: 0 minmax(0, 1fr);
+  grid-template-columns: 64px minmax(0, 1fr);
 }
 
 .app-shell *,
@@ -86,14 +86,32 @@
 }
 
 .app-shell.sidebar-collapsed .sidebar {
-  border-right: 0;
-  padding: 0;
+  padding: 12px;
   overflow: hidden;
 }
 
-.app-shell.sidebar-collapsed .sidebar > * {
+.app-shell.sidebar-collapsed .sidebar > *:not(.nav-collapse-button) {
   opacity: 0;
   pointer-events: none;
+}
+
+.nav-collapse-button {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  margin: 0 0 14px auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.nav-collapse-button:hover {
+  border-color: var(--brand-b);
+  color: var(--brand-b);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand-b) 18%, transparent);
 }
 
 .brand {
@@ -549,7 +567,7 @@ h1 {
   top: 0;
   z-index: 1;
   display: grid;
-  grid-template-columns: 44px 44px minmax(0, 1fr) auto;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   max-width: 980px;
@@ -564,10 +582,6 @@ h1 {
 .topbar-actions {
   display: flex;
   gap: 8px;
-}
-
-.sidebar-toggle {
-  flex: 0 0 auto;
 }
 
 .icon-button {
@@ -2671,6 +2685,31 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .reset-button:hover {
   background: #33171c;
   color: #ffb5bd;
+}
+
+.app-shell button:hover,
+.app-shell .subject-card:hover,
+.app-shell .lifecycle-hop:hover,
+.app-shell .project-card:hover,
+.app-shell .recall-card:hover,
+.app-shell .interview-answer-card:hover,
+.app-shell .choice:hover,
+.app-shell .criterion-choice:hover {
+  transform: none;
+}
+
+.app-shell button:hover {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.app-shell .subject-card:hover,
+.app-shell .lifecycle-hop:hover,
+.app-shell .project-card:hover,
+.app-shell .recall-card:hover,
+.app-shell .interview-answer-card:hover {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--brand-b) 14%, transparent),
+    0 10px 28px color-mix(in srgb, var(--brand-b) 8%, transparent);
 }
 
 @media (max-width: 920px) {
