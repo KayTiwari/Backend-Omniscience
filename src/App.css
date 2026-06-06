@@ -51,12 +51,8 @@
   --button-hover: #182a2d;
 }
 
-/* Match overscroll rubber-band area to the app background in both themes */
-html {
-  background-color: #eceef4;
-}
-html[data-theme='dark'] {
-  background-color: #0d1211;
+html, body {
+  overscroll-behavior: none;
 }
 
 .app-shell {
