@@ -175,13 +175,13 @@ Most audit rows are already ✅. Genuinely thin / missing:
 - [ ] Claude: reorder `course.extra.ts` subjects; confirm fundamentals/practice land sensibly.
 
 **P1 — the interview wedge:**
-- [ ] Claude: `src/interviewAnswers.ts` for the ~12 spine subjects.
+- [x] Claude: `src/interviewAnswers.ts` — 22 concept triads across the spine subjects. READY TO RENDER.
 - [ ] Codex: render the interview triad panel.
-- [ ] Claude: `src/requestLifecycle.ts`.
+- [x] Claude: `src/requestLifecycle.ts` — 11 ordered hops with failure modes + subjectId links. READY TO RENDER.
 - [ ] Codex: "follow the request" view.
 
 **P2 — projects + confidence:**
-- [ ] Claude: `src/projects.ts` (6 projects, steps linked to drills).
+- [x] Claude: `src/projects.ts` — 6 projects, all step `drillId`s validated against existing specs. READY TO RENDER.
 - [ ] Codex: Projects view + confidence ladder.
 
 **P3 — fill thin gaps:**
@@ -190,3 +190,4 @@ Most audit rows are already ✅. Genuinely thin / missing:
 
 ## Status log (append one line per change)
 - 2026-06-05 Claude: created this plan.
+- 2026-06-05 Claude: shipped P1 content (`interviewAnswers.ts`, `requestLifecycle.ts`) + P2 content (`projects.ts`). All type-clean; project drillIds validated. Codex can render against the contracts above.
