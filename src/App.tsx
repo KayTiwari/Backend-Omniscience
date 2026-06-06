@@ -781,15 +781,15 @@ function App() {
       data-theme={theme}
     >
       <ScrollProgress />
+      <button
+        className="nav-collapse-tab"
+        onClick={() => setSidebarCollapsed((current) => !current)}
+        aria-label={sidebarCollapsed ? 'Show navigation' : 'Hide navigation'}
+        type="button"
+      >
+        {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+      </button>
       <aside className="sidebar">
-        <button
-          className="nav-collapse-button"
-          onClick={() => setSidebarCollapsed((current) => !current)}
-          aria-label={sidebarCollapsed ? 'Show navigation' : 'Hide navigation'}
-          type="button"
-        >
-          {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
         <button className="brand brand-button" onClick={openHome} type="button">
           <div className="brand-mark">
             <Flame size={22} />

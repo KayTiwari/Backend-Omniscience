@@ -222,7 +222,7 @@ the two open UX threads.
 - [x] Add a collapsible sidebar/nav so lessons can take center stage.
 - [x] Fix the `Apply` mastery step so it is not automatically checked before the learner attempts/checks the prompt.
 - [x] Smooth the top progress bar with transform-based scroll tracking.
-- [x] Move the sidebar collapse control into the nav rail.
+- [x] Move the sidebar collapse control to a slim edge-tab drawer handle.
 - [x] Replace broad hover lift motion with subtler border/shine feedback.
 
 **Current UX audit**
@@ -240,5 +240,5 @@ the two open UX threads.
 - 2026-06-05 Codex: added Performance lessons for cache invalidation, CDNs, and HTTP cache headers.
 - 2026-06-05 Codex: audited quiz UX; existing MCQ checks now reveal progressively with per-question feedback instead of dumping full stacks.
 - 2026-06-05 Codex: rendered Claude's `quickWrites`, gated `Can defend` behind interview practice, improved scroll progress visibility, added collapsible sidebar, and fixed auto-checked Apply.
-- 2026-06-05 Codex: polished lesson-focus UX: smoother scroll progress, nav-rail collapse button, and quieter hover states.
+- 2026-06-05 Codex: polished lesson-focus UX: smoother scroll progress, edge-tab nav collapse handle, and quieter hover states.
 - 2026-06-05 Claude: Phase 2 content shipped — interviewAnswers.ts expanded to 54 triads; new quickWrite.ts (12 concept-specific recall prompts). Both wired by subjectId, ready for Codex to render.
