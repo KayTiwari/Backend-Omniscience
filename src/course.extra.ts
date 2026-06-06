@@ -28,7 +28,11 @@ export type Problem = {
   difficulty: Difficulty
   minutes: number
   prompt: string
+  explanation?: string
+  production?: string
+  walkthrough?: string[]
   example?: string
+  questions?: string[]
   checklist: string[]
   answer?: string
   choices?: string[]
@@ -659,12 +663,148 @@ export const extraSubjects: Subject[] = [
     ],
   },
   {
-    id: 'python-drills',
-    title: 'Python Drills',
-    subtitle: 'Auto-graded Python: loops, comprehensions, methods, decorators, and more.',
+    id: 'python-fundamentals',
+    title: 'Python Fundamentals',
+    subtitle: 'Master Python from zero: syntax, loops, strings, lists, dicts, functions, errors, classes, and backend-flavored drills.',
     icon: PythonIcon,
     color: '#3776ab',
     problems: [
+      {
+        id: 'python-fundamentals-zero',
+        title: 'Python From Zero',
+        type: 'lesson',
+        difficulty: 'Warmup',
+        minutes: 18,
+        prompt:
+          'Learn the absolute Python mental model: a program is statements, values, names, control flow, functions, and data structures.',
+        explanation:
+          'Python runs top to bottom. A variable name points at a value. Functions package reusable behavior. Indentation defines blocks. Most beginner bugs come from wrong indentation, mutating a list by accident, mixing strings and numbers, or forgetting what a function returns.',
+        walkthrough: [
+          'Read code top to bottom.',
+          'Track what each name points to.',
+          'Use indentation to see which lines belong to an if, loop, or function.',
+          'Print small values while learning, then replace prints with tests.',
+        ],
+        questions: [
+          'What does indentation mean in Python?',
+          'What is the difference between a value and a variable name?',
+          'Why should functions return values instead of only printing?',
+        ],
+        checklist: [
+          'Explain variables as names pointing to values.',
+          'Explain indentation as block structure.',
+          'Explain why return values are testable.',
+        ],
+      },
+      {
+        id: 'python-fundamentals-control-flow',
+        title: 'Control Flow: If, For, While',
+        type: 'lesson',
+        difficulty: 'Warmup',
+        minutes: 22,
+        prompt:
+          'Learn how Python chooses paths and repeats work with if/elif/else, for loops, while loops, range, break, and continue.',
+        explanation:
+          'Control flow is how your code decides what runs. if/elif/else chooses a branch. for loops repeat over items. range creates predictable numbers. while loops repeat until a condition becomes false. Use for when you know the collection; use while when you are waiting for a condition to change.',
+        walkthrough: [
+          'Use if/elif/else for mutually exclusive decisions.',
+          'Use for item in items when processing a list.',
+          'Use range(start, stop, step) for numeric loops.',
+          'Use while only when the stopping condition is clear.',
+        ],
+        questions: [
+          'When is a for loop clearer than a while loop?',
+          'Why does range(5) stop before 5?',
+          'What bug causes an infinite while loop?',
+        ],
+        checklist: [
+          'Separate branching from looping.',
+          'Explain range stop-exclusive behavior.',
+          'Name one infinite-loop failure mode.',
+        ],
+      },
+      {
+        id: 'python-fundamentals-collections',
+        title: 'Core Collections',
+        type: 'lesson',
+        difficulty: 'Core',
+        minutes: 28,
+        prompt:
+          'Learn Python lists, tuples, dicts, and sets. Explain what each stores, when to use it, and the common methods.',
+        explanation:
+          'Lists store ordered items and are mutable. Tuples store ordered items and are usually treated as fixed. Dicts map keys to values for fast lookup. Sets store unique values and make membership/intersection easy. Most backend Python code is transforming dicts and lists from requests, databases, JSON, and APIs.',
+        walkthrough: [
+          'Use a list for ordered items you may append, filter, or sort.',
+          'Use a dict when you need lookup by key.',
+          'Use a set when uniqueness or membership matters.',
+          'Use comprehensions for small readable transformations.',
+        ],
+        questions: [
+          'Why is dict.get useful for missing keys?',
+          'When should you use a set instead of a list?',
+          'What does a list comprehension replace?',
+        ],
+        checklist: [
+          'Compare list, tuple, dict, and set.',
+          'Mention mutability.',
+          'Tie collections to JSON/API data.',
+        ],
+      },
+      {
+        id: 'python-fundamentals-functions-errors',
+        title: 'Functions And Errors',
+        type: 'lesson',
+        difficulty: 'Core',
+        minutes: 30,
+        prompt:
+          'Learn how to write Python functions that are easy to test: inputs, returns, default args, exceptions, and small pure cores.',
+        explanation:
+          'A good function takes clear inputs, returns a predictable output, and keeps side effects at the edges. Exceptions represent failure paths. Catch exceptions when you can turn them into a useful fallback or clean API response; otherwise let them surface with context.',
+        walkthrough: [
+          'Name the function after the result or action.',
+          'Keep the function small enough to test with a few examples.',
+          'Return data instead of printing inside logic.',
+          'Use try/except for expected operational failures, not to hide bugs.',
+        ],
+        questions: [
+          'Why is a returned value easier to test than printed output?',
+          'When should you catch an exception?',
+          'What is a pure function?',
+        ],
+        checklist: [
+          'Explain inputs and return values.',
+          'Separate pure logic from side effects.',
+          'Explain expected versus unexpected errors.',
+        ],
+      },
+      {
+        id: 'python-fundamentals-objects-modules',
+        title: 'Objects, Modules, And Backend Python',
+        type: 'lesson',
+        difficulty: 'Core',
+        minutes: 32,
+        prompt:
+          'Learn how Python code grows: modules, imports, classes, JSON, virtual environments, and backend request handling.',
+        explanation:
+          'A module is a .py file. A package is a folder of modules. imports let files share code. Classes group data and behavior when a plain function or dict is no longer enough. Backend Python uses all of this to parse requests, validate data, call services, serialize JSON, and talk to databases.',
+        walkthrough: [
+          'Put reusable functions in modules.',
+          'Use imports to keep files focused.',
+          'Use classes for stateful concepts with behavior.',
+          'Use json for converting Python data to/from API payloads.',
+          'Use virtual environments so project dependencies do not collide.',
+        ],
+        questions: [
+          'What is a module?',
+          'When is a class useful?',
+          'Why do backend projects use virtual environments?',
+        ],
+        checklist: [
+          'Define module, package, import, and class.',
+          'Explain JSON round-tripping.',
+          'Explain why dependency isolation matters.',
+        ],
+      },
       drill('py-is-even', 'Is It Even?', 'Warmup'),
       drill('py-max-of-three', 'Max Of Three', 'Warmup'),
       drill('py-sum-loop', 'Sum With A For Loop', 'Warmup'),

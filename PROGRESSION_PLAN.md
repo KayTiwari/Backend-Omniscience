@@ -242,3 +242,4 @@ the two open UX threads.
 - 2026-06-05 Codex: rendered Claude's `quickWrites`, gated `Can defend` behind interview practice, improved scroll progress visibility, added collapsible sidebar, and fixed auto-checked Apply.
 - 2026-06-05 Codex: polished lesson-focus UX: smoother scroll progress, edge-tab nav collapse handle, and quieter hover states.
 - 2026-06-05 Claude: Phase 2 content shipped — interviewAnswers.ts expanded to 54 triads; new quickWrite.ts (12 concept-specific recall prompts). Both wired by subjectId, ready for Codex to render.
+- 2026-06-05 Codex: promoted Python drills into a Python Fundamentals track with five from-zero lessons plus 57 auto-graded drills.

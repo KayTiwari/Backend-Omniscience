@@ -881,6 +881,7 @@ const coreSubjects: Subject[] = [
 const subjectOrder = [
   'language',
   'js-fundamentals',
+  'python-fundamentals',
   'internet',
   'api',
   'security',
@@ -899,7 +900,6 @@ const subjectOrder = [
   'flask',
   'django',
   'typescript-drills',
-  'python-drills',
   'api-drills',
   'sql-drills',
   'security-drills',

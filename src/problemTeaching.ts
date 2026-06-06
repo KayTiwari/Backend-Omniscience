@@ -382,7 +382,7 @@ const subjectTeaching: Record<string, SubjectTeaching> = {
     advanced: ['asyncio cancellation', 'GIL implications', 'context managers', 'packaging', 'serialization boundaries'],
     interview: ['Know mutable default pitfalls.', 'Explain the GIL accurately.', 'Prefer explicit exceptions.', 'Show pytest parametrization.'],
   },
-  'python-drills': {
+  'python-fundamentals': {
     picture: 'Syntax -> small function -> edge case -> test feedback -> fluency',
     mentalModel:
       'Python drills build fluency from tiny mechanics: loops, methods, comprehensions, dictionaries, slicing, exceptions, decorators, and testable functions.',
