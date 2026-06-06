@@ -194,10 +194,9 @@ The skeleton is shipped. Phase 2 makes the interview-fluency angle real and clos
 the two open UX threads.
 
 **Claude (content + grader):**
-- [ ] Expand `interviewAnswers.ts` to cover the key concept of every spine subject
-      (target ~50 triads, up from ~24).
-- [ ] Author concept-specific **Quick Write** content in `src/quickWrite.ts` (new)
-      to feed Codex's Quick Write TODO. Contract:
+- [x] Expand `interviewAnswers.ts` — now **54 triads** across all spine subjects. READY TO RENDER.
+- [x] Author concept-specific **Quick Write** content in `src/quickWrite.ts` — 12 prompts
+      with expected-answer bullets + production anchors. READY TO RENDER. Contract:
       ```ts
       export type QuickWrite = {
         subjectId: string
@@ -234,3 +233,4 @@ the two open UX threads.
 - 2026-06-05 Claude: shipped P3 Files & Object Storage (subject `files-storage`: 8 graded drills, glossary tutorial, interview triad). 0 orphans. Remaining for Codex: master ordering (P0), render P1/P2 layers, caching/CDN lessons.
 - 2026-06-05 Codex: added Performance lessons for cache invalidation, CDNs, and HTTP cache headers.
 - 2026-06-05 Codex: audited quiz UX; existing MCQ checks now reveal progressively with per-question feedback instead of dumping full stacks.
+- 2026-06-05 Claude: Phase 2 content shipped — interviewAnswers.ts expanded to 54 triads; new quickWrite.ts (12 concept-specific recall prompts). Both wired by subjectId, ready for Codex to render.
