@@ -1356,17 +1356,31 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 7px 8px;
-  background: var(--field);
-  color: var(--muted);
   font-size: 11px;
   font-weight: 900;
   text-align: center;
 }
 
-.confidence-ladder span.done {
-  border-color: color-mix(in srgb, var(--brand-b) 38%, var(--line));
-  background: color-mix(in srgb, var(--brand-b) 12%, var(--field));
-  color: var(--ink);
+/* future: faded, clearly not reached */
+.confidence-ladder span.future {
+  background: var(--field);
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+/* past: completed, subtle green tick */
+.confidence-ladder span.past {
+  border-color: color-mix(in srgb, var(--mint) 40%, var(--line));
+  background: color-mix(in srgb, var(--mint) 10%, var(--field));
+  color: var(--mint);
+}
+
+/* current: solid blue, clearly active */
+.confidence-ladder span.current {
+  border-color: var(--brand-b);
+  background: var(--brand-b);
+  color: #ffffff;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--brand-b) 35%, transparent);
 }
 
 .mastery-steps {
@@ -2685,9 +2699,6 @@ input:focus-visible {
   background: #273331;
 }
 
-.app-shell[data-theme='dark'] .confidence-ladder span.done {
-  background: color-mix(in srgb, var(--brand-b) 18%, var(--field));
-}
 
 .app-shell[data-theme='dark'] .home-button.active,
 .app-shell[data-theme='dark'] .home-button:hover,

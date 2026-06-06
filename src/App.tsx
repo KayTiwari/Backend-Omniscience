@@ -1210,18 +1210,16 @@ function App() {
               <div style={{ width: `${masteryPercent}%` }} />
             </div>
             <div className="confidence-ladder">
-              {confidenceLevels.map((level) => (
-                <span
-                  key={level}
-                  className={
-                    confidenceLevels.indexOf(level) <= confidenceLevels.indexOf(activeConfidence)
-                      ? 'done'
-                      : ''
-                  }
-                >
-                  {level}
-                </span>
-              ))}
+              {confidenceLevels.map((level) => {
+                const levelIdx = confidenceLevels.indexOf(level)
+                const activeIdx = confidenceLevels.indexOf(activeConfidence)
+                const state = levelIdx < activeIdx ? 'past' : levelIdx === activeIdx ? 'current' : 'future'
+                return (
+                  <span key={level} className={state}>
+                    {level}
+                  </span>
+                )
+              })}
             </div>
             <div className="mastery-steps">
               {masterySteps.map((step) => (
