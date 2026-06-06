@@ -236,4 +236,14 @@ export const interviewAnswers: InterviewAnswer[] = [
     systemDesign:
       'Start with a monolith and split by clear bounded contexts only when scaling or team friction demands it; each split adds latency, partial failure, and cross-service consistency work (sagas).',
   },
+  {
+    key: 'object-storage',
+    topic: 'File uploads and object storage',
+    subjectId: 'files-storage',
+    simple: 'Store file bytes in object storage (like S3) and keep only the key in the database.',
+    senior:
+      'Upload directly to storage with a short-lived presigned URL so your server never proxies the bytes; validate size and content type, and store the resulting key plus metadata in the DB.',
+    systemDesign:
+      'Serve reads through a CDN, keep buckets private behind signed URLs, use multipart upload for large files, and apply lifecycle rules to expire temp objects; sanitize keys to block path traversal.',
+  },
 ]

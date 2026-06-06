@@ -2278,4 +2278,49 @@ rollback plan.
 The capstone problems (URL shortener, job queue, ledger API) are where the whole
 roadmap clicks together.`,
   },
+  {
+    id: 'tut-files-storage-glossary',
+    subjectId: 'files-storage',
+    title: 'Start Here: Files & Object Storage in Plain English',
+    minutes: 9,
+    body: `How backends handle uploaded files, from zero.
+
+**Why not store files in the database.** Databases are for structured rows. Large
+binary files (images, PDFs, videos) bloat the DB, slow backups, and are expensive
+to serve. Backends keep file *bytes* in object storage and store only a small
+reference (the key) in the database.
+
+**Object storage.** A service that stores files as objects in buckets, addressed
+by a key, reached over HTTP. The big ones are AWS S3, Google Cloud Storage, and
+Cloudflare R2. Think of an enormous, durable key-value store for files.
+
+**Bucket.** A top-level container for objects, like a root folder with its own
+access rules.
+
+**Key.** The object's full name inside the bucket, like users/42/avatar.png. There
+are no real folders; the slashes are just part of the key.
+
+**Content type (MIME type).** Tells the browser what the bytes are (image/png,
+application/pdf) so it renders or downloads correctly.
+
+**Content-Disposition.** A response header that forces a download and sets the
+filename instead of showing the file inline.
+
+**Presigned (signed) URL.** A temporary, signed link that grants direct upload or
+download for a short time, so clients talk to storage directly without your server
+proxying the bytes, and without making the bucket public. It expires after a TTL.
+
+**Multipart upload.** Large files are uploaded in numbered parts and then
+assembled, so a failed chunk can be retried without restarting the whole upload.
+
+**Lifecycle policy.** A rule that automatically deletes or archives objects after
+an age (for example, expire temp uploads after 7 days) to control cost.
+
+**CDN.** A content delivery network caches your objects at edge locations near
+users so downloads are fast and your origin is offloaded.
+
+**Security to remember:** validate size and content type on upload, sanitize the
+key to block path traversal (../), keep buckets private and serve via signed URLs,
+and never blindly trust the client-supplied filename or content type.`,
+  },
 ]

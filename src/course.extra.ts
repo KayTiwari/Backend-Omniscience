@@ -927,4 +927,21 @@ export const extraSubjects: Subject[] = [
       drill('security-csrf-double-submit', "CSRF Double-Submit"),
     ],
   },
+  {
+    id: 'files-storage',
+    title: 'Files & Object Storage',
+    subtitle: 'Auto-graded uploads and object storage: keys, validation, signed URLs, multipart, lifecycle.',
+    icon: Braces,
+    color: '#7048e8',
+    problems: [
+      drill('storage-object-key', 'Storage: Build An Object Key', 'Warmup'),
+      drill('storage-content-disposition', 'Storage: Content-Disposition Header', 'Warmup'),
+      drill('storage-presign-valid', 'Storage: Is A Signed URL Still Valid?', 'Warmup'),
+      drill('storage-cdn-url', 'Storage: Build A CDN URL', 'Warmup'),
+      drill('storage-validate-upload', 'Storage: Validate An Upload'),
+      drill('storage-lifecycle-expire', 'Storage: Lifecycle Expiry'),
+      drill('storage-safe-key', 'Storage: Reject Path Traversal'),
+      drill('storage-multipart-assemble', 'Storage: Assemble Multipart Upload', 'Hard'),
+    ],
+  },
 ]
