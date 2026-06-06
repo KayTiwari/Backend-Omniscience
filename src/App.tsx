@@ -83,6 +83,21 @@ function loadProgress(): ProgressState {
   }
 }
 
+const TYPE_COLOR: Record<ProblemType, string> = {
+  lesson:  '#2f80ed',
+  quiz:    '#7c3aed',
+  coding:  '#f59f00',
+  debug:   '#e84a5f',
+  design:  '#0f8b8d',
+}
+
+const DIFFICULTY_COLOR: Record<string, string> = {
+  Warmup: '#00a878',
+  Core:   '#2f80ed',
+  Hard:   '#f59f00',
+  Boss:   '#e84a5f',
+}
+
 function ProblemTypeIcon({ type }: { type: ProblemType }) {
   if (type === 'coding') return <Code2 size={18} />
   if (type === 'quiz') return <ListChecks size={18} />
@@ -703,8 +718,11 @@ function App() {
                   onClick={() => toggleSubject(subject)}
                   aria-expanded={subject.id === expandedSubjectId}
                   type="button"
+                  style={subject.id === expandedSubjectId
+                    ? { borderColor: `${subject.color}50`, background: `${subject.color}12` }
+                    : undefined}
                 >
-                  <span className="subject-icon" style={{ color: subject.color }}>
+                  <span className="subject-icon" style={{ color: subject.color, background: `${subject.color}18` }}>
                     <SubjectIcon size={18} />
                   </span>
                   <span>
@@ -730,6 +748,9 @@ function App() {
                           }`}
                           onClick={() => openProblem(subject, problem)}
                           type="button"
+                          style={problem.id === activeProblem.id
+                            ? { color: subject.color, borderLeftColor: subject.color, background: `${subject.color}10` }
+                            : undefined}
                         >
                           {done ? <Check size={15} /> : <Circle size={15} />}
                           <span>{problem.title}</span>
@@ -885,8 +906,9 @@ function App() {
                       className="subject-card"
                       onClick={() => openProblem(subject, subject.problems[0])}
                       type="button"
+                      style={{ '--card-color': subject.color } as React.CSSProperties}
                     >
-                      <span className="subject-card-icon" style={{ color: subject.color }}>
+                      <span className="subject-card-icon" style={{ color: subject.color, background: `${subject.color}18` }}>
                         <SubjectIcon size={22} />
                       </span>
                       <span className="subject-card-copy">
@@ -912,12 +934,17 @@ function App() {
         ) : (
         <article className="problem-panel">
           <div className="problem-heading">
-            <div className="problem-type">
+            <div
+              className="problem-type"
+              style={{ color: TYPE_COLOR[activeProblem.type], background: `${TYPE_COLOR[activeProblem.type]}18`, borderColor: `${TYPE_COLOR[activeProblem.type]}40` }}
+            >
               <ProblemTypeIcon type={activeProblem.type} />
               <span>{activeProblem.type}</span>
             </div>
             <div className="problem-meta">
-              <span>{activeProblem.difficulty}</span>
+              <span style={{ color: DIFFICULTY_COLOR[activeProblem.difficulty], background: `${DIFFICULTY_COLOR[activeProblem.difficulty]}18`, borderColor: `${DIFFICULTY_COLOR[activeProblem.difficulty]}40` }}>
+                {activeProblem.difficulty}
+              </span>
               <span>{activeProblem.minutes} min</span>
             </div>
           </div>

@@ -501,12 +501,16 @@ h1 {
   text-align: left;
 }
 
-.problem-link.active,
 .problem-link:hover {
   background: var(--surface-hover);
   color: var(--ink);
   transform: translateX(3px);
-  box-shadow: inset 3px 0 0 var(--brand-a);
+}
+
+.problem-link.active {
+  transform: translateX(3px);
+  border-left: 3px solid currentColor;
+  padding-left: 7px;
 }
 
 .problem-link span {
@@ -874,10 +878,10 @@ h1 {
 }
 
 .subject-card:hover {
-  border-color: var(--brand-a);
-  background: var(--surface-soft);
+  border-color: var(--card-color, var(--brand-a));
+  background: color-mix(in srgb, var(--card-color, var(--brand-a)) 6%, var(--paper));
   transform: translateY(-3px);
-  box-shadow: var(--shadow-hover);
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--card-color, var(--brand-a)) 18%, transparent);
 }
 
 .subject-card:hover .subject-card-footer svg {
@@ -1173,11 +1177,10 @@ h1 {
   border: 1px solid transparent;
   border-radius: 999px;
   padding: 7px 11px;
-  background: color-mix(in srgb, var(--brand-b) 12%, var(--field));
-  color: var(--ink);
   font: inherit;
   font-size: 13px;
   font-weight: 900;
+  cursor: pointer;
   transition:
     background 160ms ease,
     border-color 160ms ease,
@@ -1186,17 +1189,8 @@ h1 {
 }
 
 .diagram-pill:hover {
-  border-color: var(--brand-a);
-  background: color-mix(in srgb, var(--brand-a) 14%, var(--field));
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--brand-a) 12%, transparent);
-}
-
-.diagram-pill.active {
-  border-color: var(--brand-b);
-  background: var(--brand-b);
-  color: #ffffff;
-  box-shadow: 0 12px 26px color-mix(in srgb, var(--brand-b) 20%, transparent);
+  filter: brightness(1.1);
 }
 
 .diagram-arrow {
