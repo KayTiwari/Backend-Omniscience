@@ -32,9 +32,11 @@ import { validateCourse } from './courseValidation'
 import { applyEditorKey } from './editorKeys'
 import { allSpecs, grade, type GradeResult } from './grader'
 import { InteractiveDiagram } from './InteractiveDiagram'
+import { ScrollProgress } from './ScrollProgress'
 import { interviewAnswers } from './interviewAnswers'
 import { renderMarkdown } from './miniMarkdown'
 import { getTeachingModel } from './problemTeaching'
+import { projects } from './projects'
 import { requestLifecycle } from './requestLifecycle'
 import { tutorials } from './tutorials'
 
@@ -53,6 +55,14 @@ const storageKey = 'backend-omniscience-progress'
 const themeKey = 'backend-omniscience-theme'
 
 type Theme = 'light' | 'dark'
+type ConfidenceLevel = 'Not started' | 'Learned' | 'Can explain' | 'Can build' | 'Can defend'
+const confidenceLevels: ConfidenceLevel[] = [
+  'Not started',
+  'Learned',
+  'Can explain',
+  'Can build',
+  'Can defend',
+]
 
 const emptyProgress: ProgressState = {
   completed: [],
@@ -187,15 +197,42 @@ function App() {
     activeSubject.problems[0]
 
   const problemIds = useMemo(() => new Set(allProblems.map((problem) => problem.id)), [])
-  const completedSet = useMemo(
-    () => new Set(progress.completed.filter((problemId) => problemIds.has(problemId))),
-    [problemIds, progress.completed],
-  )
-  const completedCount = completedSet.size
   const specsByProblemId = useMemo(
     () => new Map(allSpecs.map((spec) => [spec.problemId, spec])),
     [],
   )
+  const completedSet = useMemo(
+    () => new Set(progress.completed.filter((problemId) => problemIds.has(problemId))),
+    [problemIds, progress.completed],
+  )
+  function getProblemConfidence(problem: Problem): ConfidenceLevel {
+    if (completedSet.has(problem.id)) return 'Can defend'
+
+    const spec = specsByProblemId.get(problem.id)
+    if (spec && gradeResults[problem.id]?.passed) return 'Can build'
+
+    const hasQuizAnswer = progress.selectedChoice[problem.id] !== undefined
+    const hasSolutionCheck = progress.checkedSolutions[problem.id] === true
+    const hasCodeEdit = spec ? progress.code[problem.id] !== undefined : false
+    const hasRecall = [0, 1, 2].some(
+      (index) => (progress.recallAnswer[`${problem.id}:${index}`] ?? '').trim().length > 0,
+    )
+    const hasTutorialAnswer = Object.keys(progress.tutorialChoice).some((key) =>
+      key.startsWith(`${problem.id}:`),
+    )
+    const hasCriterionAnswer = Object.keys(progress.criterionChoice).some((key) =>
+      key.startsWith(`${problem.id}:`),
+    )
+
+    if (hasSolutionCheck && (hasCriterionAnswer || hasQuizAnswer || !problem.choices)) {
+      return 'Can build'
+    }
+    if (hasRecall || hasTutorialAnswer || hasCriterionAnswer || hasQuizAnswer) return 'Can explain'
+    if (hasSolutionCheck || hasCodeEdit || (progress.notes[problem.id] ?? '').trim()) return 'Learned'
+    return 'Not started'
+  }
+
+  const completedCount = completedSet.size
   const gradableCount = specsByProblemId.size
   const totalMinutes = allProblems.reduce((sum, problem) => sum + problem.minutes, 0)
   const completedMinutes = allProblems
@@ -226,9 +263,23 @@ function App() {
   const subjectSummaries = subjects.map((subject) => {
     const done = subject.problems.filter((problem) => completedSet.has(problem.id)).length
     const codingCount = subject.problems.filter((problem) => specsByProblemId.has(problem.id)).length
+    const confidenceCounts = subject.problems.reduce<Record<ConfidenceLevel, number>>(
+      (counts, problem) => {
+        counts[getProblemConfidence(problem)] += 1
+        return counts
+      },
+      {
+        'Not started': 0,
+        Learned: 0,
+        'Can explain': 0,
+        'Can build': 0,
+        'Can defend': 0,
+      },
+    )
     return {
       ...subject,
       codingCount,
+      confidenceCounts,
       done,
       percent: Math.round((done / subject.problems.length) * 100),
     }
@@ -608,6 +659,15 @@ function App() {
   const masteryDone = masterySteps.filter((step) => step.done).length
   const masteryPercent = Math.round((masteryDone / masterySteps.length) * 100)
   const nextMasteryStep = masterySteps.find((step) => !step.done)
+  const activeConfidence: ConfidenceLevel = canComplete
+    ? 'Can defend'
+    : codeRequirementCorrect
+      ? 'Can build'
+      : recallComplete && tutorialCorrect
+        ? 'Can explain'
+        : recallAnsweredCount > 0 || tutorialCorrectCount > 0 || solutionChecked
+          ? 'Learned'
+          : 'Not started'
 
   function checkSolutions() {
     setProgress((current) => ({
@@ -644,6 +704,7 @@ function App() {
 
   return (
     <main className="app-shell" data-theme={theme}>
+      <ScrollProgress />
       <aside className="sidebar">
         <button className="brand brand-button" onClick={openHome} type="button">
           <div className="brand-mark">
@@ -940,6 +1001,58 @@ function App() {
               )}
             </section>
 
+            <section className="projects-view" aria-label="Backend projects">
+              <div className="home-section-heading">
+                <div>
+                  <h3>Projects</h3>
+                  <p>Buildable services that connect concepts, drills, and production tradeoffs.</p>
+                </div>
+              </div>
+              <div className="project-grid">
+                {projects.map((project) => (
+                  <section key={project.id} className="project-card">
+                    <div className="project-card-heading">
+                      <h4>{project.title}</h4>
+                      <span>{project.steps.length} steps</span>
+                    </div>
+                    <p>{project.pitch}</p>
+                    <div className="project-concepts">
+                      {project.concepts.slice(0, 5).map((concept) => (
+                        <span key={concept}>{concept}</span>
+                      ))}
+                    </div>
+                    <ol className="project-steps">
+                      {project.steps.map((step) => {
+                        const drill = step.drillId ? findProblemLocation(step.drillId) : undefined
+                        return (
+                          <li key={`${project.id}:${step.text}`}>
+                            {drill ? (
+                              <button
+                                type="button"
+                                onClick={() => openProblem(drill.subject, drill.problem)}
+                              >
+                                {step.text}
+                              </button>
+                            ) : (
+                              <span>{step.text}</span>
+                            )}
+                          </li>
+                        )
+                      })}
+                    </ol>
+                    <details className="project-stretch">
+                      <summary>Stretch goals</summary>
+                      <ul>
+                        {project.stretch.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </details>
+                  </section>
+                ))}
+              </div>
+            </section>
+
             <section className="home-section">
               <h3>Subjects</h3>
               <div className="subject-grid">
@@ -961,13 +1074,15 @@ function App() {
                         <small>{subject.subtitle}</small>
                       </span>
                       <span className="subject-card-meta">
-                        {subject.done}/{subject.problems.length}
+                        {subject.confidenceCounts['Can defend']} defend
                       </span>
                       <span className="subject-card-progress">
                         <span style={{ width: `${subject.percent}%`, background: subject.color }} />
                       </span>
                       <span className="subject-card-footer">
-                        <span>{subject.codingCount} coding drills</span>
+                        <span>
+                          {subject.confidenceCounts['Can build']} build · {subject.codingCount} drills
+                        </span>
                         <ArrowRight size={16} />
                       </span>
                     </button>
@@ -999,16 +1114,30 @@ function App() {
 
           <section className="mastery-panel" aria-label="Problem mastery progress">
             <div className="mastery-copy">
-              <span>Mastery loop</span>
-              <strong>{nextMasteryStep ? `Next: ${nextMasteryStep.label}` : 'Problem locked in'}</strong>
+              <span>Confidence ladder</span>
+              <strong>{activeConfidence}</strong>
               <p>
                 {nextMasteryStep
                   ? `${nextMasteryStep.detail} complete. Finish this step to unlock the next hit of progress.`
-                  : 'Everything for this problem is complete. Check solutions to move on.'}
+                  : 'You can explain, build, and defend this problem. Check solutions to lock it in.'}
               </p>
             </div>
             <div className="mastery-meter" aria-label={`${masteryPercent}% mastered`}>
               <div style={{ width: `${masteryPercent}%` }} />
+            </div>
+            <div className="confidence-ladder">
+              {confidenceLevels.map((level) => (
+                <span
+                  key={level}
+                  className={
+                    confidenceLevels.indexOf(level) <= confidenceLevels.indexOf(activeConfidence)
+                      ? 'done'
+                      : ''
+                  }
+                >
+                  {level}
+                </span>
+              ))}
             </div>
             <div className="mastery-steps">
               {masterySteps.map((step) => (
