@@ -206,14 +206,14 @@ the two open UX threads.
       }
       export const quickWrites: QuickWrite[]
       ```
-- [ ] (optional) Code-split the grader (dynamic-import Pyodide / TS CDN) to cut the
+- [x] Code-split the grader (dynamic-import grader/spec payload) to cut the
       ~927 kB bundle.
 
 **Codex (UI + course.ts):**
 - [x] Quick Write TODO: render `quickWrites` (prompt -> user writes -> reveal
       expected bullets + production anchor). Replaces the generic recall text.
 - [x] Add progressive one-at-a-time unlocks for existing guided/solution MCQ stacks.
-- [ ] Add quiz variety beyond MCQ where data supports it: short-answer compare,
+- [~] Add quiz variety beyond MCQ where data supports it: short-answer compare,
       ordering/matching, predict-the-output, and small scenario cards.
 - [ ] Keep instant per-question feedback visible for every quiz/check interaction.
 - [x] Wire the confidence ladder's **"Can defend"** rung to the oral-exam /
