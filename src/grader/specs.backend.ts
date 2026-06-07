@@ -1200,7 +1200,7 @@ function decodeVarint(bytes) {
 `,
   },
 
-  // ----- Algorithms backends actually use --------------------------------
+  // ----- Algorithms backends use -----------------------------------------
   {
     problemId: 'algo-binary-search',
     title: 'Binary Search',

@@ -289,7 +289,7 @@ Both agents start now. No file overlap.
 
 ## Status log (append one line per change)
 - 2026-06-05 Claude: created this plan.
-- TODO Codex: loop through every Quick Write prompt/model answer and replace generic "this idea" style recall with concept-specific prompts, concrete expected-answer bullets, and production/debug anchors.
+- 2026-06-05 Codex/Claude: Quick Write prompts now use concept-specific prompts, concrete expected-answer bullets, and production/debug anchors.
 - 2026-06-05 Claude: shipped P1 content (`interviewAnswers.ts`, `requestLifecycle.ts`) + P2 content (`projects.ts`). All type-clean; project drillIds validated. Codex can render against the contracts above.
 - 2026-06-05 Codex: shipped P0 ordering, P1 interview/lifecycle UI, P2 projects/confidence UI; full check passing locally.
 - 2026-06-05 Claude: shipped P3 Files & Object Storage (subject `files-storage`: 8 graded drills, glossary tutorial, interview triad). 0 orphans. Remaining for Codex: master ordering (P0), render P1/P2 layers, caching/CDN lessons.
