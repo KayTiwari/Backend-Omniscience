@@ -3241,4 +3241,190 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Interview-classic algorithms (part 2) ---------------------------
+  {
+    problemId: 'algo-kadane',
+    title: 'Max Subarray Sum (Kadane)',
+    language: 'js',
+    starter: 'function maxSubarray(nums) {\n  // largest sum of any contiguous subarray\n}\n',
+    tests: [
+      { name: 'classic + all-negative', body: 'assertEqual(maxSubarray([-2,1,-3,4,-1,2,1,-5,4]), 6); assertEqual(maxSubarray([-1,-2]), -1);' },
+    ],
+    reference: `function maxSubarray(nums) {
+  let best = nums[0], cur = nums[0];
+  for (let i = 1; i < nums.length; i++) {
+    cur = Math.max(nums[i], cur + nums[i]);
+    best = Math.max(best, cur);
+  }
+  return best;
+}
+`,
+  },
+  {
+    problemId: 'algo-window-sum',
+    title: 'Max Sum Of A Size-K Window',
+    language: 'js',
+    starter: 'function maxWindowSum(nums, k) {\n  // max sum of any k consecutive elements\n}\n',
+    tests: [
+      { name: 'slides the window', body: 'assertEqual(maxWindowSum([1,2,3,4,5], 2), 9); assertEqual(maxWindowSum([2,1,5,1,3,2], 3), 9);' },
+    ],
+    reference: `function maxWindowSum(nums, k) {
+  let sum = 0;
+  for (let i = 0; i < k; i++) sum += nums[i];
+  let best = sum;
+  for (let i = k; i < nums.length; i++) {
+    sum += nums[i] - nums[i - k];
+    best = Math.max(best, sum);
+  }
+  return best;
+}
+`,
+  },
+  {
+    problemId: 'algo-longest-unique',
+    title: 'Longest Substring Without Repeats',
+    language: 'js',
+    starter: 'function longestUnique(s) {\n  // length of the longest substring with all-unique chars\n}\n',
+    tests: [
+      { name: 'window cases', body: 'assertEqual(longestUnique("abcabcbb"), 3); assertEqual(longestUnique("bbbb"), 1); assertEqual(longestUnique(""), 0);' },
+    ],
+    reference: `function longestUnique(s) {
+  const seen = new Map();
+  let start = 0, best = 0;
+  for (let i = 0; i < s.length; i++) {
+    if (seen.has(s[i]) && seen.get(s[i]) >= start) start = seen.get(s[i]) + 1;
+    seen.set(s[i], i);
+    best = Math.max(best, i - start + 1);
+  }
+  return best;
+}
+`,
+  },
+  {
+    problemId: 'algo-product-except-self',
+    title: 'Product Of Array Except Self',
+    language: 'js',
+    starter: 'function productExceptSelf(nums) {\n  // res[i] = product of all others (no division)\n}\n',
+    tests: [
+      { name: 'prefix x suffix', body: 'assertEqual(productExceptSelf([1,2,3,4]), [24,12,8,6]);' },
+    ],
+    reference: `function productExceptSelf(nums) {
+  const res = Array(nums.length).fill(1);
+  let pre = 1;
+  for (let i = 0; i < nums.length; i++) { res[i] = pre; pre *= nums[i]; }
+  let post = 1;
+  for (let i = nums.length - 1; i >= 0; i--) { res[i] *= post; post *= nums[i]; }
+  return res;
+}
+`,
+  },
+  {
+    problemId: 'algo-bfs',
+    title: 'Breadth-First Order',
+    language: 'js',
+    starter: 'function bfs(adj, start) {\n  // adj: { node: [neighbors] }. return nodes in BFS order\n}\n',
+    tests: [
+      { name: 'level order', body: "assertEqual(bfs({ a:['b','c'], b:['d'], c:[], d:[] }, 'a'), ['a','b','c','d']);" },
+    ],
+    reference: `function bfs(adj, start) {
+  const seen = new Set([start]);
+  const queue = [start];
+  const order = [];
+  while (queue.length) {
+    const n = queue.shift();
+    order.push(n);
+    for (const next of adj[n] || []) if (!seen.has(next)) { seen.add(next); queue.push(next); }
+  }
+  return order;
+}
+`,
+  },
+  {
+    problemId: 'algo-dfs',
+    title: 'Depth-First Order',
+    language: 'js',
+    starter: 'function dfs(adj, start) {\n  // return nodes in DFS (pre-order) order\n}\n',
+    tests: [
+      { name: 'depth order', body: "assertEqual(dfs({ a:['b','c'], b:['d'], c:[], d:[] }, 'a'), ['a','b','d','c']);" },
+    ],
+    reference: `function dfs(adj, start) {
+  const seen = new Set();
+  const order = [];
+  (function visit(n) {
+    if (seen.has(n)) return;
+    seen.add(n);
+    order.push(n);
+    for (const next of adj[n] || []) visit(next);
+  })(start);
+  return order;
+}
+`,
+  },
+  {
+    problemId: 'algo-coin-change',
+    title: 'Fewest Coins (Coin Change)',
+    language: 'js',
+    starter: 'function minCoins(coins, amount) {\n  // fewest coins to make amount, or -1 if impossible\n}\n',
+    tests: [
+      { name: 'dp cases', body: 'assertEqual(minCoins([1,2,5], 11), 3); assertEqual(minCoins([2], 3), -1); assertEqual(minCoins([1], 0), 0);' },
+    ],
+    reference: `function minCoins(coins, amount) {
+  const dp = Array(amount + 1).fill(Infinity);
+  dp[0] = 0;
+  for (let a = 1; a <= amount; a++) {
+    for (const c of coins) if (c <= a) dp[a] = Math.min(dp[a], dp[a - c] + 1);
+  }
+  return dp[amount] === Infinity ? -1 : dp[amount];
+}
+`,
+  },
+  {
+    problemId: 'algo-quicksort',
+    title: 'Quicksort',
+    language: 'js',
+    starter: 'function quicksort(arr) {\n  // return a sorted copy using quicksort\n}\n',
+    tests: [
+      { name: 'sorts', body: 'assertEqual(quicksort([3,1,2,5,4]), [1,2,3,4,5]); assertEqual(quicksort([]), []);' },
+    ],
+    reference: `function quicksort(arr) {
+  if (arr.length <= 1) return arr;
+  const [pivot, ...rest] = arr;
+  const left = rest.filter((x) => x < pivot);
+  const right = rest.filter((x) => x >= pivot);
+  return [...quicksort(left), pivot, ...quicksort(right)];
+}
+`,
+  },
+  {
+    problemId: 'algo-rotate-matrix',
+    title: 'Rotate A Matrix 90 Degrees',
+    language: 'js',
+    starter: 'function rotateMatrix(m) {\n  // rotate an n x n matrix clockwise\n}\n',
+    tests: [
+      { name: 'clockwise', body: 'assertEqual(rotateMatrix([[1,2],[3,4]]), [[3,1],[4,2]]);' },
+    ],
+    reference: `function rotateMatrix(m) {
+  const n = m.length;
+  const res = Array.from({ length: n }, () => Array(n).fill(0));
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) res[j][n - 1 - i] = m[i][j];
+  return res;
+}
+`,
+  },
+  {
+    problemId: 'algo-move-zeroes',
+    title: 'Move Zeroes To The End',
+    language: 'js',
+    starter: 'function moveZeroes(nums) {\n  // move all zeroes to the end, keeping the order of the rest\n}\n',
+    tests: [
+      { name: 'keeps order', body: 'assertEqual(moveZeroes([0,1,0,3,12]), [1,3,12,0,0]);' },
+    ],
+    reference: `function moveZeroes(nums) {
+  const out = nums.filter((x) => x !== 0);
+  while (out.length < nums.length) out.push(0);
+  return out;
+}
+`,
+  },
 ]
