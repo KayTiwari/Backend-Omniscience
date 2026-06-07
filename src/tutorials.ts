@@ -395,8 +395,8 @@ two-way live connection).`,
     subjectId: 'internet',
     title: 'Start Here: Web Words in Plain English',
     minutes: 10,
-    body: `Before anything else, here is every term in this section explained as if you
-have never seen it. No prior knowledge needed.
+    body: `Before anything else, here is every term in this section explained from the
+ground up.
 
 **IP address (Internet Protocol address).** A computer's address on a network,
 like 142.250.72.14. Every server has one. Think of it as the street address of a

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type UIEvent } from 'react'
 import {
   ArrowRight,
   BookOpen,
@@ -31,6 +31,7 @@ import {
 import { validateCourse } from './courseValidation'
 import { applyEditorKey } from './editorKeys'
 import { allSpecs, grade, type GradeResult } from './grader'
+import { highlight } from './highlight'
 import { InteractiveDiagram } from './InteractiveDiagram'
 import { ScrollProgress } from './ScrollProgress'
 import { interviewAnswers } from './interviewAnswers'
@@ -40,6 +41,7 @@ import { projects } from './projects'
 import { quickWrites } from './quickWrite'
 import { requestLifecycle } from './requestLifecycle'
 import { tutorials } from './tutorials'
+import './highlight.css'
 
 type ProgressState = {
   completed: string[]
@@ -166,6 +168,7 @@ function App() {
   const [theme, setTheme] = useState<Theme>(() => loadTheme())
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const importInputRef = useRef<HTMLInputElement>(null)
+  const codeHighlightRef = useRef<HTMLPreElement>(null)
 
   useEffect(() => {
     window.localStorage.setItem(storageKey, JSON.stringify(progress))
@@ -526,6 +529,10 @@ function App() {
   const quizCorrect = selectedChoice === activeProblem.correctChoice
   const activeSpec = specsByProblemId.get(activeProblem.id)
   const activeCode = activeSpec ? (progress.code[activeProblem.id] ?? activeSpec.starter) : ''
+  const highlightedCode = useMemo(() => {
+    if (!activeSpec) return ''
+    return highlight(activeCode || '\n', activeSpec.language)
+  }, [activeCode, activeSpec])
   const teachingModel = useMemo(
     () => getTeachingModel(activeSubject, activeProblem),
     [activeSubject, activeProblem],
@@ -773,6 +780,12 @@ function App() {
     event.preventDefault()
     updateCode(activeProblem.id, next.value)
     requestAnimationFrame(() => editor.setSelectionRange(next.start, next.end))
+  }
+
+  function syncCodeEditorScroll(event: UIEvent<HTMLTextAreaElement>) {
+    if (!codeHighlightRef.current) return
+    codeHighlightRef.current.scrollTop = event.currentTarget.scrollTop
+    codeHighlightRef.current.scrollLeft = event.currentTarget.scrollLeft
   }
 
   return (
@@ -1621,13 +1634,23 @@ function App() {
                 </ul>
               </div>
 
-              <textarea
-                className="code-editor"
-                value={activeCode}
-                onChange={(event) => updateCode(activeProblem.id, event.target.value)}
-                onKeyDown={handleCodeKeyDown}
-                spellCheck={false}
-              />
+              <div className="code-editor-shell">
+                <pre
+                  ref={codeHighlightRef}
+                  className="code-highlight"
+                  aria-hidden="true"
+                  dangerouslySetInnerHTML={{ __html: highlightedCode }}
+                />
+                <textarea
+                  className="code-editor"
+                  value={activeCode}
+                  onChange={(event) => updateCode(activeProblem.id, event.target.value)}
+                  onKeyDown={handleCodeKeyDown}
+                  onScroll={syncCodeEditorScroll}
+                  spellCheck={false}
+                  aria-label={`${activeSpec.title} code editor`}
+                />
+              </div>
 
               {activeGradeResult && (
                 <div className={`test-results ${activeGradeResult.passed ? 'pass' : 'fail'}`}>

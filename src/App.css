@@ -1370,9 +1370,9 @@ h1 {
 
 /* past: completed, subtle green tick */
 .confidence-ladder span.past {
-  border-color: color-mix(in srgb, var(--mint) 40%, var(--line));
-  background: color-mix(in srgb, var(--mint) 10%, var(--field));
-  color: var(--mint);
+  border-color: color-mix(in srgb, var(--mint) 22%, var(--line));
+  background: color-mix(in srgb, var(--mint) 5%, var(--field));
+  color: #52635f;
 }
 
 /* current: solid blue, clearly active */
@@ -2261,18 +2261,51 @@ h1 {
   color: var(--teal);
 }
 
-.code-editor {
+.code-editor-shell {
+  position: relative;
+  overflow: hidden;
   width: 100%;
   min-height: 360px;
   box-sizing: border-box;
-  resize: vertical;
   border: 1px solid var(--ink);
   border-radius: 8px;
-  padding: 14px;
   background: #111818;
-  color: #edf7f1;
+}
+
+.code-highlight,
+.code-editor {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 14px;
   font: 14px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   tab-size: 2;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.code-highlight {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: #edf7f1;
+  pointer-events: none;
+}
+
+.code-editor {
+  position: relative;
+  width: 100%;
+  min-height: 360px;
+  resize: vertical;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  caret-color: #edf7f1;
+  -webkit-text-fill-color: transparent;
+}
+
+.code-editor:focus {
+  outline: 2px solid color-mix(in srgb, var(--brand-b) 60%, transparent);
+  outline-offset: -2px;
 }
 
 .test-results {
@@ -2622,9 +2655,29 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .notes-block textarea,
 .app-shell[data-theme='dark'] .reset-button,
 .app-shell[data-theme='dark'] .coding-instructions,
-.app-shell[data-theme='dark'] .test-preview {
+.app-shell[data-theme='dark'] .test-preview,
+.app-shell[data-theme='dark'] .code-editor-shell {
   background: var(--field);
   color: var(--ink);
+}
+
+.app-shell[data-theme='dark'] .confidence-ladder span.future {
+  background: var(--field);
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+.app-shell[data-theme='dark'] .confidence-ladder span.past {
+  border-color: color-mix(in srgb, var(--mint) 22%, var(--line));
+  background: color-mix(in srgb, var(--mint) 5%, var(--field));
+  color: var(--muted);
+}
+
+.app-shell[data-theme='dark'] .confidence-ladder span.current {
+  border-color: var(--brand-b);
+  background: var(--brand-b);
+  color: #ffffff;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--brand-b) 35%, transparent);
 }
 
 .app-shell[data-theme='dark'] .check-button,

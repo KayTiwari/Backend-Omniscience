@@ -1,5 +1,6 @@
 import type { Problem, Subject } from './course'
 import { interviewAnswers } from './interviewAnswers'
+import { problemLessons, type ProblemLesson } from './problemLessons'
 
 type SubjectTeaching = {
   picture: string
@@ -458,6 +459,8 @@ const subjectTeaching: Record<string, SubjectTeaching> = {
   },
 }
 
+const lessonsByProblemId = new Map(problemLessons.map((lesson) => [lesson.problemId, lesson]))
+
 const fallback: SubjectTeaching = {
   picture: 'Concept -> example -> implementation -> tests -> production behavior',
   mentalModel:
@@ -491,8 +494,105 @@ function modeFor(problem: Problem) {
   return 'Read the model, replay it in your own words, then use the prompt to prove you can apply it.'
 }
 
+function splitLessonText(text?: string, limit = 3): string[] {
+  if (!text) return []
+
+  return text
+    .replace(/\s+/g, ' ')
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean)
+    .slice(0, limit)
+}
+
+function compactList(items: string[], limit: number): string[] {
+  return [...new Set(items.map((item) => item.trim()).filter(Boolean))].slice(0, limit)
+}
+
+function problemFundamentals(problem: Problem, base: SubjectTeaching, lesson?: ProblemLesson): string[] {
+  const lessonItems = lesson
+    ? [
+        `This problem teaches: ${lesson.concept}`,
+        `Use this idiom: ${lesson.idiom}`,
+        ...(lesson.mistake ? [`Watch for this mistake: ${lesson.mistake}`] : []),
+      ]
+    : []
+  const explanation = splitLessonText(problem.explanation, 3)
+  const example = problem.example ? [`Tiny example: ${problem.example}`] : []
+  const checklist = problem.checklist
+    .slice(0, 3)
+    .map((item) => `Your answer or code must prove this behavior: ${item}`)
+
+  return compactList([...lessonItems, ...explanation, ...example, ...checklist, ...base.fundamentals], 7)
+}
+
+function problemTutorial(problem: Problem, base: SubjectTeaching, lesson?: ProblemLesson): string[] {
+  if (problem.walkthrough && problem.walkthrough.length > 0) {
+    return compactList(problem.walkthrough, 7)
+  }
+
+  if (lesson) {
+    return compactList(
+      [
+        `Say the concept out loud: ${lesson.concept}`,
+        `Identify where the idiom belongs in your answer or code: ${lesson.idiom}`,
+        ...(lesson.mistake ? [`Check that you are not making this mistake: ${lesson.mistake}`] : []),
+        ...problem.checklist.slice(0, 3).map((item) => `Prove this required behavior: ${item}`),
+      ],
+      7,
+    )
+  }
+
+  if (problem.type === 'coding') {
+    return compactList(
+      [
+        `Read the required function or class name in "${problem.title}" and keep that public shape unchanged.`,
+        'Translate the prompt into input, transformation, output, and edge-case behavior.',
+        ...problem.checklist.slice(0, 3).map((item) => `Implement this required behavior: ${item}`),
+        'Run the attached tests, read the first failing case, and fix the smallest cause.',
+      ],
+      7,
+    )
+  }
+
+  return compactList(
+    [
+      `Define what "${problem.title}" is asking in one plain-English sentence.`,
+      ...splitLessonText(problem.prompt, 2).map((item) => `Use this prompt detail: ${item}`),
+      ...problem.checklist.slice(0, 3).map((item) => `Check your answer includes: ${item}`),
+      ...base.tutorial,
+    ],
+    7,
+  )
+}
+
+function problemAdvanced(problem: Problem, base: SubjectTeaching, lesson?: ProblemLesson): string[] {
+  const lessonMistake = lesson?.mistake ? [`Common production bug: ${lesson.mistake}`] : []
+  const production = problem.production ? [`Production/debug anchor: ${problem.production}`] : []
+  return compactList([...lessonMistake, ...production, ...base.advanced], 7)
+}
+
+function problemInterview(problem: Problem, base: SubjectTeaching, matchingInterviewTopics: string[]): string[] {
+  return compactList([...(problem.questions ?? []), ...base.interview, ...matchingInterviewTopics], 8)
+}
+
+function problemIntro(subject: Subject, problem: Problem, lesson?: ProblemLesson): string {
+  if (lesson) {
+    return `For "${problem.title}", learn this exact concept first: ${lesson.concept}`
+  }
+
+  const firstExplanation = splitLessonText(problem.explanation, 1)[0]
+  if (firstExplanation) {
+    return `For "${problem.title}", learn this specific idea first: ${firstExplanation}`
+  }
+
+  const firstPrompt = splitLessonText(problem.prompt, 1)[0]
+  return `For "${problem.title}", learn the exact ${subject.title} behavior behind this prompt before answering: ${firstPrompt}`
+}
+
 export function getTeachingModel(subject: Subject, problem: Problem): TeachingModel {
   const base = subjectTeaching[subject.id] ?? fallback
+  const lesson = lessonsByProblemId.get(problem.id)
   const matchingInterviewTopics = interviewAnswers
     .filter((answer) => answer.subjectId === subject.id)
     .slice(0, 3)
@@ -500,11 +600,11 @@ export function getTeachingModel(subject: Subject, problem: Problem): TeachingMo
 
   return {
     ...base,
-    interview:
-      matchingInterviewTopics.length > 0
-        ? [...base.interview, ...matchingInterviewTopics]
-        : base.interview,
+    fundamentals: problemFundamentals(problem, base, lesson),
+    tutorial: problemTutorial(problem, base, lesson),
+    advanced: problemAdvanced(problem, base, lesson),
+    interview: problemInterview(problem, base, matchingInterviewTopics),
     practiceMode: modeFor(problem),
-    problemIntro: `For "${problem.title}", start with the plain-English ${subject.title} model before answering. This problem is a ${problem.type} exercise, so the target is understanding first, then proof.`,
+    problemIntro: problemIntro(subject, problem, lesson),
   }
 }

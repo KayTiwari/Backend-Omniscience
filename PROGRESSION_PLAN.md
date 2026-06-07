@@ -242,13 +242,13 @@ the specific concept it is asking about before it asks the learner to answer.
       matching, predict-the-output, or short-answer prompts.
 
 **Codex (UI + rendering):**
-- [ ] Make the Learn First renderer prefer problem-specific fields
+- [x] Make the Learn First renderer prefer problem-specific fields
       (`explanation`, `example`, `walkthrough`, `production`, `questions`,
       `checklist`) before falling back to subject-level teaching.
-- [ ] Wire syntax-colored code editors using the existing `highlight.ts` /
+- [x] Wire syntax-colored code editors using the existing `highlight.ts` /
       `highlight.css` backdrop editor plan.
-- [ ] Clarify confidence ladder visuals so only the active rung reads as selected.
-- [ ] Rename the lower Python track to describe runtime/backend tooling, leaving
+- [x] Clarify confidence ladder visuals so only the active rung reads as selected.
+- [x] Rename the lower Python track to describe runtime/backend tooling, leaving
       Python Fundamentals as the beginner-to-fluency track.
 
 **Current UX audit**
@@ -278,13 +278,13 @@ Both agents start now. No file overlap.
 - [ ] Confirm `highlight.ts` covers js/ts/py tokens the editor needs (it does).
 
 **Codex (render):**
-- [ ] In the **Learn First** panel, prefer `problemLessons[activeProblem.id]`
+- [x] In the **Learn First** panel, prefer `problemLessons[activeProblem.id]`
       (show concept / idiom / mistake for the specific task); fall back to the
       subject teaching model only when no per-problem lesson exists.
-- [ ] **Wire syntax highlighting into the code editor** using `highlight(code, lang)`
+- [x] **Wire syntax highlighting into the code editor** using `highlight(code, lang)`
       from `src/highlight.ts` + `src/highlight.css` (textarea + highlighted `<pre>`
       overlay, or a small editor). Colors for keywords/strings/numbers/functions.
-- [ ] Pick `lang` for `highlight()` from the problem (py for `py-*`, ts for `ts-*`,
+- [x] Pick `lang` for `highlight()` from the problem (py for `py-*`, ts for `ts-*`,
       else js).
 
 ## Status log (append one line per change)
@@ -301,3 +301,4 @@ Both agents start now. No file overlap.
 - 2026-06-05 Claude: Phase 2 content shipped — interviewAnswers.ts expanded to 54 triads; new quickWrite.ts (12 concept-specific recall prompts). Both wired by subjectId, ready for Codex to render.
 - 2026-06-05 Codex: promoted Python drills into a Python Fundamentals track with five from-zero lessons plus 57 auto-graded drills.
 - 2026-06-06 Claude: Phase 3 started — new problemLessons.ts with 102 per-problem lessons (Python/JS fundamentals, API, SQL). Codex: render problemLessons[id] in Learn First (fallback to subject) + wire highlight.ts into the editor.
+- 2026-06-06 Codex: rendered `problemLessons` in Learn First, added syntax-colored code editor backdrop, clarified confidence ladder active-vs-past states, renamed lower Python to Python Backend Runtime, and removed remaining "No prior knowledge" phrasing.

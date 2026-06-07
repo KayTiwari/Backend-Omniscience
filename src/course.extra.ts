@@ -441,8 +441,8 @@ export const extraSubjects: Subject[] = [
   },
   {
     id: 'python',
-    title: 'Python',
-    subtitle: 'GIL, asyncio, typing, packaging, and pragmatic concurrency.',
+    title: 'Python Backend Runtime',
+    subtitle: 'GIL, asyncio, typing, packaging, environments, and pragmatic concurrency.',
     icon: PythonIcon,
     color: '#3776ab',
     problems: [
