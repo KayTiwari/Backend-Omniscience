@@ -331,4 +331,89 @@ export const quickWrites: QuickWrite[] = [
     productionAnchor:
       'p99 latency tripled right after a deploy: the trace shows a new N+1 query against the DB.',
   },
+
+  {
+    subjectId: 'nodejs',
+    prompt: 'A CPU-heavy request makes your whole Node service slow. Explain why and fix it.',
+    expected: [
+      'Node runs JS on one thread (the event loop)',
+      'blocking CPU work stalls every other request',
+      'offload to worker_threads or a queue/worker',
+      'keep handlers I/O-bound and async',
+      'stream large payloads instead of buffering',
+      'never block the loop',
+    ],
+    productionAnchor:
+      'A synchronous image resize in a handler freezes all concurrent requests until it finishes.',
+  },
+  {
+    subjectId: 'python',
+    prompt: 'When do threads help in Python, and when do you need processes?',
+    expected: [
+      'the GIL lets one thread run bytecode at a time',
+      'threads help I/O-bound work (waiting releases the GIL)',
+      'threads do NOT speed up CPU-bound work',
+      'use multiprocessing for CPU parallelism',
+      'use asyncio for many concurrent I/O operations',
+      'never block the event loop',
+    ],
+    productionAnchor:
+      'A CPU-bound job with 8 threads runs no faster; switching to processes uses all cores.',
+  },
+  {
+    subjectId: 'typescript',
+    prompt: 'Why can a TypeScript app still crash on bad data, and what do you do about it?',
+    expected: [
+      'types are erased at compile time',
+      'the runtime has no type checks',
+      'HTTP JSON, DB rows, and env arrive untyped',
+      'validate at the boundary (a schema or guard)',
+      'use unknown, not any, at edges',
+      'only then trust the types',
+    ],
+    productionAnchor:
+      'An API returns null for a field typed as string; nothing caught it until a runtime crash.',
+  },
+  {
+    subjectId: 'flask',
+    prompt: 'Explain the Flask request lifecycle and the classic session-leak bug.',
+    expected: [
+      'a WSGI worker handles one request at a time',
+      'scale with multiple workers',
+      'request and g are context-locals',
+      'tie the DB session to the request',
+      'remove/close it at teardown',
+      'size the connection pool to the worker count',
+    ],
+    productionAnchor:
+      'Long-lived module-level sessions exhaust the connection pool under load.',
+  },
+  {
+    subjectId: 'django',
+    prompt: 'A Django list view fires hundreds of queries. Diagnose and fix it.',
+    expected: [
+      'it is an N+1 from lazy related lookups',
+      'select_related for FK/one-to-one (a JOIN)',
+      'prefetch_related for reverse/many-to-many',
+      'confirm with assertNumQueries or the debug toolbar',
+      'querysets are lazy until iterated',
+      'catch it in code review',
+    ],
+    productionAnchor:
+      'Rendering 100 orders does 101 queries because each row touches order.customer.',
+  },
+  {
+    subjectId: 'observability-ops',
+    prompt: 'You only know "the API is slow." What do you measure to find where?',
+    expected: [
+      'latency percentiles (p95/p99), not the average',
+      'error rate and throughput',
+      'traces to find the slow hop',
+      'a correlation id to tie logs together',
+      'alert on SLO burn, not raw counts',
+      'dashboards for trends over time',
+    ],
+    productionAnchor:
+      'The average looks fine but p99 tripled; a trace shows one slow downstream call.',
+  },
 ]
