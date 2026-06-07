@@ -389,6 +389,18 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'django-mastery-15-zero-downtime-migrations', concept: `Expand/contract: add nullable, backfill, switch reads, drop old.`, idiom: `add -> backfill -> switch -> drop` },
   { problemId: 'django-mastery-34-testing-django-apis', concept: `Test each role against each endpoint's expected status.`, idiom: `cases of (role, endpoint, status)` },
   { problemId: 'django-mastery-35-performance-query-counts', concept: `Assert an endpoint stays under a query-count budget.`, idiom: `assertNumQueries(n)`, mistake: `An N+1 silently inflates the count.` },
+
+  // ----- Algorithms (part 2) -----
+  { problemId: 'algo-kadane', concept: `Kadane: at each element, extend the current run or start fresh.`, idiom: `cur = Math.max(n, cur + n); best = Math.max(best, cur)`, mistake: `Initializing best to 0 breaks all-negative inputs.` },
+  { problemId: 'algo-window-sum', concept: `Slide a fixed window: add the new element, drop the one that left.`, idiom: `sum += nums[i] - nums[i - k]`, mistake: `Recomputing the whole window is O(n*k).` },
+  { problemId: 'algo-longest-unique', concept: `Sliding window: move start past the last duplicate.`, idiom: `if (seen[c] >= start) start = seen[c] + 1`, mistake: `Without the >= start check, stale duplicates count.` },
+  { problemId: 'algo-product-except-self', concept: `Multiply a prefix pass by a suffix pass, no division.`, idiom: `res[i] = prefix; later res[i] *= suffix`, mistake: `Division fails when the array contains a zero.` },
+  { problemId: 'algo-bfs', concept: `BFS explores level by level using a queue.`, idiom: `queue.shift(); push unseen neighbors`, mistake: `Not marking seen on enqueue revisits nodes.` },
+  { problemId: 'algo-dfs', concept: `DFS goes deep first via recursion (or a stack).`, idiom: `visit(n): mark, record, recurse neighbors`, mistake: `No seen set loops forever on a cycle.` },
+  { problemId: 'algo-coin-change', concept: `Bottom-up DP: fewest coins for every amount up to the target.`, idiom: `dp[a] = min(dp[a], dp[a - c] + 1)`, mistake: `Return -1 when dp[amount] stays Infinity.` },
+  { problemId: 'algo-quicksort', concept: `Partition around a pivot, then sort each side.`, idiom: `[...sort(less), pivot, ...sort(greaterEqual)]`, mistake: `A bad pivot on sorted input degrades to O(n^2).` },
+  { problemId: 'algo-rotate-matrix', concept: `Rotating 90 clockwise maps (i, j) to (j, n-1-i).`, idiom: `res[j][n - 1 - i] = m[i][j]`, mistake: `Off-by-one in the n-1-i index.` },
+  { problemId: 'algo-move-zeroes', concept: `Keep the non-zeros in order, then pad zeros to the end.`, idiom: `filter(x !== 0), then push zeros`, mistake: `Careless swaps can reorder the non-zeros.` },
 ]
 
 // Worked examples (input -> output), merged onto the lessons above and shown by
@@ -765,6 +777,18 @@ const examples: Record<string, string> = {
   'django-mastery-15-zero-downtime-migrations': `add nullable -> backfill -> switch -> drop`,
   'django-mastery-34-testing-django-apis': `(role, endpoint) -> the expected status`,
   'django-mastery-35-performance-query-counts': `assertNumQueries(3) guards against an N+1`,
+
+  // Algorithms (part 2)
+  'algo-kadane': `[-2,1,-3,4,-1,2,1,-5,4] -> 6`,
+  'algo-window-sum': `([1,2,3,4,5], 2) -> 9`,
+  'algo-longest-unique': `"abcabcbb" -> 3, "bbbb" -> 1`,
+  'algo-product-except-self': `[1,2,3,4] -> [24, 12, 8, 6]`,
+  'algo-bfs': `({ a: ["b","c"], b: ["d"] }, "a") -> ["a","b","c","d"]`,
+  'algo-dfs': `({ a: ["b","c"], b: ["d"] }, "a") -> ["a","b","d","c"]`,
+  'algo-coin-change': `([1,2,5], 11) -> 3, ([2], 3) -> -1`,
+  'algo-quicksort': `[3,1,2,5,4] -> [1,2,3,4,5]`,
+  'algo-rotate-matrix': `[[1,2],[3,4]] -> [[3,1],[4,2]]`,
+  'algo-move-zeroes': `[0,1,0,3,12] -> [1,3,12,0,0]`,
 }
 
 export const problemLessons: ProblemLesson[] = lessonBase.map((l) =>
