@@ -2323,4 +2323,184 @@ users so downloads are fast and your origin is offloaded.
 key to block path traversal (../), keep buckets private and serve via signed URLs,
 and never blindly trust the client-supplied filename or content type.`,
   },
+  {
+    id: 'tut-overview-python-fundamentals',
+    subjectId: 'python-fundamentals',
+    title: 'Start Here: What This Track Drills',
+    minutes: 5,
+    body: `This track builds Python fluency from the ground up, one tiny function at a time.
+
+You will practice:
+- loops (for and while), ranges, and accumulators
+- string, list, dict, and set methods
+- comprehensions and slicing
+- exceptions, decorators, classes, and JSON
+
+Each problem's Learn First panel gives the concept, the key idiom, and a worked
+example. Write the function, then Check solutions to run real tests. Master these
+small mechanics and every larger topic gets easier.`,
+  },
+  {
+    id: 'tut-overview-js-fundamentals',
+    subjectId: 'js-fundamentals',
+    title: 'Start Here: What This Track Drills',
+    minutes: 5,
+    body: `JavaScript basics, one function at a time: the building blocks every Node backend
+uses.
+
+You will practice:
+- loops and accumulators
+- map, filter, reduce, and forEach
+- common array and object methods
+- string handling
+
+Read each problem's Learn First for the idiom and a worked example, write it, then
+Check solutions.`,
+  },
+  {
+    id: 'tut-overview-typescript-drills',
+    subjectId: 'typescript-drills',
+    title: 'Start Here: What This Track Drills',
+    minutes: 6,
+    body: `This track drills TypeScript's type system through small functions you actually
+write.
+
+You will practice:
+- typed functions, optional params, and tuples
+- interfaces, unions, and narrowing with type guards
+- generics and constraints (T extends ...)
+- utility types: Partial, Required, Pick, Omit, Readonly, Record
+- mapped types and exhaustive switches
+
+Remember the core idea: types are erased at runtime, so still validate data that
+arrives from outside. Each Learn First shows the exact idiom and a worked example.`,
+  },
+  {
+    id: 'tut-overview-api-drills',
+    subjectId: 'api-drills',
+    title: 'Start Here: What This Track Drills',
+    minutes: 6,
+    body: `Practice writing the code behind real endpoints, one piece at a time.
+
+You will practice:
+- routing and path/query params
+- request validation and error envelopes
+- mapping domain errors to status codes
+- pagination, list envelopes, and link headers
+- auth guards and method guards
+- a full CRUD handler
+
+Each drill mirrors a slice of a production API. Learn First shows the idiom; write
+it and Check solutions.`,
+  },
+  {
+    id: 'tut-overview-sql-drills',
+    subjectId: 'sql-drills',
+    title: 'Start Here: What This Track Drills',
+    minutes: 5,
+    body: `Practice query semantics as code, so real SQL clicks.
+
+You will implement, in plain functions:
+- SELECT ... WHERE and projecting columns
+- ORDER BY, LIMIT/OFFSET, and DISTINCT
+- COUNT ... GROUP BY, SUM, and AVG
+- INNER JOIN and UPDATE ... WHERE
+
+Seeing what each clause does to rows in code makes the database version obvious.`,
+  },
+  {
+    id: 'tut-overview-algorithms',
+    subjectId: 'algorithms',
+    title: 'Start Here: What This Track Drills',
+    minutes: 5,
+    body: `Classic interview algorithms and data structures, focused on the idea and its
+cost.
+
+You will practice:
+- binary search and merging sorted inputs/intervals
+- two-sum, valid parentheses, kth largest
+- greatest common divisor
+- tries and moving averages
+
+For each, note the time complexity and why the approach beats brute force. Learn
+First gives the key idiom and a worked example.`,
+  },
+  {
+    id: 'tut-overview-http-networking',
+    subjectId: 'http-networking',
+    title: 'Start Here: What This Track Drills',
+    minutes: 5,
+    body: `The HTTP and networking primitives backends touch daily.
+
+You will practice:
+- building query URLs and parsing Cache-Control
+- conditional GET (ETag) and status classes
+- range headers and method idempotency
+- CIDR membership and packing IPv4 to an int
+
+Small, exact mechanics that make debugging proxies, caches, and clients much
+easier.`,
+  },
+  {
+    id: 'tut-overview-utilities',
+    subjectId: 'utilities',
+    title: 'Start Here: What This Track Drills',
+    minutes: 5,
+    body: `The small helpers real services need over and over.
+
+You will practice:
+- JSON tools: safe get-path, deep equal, deep merge, stable stringify
+- parsing: CSV lines, slugs, durations
+- encoding: base64url and hex
+- utilities: semver compare, path normalize, email validate, array diff
+
+Each is a self-contained function with a worked example in Learn First.`,
+  },
+  {
+    id: 'tut-overview-distributed',
+    subjectId: 'distributed',
+    title: 'Start Here: What This Track Drills',
+    minutes: 6,
+    body: `Distributed-systems primitives: where single-machine intuition breaks.
+
+You will practice:
+- consistent hashing, quorums, and vector clocks
+- leader election and partitioning by key
+- weighted and round-robin assignment
+- sagas, two-phase commit, and event sourcing
+
+The theme: no shared clock, partial failure, and duplicates are normal. Design for
+them. Learn First gives the idiom and a concrete example for each.`,
+  },
+  {
+    id: 'tut-overview-observability-ops',
+    subjectId: 'observability-ops',
+    title: 'Start Here: What This Track Drills',
+    minutes: 5,
+    body: `The math behind running services in production.
+
+You will practice:
+- error rate, percentiles, and histogram buckets
+- apdex and SLO burn rate
+- request-id propagation and span duration
+- redacting sensitive fields and rolling up health
+
+These turn raw events into the signals you alert and act on. Learn First shows the
+formula and a worked example.`,
+  },
+  {
+    id: 'tut-overview-security-drills',
+    subjectId: 'security-drills',
+    title: 'Start Here: What This Track Drills',
+    minutes: 5,
+    body: `Hands-on security helpers: small functions that prevent real breaches.
+
+You will practice:
+- masking PII (like emails) before logging
+- path-traversal defense on file keys
+- CSRF double-submit token checks
+
+Pair these with the auth, hashing, and rate-limiting drills across the security
+track. Learn First explains the idiom and the failure mode it guards against.`,
+  },
 ]
