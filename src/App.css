@@ -2391,16 +2391,64 @@ h1 {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-.review-block ol {
+.review-card-grid {
   display: grid;
   gap: 10px;
   margin: 0;
-  padding-left: 22px;
+}
+
+.review-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+}
+
+.review-card summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  padding: 12px;
+  color: var(--ink);
+  font-weight: 900;
+  line-height: 1.35;
+  list-style: none;
+}
+
+.review-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.review-card summary span {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--brand-b) 12%, var(--field));
+  color: var(--brand-b);
+  font-size: 12px;
+}
+
+.review-card div {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  padding: 12px;
   color: #31413f;
 }
 
-.review-block li {
-  padding-left: 4px;
+.review-card strong {
+  color: var(--ink);
+}
+
+.review-card ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
 }
 
 .solution-check-block {
@@ -2747,7 +2795,7 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .explanation-block p,
 .app-shell[data-theme='dark'] .production-block p,
 .app-shell[data-theme='dark'] .walkthrough-block ol,
-.app-shell[data-theme='dark'] .review-block ol,
+.app-shell[data-theme='dark'] .review-card div,
 .app-shell[data-theme='dark'] .coding-heading p,
 .app-shell[data-theme='dark'] .solution-heading p,
 .app-shell[data-theme='dark'] .topbar-title,

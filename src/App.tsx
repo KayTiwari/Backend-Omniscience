@@ -1717,11 +1717,30 @@ function App() {
           {activeProblem.questions && (
             <section className="review-block">
               <h3>Review Questions</h3>
-              <ol>
-                {activeProblem.questions.map((question) => (
-                  <li key={question}>{question}</li>
+              <div className="review-card-grid">
+                {activeProblem.questions.map((question, index) => (
+                  <details key={question} className="review-card">
+                    <summary>
+                      <span>{index + 1}</span>
+                      {question}
+                    </summary>
+                    <div>
+                      <strong>What a strong answer should include</strong>
+                      <ul>
+                        {activeProblem.answer && index === 0 && <li>{activeProblem.answer}</li>}
+                        {(activeProblem.checklist.length > 0
+                          ? activeProblem.checklist
+                          : teachingModel.fundamentals
+                        )
+                          .slice(index, index + 3)
+                          .map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                      </ul>
+                    </div>
+                  </details>
                 ))}
-              </ol>
+              </div>
             </section>
           )}
 

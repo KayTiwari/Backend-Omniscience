@@ -305,3 +305,4 @@ Both agents start now. No file overlap.
 - 2026-06-06 Codex: replaced wrapped arrow diagrams with numbered clickable sequence pills, removed the redundant "How to use this problem" card, moved the problem-use guidance into the Now card, and rendered per-problem idioms as highlighted mini code blocks.
 - 2026-06-06 Codex: lazy-loaded the grader/spec bundle so the main JS drops from ~1,019 kB to ~833 kB and the runnable tests load only when a coding problem needs them.
 - 2026-06-06 Codex: wired Claude's new `problemLessons.example` field into Learn First so worked input/output examples render as formatted snippets instead of being silently ignored.
+- 2026-06-06 Codex: turned static Review Questions into revealable oral-exam cards with "what to include" bullets pulled from answers/checklists, adding another non-MCQ practice mode.
