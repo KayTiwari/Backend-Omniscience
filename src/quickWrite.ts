@@ -176,4 +176,159 @@ export const quickWrites: QuickWrite[] = [
     productionAnchor:
       'A null from an upstream API crashes a handler: the function never guarded its inputs.',
   },
+
+  {
+    subjectId: 'internet',
+    prompt: 'Explain what TLS does and does not give you, and where you terminate it.',
+    expected: [
+      'confidentiality + integrity + server identity',
+      'it does NOT authenticate the caller (separate login)',
+      'a certificate vouches for the server, validated against a CA',
+      'terminate at the load balancer or CDN edge',
+      'rotate certificates automatically',
+      'still authorize every request behind TLS',
+    ],
+    productionAnchor:
+      'Someone argues "we use HTTPS so the endpoint is secure": transport encryption says nothing about who is calling.',
+  },
+  {
+    subjectId: 'api',
+    prompt: 'Design an idempotent "create payment" endpoint so retries never double-charge.',
+    expected: [
+      'client sends an Idempotency-Key',
+      'store the key with the request result',
+      'a repeat key returns the original response',
+      'same key + different body -> 409 conflict',
+      'covers client timeouts, refreshes, and proxy retries',
+      'expire keys after a sensible window',
+    ],
+    productionAnchor:
+      'A network blip makes the app retry a charge: without a key the customer is billed twice.',
+  },
+  {
+    subjectId: 'security',
+    prompt: 'Walk through storing and checking a password safely.',
+    expected: [
+      'never store the plaintext',
+      'hash with a slow, salted KDF (bcrypt/scrypt/Argon2)',
+      'tune the work factor to your hardware',
+      'compare in constant time',
+      'upgrade the hash on login when you raise the cost',
+      'rate-limit login attempts',
+    ],
+    productionAnchor:
+      'A DB dump leaks: fast/unsalted hashes are cracked in minutes; a slow salted KDF buys time.',
+  },
+  {
+    subjectId: 'sql',
+    prompt: 'Two requests update the same row at once. How do you prevent a lost update?',
+    expected: [
+      'wrap the read-modify-write in a transaction',
+      'optimistic locking: a version column, update only if it matches',
+      'or pessimistic: SELECT ... FOR UPDATE',
+      'the late writer is rejected and retries',
+      'keep transactions short to limit lock contention',
+      'pick an isolation level per use case',
+    ],
+    productionAnchor:
+      'Two admins edit the same order; one edit silently overwrites the other without a version check.',
+  },
+  {
+    subjectId: 'performance',
+    prompt: 'Your cache speeds reads but serves stale data after writes. Fix it.',
+    expected: [
+      'invalidate or version the key on write',
+      'or accept bounded staleness with a short TTL',
+      'content-hash immutable assets',
+      'choose write-through vs write-behind vs TTL per need',
+      'publish invalidation events for fan-out',
+      'decide staleness tolerance per resource',
+    ],
+    productionAnchor:
+      'A user updates their avatar but the old one shows for an hour: the cache key was never invalidated.',
+  },
+  {
+    subjectId: 'architecture',
+    prompt: 'A queue guarantees at-least-once delivery. How do you avoid double side effects?',
+    expected: [
+      'design idempotent consumers',
+      'dedupe by a stable message/event id',
+      'use an outbox to publish atomically with the DB write',
+      'bound retries with backoff',
+      'dead-letter poison messages',
+      'exactly-once effects, not exactly-once delivery',
+    ],
+    productionAnchor:
+      'A worker crashes after doing the work but before acking: the message is redelivered and runs again.',
+  },
+  {
+    subjectId: 'devops',
+    prompt: 'A deploy is failing in production. Explain how you limit damage and recover.',
+    expected: [
+      'roll back to the previous artifact fast',
+      'canary/blue-green to limit blast radius next time',
+      'health checks pull bad instances from rotation',
+      'feature flags as a kill switch',
+      'keep DB changes backward compatible (expand/contract)',
+      'alert on SLO burn to catch it early',
+    ],
+    productionAnchor:
+      'A bad release 500s for 5% of users; a canary + instant rollback turns an outage into a blip.',
+  },
+  {
+    subjectId: 'system-design',
+    prompt: 'Design a rate limiter for a public API across many servers.',
+    expected: [
+      'a shared counter/store (Redis), not per-instance memory',
+      'key by user/IP/route',
+      'token bucket for bursts, sliding window for smoothness',
+      'return 429 with Retry-After',
+      'enforce at the edge/gateway',
+      'fail open or closed deliberately',
+    ],
+    productionAnchor:
+      'Per-instance limits let a client get N times the quota by hitting N servers behind the load balancer.',
+  },
+  {
+    subjectId: 'distributed',
+    prompt: 'You must shard a growing dataset. How do you choose keys and add capacity?',
+    expected: [
+      'partition by a high-cardinality shard key',
+      'avoid hotspots (no low-cardinality key)',
+      'consistent hashing so adding a node moves few keys',
+      'avoid cross-shard transactions',
+      'plan resharding/rebalancing',
+      'replicate each shard for availability',
+    ],
+    productionAnchor:
+      'Sharding by country overloads one shard; a hash of user id spreads load evenly.',
+  },
+  {
+    subjectId: 'files-storage',
+    prompt: 'Design a large-file upload so your API servers do not buffer the bytes.',
+    expected: [
+      'issue a short-lived presigned URL',
+      'client uploads directly to object storage',
+      'validate size and content type',
+      'use multipart upload for big files',
+      'store the key + metadata in the DB',
+      'serve reads via a CDN',
+    ],
+    productionAnchor:
+      'App servers OOM buffering 1 GB uploads; presigned direct-to-storage removes them from the data path.',
+  },
+  {
+    subjectId: 'devops',
+    prompt: 'You get paged: error rate is spiking. What signals do you check, in order?',
+    expected: [
+      'the SLO/error-rate dashboard first',
+      'recent deploys/config changes',
+      'traces for the failing endpoint',
+      'a correlation id from a sample error to its logs',
+      'dependency health (DB, downstream)',
+      'mitigate (rollback/flag) before root-causing',
+    ],
+    productionAnchor:
+      'p99 latency tripled right after a deploy: the trace shows a new N+1 query against the DB.',
+  },
 ]
