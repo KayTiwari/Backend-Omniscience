@@ -267,9 +267,9 @@ Two concrete problems found in the live app:
 Both agents start now. No file overlap.
 
 **Claude (content):**
-- [ ] `src/problemLessons.ts` (new) — per-`problemId` lesson: `concept`, `idiom`,
-      optional `mistake`. Batch 1 = Python Fundamentals (57) shipped; then
-      js-fundamentals, api, sql, security, performance, architecture, then the rest.
+- [~] `src/problemLessons.ts` (new) — per-`problemId` lesson: `concept`, `idiom`,
+      optional `mistake`. Shipped: Python (57) + JS (15) + API (20) + SQL (10) = **102**.
+      Remaining batches: security, performance, architecture, distributed, framework tracks.
       Contract:
       ```ts
       export type ProblemLesson = { problemId: string; concept: string; idiom: string; mistake?: string }
@@ -300,3 +300,4 @@ Both agents start now. No file overlap.
 - 2026-06-05 Codex: polished lesson-focus UX: smoother scroll progress, edge-tab nav collapse handle, and quieter hover states.
 - 2026-06-05 Claude: Phase 2 content shipped — interviewAnswers.ts expanded to 54 triads; new quickWrite.ts (12 concept-specific recall prompts). Both wired by subjectId, ready for Codex to render.
 - 2026-06-05 Codex: promoted Python drills into a Python Fundamentals track with five from-zero lessons plus 57 auto-graded drills.
+- 2026-06-06 Claude: Phase 3 started — new problemLessons.ts with 102 per-problem lessons (Python/JS fundamentals, API, SQL). Codex: render problemLessons[id] in Learn First (fallback to subject) + wire highlight.ts into the editor.
