@@ -40,11 +40,9 @@ export function InteractiveDiagram({ nodes, explanations }: Props) {
                   : { background: `${color}18`, borderColor: `${color}40`, color }
                 }
               >
-                {node}
+                <span className="diagram-index">{i + 1}</span>
+                <span>{node}</span>
               </button>
-              {i < nodes.length - 1 && (
-                <i className="diagram-arrow" aria-hidden="true" style={{ color }}>→</i>
-              )}
             </span>
           )
         })}

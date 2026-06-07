@@ -1457,8 +1457,7 @@ h1 {
 }
 
 .learn-first-heading p,
-.visual-lesson p,
-.practice-mode p {
+.visual-lesson p {
   margin: 0;
   color: #31413f;
   line-height: 1.55;
@@ -1489,9 +1488,9 @@ h1 {
 }
 
 .diagram-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, max-content));
+  align-items: stretch;
   gap: 8px;
 }
 
@@ -1504,6 +1503,8 @@ h1 {
 .diagram-pill {
   display: inline-flex;
   align-items: center;
+  width: 100%;
+  max-width: 100%;
   min-height: 34px;
   border: 1px solid transparent;
   border-radius: 999px;
@@ -1511,6 +1512,7 @@ h1 {
   font: inherit;
   font-size: 13px;
   font-weight: 900;
+  text-align: left;
   cursor: pointer;
   transition:
     background 160ms ease,
@@ -1519,15 +1521,22 @@ h1 {
     transform 160ms ease;
 }
 
+.diagram-index {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, currentColor 16%, transparent);
+  color: currentColor;
+  font-size: 11px;
+  line-height: 1;
+}
+
 .diagram-pill:hover {
   transform: translateY(-2px);
   filter: brightness(1.1);
-}
-
-.diagram-arrow {
-  color: var(--brand-b);
-  font-style: normal;
-  font-weight: 900;
 }
 
 .diagram-panel {
@@ -1673,6 +1682,18 @@ h1 {
   line-height: 1.45;
 }
 
+.lesson-code {
+  overflow-x: auto;
+  margin: 8px 0 2px;
+  border: 1px solid color-mix(in srgb, var(--brand-b) 18%, var(--line));
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #111818;
+  color: #edf7f1;
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre;
+}
+
 .guided-tutorial-checks {
   display: grid;
   gap: 12px;
@@ -1807,17 +1828,6 @@ h1 {
 
 .tutorial-card {
   background: color-mix(in srgb, var(--brand-b) 5%, var(--field));
-}
-
-.practice-mode {
-  border-left: 4px solid var(--brand-b);
-  padding: 4px 0 4px 14px;
-}
-
-.practice-mode strong {
-  display: block;
-  margin-bottom: 4px;
-  color: var(--ink);
 }
 
 .prompt-block,
@@ -2726,7 +2736,6 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .visual-lesson p,
 .app-shell[data-theme='dark'] .diagram-panel p,
 .app-shell[data-theme='dark'] .diagram-explainer p,
-.app-shell[data-theme='dark'] .practice-mode p,
 .app-shell[data-theme='dark'] .guided-tutorial-heading p,
 .app-shell[data-theme='dark'] .recall-card p,
 .app-shell[data-theme='dark'] .quick-write-answer,

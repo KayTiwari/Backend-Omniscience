@@ -326,14 +326,10 @@ function App() {
       })),
     [],
   )
-  const activeInterviewAnswers = useMemo(
-    () => interviewAnswers.filter((answer) => answer.subjectId === activeSubject.id),
-    [activeSubject.id],
+  const activeInterviewAnswers = interviewAnswers.filter(
+    (answer) => answer.subjectId === activeSubject.id,
   )
-  const activeQuickWrites = useMemo(
-    () => quickWrites.filter((item) => item.subjectId === activeSubject.id),
-    [activeSubject.id],
-  )
+  const activeQuickWrites = quickWrites.filter((item) => item.subjectId === activeSubject.id)
 
   function openProblem(subject: Subject, problem: Problem) {
     setIsHome(false)
@@ -529,127 +525,118 @@ function App() {
   const quizCorrect = selectedChoice === activeProblem.correctChoice
   const activeSpec = specsByProblemId.get(activeProblem.id)
   const activeCode = activeSpec ? (progress.code[activeProblem.id] ?? activeSpec.starter) : ''
+  const activeCodeLanguage =
+    activeSpec?.language ??
+    (activeProblem.id.startsWith('py-')
+      ? 'py'
+      : activeProblem.id.startsWith('ts-')
+        ? 'ts'
+        : 'js')
   const highlightedCode = useMemo(() => {
     if (!activeSpec) return ''
-    return highlight(activeCode || '\n', activeSpec.language)
-  }, [activeCode, activeSpec])
-  const teachingModel = useMemo(
-    () => getTeachingModel(activeSubject, activeProblem),
-    [activeSubject, activeProblem],
-  )
+    return highlight(activeCode || '\n', activeCodeLanguage)
+  }, [activeCode, activeCodeLanguage, activeSpec])
+  const teachingModel = getTeachingModel(activeSubject, activeProblem)
   const activeGradeResult = gradeResults[activeProblem.id]
   const isRunningTests = runningProblemId === activeProblem.id
   const previousProblem = activeIndex > 0 ? allProblems[activeIndex - 1] : undefined
   const nextProblem = activeIndex < allProblems.length - 1 ? allProblems[activeIndex + 1] : undefined
-  const acceptanceChecks = useMemo(
-    () =>
-      activeProblem.checklist.map((item, index) => {
-        const distractors = [
-          'Skip this for now and rely on manual testing later.',
-          'Mention the concept by name without explaining how it behaves.',
-          'Assume the framework handles this automatically in production.',
-          'Only test the happy path and ignore failure behavior.',
-          ...activeProblem.checklist.filter((_, itemIndex) => itemIndex !== index),
-        ].filter((choice) => choice !== item)
-        const options = [item, ...distractors.slice(0, 3)]
-        const rotation = (activeProblem.id.length + index) % options.length
-        const rotated = [...options.slice(rotation), ...options.slice(0, rotation)]
+  const acceptanceChecks = activeProblem.checklist.map((item, index) => {
+    const distractors = [
+      'Skip this for now and rely on manual testing later.',
+      'Mention the concept by name without explaining how it behaves.',
+      'Assume the framework handles this automatically in production.',
+      'Only test the happy path and ignore failure behavior.',
+      ...activeProblem.checklist.filter((_, itemIndex) => itemIndex !== index),
+    ].filter((choice) => choice !== item)
+    const options = [item, ...distractors.slice(0, 3)]
+    const rotation = (activeProblem.id.length + index) % options.length
+    const rotated = [...options.slice(rotation), ...options.slice(0, rotation)]
 
-        return {
-          correctChoice: rotated.indexOf(item),
-          explanation: `Correct: ${item} This matters because it is one of the observable behaviors your solution must prove, not a passive checklist item.`,
-          options: rotated,
-          question: `Which answer best satisfies checkpoint ${index + 1}?`,
-        }
-      }),
-    [activeProblem],
-  )
-  const tutorialChecks = useMemo(
-    () =>
-      teachingModel.tutorial.map((item, index) => {
-        const distractors = [
-          'Skip the model and jump straight to the final answer.',
-          'Memorize the keyword only, without describing what it does.',
-          'Assume the framework hides this detail from production engineers.',
-          'Only handle the happy path and ignore how this can fail.',
-          ...teachingModel.tutorial.filter((_, itemIndex) => itemIndex !== index),
-        ].filter((choice) => choice !== item)
-        const options = [item, ...distractors.slice(0, 3)]
-        const rotation =
-          (activeSubject.id.length + activeProblem.id.length + index) % options.length
-        const rotated = [...options.slice(rotation), ...options.slice(0, rotation)]
+    return {
+      correctChoice: rotated.indexOf(item),
+      explanation: `Correct: ${item} This matters because it is one of the observable behaviors your solution must prove, not a passive checklist item.`,
+      options: rotated,
+      question: `Which answer best satisfies checkpoint ${index + 1}?`,
+    }
+  })
+  const tutorialChecks = teachingModel.tutorial.map((item, index) => {
+    const distractors = [
+      'Skip the model and jump straight to the final answer.',
+      'Memorize the keyword only, without describing what it does.',
+      'Assume the framework hides this detail from production engineers.',
+      'Only handle the happy path and ignore how this can fail.',
+      ...teachingModel.tutorial.filter((_, itemIndex) => itemIndex !== index),
+    ].filter((choice) => choice !== item)
+    const options = [item, ...distractors.slice(0, 3)]
+    const rotation =
+      (activeSubject.id.length + activeProblem.id.length + index) % options.length
+    const rotated = [...options.slice(rotation), ...options.slice(0, rotation)]
 
-        return {
-          correctChoice: rotated.indexOf(item),
-          explanation: `Correct: ${item} This is the next small move because ${activeSubject.title} should be learned one boundary, input, or behavior at a time before the main drill.`,
-          options: rotated,
-          question: `Guided step ${index + 1}: what should you do next?`,
-        }
-      }),
-    [activeProblem.id, activeSubject.id, activeSubject.title, teachingModel.tutorial],
-  )
-  const recallPrompts = useMemo(
-    () => {
-      if (activeQuickWrites.length > 0) {
-        return activeQuickWrites.map((item, index) => ({
-          badge: index === 0 ? 'Interview recall' : 'Production recall',
-          expected: item.expected,
-          placeholder: 'Write the answer you would say out loud in an interview.',
-          productionAnchor: item.productionAnchor,
-          prompt: item.prompt,
-        }))
-      }
+    return {
+      correctChoice: rotated.indexOf(item),
+      explanation: `Correct: ${item} This is the next small move because ${activeSubject.title} should be learned one boundary, input, or behavior at a time before the main drill.`,
+      options: rotated,
+      question: `Guided step ${index + 1}: what should you do next?`,
+    }
+  })
+  const recallPrompts = activeQuickWrites.length > 0
+    ? activeQuickWrites.map((item, index) => ({
+        badge: index === 0 ? 'Interview recall' : 'Production recall',
+        expected: item.expected,
+        placeholder: 'Write the answer you would say out loud in an interview.',
+        productionAnchor: item.productionAnchor,
+        prompt: item.prompt,
+      }))
+    : (() => {
+        const firstFundamental = teachingModel.fundamentals[0] ?? teachingModel.mentalModel
+        const secondFundamental = teachingModel.fundamentals[1] ?? teachingModel.fundamentals[0]
+        const firstTutorialStep = teachingModel.tutorial[0] ?? activeProblem.checklist[0]
+        const firstChecklistItem = activeProblem.checklist[0] ?? activeProblem.prompt
+        const productionRisk =
+          activeProblem.production ??
+          teachingModel.advanced[0] ??
+          'In production, misunderstanding this creates bugs that are hard to debug because the symptom shows up far away from the root cause.'
 
-      const firstFundamental = teachingModel.fundamentals[0] ?? teachingModel.mentalModel
-      const secondFundamental = teachingModel.fundamentals[1] ?? teachingModel.fundamentals[0]
-      const firstTutorialStep = teachingModel.tutorial[0] ?? activeProblem.checklist[0]
-      const firstChecklistItem = activeProblem.checklist[0] ?? activeProblem.prompt
-      const productionRisk =
-        activeProblem.production ??
-        teachingModel.advanced[0] ??
-        'In production, misunderstanding this creates bugs that are hard to debug because the symptom shows up far away from the root cause.'
-
-      return [
-        {
-          badge: 'Define it',
-          expected: [
-            `A strong beginner answer for ${activeProblem.title}: ${firstFundamental}`,
-            'Name the concept before using implementation details.',
-            'Say what problem it solves.',
-          ],
-          placeholder: `Define ${activeProblem.title} in 2-4 plain-English sentences.`,
-          productionAnchor:
-            'In production, a clear definition helps you choose the right layer to inspect before changing code.',
-          prompt: `For "${activeProblem.title}", what is the first concept a total beginner needs to understand?`,
-        },
-        {
-          badge: 'Use it',
-          expected: [
-            `A strong answer should include: ${secondFundamental}`,
-            `For this problem, your next move is: ${firstTutorialStep}`,
-            'Mention one thing the concept does not do.',
-          ],
-          placeholder: `Name what it does, what it does not do, and the next step you would take.`,
-          productionAnchor:
-            'In production, knowing the boundary prevents you from blaming a framework or service for work it never promised to do.',
-          prompt: `For "${activeProblem.title}", what does this concept do, what does it not do, and what should you do next?`,
-        },
-        {
-          badge: 'Production',
-          expected: [
-            `Connect the concept to observable behavior: ${productionRisk}`,
-            `Prove this checkpoint: ${firstChecklistItem}`,
-            'Name the symptom you would look for first.',
-          ],
-          placeholder: `Write one realistic bug, the symptom you would see, and what you would check first.`,
-          productionAnchor:
-            'A production answer should move from symptom to likely layer to the evidence you would collect.',
-          prompt: `For "${activeProblem.title}", what bug could happen in production if you misunderstand this?`,
-        },
-      ]
-    },
-    [activeProblem, activeQuickWrites, teachingModel],
-  )
+        return [
+          {
+            badge: 'Define it',
+            expected: [
+              `A strong beginner answer for ${activeProblem.title}: ${firstFundamental}`,
+              'Name the concept before using implementation details.',
+              'Say what problem it solves.',
+            ],
+            placeholder: `Define ${activeProblem.title} in 2-4 plain-English sentences.`,
+            productionAnchor:
+              'In production, a clear definition helps you choose the right layer to inspect before changing code.',
+            prompt: `For "${activeProblem.title}", what is the first concept a total beginner needs to understand?`,
+          },
+          {
+            badge: 'Use it',
+            expected: [
+              `A strong answer should include: ${secondFundamental}`,
+              `For this problem, your next move is: ${firstTutorialStep}`,
+              'Mention one thing the concept does not do.',
+            ],
+            placeholder: `Name what it does, what it does not do, and the next step you would take.`,
+            productionAnchor:
+              'In production, knowing the boundary prevents you from blaming a framework or service for work it never promised to do.',
+            prompt: `For "${activeProblem.title}", what does this concept do, what does it not do, and what should you do next?`,
+          },
+          {
+            badge: 'Production',
+            expected: [
+              `Connect the concept to observable behavior: ${productionRisk}`,
+              `Prove this checkpoint: ${firstChecklistItem}`,
+              'Name the symptom you would look for first.',
+            ],
+            placeholder: `Write one realistic bug, the symptom you would see, and what you would check first.`,
+            productionAnchor:
+              'A production answer should move from symptom to likely layer to the evidence you would collect.',
+            prompt: `For "${activeProblem.title}", what bug could happen in production if you misunderstand this?`,
+          },
+        ]
+      })()
   const recallAnsweredCount = recallPrompts.filter(
     (_, index) => (progress.recallAnswer[`${activeProblem.id}:${index}`] ?? '').trim().length > 0,
   ).length
@@ -786,6 +773,23 @@ function App() {
     if (!codeHighlightRef.current) return
     codeHighlightRef.current.scrollTop = event.currentTarget.scrollTop
     codeHighlightRef.current.scrollLeft = event.currentTarget.scrollLeft
+  }
+
+  function renderLessonListItem(item: string) {
+    const idiomMatch = item.match(/^(.*?idiom(?: belongs in your answer or code)?(?: is)?):\s*([\s\S]+)$/i)
+    if (!idiomMatch) return item
+
+    const [, label, code] = idiomMatch
+    return (
+      <>
+        <span>{label}:</span>
+        <pre
+          className="lesson-code"
+          aria-label="Key code idiom"
+          dangerouslySetInnerHTML={{ __html: highlight(code, activeCodeLanguage) }}
+        />
+      </>
+    )
   }
 
   return (
@@ -1267,7 +1271,7 @@ function App() {
                 <h4>Plain-English Fundamentals</h4>
                 <ul>
                   {teachingModel.fundamentals.map((item) => (
-                    <li key={item}>{item}</li>
+                    <li key={item}>{renderLessonListItem(item)}</li>
                   ))}
                 </ul>
               </section>
@@ -1275,7 +1279,7 @@ function App() {
                 <h4>Tutorial Steps</h4>
                 <ol>
                   {teachingModel.tutorial.map((item) => (
-                    <li key={item}>{item}</li>
+                    <li key={item}>{renderLessonListItem(item)}</li>
                   ))}
                 </ol>
               </section>
@@ -1405,10 +1409,6 @@ function App() {
               )}
             </section>
 
-            <div className="practice-mode">
-              <strong>How to use this problem</strong>
-              <p>{teachingModel.practiceMode}</p>
-            </div>
           </section>
 
           {activeInterviewAnswers.length > 0 && (
@@ -1473,17 +1473,7 @@ function App() {
             </button>
             <div>
               <span>Now</span>
-              <strong>
-                {activeProblem.type === 'coding'
-                  ? 'Build it, run tests, then explain the failure modes'
-                  : activeProblem.type === 'quiz'
-                    ? 'Answer, justify, and connect it to production behavior'
-                    : activeProblem.type === 'debug'
-                      ? 'Diagnose, prove, fix, and add a regression test'
-                      : activeProblem.type === 'design'
-                        ? 'Design the contract, data path, failures, and rollout'
-                        : 'Learn the mental model, then write the smallest example'}
-              </strong>
+              <strong>{teachingModel.practiceMode}</strong>
               {activeSpec && <small>Runnable assessment attached</small>}
             </div>
             <button
