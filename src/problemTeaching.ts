@@ -509,6 +509,77 @@ function compactList(items: string[], limit: number): string[] {
   return [...new Set(items.map((item) => item.trim()).filter(Boolean))].slice(0, limit)
 }
 
+function nodeLabel(text: string, fallback: string): string {
+  const cleaned = text
+    .replace(/^(Use|Read|Track|Check|Define|Explain|Name|Identify|Return|Run|Start|Pick|Write)\s+/i, '')
+    .replace(/["'`]/g, '')
+    .split(/[.:;]/)[0]
+    .trim()
+  const words = cleaned.split(/\s+/).filter(Boolean).slice(0, 3).join(' ')
+
+  return words || fallback
+}
+
+function problemDiagram(problem: Problem, base: SubjectTeaching, lesson?: ProblemLesson): string[] {
+  if (problem.walkthrough && problem.walkthrough.length >= 3) {
+    return problem.walkthrough
+      .slice(0, 6)
+      .map((step, index) => nodeLabel(step, `Step ${index + 1}`))
+  }
+
+  if (lesson) {
+    return lesson.mistake
+      ? ['Concept', 'Idiom', 'Avoid', 'Prove']
+      : ['Concept', 'Idiom', 'Implement', 'Prove']
+  }
+
+  if (problem.checklist.length >= 3) {
+    return problem.checklist
+      .slice(0, 5)
+      .map((item, index) => nodeLabel(item, `Check ${index + 1}`))
+  }
+
+  return base.diagram
+}
+
+function problemDiagramExplanations(
+  problem: Problem,
+  base: SubjectTeaching,
+  lesson?: ProblemLesson,
+): string[] | undefined {
+  if (problem.walkthrough && problem.walkthrough.length >= 3) {
+    return problem.walkthrough.slice(0, 6)
+  }
+
+  if (lesson) {
+    return [
+      lesson.concept,
+      `The key idiom is: ${lesson.idiom}`,
+      lesson.mistake
+        ? `Avoid this common mistake: ${lesson.mistake}`
+        : 'Use the smallest implementation that proves the concept.',
+      problem.checklist[0] ?? 'Run the checks and explain why the result is correct.',
+    ]
+  }
+
+  if (problem.checklist.length >= 3) {
+    return problem.checklist.slice(0, 5)
+  }
+
+  return base.diagramExplanations
+}
+
+function problemMentalModel(problem: Problem, base: SubjectTeaching, lesson?: ProblemLesson): string {
+  if (lesson) {
+    return `${lesson.concept} The practical move is: ${lesson.idiom}${lesson.mistake ? ` Avoid this trap: ${lesson.mistake}` : ''}`
+  }
+
+  const explanation = splitLessonText(problem.explanation, 2).join(' ')
+  if (explanation) return explanation
+
+  return base.mentalModel
+}
+
 function problemFundamentals(problem: Problem, base: SubjectTeaching, lesson?: ProblemLesson): string[] {
   const lessonItems = lesson
     ? [
@@ -600,6 +671,9 @@ export function getTeachingModel(subject: Subject, problem: Problem): TeachingMo
 
   return {
     ...base,
+    mentalModel: problemMentalModel(problem, base, lesson),
+    diagram: problemDiagram(problem, base, lesson),
+    diagramExplanations: problemDiagramExplanations(problem, base, lesson),
     fundamentals: problemFundamentals(problem, base, lesson),
     tutorial: problemTutorial(problem, base, lesson),
     advanced: problemAdvanced(problem, base, lesson),
