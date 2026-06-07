@@ -30,7 +30,7 @@ import {
 } from './course'
 import { validateCourse } from './courseValidation'
 import { applyEditorKey } from './editorKeys'
-import { allSpecs, grade, type GradeResult } from './grader'
+import type { GradeResult, GradeSpec } from './grader/types'
 import { highlight } from './highlight'
 import { InteractiveDiagram } from './InteractiveDiagram'
 import { ScrollProgress } from './ScrollProgress'
@@ -60,6 +60,7 @@ const themeKey = 'backend-omniscience-theme'
 
 type Theme = 'light' | 'dark'
 type ConfidenceLevel = 'Not started' | 'Learned' | 'Can explain' | 'Can build' | 'Can defend'
+type GraderModule = typeof import('./grader')
 const confidenceLevels: ConfidenceLevel[] = [
   'Not started',
   'Learned',
@@ -164,11 +165,15 @@ function App() {
   const [progress, setProgress] = useState<ProgressState>(() => loadProgress())
   const [importMessage, setImportMessage] = useState('')
   const [gradeResults, setGradeResults] = useState<Record<string, GradeResult>>({})
+  const [specsByProblemId, setSpecsByProblemId] = useState<Map<string, GradeSpec>>(
+    () => new Map(),
+  )
   const [runningProblemId, setRunningProblemId] = useState('')
   const [theme, setTheme] = useState<Theme>(() => loadTheme())
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const importInputRef = useRef<HTMLInputElement>(null)
   const codeHighlightRef = useRef<HTMLPreElement>(null)
+  const graderModuleRef = useRef<Promise<GraderModule> | null>(null)
 
   useEffect(() => {
     window.localStorage.setItem(storageKey, JSON.stringify(progress))
@@ -203,26 +208,39 @@ function App() {
   const activeProblem =
     activeSubject.problems.find((problem) => problem.id === activeProblemId) ??
     activeSubject.problems[0]
+  const isCodingProblem = activeProblem.type === 'coding'
 
   const problemIds = useMemo(() => new Set(allProblems.map((problem) => problem.id)), [])
-  const specsByProblemId = useMemo(
-    () => new Map(allSpecs.map((spec) => [spec.problemId, spec])),
-    [],
-  )
   const completedSet = useMemo(
     () => new Set(progress.completed.filter((problemId) => problemIds.has(problemId))),
     [problemIds, progress.completed],
   )
+
+  async function loadGrader(): Promise<GraderModule> {
+    graderModuleRef.current ??= import('./grader')
+    const graderModule = await graderModuleRef.current
+    setSpecsByProblemId((current) => {
+      if (current.size > 0) return current
+      return new Map(graderModule.allSpecs.map((spec) => [spec.problemId, spec]))
+    })
+    return graderModule
+  }
+
+  useEffect(() => {
+    if (!isCodingProblem || specsByProblemId.has(activeProblem.id)) return
+    void loadGrader()
+  }, [activeProblem.id, isCodingProblem, specsByProblemId])
+
   function getProblemConfidence(problem: Problem): ConfidenceLevel {
     if (completedSet.has(problem.id) && progress.defended[problem.id]) return 'Can defend'
     if (completedSet.has(problem.id)) return 'Can build'
 
-    const spec = specsByProblemId.get(problem.id)
-    if (spec && gradeResults[problem.id]?.passed) return 'Can build'
+    const isCoding = problem.type === 'coding'
+    if (isCoding && gradeResults[problem.id]?.passed) return 'Can build'
 
     const hasQuizAnswer = progress.selectedChoice[problem.id] !== undefined
     const hasSolutionCheck = progress.checkedSolutions[problem.id] === true
-    const hasCodeEdit = spec ? progress.code[problem.id] !== undefined : false
+    const hasCodeEdit = isCoding ? progress.code[problem.id] !== undefined : false
     const hasRecall = [0, 1, 2].some(
       (index) => (progress.recallAnswer[`${problem.id}:${index}`] ?? '').trim().length > 0,
     )
@@ -242,7 +260,7 @@ function App() {
   }
 
   const completedCount = completedSet.size
-  const gradableCount = specsByProblemId.size
+  const gradableCount = allProblems.filter((problem) => problem.type === 'coding').length
   const totalMinutes = allProblems.reduce((sum, problem) => sum + problem.minutes, 0)
   const completedMinutes = allProblems
     .filter((problem) => completedSet.has(problem.id))
@@ -271,7 +289,7 @@ function App() {
     allProblems.find((problem) => !completedSet.has(problem.id)) ?? allProblems[0]
   const subjectSummaries = subjects.map((subject) => {
     const done = subject.problems.filter((problem) => completedSet.has(problem.id)).length
-    const codingCount = subject.problems.filter((problem) => specsByProblemId.has(problem.id)).length
+    const codingCount = subject.problems.filter((problem) => problem.type === 'coding').length
     const confidenceCounts = subject.problems.reduce<Record<ConfidenceLevel, number>>(
       (counts, problem) => {
         counts[getProblemConfidence(problem)] += 1
@@ -497,12 +515,15 @@ function App() {
   }
 
   async function runCodingTests() {
-    const spec = specsByProblemId.get(activeProblem.id)
+    const graderModule = await loadGrader()
+    const spec =
+      specsByProblemId.get(activeProblem.id) ??
+      graderModule.allSpecs.find((candidate) => candidate.problemId === activeProblem.id)
     if (!spec) return
 
     setRunningProblemId(activeProblem.id)
     const code = progress.code[activeProblem.id] ?? spec.starter
-    const result = await grade(spec, code)
+    const result = await graderModule.grade(spec, code)
     setGradeResults((current) => ({ ...current, [activeProblem.id]: result }))
     setRunningProblemId('')
 
@@ -673,8 +694,8 @@ function App() {
       : firstIncompleteAcceptanceIndex + 1
   const quizRequirementCorrect =
     !activeProblem.choices || activeProblem.correctChoice === undefined || quizCorrect
-  const codeRequirementCorrect = !activeSpec || activeGradeResult?.passed === true
-  const applyRequirementDone = activeSpec
+  const codeRequirementCorrect = !isCodingProblem || activeGradeResult?.passed === true
+  const applyRequirementDone = isCodingProblem
     ? codeRequirementCorrect
     : activeProblem.choices
       ? quizRequirementCorrect
@@ -688,7 +709,7 @@ function App() {
     recallComplete &&
     tutorialCorrect &&
     acceptanceCorrect &&
-    (activeSpec ? codeRequirementCorrect : activeProblem.choices ? quizRequirementCorrect : true)
+    (isCodingProblem ? codeRequirementCorrect : activeProblem.choices ? quizRequirementCorrect : true)
   const masterySteps = [
     {
       label: 'Recall',
@@ -701,11 +722,13 @@ function App() {
       done: tutorialCorrect,
     },
     {
-      label: activeSpec ? 'Code' : activeProblem.choices ? 'Quiz' : 'Apply',
-      detail: activeSpec
+      label: isCodingProblem ? 'Code' : activeProblem.choices ? 'Quiz' : 'Apply',
+      detail: isCodingProblem
         ? activeGradeResult?.passed
           ? 'passed'
-          : 'run tests'
+          : activeSpec
+            ? 'run tests'
+            : 'loading'
         : activeProblem.choices
           ? quizCorrect
             ? 'correct'
@@ -936,7 +959,7 @@ function App() {
                         >
                           {done ? <Check size={15} /> : <Circle size={15} />}
                           <span>{problem.title}</span>
-                          {specsByProblemId.has(problem.id) && <Code2 size={14} />}
+                          {problem.type === 'coding' && <Code2 size={14} />}
                         </button>
                       )
                     })}
@@ -1091,7 +1114,7 @@ function App() {
                         <span className="home-result-meta">
                           <span>{problem.type}</span>
                           <span>{problem.difficulty}</span>
-                          {specsByProblemId.has(problem.id) && <Code2 size={14} />}
+                          {problem.type === 'coding' && <Code2 size={14} />}
                         </span>
                       </button>
                     ))
@@ -1474,7 +1497,7 @@ function App() {
             <div>
               <span>Now</span>
               <strong>{teachingModel.practiceMode}</strong>
-              {activeSpec && <small>Runnable assessment attached</small>}
+              {isCodingProblem && <small>Runnable assessment attached</small>}
             </div>
             <button
               type="button"
@@ -1585,12 +1608,30 @@ function App() {
             </section>
           )}
 
+          {isCodingProblem && !activeSpec && (
+            <section className="coding-block">
+              <div className="coding-heading">
+                <div>
+                  <h3>Coding Tests</h3>
+                  <p>Loading runnable assessment...</p>
+                </div>
+              </div>
+            </section>
+          )}
+
           {activeSpec && (
             <section className="coding-block">
               <div className="coding-heading">
                 <div>
                   <h3>Coding Tests</h3>
-                  <p>{activeSpec.title} · {activeSpec.language === 'py' ? 'Python' : 'JavaScript'}</p>
+                  <p>
+                    {activeSpec.title} ·{' '}
+                    {activeSpec.language === 'py'
+                      ? 'Python'
+                      : activeSpec.language === 'ts'
+                        ? 'TypeScript'
+                        : 'JavaScript'}
+                  </p>
                 </div>
                 <button
                   className="run-button"

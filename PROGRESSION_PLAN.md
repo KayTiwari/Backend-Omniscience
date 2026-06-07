@@ -303,3 +303,4 @@ Both agents start now. No file overlap.
 - 2026-06-06 Claude: Phase 3 started — new problemLessons.ts with 102 per-problem lessons (Python/JS fundamentals, API, SQL). Codex: render problemLessons[id] in Learn First (fallback to subject) + wire highlight.ts into the editor.
 - 2026-06-06 Codex: rendered `problemLessons` in Learn First, added syntax-colored code editor backdrop, clarified confidence ladder active-vs-past states, renamed lower Python to Python Backend Runtime, and removed remaining "No prior knowledge" phrasing.
 - 2026-06-06 Codex: replaced wrapped arrow diagrams with numbered clickable sequence pills, removed the redundant "How to use this problem" card, moved the problem-use guidance into the Now card, and rendered per-problem idioms as highlighted mini code blocks.
+- 2026-06-06 Codex: lazy-loaded the grader/spec bundle so the main JS drops from ~1,019 kB to ~833 kB and the runnable tests load only when a coding problem needs them.
