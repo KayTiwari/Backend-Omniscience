@@ -800,9 +800,11 @@ function App() {
 
   function renderLessonListItem(item: string) {
     const idiomMatch = item.match(/^(.*?idiom(?: belongs in your answer or code)?(?: is)?):\s*([\s\S]+)$/i)
-    if (!idiomMatch) return item
+    const exampleMatch = item.match(/^(.*?worked example):\s*([\s\S]+)$/i)
+    const match = idiomMatch ?? exampleMatch
+    if (!match) return item
 
-    const [, label, code] = idiomMatch
+    const [, label, code] = match
     return (
       <>
         <span>{label}:</span>

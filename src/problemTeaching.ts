@@ -585,6 +585,7 @@ function problemFundamentals(problem: Problem, base: SubjectTeaching, lesson?: P
     ? [
         `This problem teaches: ${lesson.concept}`,
         `Use this idiom: ${lesson.idiom}`,
+        ...(lesson.example ? [`Worked example: ${lesson.example}`] : []),
         ...(lesson.mistake ? [`Watch for this mistake: ${lesson.mistake}`] : []),
       ]
     : []
@@ -607,6 +608,7 @@ function problemTutorial(problem: Problem, base: SubjectTeaching, lesson?: Probl
       [
         `Say the concept out loud: ${lesson.concept}`,
         `Identify where the idiom belongs in your answer or code: ${lesson.idiom}`,
+        ...(lesson.example ? [`Trace this worked example: ${lesson.example}`] : []),
         ...(lesson.mistake ? [`Check that you are not making this mistake: ${lesson.mistake}`] : []),
         ...problem.checklist.slice(0, 3).map((item) => `Prove this required behavior: ${item}`),
       ],
