@@ -2616,13 +2616,44 @@ h1 {
   color: #9f1239;
 }
 
+.notes-block {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+}
+
+.notes-block summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  padding: 12px 14px;
+  list-style: none;
+}
+
+.notes-block summary::-webkit-details-marker {
+  display: none;
+}
+
+.notes-block summary h3 {
+  margin: 0;
+}
+
+.notes-block summary span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .notes-block textarea {
   width: 100%;
   min-height: 180px;
   box-sizing: border-box;
   resize: vertical;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 8px 8px;
   padding: 14px;
   background: var(--field);
   color: var(--ink);

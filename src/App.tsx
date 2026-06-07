@@ -1811,14 +1811,17 @@ function App() {
             )}
           </section>
 
-          <section className="notes-block">
-            <h3>Notes</h3>
+          <details className="notes-block">
+            <summary>
+              <h3>Notes</h3>
+              <span>Optional scratchpad</span>
+            </summary>
             <textarea
               value={progress.notes[activeProblem.id] ?? ''}
               onChange={(event) => updateNote(activeProblem.id, event.target.value)}
-              placeholder=""
+              placeholder="Jot down your own explanation, edge cases, or debugging path."
             />
-          </section>
+          </details>
 
           <div className="actions">
             <button
