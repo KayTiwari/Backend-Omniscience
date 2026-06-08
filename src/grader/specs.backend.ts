@@ -4239,4 +4239,114 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Functional / higher-order JS ------------------------------------
+  {
+    problemId: 'fn-compose',
+    title: 'compose (right-to-left)',
+    language: 'js',
+    starter: 'function compose(...fns) {\n  // compose((x)=>x+1, (x)=>x*2)(3) -> 7 (rightmost runs first)\n}\n',
+    tests: [
+      { name: 'runs right to left', body: 'assertEqual(compose((x) => x + 1, (x) => x * 2)(3), 7); assertEqual(compose((x) => x * 2)(5), 10);' },
+    ],
+    reference: `function compose(...fns) {
+  return (x) => fns.reduceRight((acc, fn) => fn(acc), x);
+}
+`,
+  },
+  {
+    problemId: 'fn-pipe',
+    title: 'pipe (left-to-right)',
+    language: 'js',
+    starter: 'function pipe(...fns) {\n  // pipe((x)=>x+1, (x)=>x*2)(3) -> 8 (leftmost runs first)\n}\n',
+    tests: [
+      { name: 'runs left to right', body: 'assertEqual(pipe((x) => x + 1, (x) => x * 2)(3), 8);' },
+    ],
+    reference: `function pipe(...fns) {
+  return (x) => fns.reduce((acc, fn) => fn(acc), x);
+}
+`,
+  },
+  {
+    problemId: 'fn-curry3',
+    title: 'Curry A 3-Arg Function',
+    language: 'js',
+    starter: 'function curry3(fn) {\n  // curry3((a,b,c)=>a+b+c)(1)(2)(3) -> 6\n}\n',
+    tests: [
+      { name: 'one arg at a time', body: 'assertEqual(curry3((a, b, c) => a + b + c)(1)(2)(3), 6);' },
+    ],
+    reference: `function curry3(fn) {
+  return (a) => (b) => (c) => fn(a, b, c);
+}
+`,
+  },
+  {
+    problemId: 'fn-once',
+    title: 'once (call at most once)',
+    language: 'js',
+    starter: 'function once(fn) {\n  // run fn only the first time; later calls return the cached result\n}\n',
+    tests: [
+      { name: 'runs once', body: 'let n = 0; const f = once(() => ++n); assertEqual(f(), 1); assertEqual(f(), 1); assertEqual(n, 1);' },
+    ],
+    reference: `function once(fn) {
+  let called = false, result;
+  return (...args) => {
+    if (!called) { called = true; result = fn(...args); }
+    return result;
+  };
+}
+`,
+  },
+  {
+    problemId: 'fn-partial',
+    title: 'Partial Application',
+    language: 'js',
+    starter: 'function partial(fn, ...preset) {\n  // partial((a,b,c)=>a+b+c, 1, 2)(3) -> 6\n}\n',
+    tests: [
+      { name: 'presets leading args', body: 'assertEqual(partial((a, b, c) => a + b + c, 1, 2)(3), 6);' },
+    ],
+    reference: `function partial(fn, ...preset) {
+  return (...rest) => fn(...preset, ...rest);
+}
+`,
+  },
+  {
+    problemId: 'fn-flip',
+    title: 'flip Arguments',
+    language: 'js',
+    starter: 'function flip(fn) {\n  // flip((a,b)=>a-b)(2,5) -> 3 (calls fn(5,2))\n}\n',
+    tests: [
+      { name: 'swaps two args', body: 'assertEqual(flip((a, b) => a - b)(2, 5), 3);' },
+    ],
+    reference: `function flip(fn) {
+  return (a, b) => fn(b, a);
+}
+`,
+  },
+  {
+    problemId: 'fn-negate',
+    title: 'negate A Predicate',
+    language: 'js',
+    starter: 'function negate(pred) {\n  // negate((x)=>x>0) returns a predicate that is true for <= 0\n}\n',
+    tests: [
+      { name: 'inverts', body: 'assertEqual(negate((x) => x > 0)(5), false); assertEqual(negate((x) => x > 0)(-1), true);' },
+    ],
+    reference: `function negate(pred) {
+  return (...args) => !pred(...args);
+}
+`,
+  },
+  {
+    problemId: 'fn-pipe-value',
+    title: 'Pipe A Value Through Functions',
+    language: 'js',
+    starter: 'function pipeValue(x, ...fns) {\n  // thread x through each function, left to right\n}\n',
+    tests: [
+      { name: 'threads the value', body: 'assertEqual(pipeValue(3, (x) => x + 1, (x) => x * 2), 8);' },
+    ],
+    reference: `function pipeValue(x, ...fns) {
+  return fns.reduce((acc, fn) => fn(acc), x);
+}
+`,
+  },
 ]
