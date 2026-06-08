@@ -896,4 +896,127 @@ def count_words(text):
     return [list(t) for t in zip(*pairs)] if pairs else [[], []]
 `,
   },
+
+  // ----- Python standard library (heapq, bisect, deque, itertools) -------
+  {
+    problemId: 'py-heapq-smallest',
+    title: 'heapq.nsmallest',
+    language: 'py',
+    starter: 'import heapq\n\ndef k_smallest(nums, k):\n    # the k smallest values, ascending\n    pass\n',
+    tests: [
+      { name: 'k smallest', body: 'assert k_smallest([5, 1, 3, 2, 4], 2) == [1, 2]' },
+    ],
+    reference: `import heapq
+
+def k_smallest(nums, k):
+    return heapq.nsmallest(k, nums)
+`,
+  },
+  {
+    problemId: 'py-bisect-insort',
+    title: 'bisect.insort',
+    language: 'py',
+    starter: 'import bisect\n\ndef insert_sorted(arr, x):\n    # insert x keeping arr sorted; return arr\n    pass\n',
+    tests: [
+      { name: 'stays sorted', body: 'assert insert_sorted([1, 3, 5], 4) == [1, 3, 4, 5]' },
+    ],
+    reference: `import bisect
+
+def insert_sorted(arr, x):
+    bisect.insort(arr, x)
+    return arr
+`,
+  },
+  {
+    problemId: 'py-deque-rotate',
+    title: 'collections.deque rotate',
+    language: 'py',
+    starter: 'from collections import deque\n\ndef rotate(items, k):\n    # rotate right by k using a deque\n    pass\n',
+    tests: [
+      { name: 'rotates right', body: 'assert rotate([1, 2, 3, 4, 5], 2) == [4, 5, 1, 2, 3]' },
+    ],
+    reference: `from collections import deque
+
+def rotate(items, k):
+    d = deque(items)
+    d.rotate(k)
+    return list(d)
+`,
+  },
+  {
+    problemId: 'py-counter-most-common',
+    title: 'Counter.most_common',
+    language: 'py',
+    starter: 'from collections import Counter\n\ndef top_words(text, k):\n    # the k most frequent words, most-first\n    pass\n',
+    tests: [
+      { name: 'top k', body: "assert top_words('a b a c a b', 2) == ['a', 'b']" },
+    ],
+    reference: `from collections import Counter
+
+def top_words(text, k):
+    return [w for w, _ in Counter(text.split()).most_common(k)]
+`,
+  },
+  {
+    problemId: 'py-defaultdict-int',
+    title: 'defaultdict(int) Counter',
+    language: 'py',
+    starter: 'from collections import defaultdict\n\ndef char_freq(s):\n    # character -> count, as a plain dict\n    pass\n',
+    tests: [
+      { name: 'counts chars', body: "assert char_freq('aabbc') == {'a': 2, 'b': 2, 'c': 1}" },
+    ],
+    reference: `from collections import defaultdict
+
+def char_freq(s):
+    freq = defaultdict(int)
+    for ch in s:
+        freq[ch] += 1
+    return dict(freq)
+`,
+  },
+  {
+    problemId: 'py-namedtuple',
+    title: 'collections.namedtuple',
+    language: 'py',
+    starter: "from collections import namedtuple\n\ndef make_point(x, y):\n    # build a Point namedtuple, return (p.x, p.y)\n    pass\n",
+    tests: [
+      { name: 'named fields', body: 'assert make_point(3, 4) == (3, 4)' },
+    ],
+    reference: `from collections import namedtuple
+
+def make_point(x, y):
+    Point = namedtuple('Point', ['x', 'y'])
+    p = Point(x, y)
+    return (p.x, p.y)
+`,
+  },
+  {
+    problemId: 'py-accumulate',
+    title: 'itertools.accumulate',
+    language: 'py',
+    starter: 'import itertools\n\ndef running_sums(nums):\n    # cumulative sums\n    pass\n',
+    tests: [
+      { name: 'running total', body: 'assert running_sums([1, 2, 3, 4]) == [1, 3, 6, 10]' },
+    ],
+    reference: `import itertools
+
+def running_sums(nums):
+    return list(itertools.accumulate(nums))
+`,
+  },
+  {
+    problemId: 'py-bisect-search',
+    title: 'Binary Search With bisect',
+    language: 'py',
+    starter: 'import bisect\n\ndef position(arr, x):\n    # index of x in sorted arr, or -1\n    pass\n',
+    tests: [
+      { name: 'finds or -1', body: 'assert position([1, 3, 5, 7], 5) == 2\nassert position([1, 3, 5], 4) == -1' },
+    ],
+    reference: `import bisect
+
+def position(arr, x):
+    i = bisect.bisect_left(arr, x)
+    return i if i < len(arr) and arr[i] == x else -1
+`,
+  },
 ]
