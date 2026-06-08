@@ -511,6 +511,23 @@ function compactList(items: string[], limit: number): string[] {
 }
 
 function nodeLabel(text: string, fallback: string): string {
+  const lower = text.toLowerCase()
+  const knownLabels: Array<[RegExp, string]> = [
+    [/process entrypoint|startup config/, 'Entrypoint'],
+    [/route\/controller|controller/, 'Route / Controller'],
+    [/use case|service function|service/, 'Use Case / Service'],
+    [/repository|database calls/, 'Repository / Database'],
+    [/tests? that prove|test/, 'Tests'],
+    [/status code/, 'Status Code'],
+    [/request body|request schema/, 'Request Body'],
+    [/response body|response schema/, 'Response Body'],
+    [/error/, 'Error Handling'],
+    [/cache/, 'Cache'],
+    [/transaction/, 'Transaction'],
+  ]
+  const matched = knownLabels.find(([pattern]) => pattern.test(lower))
+  if (matched) return matched[1]
+
   const cleaned = text
     .replace(/^(Use|Read|Track|Check|Define|Explain|Name|Identify|Return|Run|Start|Pick|Write)\s+/i, '')
     .replace(/^(at|in|on|to|from|with|for)\s+(the\s+)?/i, '')
@@ -528,16 +545,16 @@ function nodeLabel(text: string, fallback: string): string {
 }
 
 function problemDiagram(problem: Problem, base: SubjectTeaching, lesson?: ProblemLesson): string[] {
-  if (problem.walkthrough && problem.walkthrough.length >= 3) {
-    return problem.walkthrough
-      .slice(0, 6)
-      .map((step, index) => nodeLabel(step, `Step ${index + 1}`))
-  }
-
   if (lesson) {
     return lesson.mistake
       ? ['Concept', 'Idiom', 'Avoid', 'Prove']
       : ['Concept', 'Idiom', 'Implement', 'Prove']
+  }
+
+  if (problem.walkthrough && problem.walkthrough.length >= 3) {
+    return problem.walkthrough
+      .slice(0, 6)
+      .map((step, index) => nodeLabel(step, `Step ${index + 1}`))
   }
 
   if (problem.checklist.length >= 3) {
@@ -554,10 +571,6 @@ function problemDiagramExplanations(
   base: SubjectTeaching,
   lesson?: ProblemLesson,
 ): string[] | undefined {
-  if (problem.walkthrough && problem.walkthrough.length >= 3) {
-    return problem.walkthrough.slice(0, 6)
-  }
-
   if (lesson) {
     return [
       lesson.concept,
@@ -567,6 +580,10 @@ function problemDiagramExplanations(
         : 'Use the smallest implementation that proves the concept.',
       problem.checklist[0] ?? 'Run the checks and explain why the result is correct.',
     ]
+  }
+
+  if (problem.walkthrough && problem.walkthrough.length >= 3) {
+    return problem.walkthrough.slice(0, 6)
   }
 
   if (problem.checklist.length >= 3) {

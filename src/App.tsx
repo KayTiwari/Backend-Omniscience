@@ -1380,6 +1380,51 @@ function App() {
                   </details>
                 </div>
               </>
+            ) : activeProblem.walkthrough && activeProblem.walkthrough.length > 0 ? (
+              <>
+                <div className="lesson-focus">
+                  <section className="lesson-focus-card lesson-focus-card-primary">
+                    <span>Core Idea</span>
+                    <p>{renderGlossaryText(teachingModel.mentalModel)}</p>
+                  </section>
+                </div>
+
+                <section className="lesson-walkthrough">
+                  <h4>Follow This Path</h4>
+                  <ol>
+                    {activeProblem.walkthrough.map((item) => (
+                      <li key={item}>{renderLessonListItem(item)}</li>
+                    ))}
+                  </ol>
+                </section>
+
+                <div className="lesson-detail-row">
+                  <details>
+                    <summary>Foundation Notes</summary>
+                    <ul>
+                      {teachingModel.fundamentals.map((item) => (
+                        <li key={item}>{renderLessonListItem(item)}</li>
+                      ))}
+                    </ul>
+                  </details>
+                  <details>
+                    <summary>Go Deeper</summary>
+                    <ul>
+                      {teachingModel.advanced.map((item) => (
+                        <li key={item}>{renderGlossaryText(item)}</li>
+                      ))}
+                    </ul>
+                  </details>
+                  <details>
+                    <summary>Interview Tips</summary>
+                    <ul>
+                      {teachingModel.interview.map((item) => (
+                        <li key={item}>{renderGlossaryText(item)}</li>
+                      ))}
+                    </ul>
+                  </details>
+                </div>
+              </>
             ) : (
               <>
                 <div className="visual-lesson">

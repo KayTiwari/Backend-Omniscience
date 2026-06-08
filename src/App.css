@@ -211,11 +211,38 @@ html, body {
   100% { background-position: 180% 50%; }
 }
 
+@keyframes lesson-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lesson-accent-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 3px 0 0 color-mix(in srgb, var(--brand-b) 70%, transparent),
+      0 8px 22px rgba(15, 23, 42, 0.035);
+  }
+  50% {
+    box-shadow:
+      inset 3px 0 0 color-mix(in srgb, var(--brand-c) 80%, transparent),
+      0 12px 30px color-mix(in srgb, var(--brand-b) 10%, transparent);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .app-shell,
   .brand-mark,
   .progress-track div,
-  .mastery-meter div {
+  .mastery-meter div,
+  .lesson-focus-card,
+  .lesson-walkthrough,
+  .lesson-detail-row details {
     animation: none;
   }
 
@@ -1636,6 +1663,7 @@ h1 {
   padding: 14px;
   background: var(--field);
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.035);
+  animation: lesson-enter 360ms var(--ease-out) both;
 }
 
 .lesson-focus-card-primary {
@@ -1643,6 +1671,9 @@ h1 {
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--brand-b) 7%, transparent), transparent 58%),
     var(--field);
+  animation:
+    lesson-enter 360ms var(--ease-out) both,
+    lesson-accent-pulse 4.8s ease-in-out 700ms infinite;
 }
 
 .lesson-focus-card-warning {
@@ -1678,6 +1709,38 @@ h1 {
   white-space: pre-wrap;
 }
 
+.lesson-walkthrough {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--field);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.035);
+  animation: lesson-enter 420ms var(--ease-out) 80ms both;
+}
+
+.lesson-walkthrough h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.lesson-walkthrough ol {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 28px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.lesson-walkthrough li::marker {
+  color: var(--brand-b);
+  font-weight: 900;
+}
+
 .lesson-detail-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1689,11 +1752,17 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: color-mix(in srgb, var(--field) 86%, var(--paper));
+  animation: lesson-enter 420ms var(--ease-out) 140ms both;
 }
 
 .lesson-detail-row details[open] {
   grid-column: 1 / -1;
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.045);
+}
+
+.lesson-detail-row details:hover {
+  border-color: color-mix(in srgb, var(--brand-b) 34%, var(--line));
+  background: color-mix(in srgb, var(--brand-b) 5%, var(--field));
 }
 
 .lesson-detail-row summary {
