@@ -3864,4 +3864,124 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Formatting & time math (practical backend helpers) --------------
+  {
+    problemId: 'fmt-seconds-hms',
+    title: 'Seconds To HH:MM:SS',
+    language: 'js',
+    starter: 'function secondsToHMS(s) {\n  // 3661 -> "01:01:01" (zero-padded)\n}\n',
+    tests: [
+      { name: 'pads each part', body: 'assertEqual(secondsToHMS(3661), "01:01:01"); assertEqual(secondsToHMS(0), "00:00:00");' },
+    ],
+    reference: `function secondsToHMS(s) {
+  var h = Math.floor(s / 3600);
+  var m = Math.floor((s % 3600) / 60);
+  var sec = s % 60;
+  function pad(n) { return String(n).padStart(2, '0'); }
+  return pad(h) + ':' + pad(m) + ':' + pad(sec);
+}
+`,
+  },
+  {
+    problemId: 'fmt-humanize-ms',
+    title: 'Humanize Milliseconds',
+    language: 'js',
+    starter: 'function humanizeMs(ms) {\n  // 90000 -> "1m 30s"\n}\n',
+    tests: [
+      { name: 'minutes and seconds', body: 'assertEqual(humanizeMs(90000), "1m 30s"); assertEqual(humanizeMs(5000), "0m 5s");' },
+    ],
+    reference: `function humanizeMs(ms) {
+  var total = Math.floor(ms / 1000);
+  var m = Math.floor(total / 60);
+  var s = total % 60;
+  return m + 'm ' + s + 's';
+}
+`,
+  },
+  {
+    problemId: 'fmt-diff-days',
+    title: 'Whole Days Between Timestamps',
+    language: 'js',
+    starter: 'function diffDays(a, b) {\n  // whole days between two epoch-ms values\n}\n',
+    tests: [
+      { name: 'floors the diff', body: 'assertEqual(diffDays(0, 86400000), 1); assertEqual(diffDays(0, 90000000), 1);' },
+    ],
+    reference: `function diffDays(a, b) {
+  return Math.floor(Math.abs(a - b) / 86400000);
+}
+`,
+  },
+  {
+    problemId: 'fmt-is-leap',
+    title: 'Leap Year',
+    language: 'js',
+    starter: 'function isLeapYear(y) {\n  // divisible by 4, except centuries unless divisible by 400\n}\n',
+    tests: [
+      { name: 'rules', body: 'assertEqual(isLeapYear(2000), true); assertEqual(isLeapYear(1900), false); assertEqual(isLeapYear(2024), true); assertEqual(isLeapYear(2023), false);' },
+    ],
+    reference: `function isLeapYear(y) {
+  return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+}
+`,
+  },
+  {
+    problemId: 'fmt-days-in-month',
+    title: 'Days In A Month',
+    language: 'js',
+    starter: 'function daysInMonth(year, month) {\n  // month is 1-12\n}\n',
+    tests: [
+      { name: 'feb + others', body: 'assertEqual(daysInMonth(2024, 2), 29); assertEqual(daysInMonth(2023, 2), 28); assertEqual(daysInMonth(2023, 4), 30); assertEqual(daysInMonth(2023, 1), 31);' },
+    ],
+    reference: `function daysInMonth(year, month) {
+  if (month === 2) return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 29 : 28;
+  return [4, 6, 9, 11].includes(month) ? 30 : 31;
+}
+`,
+  },
+  {
+    problemId: 'fmt-bytes',
+    title: 'Format Bytes',
+    language: 'js',
+    starter: 'function formatBytes(n) {\n  // 1536 -> "1.5 KB", 512 -> "512 B"\n}\n',
+    tests: [
+      { name: 'scales units', body: 'assertEqual(formatBytes(512), "512 B"); assertEqual(formatBytes(1536), "1.5 KB"); assertEqual(formatBytes(1048576), "1 MB");' },
+    ],
+    reference: `function formatBytes(n) {
+  if (n < 1024) return n + ' B';
+  var units = ['KB', 'MB', 'GB', 'TB'];
+  var i = -1;
+  do { n /= 1024; i++; } while (n >= 1024 && i < units.length - 1);
+  return (Math.round(n * 10) / 10) + ' ' + units[i];
+}
+`,
+  },
+  {
+    problemId: 'fmt-ordinal',
+    title: 'Ordinal Suffix',
+    language: 'js',
+    starter: 'function ordinal(n) {\n  // 1 -> "1st", 2 -> "2nd", 11 -> "11th", 21 -> "21st"\n}\n',
+    tests: [
+      { name: 'handles the teens', body: 'assertEqual(ordinal(1), "1st"); assertEqual(ordinal(2), "2nd"); assertEqual(ordinal(11), "11th"); assertEqual(ordinal(21), "21st"); assertEqual(ordinal(13), "13th");' },
+    ],
+    reference: `function ordinal(n) {
+  var s = ['th', 'st', 'nd', 'rd'];
+  var v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+`,
+  },
+  {
+    problemId: 'fmt-truncate',
+    title: 'Truncate With Ellipsis',
+    language: 'js',
+    starter: 'function truncate(str, max) {\n  // keep up to max chars, append "..." when cut\n}\n',
+    tests: [
+      { name: 'cuts long strings', body: 'assertEqual(truncate("hello", 10), "hello"); assertEqual(truncate("hello world", 5), "hello...");' },
+    ],
+    reference: `function truncate(str, max) {
+  return str.length <= max ? str : str.slice(0, max) + '...';
+}
+`,
+  },
 ]
