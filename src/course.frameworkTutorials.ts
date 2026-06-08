@@ -116,6 +116,44 @@ export const frameworkTutorialProblems: Record<string, Problem[]> = {
   ],
   python: [
     {
+      id: 'python-tutorial-web-frameworks-from-zero',
+      title: 'Tutorial: Python Web Frameworks From Zero',
+      type: 'lesson',
+      difficulty: 'Warmup',
+      minutes: 38,
+      prompt:
+        'Learn what a Python web framework is before choosing Flask, FastAPI, or Django. Explain what problem frameworks solve, how a request becomes Python code, and which tradeoffs matter in production.',
+      explanation:
+        'A Python web framework is the glue between HTTP and your Python functions. It receives a request from a server, matches a URL to code, gives you request data, lets you return a response, and provides hooks for cross-cutting work like errors, middleware, auth, validation, and database access. The framework is not the whole backend: your business rules, data model, jobs, tests, and production operating choices still belong to you.',
+      production:
+        'Framework confusion creates production bugs: business logic trapped in routes, validation skipped at the boundary, blocking calls inside async handlers, global clients created at import time, database sessions leaked across requests, or choosing a batteries-included tool when the team needs a tiny API. Learn the framework as a request lifecycle plus a set of tradeoffs.',
+      walkthrough: [
+        'Define the framework boundary: HTTP request in, Python handler runs, HTTP response out.',
+        'Name the server interface: WSGI for classic synchronous apps, ASGI for async-capable apps.',
+        'Compare Flask: small and explicit; you choose structure, validation, ORM, auth, and extensions.',
+        'Compare FastAPI: API-first, ASGI, type-hint driven validation/docs, good for JSON services and async IO.',
+        'Compare Django: batteries-included ORM, auth, admin, migrations, forms/templates, and strong conventions.',
+        'Separate framework code from backend architecture: routes/views call services, services enforce rules, repositories handle persistence.',
+        'Choose by product need, team experience, ecosystem, performance model, admin/data needs, and long-term maintainability.',
+      ],
+      example:
+        'Request lifecycle: client -> web server -> WSGI/ASGI app -> middleware -> route/view -> service -> repository/database -> response. Framework choice changes the tools, not the need for boundaries.',
+      questions: [
+        'What exact problem does a web framework solve?',
+        'What does WSGI/ASGI sit between?',
+        'When would Flask be a better fit than Django?',
+        'When would Django be a better fit than Flask?',
+        'Why does FastAPI not remove the need for runtime validation at external boundaries?',
+        'Which code should not live directly in a route/view?',
+      ],
+      checklist: [
+        'Can define Python web framework in plain English.',
+        'Can trace request to response through framework code.',
+        'Can compare Flask, FastAPI, and Django tradeoffs.',
+        'Can explain what the framework does not solve for you.',
+      ],
+    },
+    {
       id: 'python-tutorial-api-service-shape',
       title: 'Tutorial: Python API Service Shape',
       type: 'lesson',
@@ -226,7 +264,122 @@ export const frameworkTutorialProblems: Record<string, Problem[]> = {
       ],
     },
   ],
+  flask: [
+    {
+      id: 'flask-tutorial-framework-from-zero',
+      title: 'Tutorial: What Flask Is And How It Works',
+      type: 'lesson',
+      difficulty: 'Warmup',
+      minutes: 42,
+      prompt:
+        'Learn Flask from zero: what it is, how a request reaches a view function, what Flask gives you, what it leaves to extensions or your architecture, and when Flask is the right tradeoff.',
+      explanation:
+        'Flask is a small Python web framework for turning HTTP requests into Python function calls and Python return values into HTTP responses. It gives you an app object, URL routing, request/response helpers, context-local objects like request and g, error handlers, templates, and an extension ecosystem. It intentionally does not force a project layout, ORM, auth system, serializer, or service layer; that freedom is useful, but it means you must design boundaries yourself.',
+      production:
+        'Flask production problems usually come from assuming the framework provides more than it does: no built-in ORM lifecycle unless configured, no automatic validation, no built-in permissions model, no default API schema, and classic WSGI workers can block under slow IO or CPU work. A good Flask app is explicit about app factory setup, blueprints, config validation, database sessions, error shape, workers, and tests.',
+      walkthrough: [
+        'Start with the app object: Flask(__name__) owns config, routes, extensions, and error handlers.',
+        'Trace routing: @app.route or a blueprint maps method plus path to a view function.',
+        'Read request data at the edge: query args, JSON body, headers, cookies, and files.',
+        'Call service code with plain Python values instead of passing Flask request everywhere.',
+        'Return a response: JSON body, status code, and headers.',
+        'Understand context locals: request and g behave per-request even though you import them globally.',
+        'Deploy with a WSGI server like Gunicorn and choose workers/threads based on load.',
+      ],
+      example:
+        '@users_bp.post("/users") -> validate request.json -> create_user_service(...) -> jsonify(dto), 201. Flask handles routing and response helpers; your code owns validation, business rules, persistence, and tests.',
+      questions: [
+        'What does Flask do when a URL matches a route?',
+        'What is the difference between Flask the framework and your service layer?',
+        'Why is create_app() better than one global app for tests?',
+        'What does request context mean?',
+        'What does Flask not include by default?',
+        'When should you choose Flask instead of Django?',
+      ],
+      checklist: [
+        'Can define Flask without jargon.',
+        'Can trace a Flask request through route, service, persistence, and response.',
+        'Can name what Flask provides and what it leaves to you.',
+        'Can explain WSGI worker tradeoffs.',
+      ],
+    },
+    {
+      id: 'flask-tutorial-tradeoffs-and-architecture',
+      title: 'Tutorial: Flask Tradeoffs And Architecture',
+      type: 'lesson',
+      difficulty: 'Core',
+      minutes: 36,
+      prompt:
+        'Decide how to structure a real Flask API. Explain app factories, blueprints, extensions, validation, persistence, auth, background work, testing, and the tradeoff between freedom and convention.',
+      explanation:
+        'Flask is best when you want a focused API, a small service, custom architecture, or gradual adoption of extensions. Its strength is explicitness: you can see every route, extension, and boundary. Its weakness is that inconsistent teams can invent a different architecture in every file. The answer is a small set of conventions: app factory, blueprints by domain, thin routes, service functions, repository/session boundary, centralized errors, and route/integration tests.',
+      production:
+        'The tradeoff is control versus guardrails. Flask lets you move quickly, but production safety comes from choices you must make: Marshmallow/Pydantic for validation, Flask-SQLAlchemy or SQLAlchemy sessions with teardown, Flask-Login/JWT for auth, Flask-Migrate for schema changes, Celery/RQ for jobs, and Gunicorn/observability settings for operations.',
+      walkthrough: [
+        'Use create_app(config) to build isolated apps for dev, test, and prod.',
+        'Register blueprints by feature so URLs do not live in one giant file.',
+        'Initialize extensions with init_app to avoid circular imports.',
+        'Keep route functions thin: validate, call service, map result to response.',
+        'Put transaction lifetime and session cleanup in one obvious place.',
+        'Use a consistent error envelope and handlers for domain exceptions.',
+        'Test services directly and test a few routes through Flask test_client.',
+      ],
+      example:
+        'users/routes.py handles HTTP; users/service.py enforces rules; users/repository.py talks to SQLAlchemy; app/errors.py maps UserAlreadyExists to 409 JSON.',
+      questions: [
+        'What conventions does a Flask team need to add?',
+        'Why can extension initialization create circular imports?',
+        'Where should database commits happen?',
+        'What should a route test prove that a service test cannot?',
+        'What are the risks of too much freedom?',
+      ],
+      checklist: [
+        'Can design a maintainable Flask folder shape.',
+        'Can defend app factory and blueprint usage.',
+        'Can choose extensions deliberately.',
+        'Can name Flask tradeoffs against Django/FastAPI.',
+      ],
+    },
+  ],
   django: [
+    {
+      id: 'django-tutorial-framework-from-zero',
+      title: 'Tutorial: What Django And DRF Are',
+      type: 'lesson',
+      difficulty: 'Warmup',
+      minutes: 44,
+      prompt:
+        'Learn Django and Django REST Framework from zero: what problems they solve, how request flow works, what batteries-included means, what DRF adds for APIs, and what tradeoffs come with the framework.',
+      explanation:
+        'Django is a batteries-included Python web framework. It gives you URL routing, settings, middleware, an ORM, migrations, authentication, sessions, forms, templates, static/media handling, and an admin site. Django REST Framework, usually called DRF, adds API-specific tools: serializers for validation and representation, API views/viewsets, routers, permissions, pagination, browsable API, and schema support. Together they let you build data-heavy web apps and JSON APIs quickly with strong conventions.',
+      production:
+        'Django solves a lot, but it does not remove engineering judgment. QuerySets are lazy and can create N+1 queries, migrations can lock tables, serializers can become business-logic junk drawers, permissions must scope objects correctly, and settings must change for production. Django is powerful when you accept its conventions; it is frustrating when you fight them or ignore the database underneath the ORM.',
+      walkthrough: [
+        'Start with project vs app: project holds global config; apps hold feature areas.',
+        'Trace request flow: web server, Django handler, middleware, URLconf, view, ORM/service, response.',
+        'Understand models and ORM: Python classes map to database tables and queries.',
+        'Understand migrations: model changes become versioned database schema changes.',
+        'Understand auth/admin: Django ships a user/session/permission model and data admin UI.',
+        'Add DRF for APIs: serializers validate/shape data; viewsets and routers expose endpoints.',
+        'Choose Django when conventions, admin, ORM, auth, and rapid data-app development matter.',
+      ],
+      example:
+        'GET /api/projects/ -> urls.py/router -> ProjectViewSet.list -> get_queryset scoped to request.user -> serializer -> paginated JSON response.',
+      questions: [
+        'What does batteries-included mean in Django?',
+        'What is the difference between a project and an app?',
+        'What does DRF add that core Django does not focus on?',
+        'Why can the ORM still cause production performance bugs?',
+        'When is Django a better choice than Flask?',
+        'When might Django be too heavy?',
+      ],
+      checklist: [
+        'Can define Django and DRF separately.',
+        'Can trace request flow through Django.',
+        'Can explain ORM, migrations, auth, admin, serializers, and viewsets.',
+        'Can name Django tradeoffs and common production traps.',
+      ],
+    },
     {
       id: 'django-tutorial-drf-request-map',
       title: 'Tutorial: DRF Request Map',
