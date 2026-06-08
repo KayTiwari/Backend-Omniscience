@@ -416,4 +416,18 @@ export const quickWrites: QuickWrite[] = [
     productionAnchor:
       'The average looks fine but p99 tripled; a trace shows one slow downstream call.',
   },
+  {
+    subjectId: 'algorithms',
+    prompt: 'Given a coding problem, describe how you reason from brute force to an optimal solution.',
+    expected: [
+      'state the brute force and its Big-O',
+      'name the bottleneck (nested loop, repeated work)',
+      'pick a structure: hash map, set, heap, two pointers, or sorting',
+      'state the improved time and space complexity',
+      'handle edge cases (empty, duplicates, negatives)',
+      'verify on a small example',
+    ],
+    productionAnchor:
+      'A nested-loop dedupe is O(n^2); a Set makes it O(n) — naming the bottleneck is the whole move.',
+  },
 ]
