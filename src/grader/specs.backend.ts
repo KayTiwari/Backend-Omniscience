@@ -4792,4 +4792,109 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- NoSQL / document database operations ----------------------------
+  {
+    problemId: 'doc-match',
+    title: 'Match A Document Against A Query',
+    language: 'js',
+    starter: 'function matchDoc(doc, query) {\n  // every query field equals doc field; if the doc field is an array, match contains\n}\n',
+    tests: [
+      { name: 'equality + array contains', body: 'assertEqual(matchDoc({name:"a", tags:["x","y"]}, {name:"a"}), true); assertEqual(matchDoc({tags:["x"]}, {tags:"x"}), true); assertEqual(matchDoc({name:"a"}, {name:"b"}), false);' },
+    ],
+    reference: `function matchDoc(doc, query) {
+  return Object.keys(query).every((k) => {
+    const v = doc[k], q = query[k];
+    return Array.isArray(v) ? v.includes(q) : v === q;
+  });
+}
+`,
+  },
+  {
+    problemId: 'doc-find',
+    title: 'Find Documents In A Collection',
+    language: 'js',
+    starter: 'function find(collection, query) {\n  // return docs matching the query (equality / array-contains)\n}\n',
+    tests: [
+      { name: 'filters the collection', body: 'assertEqual(find([{id:1,active:true},{id:2,active:false}], {active:true}), [{id:1,active:true}]);' },
+    ],
+    reference: `function find(collection, query) {
+  const matches = (doc) =>
+    Object.keys(query).every((k) => {
+      const v = doc[k], q = query[k];
+      return Array.isArray(v) ? v.includes(q) : v === q;
+    });
+  return collection.filter(matches);
+}
+`,
+  },
+  {
+    problemId: 'doc-projection',
+    title: 'Projection (include / exclude)',
+    language: 'js',
+    starter: 'function project(doc, fields, include = true) {\n  // include=true keeps only fields; include=false drops them\n}\n',
+    tests: [
+      { name: 'both modes', body: 'assertEqual(project({a:1,b:2,c:3}, ["a","b"]), {a:1,b:2}); assertEqual(project({a:1,b:2}, ["b"], false), {a:1});' },
+    ],
+    reference: `function project(doc, fields, include = true) {
+  if (include) {
+    const o = {};
+    for (const f of fields) if (f in doc) o[f] = doc[f];
+    return o;
+  }
+  const o = { ...doc };
+  for (const f of fields) delete o[f];
+  return o;
+}
+`,
+  },
+  {
+    problemId: 'doc-set-path',
+    title: 'Update $set On A Nested Path',
+    language: 'js',
+    starter: "function applySet(doc, path, value) {\n  // set a dotted path immutably, e.g. 'a.b' -> value\n}\n",
+    tests: [
+      { name: 'nested + new', body: 'assertEqual(applySet({a:{b:1}}, "a.b", 2), {a:{b:2}}); assertEqual(applySet({}, "x", 5), {x:5});' },
+    ],
+    reference: `function applySet(doc, path, value) {
+  const keys = path.split('.');
+  const out = { ...doc };
+  let node = out;
+  for (let i = 0; i < keys.length - 1; i++) {
+    node[keys[i]] = { ...node[keys[i]] };
+    node = node[keys[i]];
+  }
+  node[keys[keys.length - 1]] = value;
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'doc-group-sum',
+    title: 'Aggregation: Group + Sum',
+    language: 'js',
+    starter: 'function groupSum(docs, groupKey, sumKey) {\n  // { groupValue: sum of sumKey } (like $group/$sum)\n}\n',
+    tests: [
+      { name: 'sums per group', body: 'assertEqual(groupSum([{cat:"a",n:1},{cat:"a",n:2},{cat:"b",n:3}], "cat", "n"), {a:3, b:3});' },
+    ],
+    reference: `function groupSum(docs, groupKey, sumKey) {
+  const out = {};
+  for (const d of docs) out[d[groupKey]] = (out[d[groupKey]] || 0) + d[sumKey];
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'doc-sort-limit',
+    title: 'Sort + Limit',
+    language: 'js',
+    starter: 'function sortLimit(docs, key, n) {\n  // sort ascending by key, take the first n\n}\n',
+    tests: [
+      { name: 'orders then slices', body: 'assertEqual(sortLimit([{n:3},{n:1},{n:2}], "n", 2), [{n:1},{n:2}]);' },
+    ],
+    reference: `function sortLimit(docs, key, n) {
+  return [...docs].sort((a, b) => (a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0)).slice(0, n);
+}
+`,
+  },
 ]
