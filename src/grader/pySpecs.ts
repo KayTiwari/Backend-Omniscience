@@ -1019,4 +1019,121 @@ def position(arr, x):
     return i if i < len(arr) and arr[i] == x else -1
 `,
   },
+
+  // ----- Python web/backend logic (Django/DRF/Flask-flavored) ------------
+  {
+    problemId: 'pyweb-queryset-filter',
+    title: 'QuerySet-Style Filter',
+    language: 'py',
+    starter: 'def filter_objects(objects, **filters):\n    # keep objects matching all key=value filters (like .filter(**kw))\n    pass\n',
+    tests: [
+      { name: 'matches all filters', body: "assert filter_objects([{'name':'a','active':True},{'name':'b','active':False}], active=True) == [{'name':'a','active':True}]" },
+    ],
+    reference: `def filter_objects(objects, **filters):
+    return [o for o in objects if all(o.get(k) == v for k, v in filters.items())]
+`,
+  },
+  {
+    problemId: 'pyweb-serialize',
+    title: 'Serializer: Pick Fields',
+    language: 'py',
+    starter: 'def serialize(obj, fields):\n    # return only the allowlisted fields present on obj\n    pass\n',
+    tests: [
+      { name: 'drops extras', body: "assert serialize({'id':1,'name':'a','password':'x'}, ['id','name']) == {'id':1,'name':'a'}" },
+    ],
+    reference: `def serialize(obj, fields):
+    return {k: obj[k] for k in fields if k in obj}
+`,
+  },
+  {
+    problemId: 'pyweb-paginate',
+    title: 'DRF-Style Pagination',
+    language: 'py',
+    starter: "def paginate(items, page, size):\n    # return { count, results, has_next }\n    pass\n",
+    tests: [
+      { name: 'page shape', body: "assert paginate([1,2,3,4,5], 1, 2) == {'count':5,'results':[1,2],'has_next':True}" },
+    ],
+    reference: `def paginate(items, page, size):
+    start = (page - 1) * size
+    return {
+        'count': len(items),
+        'results': items[start:start + size],
+        'has_next': start + size < len(items),
+    }
+`,
+  },
+  {
+    problemId: 'pyweb-route-match',
+    title: 'Route Match With <param>',
+    language: 'py',
+    starter: "def match_route(pattern, path):\n    # '/users/<id>/' vs '/users/42/' -> {'id': '42'}; no match -> None\n    pass\n",
+    tests: [
+      { name: 'captures params', body: "assert match_route('/users/<id>/', '/users/42/') == {'id': '42'}\nassert match_route('/users/', '/posts/') is None" },
+    ],
+    reference: `def match_route(pattern, path):
+    p_parts = pattern.strip('/').split('/')
+    a_parts = path.strip('/').split('/')
+    if len(p_parts) != len(a_parts):
+        return None
+    params = {}
+    for pp, ap in zip(p_parts, a_parts):
+        if pp.startswith('<') and pp.endswith('>'):
+            params[pp[1:-1]] = ap
+        elif pp != ap:
+            return None
+    return params
+`,
+  },
+  {
+    problemId: 'pyweb-validate',
+    title: 'Validate Required Fields',
+    language: 'py',
+    starter: "def validate(data, required):\n    # return { field: 'required' } for each missing/empty field\n    pass\n",
+    tests: [
+      { name: 'reports missing', body: "assert validate({'name':'a'}, ['name','email']) == {'email':'required'}" },
+    ],
+    reference: `def validate(data, required):
+    return {f: 'required' for f in required if not data.get(f)}
+`,
+  },
+  {
+    problemId: 'pyweb-permission',
+    title: 'Permission: Staff Or Owner',
+    language: 'py',
+    starter: 'def can_edit(user, obj):\n    # staff can always edit; otherwise only the owner\n    pass\n',
+    tests: [
+      { name: 'staff or owner', body: "assert can_edit({'id':1,'is_staff':False}, {'owner':1}) == True\nassert can_edit({'id':2,'is_staff':False}, {'owner':1}) == False\nassert can_edit({'id':3,'is_staff':True}, {'owner':1}) == True" },
+    ],
+    reference: `def can_edit(user, obj):
+    return user.get('is_staff', False) or obj.get('owner') == user.get('id')
+`,
+  },
+  {
+    problemId: 'pyweb-status-for',
+    title: 'Exception To HTTP Status',
+    language: 'py',
+    starter: "def status_for(error):\n    # ValidationError->400, NotFound->404, PermissionDenied->403, Conflict->409, else 500\n    pass\n",
+    tests: [
+      { name: 'maps errors', body: "assert status_for('NotFound') == 404\nassert status_for('Boom') == 500" },
+    ],
+    reference: `def status_for(error):
+    return {'ValidationError': 400, 'NotFound': 404, 'PermissionDenied': 403, 'Conflict': 409}.get(error, 500)
+`,
+  },
+  {
+    problemId: 'pyweb-query-params',
+    title: 'Parse Query Params',
+    language: 'py',
+    starter: "def parse_params(query):\n    # { page:1, size:20, search:'' } defaults, overridden by query (ints coerced)\n    pass\n",
+    tests: [
+      { name: 'defaults + coercion', body: "assert parse_params({'page':'2','search':'x'}) == {'page':2,'size':20,'search':'x'}" },
+    ],
+    reference: `def parse_params(query):
+    return {
+        'page': int(query.get('page', 1)),
+        'size': int(query.get('size', 20)),
+        'search': query.get('search', ''),
+    }
+`,
+  },
 ]
