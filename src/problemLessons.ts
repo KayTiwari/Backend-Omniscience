@@ -401,6 +401,16 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'algo-quicksort', concept: `Partition around a pivot, then sort each side.`, idiom: `[...sort(less), pivot, ...sort(greaterEqual)]`, mistake: `A bad pivot on sorted input degrades to O(n^2).` },
   { problemId: 'algo-rotate-matrix', concept: `Rotating 90 clockwise maps (i, j) to (j, n-1-i).`, idiom: `res[j][n - 1 - i] = m[i][j]`, mistake: `Off-by-one in the n-1-i index.` },
   { problemId: 'algo-move-zeroes', concept: `Keep the non-zeros in order, then pad zeros to the end.`, idiom: `filter(x !== 0), then push zeros`, mistake: `Careless swaps can reorder the non-zeros.` },
+
+  // ----- Data structures (build them yourself) -----
+  { problemId: 'dsb-stack', concept: `A stack is last-in-first-out; an array's push/pop is exactly that.`, idiom: `push -> items.push, pop -> items.pop`, mistake: `peek must not remove the top.` },
+  { problemId: 'dsb-queue', concept: `A queue is first-in-first-out: enqueue at the back, dequeue at the front.`, idiom: `enqueue -> push, dequeue -> shift`, mistake: `shift is O(n); fine here, use a ring buffer at scale.` },
+  { problemId: 'dsb-min-heap', concept: `A binary heap keeps the min at the root via sift-up/sift-down.`, idiom: `parent = (i - 1) >> 1; children = 2i+1, 2i+2`, mistake: `Forgetting to sift-down after moving the last element to the root.` },
+  { problemId: 'dsb-bst', concept: `A BST puts smaller values left, larger right, for O(log n) search.`, idiom: `val < node.val ? go left : go right`, mistake: `An unbalanced insert order degrades to a linked list.` },
+  { problemId: 'dsb-inorder', concept: `In-order traversal visits left, node, right — sorted for a BST.`, idiom: `[...inorder(left), val, ...inorder(right)]`, mistake: `Wrong order (e.g. pre-order) gives unsorted output.` },
+  { problemId: 'dsb-level-order', concept: `Level-order is BFS: process the current level, then its children.`, idiom: `level = next (collected children)`, mistake: `Mutating the queue while iterating it.` },
+  { problemId: 'dsb-reverse-list', concept: `Reverse a singly linked list by re-pointing next as you walk.`, idiom: `next = head.next; head.next = prev; prev = head`, mistake: `Losing the rest of the list by not saving next first.` },
+  { problemId: 'dsb-hashmap', concept: `A hashmap hashes the key to a bucket and chains collisions.`, idiom: `idx = hash(key) % size; bucket holds [key, val] pairs`, mistake: `Not updating an existing key creates duplicates.` },
 ]
 
 // Worked examples (input -> output), merged onto the lessons above and shown by
@@ -789,6 +799,16 @@ const examples: Record<string, string> = {
   'algo-quicksort': `[3,1,2,5,4] -> [1,2,3,4,5]`,
   'algo-rotate-matrix': `[[1,2],[3,4]] -> [[3,1],[4,2]]`,
   'algo-move-zeroes': `[0,1,0,3,12] -> [1,3,12,0,0]`,
+
+  // Data structures
+  'dsb-stack': `push(1); push(2); pop() -> 2; isEmpty() -> false`,
+  'dsb-queue': `enqueue(1); enqueue(2); dequeue() -> 1`,
+  'dsb-min-heap': `push 5,1,3,2,4 -> popMin() -> 1, then 2, then 3`,
+  'dsb-bst': `add 5,3,7 -> contains(3) true, contains(9) false`,
+  'dsb-inorder': `tree (2 with left 1, right 3) -> [1, 2, 3]`,
+  'dsb-level-order': `tree (2 with left 1, right 3) -> [[2], [1, 3]]`,
+  'dsb-reverse-list': `1 -> 2 -> 3 reversed -> [3, 2, 1]`,
+  'dsb-hashmap': `set("a",1); set("a",3) -> get("a") -> 3`,
 }
 
 export const problemLessons: ProblemLesson[] = lessonBase.map((l) =>
