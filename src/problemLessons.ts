@@ -429,6 +429,16 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'bit-hamming', concept: `Hamming distance is popcount of the XOR.`, idiom: `x = a ^ b; count its 1 bits`, mistake: `Comparing decimal digits instead of bits.` },
   { problemId: 'bit-missing-number', concept: `XOR all indices and values; the missing one survives.`, idiom: `x ^= i ^ nums[i], seeded with n`, mistake: `Summation works too but can overflow at scale.` },
   { problemId: 'bit-reverse', concept: `Shift bits out of n and into r to reverse a fixed width.`, idiom: `r = (r << 1) | (n & 1); n >>>= 1`, mistake: `Wrong width leaves bits unreversed.` },
+
+  // ----- Formatting & time math -----
+  { problemId: 'fmt-seconds-hms', concept: `Split seconds into hours/minutes/seconds and zero-pad.`, idiom: `pad(h) + ':' + pad(m) + ':' + pad(s)`, mistake: `Forgetting padStart(2, "0") gives "1:1:1".` },
+  { problemId: 'fmt-humanize-ms', concept: `Convert ms to whole minutes and remaining seconds.`, idiom: `m = floor(total/60); s = total % 60`, mistake: `Mixing ms and seconds units.` },
+  { problemId: 'fmt-diff-days', concept: `Whole days is the ms difference divided by 86,400,000.`, idiom: `Math.floor(Math.abs(a - b) / 86400000)`, mistake: `Not flooring leaves a fractional day.` },
+  { problemId: 'fmt-is-leap', concept: `Leap years: divisible by 4, except centuries unless by 400.`, idiom: `(y%4===0 && y%100!==0) || y%400===0`, mistake: `1900 is not a leap year; 2000 is.` },
+  { problemId: 'fmt-days-in-month', concept: `February depends on the leap rule; the rest are fixed.`, idiom: `Feb -> 28/29; [4,6,9,11] -> 30; else 31`, mistake: `Hardcoding 28 for February.` },
+  { problemId: 'fmt-bytes', concept: `Divide by 1024 until under 1024, picking the unit.`, idiom: `while (n >= 1024) { n /= 1024; i++ }`, mistake: `Using 1000 instead of 1024 for binary units.` },
+  { problemId: 'fmt-ordinal', concept: `Ordinal suffix is th, except 1st/2nd/3rd, but the teens are all th.`, idiom: `s[(v - 20) % 10] || s[v] || s[0]`, mistake: `11/12/13 must be th, not st/nd/rd.` },
+  { problemId: 'fmt-truncate', concept: `Return the string as-is if short, else slice and add "...".`, idiom: `str.length <= max ? str : str.slice(0, max) + '...'`, mistake: `Truncating strings that already fit.` },
 ]
 
 // Worked examples (input -> output), merged onto the lessons above and shown by
@@ -845,6 +855,16 @@ const examples: Record<string, string> = {
   'bit-hamming': `(1, 4) -> 2`,
   'bit-missing-number': `[3,0,1] -> 2`,
   'bit-reverse': `(1, 8) -> 128, (2, 8) -> 64`,
+
+  // Formatting & time math
+  'fmt-seconds-hms': `3661 -> "01:01:01"`,
+  'fmt-humanize-ms': `90000 -> "1m 30s"`,
+  'fmt-diff-days': `(0, 90000000) -> 1`,
+  'fmt-is-leap': `2000 -> true, 1900 -> false`,
+  'fmt-days-in-month': `(2024, 2) -> 29, (2023, 2) -> 28`,
+  'fmt-bytes': `1536 -> "1.5 KB", 512 -> "512 B"`,
+  'fmt-ordinal': `1 -> "1st", 11 -> "11th", 21 -> "21st"`,
+  'fmt-truncate': `("hello world", 5) -> "hello..."`,
 }
 
 export const problemLessons: ProblemLesson[] = lessonBase.map((l) =>
