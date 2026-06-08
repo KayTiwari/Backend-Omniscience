@@ -487,6 +487,16 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'arr-count-by', concept: `Tally items by the key a function returns.`, idiom: `out[fn(x)] = (out[fn(x)] || 0) + 1`, mistake: `Storing items instead of counts.` },
   { problemId: 'arr-windows', concept: `Every contiguous slice of a fixed length.`, idiom: `for i + size <= len: slice(i, i + size)`, mistake: `Off-by-one lets the last window run past the end.` },
   { problemId: 'arr-flatten-depth', concept: `Flatten nested arrays only up to a given depth.`, idiom: `depth <= 0 ? copy : concat(recurse(depth - 1))`, mistake: `Flattening fully ignores the depth limit.` },
+
+  // ----- Graph algorithms -----
+  { problemId: 'graph-topo-sort', concept: `Kahn's: repeatedly take a node with no remaining dependencies.`, idiom: `queue in-degree 0; on remove, decrement neighbors`, mistake: `A cycle leaves nodes stuck with nonzero in-degree.` },
+  { problemId: 'graph-has-cycle', concept: `DFS with an in-progress marker finds a back edge (a cycle).`, idiom: `state 1 = in-progress -> cycle, 2 = done`, mistake: `Revisiting a done node is fine; only in-progress means a cycle.` },
+  { problemId: 'graph-components', concept: `Each unvisited node starts a new component; flood-fill from it.`, idiom: `for n: if !seen { count++; dfs(n) }`, mistake: `Components need undirected (two-way) edges.` },
+  { problemId: 'graph-shortest-unweighted', concept: `BFS reaches nodes in distance order, so the first hit is shortest.`, idiom: `expand the frontier one level at a time`, mistake: `DFS does not give the shortest path.` },
+  { problemId: 'graph-dijkstra', concept: `Settle the nearest unvisited node, then relax its edges.`, idiom: `dist[v] = min(dist[v], dist[u] + w)`, mistake: `Dijkstra breaks with negative edge weights.` },
+  { problemId: 'graph-num-islands', concept: `Each unvisited land cell is a new island; sink it with flood fill.`, idiom: `on a 1: count++, sink the 4 neighbors`, mistake: `Not marking visited cells double-counts.` },
+  { problemId: 'graph-bipartite', concept: `Two-color with BFS; a same-color edge means not bipartite.`, idiom: `color[m] = color[n] ^ 1`, mistake: `Any odd-length cycle is not bipartite.` },
+  { problemId: 'graph-can-reach', concept: `Traverse from start; reachable if you ever hit end.`, idiom: `stack/queue + a seen set`, mistake: `start === end should return true.` },
 ]
 
 // Worked examples (input -> output), merged onto the lessons above and shown by
@@ -961,6 +971,16 @@ const examples: Record<string, string> = {
   'arr-count-by': `([1,2,3,4], parity) -> { odd: 2, even: 2 }`,
   'arr-windows': `([1,2,3,4], 2) -> [[1,2],[2,3],[3,4]]`,
   'arr-flatten-depth': `([1,[2,[3]]], 1) -> [1,2,[3]]`,
+
+  // Graph algorithms
+  'graph-topo-sort': `{a:[b,c], b:[d], c:[d], d:[]} -> [a,b,c,d]`,
+  'graph-has-cycle': `a->b->c->a -> true, a->b->c -> false`,
+  'graph-components': `{a-b, c alone} -> 2`,
+  'graph-shortest-unweighted': `a to d via b/c -> 2`,
+  'graph-dijkstra': `{a:[[b,1],[c,4]], b:[[c,2]]} -> {a:0,b:1,c:3}`,
+  'graph-num-islands': `[[1,1,0],[0,1,0],[0,0,1]] -> 2`,
+  'graph-bipartite': `single edge -> true, triangle -> false`,
+  'graph-can-reach': `({a:[b], b:[c]}, a, c) -> true`,
 }
 
 export const problemLessons: ProblemLesson[] = lessonBase.map((l) =>
