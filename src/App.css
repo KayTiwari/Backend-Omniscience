@@ -1137,6 +1137,60 @@ h1 {
   color: var(--muted);
 }
 
+.dictionary-view {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--paper);
+}
+
+.dictionary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+  max-height: 420px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.dictionary-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+}
+
+.dictionary-card summary {
+  cursor: pointer;
+  padding: 11px 12px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 900;
+  list-style: none;
+}
+
+.dictionary-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.dictionary-card p,
+.dictionary-card small {
+  display: block;
+  margin: 0;
+  border-top: 1px solid var(--line);
+  padding: 10px 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.dictionary-card small {
+  border-top: 0;
+  padding-top: 0;
+  font-weight: 800;
+}
+
 .home-section {
   display: grid;
   gap: 12px;
@@ -1692,6 +1746,82 @@ h1 {
   color: #edf7f1;
   font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   white-space: pre;
+}
+
+.glossary-term {
+  position: relative;
+  display: inline;
+  border-bottom: 2px dotted color-mix(in srgb, var(--brand-b) 72%, currentColor);
+  color: color-mix(in srgb, var(--brand-b) 78%, var(--ink));
+  cursor: help;
+  font-style: normal;
+  text-decoration: none;
+  text-underline-offset: 4px;
+}
+
+.glossary-term::after {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  z-index: 40;
+  width: max-content;
+  max-width: min(360px, 76vw);
+  border: 1px solid color-mix(in srgb, var(--brand-b) 28%, var(--line));
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #111818;
+  color: #edf7f1;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+  content: attr(data-definition);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  text-align: left;
+  transform: translate(-50%, 6px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+  white-space: normal;
+}
+
+.glossary-term::before {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 4px);
+  z-index: 41;
+  width: 10px;
+  height: 10px;
+  background: #111818;
+  border-right: 1px solid color-mix(in srgb, var(--brand-b) 28%, var(--line));
+  border-bottom: 1px solid color-mix(in srgb, var(--brand-b) 28%, var(--line));
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 6px) rotate(45deg);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.glossary-term:hover,
+.glossary-term:focus-visible {
+  color: var(--brand-b);
+}
+
+.glossary-term:hover::after,
+.glossary-term:hover::before,
+.glossary-term:focus-visible::after,
+.glossary-term:focus-visible::before {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.glossary-term:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid color-mix(in srgb, var(--brand-b) 36%, transparent);
+  outline-offset: 2px;
 }
 
 .guided-tutorial-checks {
@@ -2725,6 +2855,8 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .mastery-steps span,
 .app-shell[data-theme='dark'] .confidence-ladder span,
 .app-shell[data-theme='dark'] .request-lifecycle-view,
+.app-shell[data-theme='dark'] .dictionary-view,
+.app-shell[data-theme='dark'] .dictionary-card,
 .app-shell[data-theme='dark'] .lifecycle-hop,
 .app-shell[data-theme='dark'] .projects-view,
 .app-shell[data-theme='dark'] .project-card,
@@ -2809,6 +2941,8 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .home-section-heading p,
 .app-shell[data-theme='dark'] .lifecycle-hop p,
 .app-shell[data-theme='dark'] .lifecycle-hop small,
+.app-shell[data-theme='dark'] .dictionary-card p,
+.app-shell[data-theme='dark'] .dictionary-card small,
 .app-shell[data-theme='dark'] .project-card p,
 .app-shell[data-theme='dark'] .project-steps li,
 .app-shell[data-theme='dark'] .project-stretch ul,
@@ -2834,6 +2968,16 @@ input:focus-visible {
 .app-shell[data-theme='dark'] .topbar-title,
 .app-shell[data-theme='dark'] .subject-button small {
   color: var(--muted);
+}
+
+.app-shell[data-theme='dark'] .glossary-term {
+  border-bottom-color: color-mix(in srgb, var(--brand-b) 78%, #edf7f1);
+  color: color-mix(in srgb, var(--brand-b) 82%, #edf7f1);
+}
+
+.app-shell[data-theme='dark'] .glossary-term::after,
+.app-shell[data-theme='dark'] .glossary-term::before {
+  background: #0b1010;
 }
 
 .app-shell[data-theme='dark'] .progress-track,

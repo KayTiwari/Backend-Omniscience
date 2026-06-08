@@ -30,6 +30,8 @@ import {
 } from './course'
 import { validateCourse } from './courseValidation'
 import { applyEditorKey } from './editorKeys'
+import { glossaryTerms } from './glossary'
+import { renderGlossaryText } from './GlossaryText'
 import type { GradeResult, GradeSpec } from './grader/types'
 import { highlight } from './highlight'
 import { InteractiveDiagram } from './InteractiveDiagram'
@@ -807,7 +809,7 @@ function App() {
     const [, label, code] = match
     return (
       <>
-        <span>{label}:</span>
+        <span>{renderGlossaryText(`${label}:`)}</span>
         <pre
           className="lesson-code"
           aria-label="Key code idiom"
@@ -1077,8 +1079,8 @@ function App() {
                   >
                     <span>{String(index + 1).padStart(2, '0')}</span>
                     <strong>{hop.label}</strong>
-                    <p>{hop.blurb}</p>
-                    <small>{hop.failureMode}</small>
+                    <p>{renderGlossaryText(hop.blurb)}</p>
+                    <small>{renderGlossaryText(hop.failureMode)}</small>
                     {hop.subject && <em>{hop.subject.title}</em>}
                   </button>
                 ))}
@@ -1141,10 +1143,10 @@ function App() {
                       <h4>{project.title}</h4>
                       <span>{project.steps.length} steps</span>
                     </div>
-                    <p>{project.pitch}</p>
+                    <p>{renderGlossaryText(project.pitch)}</p>
                     <div className="project-concepts">
                       {project.concepts.slice(0, 5).map((concept) => (
-                        <span key={concept}>{concept}</span>
+                        <span key={concept}>{renderGlossaryText(concept)}</span>
                       ))}
                     </div>
                     <ol className="project-steps">
@@ -1157,10 +1159,10 @@ function App() {
                                 type="button"
                                 onClick={() => openProblem(drill.subject, drill.problem)}
                               >
-                                {step.text}
+                                {renderGlossaryText(step.text)}
                               </button>
                             ) : (
-                              <span>{step.text}</span>
+                              <span>{renderGlossaryText(step.text)}</span>
                             )}
                           </li>
                         )
@@ -1170,11 +1172,31 @@ function App() {
                       <summary>Stretch goals</summary>
                       <ul>
                         {project.stretch.map((item) => (
-                          <li key={item}>{item}</li>
+                          <li key={item}>{renderGlossaryText(item)}</li>
                         ))}
                       </ul>
                     </details>
                   </section>
+                ))}
+              </div>
+            </section>
+
+            <section className="dictionary-view" aria-label="Dictionary appendix">
+              <div className="home-section-heading">
+                <div>
+                  <h3>Dictionary Appendix</h3>
+                  <p>Hover underlined terms in lessons, or scan the key terms here.</p>
+                </div>
+              </div>
+              <div className="dictionary-grid">
+                {glossaryTerms.map((entry) => (
+                  <details key={entry.term} className="dictionary-card">
+                    <summary>{entry.term}</summary>
+                    <p>{renderGlossaryText(entry.definition)}</p>
+                    {entry.synonyms && entry.synonyms.length > 0 && (
+                      <small>Also called: {entry.synonyms.join(', ')}</small>
+                    )}
+                  </details>
                 ))}
               </div>
             </section>
@@ -1197,7 +1219,7 @@ function App() {
                       </span>
                       <span className="subject-card-copy">
                         <strong>{subject.title}</strong>
-                        <small>{subject.subtitle}</small>
+                        <small>{renderGlossaryText(subject.subtitle)}</small>
                       </span>
                       <span className="subject-card-meta">
                         {subject.confidenceCounts['Can defend']} defend
@@ -1236,7 +1258,7 @@ function App() {
           </div>
 
           <h2>{activeProblem.title}</h2>
-          <p className="subject-subtitle">{activeSubject.subtitle}</p>
+          <p className="subject-subtitle">{renderGlossaryText(activeSubject.subtitle)}</p>
 
           <section className="mastery-panel" aria-label="Problem mastery progress">
             <div className="mastery-copy">
@@ -1278,7 +1300,7 @@ function App() {
             <div className="learn-first-heading">
               <div>
                 <h3>Learn First</h3>
-                <p>{teachingModel.problemIntro}</p>
+                <p>{renderGlossaryText(teachingModel.problemIntro)}</p>
               </div>
               <span>{activeSubject.title}</span>
             </div>
@@ -1288,7 +1310,7 @@ function App() {
                 nodes={teachingModel.diagram}
                 explanations={teachingModel.diagramExplanations}
               />
-              <p>{teachingModel.mentalModel}</p>
+              <p>{renderGlossaryText(teachingModel.mentalModel)}</p>
             </div>
 
             <div className="lesson-grid">
@@ -1312,7 +1334,7 @@ function App() {
                 <h4>Advanced Knowledge</h4>
                 <ul>
                   {teachingModel.advanced.map((item) => (
-                    <li key={item}>{item}</li>
+                    <li key={item}>{renderGlossaryText(item)}</li>
                   ))}
                 </ul>
               </section>
@@ -1320,7 +1342,7 @@ function App() {
                 <h4>Interview Tips</h4>
                 <ul>
                   {teachingModel.interview.map((item) => (
-                    <li key={item}>{item}</li>
+                    <li key={item}>{renderGlossaryText(item)}</li>
                   ))}
                 </ul>
               </section>
@@ -1344,7 +1366,7 @@ function App() {
                         <span>{item.badge}</span>
                         {hasAnswer && <strong>+5 XP</strong>}
                       </div>
-                      <h4>{item.prompt}</h4>
+                      <h4>{renderGlossaryText(item.prompt)}</h4>
                       <textarea
                         value={value}
                         onChange={(event) =>
@@ -1357,12 +1379,13 @@ function App() {
                         <div className="quick-write-answer">
                           <strong>Expected answer should hit:</strong>
                           <ul>
-                            {item.expected.map((point) => (
-                              <li key={point}>{point}</li>
+                        {item.expected.map((point) => (
+                              <li key={point}>{renderGlossaryText(point)}</li>
                             ))}
                           </ul>
                           <p>
-                            <strong>Production/debug anchor:</strong> {item.productionAnchor}
+                            <strong>Production/debug anchor:</strong>{' '}
+                            {renderGlossaryText(item.productionAnchor)}
                           </p>
                         </div>
                       </details>
@@ -1407,7 +1430,7 @@ function App() {
                               type="button"
                             >
                               <span>{String.fromCharCode(65 + optionIndex)}</span>
-                              {option}
+                              {renderGlossaryText(option)}
                             </button>
                           )
                         })}
@@ -1419,7 +1442,8 @@ function App() {
                     )}
                     {answered && (
                       <p className={`criterion-feedback ${correct ? 'pass' : 'fail'}`}>
-                        {correct ? 'Correct. +10 XP.' : 'Not quite.'} {check.explanation}
+                        {correct ? 'Correct. +10 XP.' : 'Not quite.'}{' '}
+                        {renderGlossaryText(check.explanation)}
                       </p>
                     )}
                   </section>
@@ -1449,15 +1473,15 @@ function App() {
                     <div className="interview-answer-grid">
                       <section>
                         <span>Simple</span>
-                        <p>{answer.simple}</p>
+                        <p>{renderGlossaryText(answer.simple)}</p>
                       </section>
                       <section>
                         <span>Senior</span>
-                        <p>{answer.senior}</p>
+                        <p>{renderGlossaryText(answer.senior)}</p>
                       </section>
                       <section>
                         <span>System design</span>
-                        <p>{answer.systemDesign}</p>
+                        <p>{renderGlossaryText(answer.systemDesign)}</p>
                       </section>
                     </div>
                   </details>
@@ -1532,20 +1556,20 @@ function App() {
 
           <section className="prompt-block">
             <h3>Prompt</h3>
-            <p>{activeProblem.prompt}</p>
+            <p>{renderGlossaryText(activeProblem.prompt)}</p>
           </section>
 
           {activeProblem.explanation && (
             <section className="explanation-block">
               <h3>Explanation</h3>
-              <p>{activeProblem.explanation}</p>
+              <p>{renderGlossaryText(activeProblem.explanation)}</p>
             </section>
           )}
 
           {activeProblem.production && (
             <section className="production-block">
               <h3>Why This Matters In Production</h3>
-              <p>{activeProblem.production}</p>
+              <p>{renderGlossaryText(activeProblem.production)}</p>
             </section>
           )}
 
@@ -1554,7 +1578,7 @@ function App() {
               <h3>Guided Walkthrough</h3>
               <ol>
                 {activeProblem.walkthrough.map((step) => (
-                  <li key={step}>{step}</li>
+                  <li key={step}>{renderGlossaryText(step)}</li>
                 ))}
               </ol>
             </section>
@@ -1604,7 +1628,7 @@ function App() {
                   {quizCorrect ? 'Correct.' : 'Not quite.'} Correct answer:{' '}
                   {activeProblem.correctChoice !== undefined &&
                     activeProblem.choices[activeProblem.correctChoice]}{' '}
-                  {activeProblem.answer}
+                  {activeProblem.answer && renderGlossaryText(activeProblem.answer)}
                 </p>
               )}
             </section>
@@ -1727,14 +1751,16 @@ function App() {
                     <div>
                       <strong>What a strong answer should include</strong>
                       <ul>
-                        {activeProblem.answer && index === 0 && <li>{activeProblem.answer}</li>}
+                        {activeProblem.answer && index === 0 && (
+                          <li>{renderGlossaryText(activeProblem.answer)}</li>
+                        )}
                         {(activeProblem.checklist.length > 0
                           ? activeProblem.checklist
                           : teachingModel.fundamentals
                         )
                           .slice(index, index + 3)
                           .map((item) => (
-                            <li key={item}>{item}</li>
+                            <li key={item}>{renderGlossaryText(item)}</li>
                           ))}
                       </ul>
                     </div>
@@ -1784,7 +1810,7 @@ function App() {
                             type="button"
                           >
                             <span>{String.fromCharCode(65 + optionIndex)}</span>
-                            {option}
+                            {renderGlossaryText(option)}
                           </button>
                         )
                       })}
@@ -1796,7 +1822,8 @@ function App() {
                     )}
                     {answered && (
                       <p className={`criterion-feedback ${correct ? 'pass' : 'fail'}`}>
-                        {correct ? 'Correct. +10 XP.' : 'Not quite.'} {check.explanation}
+                        {correct ? 'Correct. +10 XP.' : 'Not quite.'}{' '}
+                        {renderGlossaryText(check.explanation)}
                       </p>
                     )}
                   </section>
