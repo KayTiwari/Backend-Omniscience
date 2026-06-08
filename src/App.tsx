@@ -1206,30 +1206,6 @@ function App() {
               </div>
             </section>
 
-            <section className="dictionary-view" aria-label="Dictionary appendix">
-              <div className="home-section-heading">
-                <div>
-                  <h3>Dictionary Appendix</h3>
-                  <p>Hover underlined terms in lessons, or scan the key terms here.</p>
-                </div>
-              </div>
-              <div className="dictionary-grid">
-                {glossaryTerms.map((entry) => (
-                  <details
-                    key={entry.term}
-                    id={glossaryId(entry.term)}
-                    className="dictionary-card"
-                  >
-                    <summary>{entry.term}</summary>
-                    <p>{renderGlossaryText(entry.definition)}</p>
-                    {entry.synonyms && entry.synonyms.length > 0 && (
-                      <small>Also called: {entry.synonyms.join(', ')}</small>
-                    )}
-                  </details>
-                ))}
-              </div>
-            </section>
-
             <section className="home-section">
               <h3>Subjects</h3>
               <div className="subject-grid">
@@ -1265,6 +1241,30 @@ function App() {
                     </button>
                   )
                 })}
+              </div>
+            </section>
+
+            <section className="dictionary-view" aria-label="Dictionary appendix">
+              <div className="home-section-heading">
+                <div>
+                  <h3>Dictionary Appendix</h3>
+                  <p>Hover underlined terms in lessons, or scan the key terms here.</p>
+                </div>
+              </div>
+              <div className="dictionary-grid">
+                {glossaryTerms.map((entry) => (
+                  <details
+                    key={entry.term}
+                    id={glossaryId(entry.term)}
+                    className="dictionary-card"
+                  >
+                    <summary>{entry.term}</summary>
+                    <p>{renderGlossaryText(entry.definition)}</p>
+                    {entry.synonyms && entry.synonyms.length > 0 && (
+                      <small>Also called: {entry.synonyms.join(', ')}</small>
+                    )}
+                  </details>
+                ))}
               </div>
             </section>
           </article>
