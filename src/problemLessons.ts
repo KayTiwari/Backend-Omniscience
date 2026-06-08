@@ -449,6 +449,16 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'str-title-case', concept: `Uppercase the first letter of each word, lowercase the rest.`, idiom: `w[0].toUpperCase() + w.slice(1).toLowerCase()`, mistake: `Not lowercasing the tail (THE -> The).` },
   { problemId: 'str-is-rotation', concept: `b is a rotation of a iff it is a substring of a + a (same length).`, idiom: `a.length === b.length && (a + a).includes(b)`, mistake: `Skipping the equal-length check.` },
   { problemId: 'str-count-vowels', concept: `Match all vowels (either case) and count them.`, idiom: `(s.match(/[aeiou]/gi) || []).length`, mistake: `match returns null when there are none.` },
+
+  // ----- Math & numbers -----
+  { problemId: 'math-is-prime', concept: `Only test divisors up to the square root of n.`, idiom: `for (i; i * i <= n; i++) if (n % i === 0) false`, mistake: `Looping to n is needlessly slow; n < 2 is not prime.` },
+  { problemId: 'math-sieve', concept: `Mark multiples of each prime starting at its square.`, idiom: `for (j = i*i; j <= n; j += i) sieve[j] = false`, mistake: `Starting at 2*i re-marks already-handled multiples.` },
+  { problemId: 'math-lcm', concept: `LCM(a, b) = a / gcd(a, b) * b.`, idiom: `(a / gcd(a, b)) * b`, mistake: `a * b / gcd can overflow; divide first.` },
+  { problemId: 'math-digit-sum', concept: `Peel digits with % 10 and / 10.`, idiom: `s += n % 10; n = Math.floor(n / 10)`, mistake: `Forgetting Math.abs for negatives.` },
+  { problemId: 'math-reverse-int', concept: `Reverse the digits, then re-apply the sign.`, idiom: `sign * reverse(abs(n))`, mistake: `Losing the sign or leading zeros (120 -> 21).` },
+  { problemId: 'math-palindrome-number', concept: `A number reads the same forwards and backwards (negatives never do).`, idiom: `s === reverse(s)`, mistake: `Treating -121 as a palindrome.` },
+  { problemId: 'math-fast-power', concept: `Square the base and halve the exponent (binary exponentiation).`, idiom: `if (exp & 1) result *= base; base *= base; exp >>= 1`, mistake: `Multiplying base exp times is O(exp), not O(log exp).` },
+  { problemId: 'math-int-sqrt', concept: `Binary-search the largest m where m*m <= n.`, idiom: `mid*mid <= n ? ans = mid, lo = mid+1 : hi = mid-1`, mistake: `Float Math.sqrt can be off by one for large n.` },
 ]
 
 // Worked examples (input -> output), merged onto the lessons above and shown by
@@ -885,6 +895,16 @@ const examples: Record<string, string> = {
   'str-title-case': `"the QUICK fox" -> "The Quick Fox"`,
   'str-is-rotation': `("abcde", "cdeab") -> true`,
   'str-count-vowels': `"hello" -> 2, "AEIOU" -> 5`,
+
+  // Math & numbers
+  'math-is-prime': `17 -> true, 15 -> false`,
+  'math-sieve': `10 -> [2, 3, 5, 7]`,
+  'math-lcm': `(4, 6) -> 12`,
+  'math-digit-sum': `1234 -> 10`,
+  'math-reverse-int': `123 -> 321, -120 -> -21`,
+  'math-palindrome-number': `121 -> true, -121 -> false`,
+  'math-fast-power': `(2, 10) -> 1024`,
+  'math-int-sqrt': `16 -> 4, 8 -> 2`,
 }
 
 export const problemLessons: ProblemLesson[] = lessonBase.map((l) =>
