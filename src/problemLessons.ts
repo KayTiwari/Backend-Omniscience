@@ -539,6 +539,14 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'doc-set-path', concept: `$set writes a nested dotted path, creating objects along the way.`, idiom: `walk keys, cloning each level, set the last`, mistake: `Mutating nested objects in place instead of cloning.` },
   { problemId: 'doc-group-sum', concept: `Aggregation groups by a key and sums another field.`, idiom: `out[d[groupKey]] += d[sumKey]`, mistake: `Summing the wrong field or not defaulting to 0.` },
   { problemId: 'doc-sort-limit', concept: `Sort the collection by a field, then take the first n.`, idiom: `[...docs].sort(byKey).slice(0, n)`, mistake: `sort mutates; copy first.` },
+
+  // ----- From zero (absolute basics) -----
+  { problemId: 'py-zero-variable-return', concept: `A variable names a value; return hands a value back to the caller.`, idiom: `name = 'backend'; return {'name': name}`, mistake: `Printing instead of returning.` },
+  { problemId: 'py-zero-function-params', concept: `Parameters are the named inputs a function receives.`, idiom: `def full_name(first, last): return first + ' ' + last`, mistake: `Hardcoding values instead of using the params.` },
+  { problemId: 'py-zero-if-else', concept: `if/else chooses a branch based on a condition.`, idiom: `if active and admin: return 'allow'`, mistake: `Returning 'allow' before checking both conditions.` },
+  { problemId: 'js-zero-variables', concept: `const binds a value you will not reassign; let can change.`, idiom: `const name = 'backend'; let count = 1; count++`, mistake: `Reassigning a const, or using var.` },
+  { problemId: 'js-zero-function-return', concept: `A function takes parameters and returns a value.`, idiom: `function f(a, b) { return a + b }`, mistake: `Forgetting return (the function yields undefined).` },
+  { problemId: 'js-zero-if-else', concept: `if/else picks one path; return ends the function with a result.`, idiom: `if (cond) return X; return Y`, mistake: `Falling through without returning a value.` },
 ]
 
 // Worked examples (input -> output), merged onto the lessons above and shown by
@@ -1059,6 +1067,14 @@ const examples: Record<string, string> = {
   'doc-set-path': `({a:{b:1}}, "a.b", 2) -> {a:{b:2}}`,
   'doc-group-sum': `([{cat:"a",n:1},{cat:"a",n:2}], "cat","n") -> {a:3}`,
   'doc-sort-limit': `([{n:3},{n:1},{n:2}], "n", 2) -> [{n:1},{n:2}]`,
+
+  // From zero
+  'py-zero-variable-return': `make_profile() -> {name:"backend", count:2, label:"backend:2"}`,
+  'py-zero-function-params': `("Ada", "Lovelace") -> "Ada Lovelace"`,
+  'py-zero-if-else': `active admin -> "allow"; otherwise -> "deny"`,
+  'js-zero-variables': `makeProfile() -> {name:"backend", count:2, label:"backend:2"}`,
+  'js-zero-function-return': `("Ada", "Lovelace") -> "Ada Lovelace"`,
+  'js-zero-if-else': `active admin -> "allow"; otherwise -> "deny"`,
 }
 
 export const problemLessons: ProblemLesson[] = lessonBase.map((l) =>
