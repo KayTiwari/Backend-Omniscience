@@ -16,6 +16,7 @@ type SubjectTeaching = {
 export type TeachingModel = SubjectTeaching & {
   problemIntro: string
   practiceMode: string
+  problemLesson?: ProblemLesson
 }
 
 const subjectTeaching: Record<string, SubjectTeaching> = {
@@ -512,10 +513,16 @@ function compactList(items: string[], limit: number): string[] {
 function nodeLabel(text: string, fallback: string): string {
   const cleaned = text
     .replace(/^(Use|Read|Track|Check|Define|Explain|Name|Identify|Return|Run|Start|Pick|Write)\s+/i, '')
+    .replace(/^(at|in|on|to|from|with|for)\s+(the\s+)?/i, '')
     .replace(/["'`]/g, '')
     .split(/[.:;]/)[0]
     .trim()
-  const words = cleaned.split(/\s+/).filter(Boolean).slice(0, 3).join(' ')
+  const stopwords = new Set(['a', 'an', 'and', 'or', 'the', 'then', 'into', 'of', 'that', 'this'])
+  const words = cleaned
+    .split(/\s+/)
+    .filter((word) => word && !stopwords.has(word.toLowerCase()))
+    .slice(0, 3)
+    .join(' ')
 
   return words || fallback
 }
@@ -651,7 +658,7 @@ function problemInterview(problem: Problem, base: SubjectTeaching, matchingInter
 
 function problemIntro(subject: Subject, problem: Problem, lesson?: ProblemLesson): string {
   if (lesson) {
-    return `For "${problem.title}", learn this exact concept first: ${lesson.concept}`
+    return `Start here: ${lesson.concept}`
   }
 
   const firstExplanation = splitLessonText(problem.explanation, 1)[0]
@@ -682,5 +689,6 @@ export function getTeachingModel(subject: Subject, problem: Problem): TeachingMo
     interview: problemInterview(problem, base, matchingInterviewTopics),
     practiceMode: modeFor(problem),
     problemIntro: problemIntro(subject, problem, lesson),
+    problemLesson: lesson,
   }
 }

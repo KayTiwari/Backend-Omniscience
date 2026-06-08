@@ -1326,48 +1326,109 @@ function App() {
               <span>{activeSubject.title}</span>
             </div>
 
-            <div className="visual-lesson">
-              <InteractiveDiagram
-                nodes={teachingModel.diagram}
-                explanations={teachingModel.diagramExplanations}
-              />
-              <p>{renderGlossaryText(teachingModel.mentalModel)}</p>
-            </div>
+            {teachingModel.problemLesson ? (
+              <>
+                <div className="lesson-focus">
+                  <section className="lesson-focus-card lesson-focus-card-primary">
+                    <span>Concept</span>
+                    <p>{renderGlossaryText(teachingModel.problemLesson.concept)}</p>
+                  </section>
 
-            <div className="lesson-grid">
-              <section>
-                <h4>Plain-English Fundamentals</h4>
-                <ul>
-                  {teachingModel.fundamentals.map((item) => (
-                    <li key={item}>{renderLessonListItem(item)}</li>
-                  ))}
-                </ul>
-              </section>
-              <section>
-                <h4>Tutorial Steps</h4>
-                <ol>
-                  {teachingModel.tutorial.map((item) => (
-                    <li key={item}>{renderLessonListItem(item)}</li>
-                  ))}
-                </ol>
-              </section>
-              <section>
-                <h4>Advanced Knowledge</h4>
-                <ul>
-                  {teachingModel.advanced.map((item) => (
-                    <li key={item}>{renderGlossaryText(item)}</li>
-                  ))}
-                </ul>
-              </section>
-              <section>
-                <h4>Interview Tips</h4>
-                <ul>
-                  {teachingModel.interview.map((item) => (
-                    <li key={item}>{renderGlossaryText(item)}</li>
-                  ))}
-                </ul>
-              </section>
-            </div>
+                  <section className="lesson-focus-card">
+                    <span>Idiom</span>
+                    <pre><code>{teachingModel.problemLesson.idiom}</code></pre>
+                  </section>
+
+                  {teachingModel.problemLesson.example && (
+                    <section className="lesson-focus-card">
+                      <span>Worked Example</span>
+                      <pre><code>{teachingModel.problemLesson.example}</code></pre>
+                    </section>
+                  )}
+
+                  {teachingModel.problemLesson.mistake && (
+                    <section className="lesson-focus-card lesson-focus-card-warning">
+                      <span>Avoid</span>
+                      <p>{renderGlossaryText(teachingModel.problemLesson.mistake)}</p>
+                    </section>
+                  )}
+                </div>
+
+                <div className="lesson-detail-row">
+                  <details>
+                    <summary>Practice Path</summary>
+                    <InteractiveDiagram
+                      nodes={teachingModel.diagram}
+                      explanations={teachingModel.diagramExplanations}
+                    />
+                  </details>
+                  <details>
+                    <summary>Go Deeper</summary>
+                    <ul>
+                      {teachingModel.advanced.map((item) => (
+                        <li key={item}>{renderGlossaryText(item)}</li>
+                      ))}
+                    </ul>
+                  </details>
+                  <details>
+                    <summary>Interview Tips</summary>
+                    <ul>
+                      {teachingModel.interview.map((item) => (
+                        <li key={item}>{renderGlossaryText(item)}</li>
+                      ))}
+                    </ul>
+                  </details>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="visual-lesson">
+                  <InteractiveDiagram
+                    nodes={teachingModel.diagram}
+                    explanations={teachingModel.diagramExplanations}
+                  />
+                  <p>{renderGlossaryText(teachingModel.mentalModel)}</p>
+                </div>
+
+                <div className="lesson-grid">
+                  <section>
+                    <h4>Plain-English Fundamentals</h4>
+                    <ul>
+                      {teachingModel.fundamentals.map((item) => (
+                        <li key={item}>{renderLessonListItem(item)}</li>
+                      ))}
+                    </ul>
+                  </section>
+                  <section>
+                    <h4>Tutorial Steps</h4>
+                    <ol>
+                      {teachingModel.tutorial.map((item) => (
+                        <li key={item}>{renderLessonListItem(item)}</li>
+                      ))}
+                    </ol>
+                  </section>
+                </div>
+
+                <div className="lesson-detail-row">
+                  <details>
+                    <summary>Advanced Knowledge</summary>
+                    <ul>
+                      {teachingModel.advanced.map((item) => (
+                        <li key={item}>{renderGlossaryText(item)}</li>
+                      ))}
+                    </ul>
+                  </details>
+                  <details>
+                    <summary>Interview Tips</summary>
+                    <ul>
+                      {teachingModel.interview.map((item) => (
+                        <li key={item}>{renderGlossaryText(item)}</li>
+                      ))}
+                    </ul>
+                  </details>
+                </div>
+              </>
+            )}
 
             <section className="recall-checks" aria-label="Quick write practice">
               <div className="guided-tutorial-heading">

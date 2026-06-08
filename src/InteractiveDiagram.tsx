@@ -19,6 +19,19 @@ interface Props {
   explanations?: string[]
 }
 
+function formatNodeLabel(label: string) {
+  return label
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .map((word) => {
+      if (/^[A-Z0-9/]+$/.test(word)) return word
+      if (word.length <= 2 && word !== 'at') return word
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    })
+    .join(' ')
+}
+
 export function InteractiveDiagram({ nodes, explanations }: Props) {
   const [selected, setSelected] = useState<number | null>(null)
   const hasExplanations = explanations && explanations.length === nodes.length
@@ -42,7 +55,7 @@ export function InteractiveDiagram({ nodes, explanations }: Props) {
                 }
               >
                 <span className="diagram-index">{i + 1}</span>
-                <span>{node}</span>
+                <span>{formatNodeLabel(node)}</span>
               </button>
             </span>
           )
@@ -59,7 +72,7 @@ export function InteractiveDiagram({ nodes, explanations }: Props) {
             className="diagram-panel-label"
             style={{ background: PALETTE[selected % PALETTE.length] }}
           >
-            {nodes[selected]}
+            {formatNodeLabel(nodes[selected])}
           </div>
           <p>{renderGlossaryText(explanations[selected])}</p>
         </div>

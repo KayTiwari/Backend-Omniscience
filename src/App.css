@@ -1623,6 +1623,109 @@ h1 {
   gap: 12px;
 }
 
+.lesson-focus {
+  display: grid;
+  gap: 12px;
+}
+
+.lesson-focus-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--field);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.035);
+}
+
+.lesson-focus-card-primary {
+  border-color: color-mix(in srgb, var(--brand-b) 30%, var(--line));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--brand-b) 7%, transparent), transparent 58%),
+    var(--field);
+}
+
+.lesson-focus-card-warning {
+  border-color: color-mix(in srgb, var(--flame) 26%, var(--line));
+  background: color-mix(in srgb, var(--flame) 5%, var(--field));
+}
+
+.lesson-focus-card span,
+.lesson-detail-row summary {
+  color: color-mix(in srgb, var(--brand-b) 76%, var(--ink));
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.lesson-focus-card p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.lesson-focus-card pre {
+  overflow-x: auto;
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--brand-b) 18%, var(--line));
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #111818;
+  color: #edf7f1;
+  font: 14px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+}
+
+.lesson-detail-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.lesson-detail-row details {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--field) 86%, var(--paper));
+}
+
+.lesson-detail-row details[open] {
+  grid-column: 1 / -1;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.045);
+}
+
+.lesson-detail-row summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 12px 14px;
+}
+
+.lesson-detail-row summary::-webkit-details-marker {
+  display: none;
+}
+
+.lesson-detail-row summary::after {
+  float: right;
+  color: var(--muted);
+  content: '+';
+}
+
+.lesson-detail-row details[open] summary::after {
+  content: '-';
+}
+
+.lesson-detail-row ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  border-top: 1px solid var(--line);
+  padding: 12px 18px 14px 32px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
 .interactive-diagram {
   display: grid;
   gap: 12px;
@@ -1633,21 +1736,23 @@ h1 {
 }
 
 .diagram-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, max-content));
+  display: flex;
+  flex-wrap: wrap;
   align-items: stretch;
   gap: 8px;
 }
 
 .diagram-step {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
+  min-width: min(100%, 160px);
 }
 
 .diagram-pill {
   display: inline-flex;
   align-items: center;
+  gap: 8px;
   width: 100%;
   max-width: 100%;
   min-height: 34px;
@@ -1659,6 +1764,8 @@ h1 {
   font-weight: 900;
   text-align: left;
   cursor: pointer;
+  white-space: normal;
+  word-break: normal;
   transition:
     background 160ms ease,
     border-color 160ms ease,
@@ -1677,6 +1784,11 @@ h1 {
   color: currentColor;
   font-size: 11px;
   line-height: 1;
+}
+
+.diagram-pill > span:last-child {
+  min-width: 0;
+  line-height: 1.15;
 }
 
 .diagram-pill:hover {
@@ -3213,6 +3325,10 @@ input:focus-visible {
   }
 
   .lesson-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lesson-detail-row {
     grid-template-columns: 1fr;
   }
 
