@@ -3622,4 +3622,132 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- SQL semantics, part 2 (joins, windows, upsert) ------------------
+  {
+    problemId: 'sqldrill-having',
+    title: 'SQL: GROUP BY ... HAVING',
+    language: 'js',
+    starter: 'function havingCount(rows, key, min) {\n  // keys whose group count is >= min, sorted\n}\n',
+    tests: [
+      { name: 'filters groups', body: "assertEqual(havingCount([{t:'a'},{t:'a'},{t:'b'}], 't', 2), ['a']);" },
+    ],
+    reference: `function havingCount(rows, key, min) {
+  const counts = {};
+  for (const r of rows) counts[r[key]] = (counts[r[key]] || 0) + 1;
+  return Object.keys(counts).filter((k) => counts[k] >= min).sort();
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-left-join',
+    title: 'SQL: LEFT JOIN',
+    language: 'js',
+    starter: 'function leftJoin(left, right, leftKey, rightKey) {\n  // every left row, merged with its match (or left as-is when none)\n}\n',
+    tests: [
+      { name: 'keeps unmatched left', body: "assertEqual(leftJoin([{uid:1},{uid:2}], [{id:1,name:'a'}], 'uid', 'id'), [{uid:1,name:'a',id:1},{uid:2}]);" },
+    ],
+    reference: `function leftJoin(left, right, leftKey, rightKey) {
+  const idx = new Map(right.map((r) => [r[rightKey], r]));
+  return left.map((l) => ({ ...l, ...(idx.get(l[leftKey]) || {}) }));
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-self-join',
+    title: 'SQL: Self Join (manager name)',
+    language: 'js',
+    starter: 'function withManager(employees) {\n  // employees: { id, name, managerId }. return { name, manager } (manager name or null)\n}\n',
+    tests: [
+      { name: 'resolves manager', body: "assertEqual(withManager([{id:1,name:'A',managerId:null},{id:2,name:'B',managerId:1}]), [{name:'A',manager:null},{name:'B',manager:'A'}]);" },
+    ],
+    reference: `function withManager(employees) {
+  const byId = new Map(employees.map((e) => [e.id, e.name]));
+  return employees.map((e) => ({ name: e.name, manager: byId.get(e.managerId) ?? null }));
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-running-total',
+    title: 'SQL: Window Running Total',
+    language: 'js',
+    starter: 'function runningTotal(rows, valueKey) {\n  // annotate each row with the cumulative sum so far\n}\n',
+    tests: [
+      { name: 'accumulates', body: "assertEqual(runningTotal([{n:1},{n:2},{n:3}], 'n'), [{n:1,total:1},{n:2,total:3},{n:3,total:6}]);" },
+    ],
+    reference: `function runningTotal(rows, valueKey) {
+  let sum = 0;
+  return rows.map((r) => {
+    sum += r[valueKey];
+    return { ...r, total: sum };
+  });
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-rank',
+    title: 'SQL: RANK() With Ties',
+    language: 'js',
+    starter: 'function rankBy(rows, valueKey) {\n  // rank rows high-to-low; ties share a rank (competition ranking)\n}\n',
+    tests: [
+      { name: 'ties share rank', body: "assertEqual(rankBy([{s:90},{s:80},{s:90}], 's'), [{s:90,rank:1},{s:90,rank:1},{s:80,rank:3}]);" },
+    ],
+    reference: `function rankBy(rows, valueKey) {
+  const sorted = [...rows].sort((a, b) => b[valueKey] - a[valueKey]);
+  let rank = 0, prev = null, count = 0;
+  return sorted.map((r) => {
+    count++;
+    if (r[valueKey] !== prev) { rank = count; prev = r[valueKey]; }
+    return { ...r, rank };
+  });
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-dedupe-latest',
+    title: 'SQL: Latest Row Per Key',
+    language: 'js',
+    starter: 'function latestPerKey(rows, key, tsKey) {\n  // keep the row with the max timestamp for each key\n}\n',
+    tests: [
+      { name: 'keeps the newest', body: "assertEqual(latestPerKey([{id:1,t:1,v:'a'},{id:1,t:2,v:'b'},{id:2,t:1,v:'c'}], 'id', 't'), [{id:1,t:2,v:'b'},{id:2,t:1,v:'c'}]);" },
+    ],
+    reference: `function latestPerKey(rows, key, tsKey) {
+  const best = new Map();
+  for (const r of rows) {
+    const k = r[key];
+    if (!best.has(k) || r[tsKey] > best.get(k)[tsKey]) best.set(k, r);
+  }
+  return [...best.values()];
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-upsert',
+    title: 'SQL: UPSERT (insert or update)',
+    language: 'js',
+    starter: 'function upsert(rows, key, row) {\n  // replace the row with the same key, or append it (immutable)\n}\n',
+    tests: [
+      { name: 'updates then inserts', body: "assertEqual(upsert([{id:1,v:'a'}], 'id', {id:1,v:'b'}), [{id:1,v:'b'}]); assertEqual(upsert([{id:1}], 'id', {id:2}), [{id:1},{id:2}]);" },
+    ],
+    reference: `function upsert(rows, key, row) {
+  const idx = rows.findIndex((r) => r[key] === row[key]);
+  if (idx === -1) return [...rows, row];
+  return rows.map((r, i) => (i === idx ? row : r));
+}
+`,
+  },
+  {
+    problemId: 'sqldrill-subquery-in',
+    title: 'SQL: WHERE key IN (subquery)',
+    language: 'js',
+    starter: 'function whereIn(rows, key, values) {\n  // keep rows whose key is in the subquery values\n}\n',
+    tests: [
+      { name: 'membership filter', body: "assertEqual(whereIn([{uid:1},{uid:2},{uid:3}], 'uid', [1,3]), [{uid:1},{uid:3}]);" },
+    ],
+    reference: `function whereIn(rows, key, values) {
+  const set = new Set(values);
+  return rows.filter((r) => set.has(r[key]));
+}
+`,
+  },
 ]
