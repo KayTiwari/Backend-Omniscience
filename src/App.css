@@ -759,10 +759,14 @@ h1 {
   padding: 34px;
   border: 1px solid var(--line);
   border-radius: 8px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.app-shell:not([data-theme='dark']) .problem-panel {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.78), transparent 210px),
     var(--paper);
-  box-shadow: var(--shadow);
 }
 
 .home-panel {
