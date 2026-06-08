@@ -2503,4 +2503,99 @@ You will practice:
 Pair these with the auth, hashing, and rate-limiting drills across the security
 track. Learn First explains the idiom and the failure mode it guards against.`,
   },
+  {
+    id: 'tut-complexity',
+    subjectId: 'algorithms',
+    title: 'Reasoning About Complexity (Big-O)',
+    minutes: 10,
+    body: `Big-O is how you predict whether code survives growth. It describes how work
+grows as the input n grows, ignoring constants and lower-order terms.
+
+The ladder, fastest to slowest:
+
+    O(1)        constant     a hash lookup, array index
+    O(log n)    logarithmic  binary search, balanced-tree ops
+    O(n)        linear       a single loop over the input
+    O(n log n)  linearithmic good sorts (merge/quick average)
+    O(n^2)      quadratic    nested loops over the same input
+    O(2^n)      exponential  naive recursion over subsets
+
+**Rules of thumb.** Drop constants (O(2n) is O(n)) and keep the dominant term
+(O(n^2 + n) is O(n^2)). A loop is O(n); a loop inside a loop over the same data is
+O(n^2). Halving the problem each step is O(log n).
+
+**Why it is the interview lens.** "It works" is not enough; interviewers want the
+cost. A nested-loop dedupe is O(n^2); a Set makes it O(n). Sorting to enable a
+two-pointer pass is O(n log n) and often beats a clever O(n^2).
+
+**Space matters too.** A memo table or extra array is O(n) space; recursion adds
+O(depth) stack. Time-space tradeoffs are a real lever (caching, precomputation).
+
+**Where it bites in production.** An O(n^2) report is fine on 1k rows and melts on
+1M. The N+1 query is the database version of a hidden loop. Pick algorithms and
+indexes whose cost grows sub-linearly with traffic and data, and always state the
+complexity of what you write.`,
+  },
+  {
+    id: 'tut-data-structures',
+    subjectId: 'algorithms',
+    title: 'Choosing The Right Data Structure',
+    minutes: 10,
+    body: `Most "make it faster" problems are really "pick the right structure" problems.
+The structure decides which operations are cheap.
+
+    structure     fast at                         use when
+    ---------     ------                          --------
+    array/list    index access, append            ordered data, iteration
+    hash map      get/set/has by key O(1)         lookups, counting, dedupe
+    set           membership O(1)                 uniqueness, intersection
+    stack         push/pop (LIFO)                 undo, parsing, DFS
+    queue         enqueue/dequeue (FIFO)          scheduling, BFS
+    heap          min/max in O(log n)             top-k, priority, schedulers
+    tree (BST)    sorted ops, range O(log n)      ordered lookups
+    trie          prefix search                   autocomplete, routing
+
+**The deciding question is the access pattern.** Looking things up by key? A hash
+map. Need the smallest/largest repeatedly? A heap. Need order plus fast lookup? A
+balanced tree. Need "have I seen this?" A set.
+
+**Common upgrades.** Replace a nested-loop search with a hash map (O(n^2) to O(n)).
+Replace "scan for the max each time" with a heap (O(n) to O(log n) per pop). Replace
+"is x in this list" with a Set.
+
+**Backend echoes.** A database index is a tree/hash you do not have to build. A
+cache is a hash map with eviction. A queue is the backbone of async work. The same
+tradeoffs you drill here show up at system scale.`,
+  },
+  {
+    id: 'tut-joins-and-plans',
+    subjectId: 'sql',
+    title: 'Joins, Indexes, and Query Plans',
+    minutes: 11,
+    body: `Joins are where SQL performance is won or lost. Knowing how the database executes
+them lets you read a plan instead of guessing.
+
+**The join types.**
+- **INNER** keeps only rows that match on both sides.
+- **LEFT** keeps every left row, filling nulls where the right has no match.
+- **self join** relates a table to itself (an employee to their manager).
+
+**How the engine joins.** For large unsorted inputs it builds a hash table on one
+side and probes it with the other (a hash join, roughly linear). Without a usable
+index it may nested-loop, which is the quadratic trap. Index the join columns.
+
+**Reading EXPLAIN.** Look for a Seq Scan (full table read) where you expected an
+Index Scan, and a Sort feeding a join or ORDER BY. A composite index that matches
+your WHERE plus ORDER BY can remove both the scan and the sort.
+
+**Fan-out.** A one-to-many join multiplies rows; aggregate (GROUP BY) or use a
+subquery so you do not pull and de-dupe a cartesian explosion in the app.
+
+**Window functions** keep every row while adding an aggregate (RANK, running SUM
+over PARTITION BY ... ORDER BY). They replace N+1 app loops for top-N-per-group,
+running totals, and latest-per-key, but watch the sort cost on big partitions.
+
+**The mental model:** model for correctness, index from your real query patterns,
+confirm with EXPLAIN, and pre-aggregate the hot read paths.`,
+  },
 ]
