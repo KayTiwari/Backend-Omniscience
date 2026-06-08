@@ -3427,4 +3427,199 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Data structures (build them yourself) ---------------------------
+  {
+    problemId: 'dsb-stack',
+    title: 'Build A Stack',
+    language: 'js',
+    starter: 'class Stack {\n  push(x) {}\n  pop() {}     // returns the top\n  peek() {}    // top without removing\n  isEmpty() {}\n}\n',
+    tests: [
+      { name: 'LIFO', body: 'const s = new Stack(); assertEqual(s.isEmpty(), true); s.push(1); s.push(2); assertEqual(s.peek(), 2); assertEqual(s.pop(), 2); assertEqual(s.isEmpty(), false);' },
+    ],
+    reference: `class Stack {
+  constructor() { this.items = []; }
+  push(x) { this.items.push(x); }
+  pop() { return this.items.pop(); }
+  peek() { return this.items[this.items.length - 1]; }
+  isEmpty() { return this.items.length === 0; }
+}
+`,
+  },
+  {
+    problemId: 'dsb-queue',
+    title: 'Build A Queue',
+    language: 'js',
+    starter: 'class Queue {\n  enqueue(x) {}\n  dequeue() {} // returns the front\n  size() {}\n}\n',
+    tests: [
+      { name: 'FIFO', body: 'const q = new Queue(); q.enqueue(1); q.enqueue(2); assertEqual(q.dequeue(), 1); assertEqual(q.size(), 1);' },
+    ],
+    reference: `class Queue {
+  constructor() { this.items = []; }
+  enqueue(x) { this.items.push(x); }
+  dequeue() { return this.items.shift(); }
+  size() { return this.items.length; }
+}
+`,
+  },
+  {
+    problemId: 'dsb-min-heap',
+    title: 'Build A Min-Heap',
+    language: 'js',
+    starter: 'class MinHeap {\n  push(x) {}\n  popMin() {} // remove and return the smallest\n}\n',
+    tests: [
+      { name: 'pops in order', body: 'const h = new MinHeap(); [5,1,3,2,4].forEach((x) => h.push(x)); assertEqual(h.popMin(), 1); assertEqual(h.popMin(), 2); assertEqual(h.popMin(), 3);' },
+    ],
+    reference: `class MinHeap {
+  constructor() { this.h = []; }
+  push(x) {
+    this.h.push(x);
+    let i = this.h.length - 1;
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      if (this.h[p] <= this.h[i]) break;
+      [this.h[p], this.h[i]] = [this.h[i], this.h[p]];
+      i = p;
+    }
+  }
+  popMin() {
+    const top = this.h[0];
+    const last = this.h.pop();
+    if (this.h.length) {
+      this.h[0] = last;
+      let i = 0;
+      const n = this.h.length;
+      while (true) {
+        let s = i;
+        const l = 2 * i + 1, r = 2 * i + 2;
+        if (l < n && this.h[l] < this.h[s]) s = l;
+        if (r < n && this.h[r] < this.h[s]) s = r;
+        if (s === i) break;
+        [this.h[s], this.h[i]] = [this.h[i], this.h[s]];
+        i = s;
+      }
+    }
+    return top;
+  }
+}
+`,
+  },
+  {
+    problemId: 'dsb-bst',
+    title: 'Build A Binary Search Tree',
+    language: 'js',
+    starter: 'function bst() {\n  // return { add(val), contains(val) }\n}\n',
+    tests: [
+      { name: 'inserts and finds', body: 'const t = bst(); [5,3,7].forEach((v) => t.add(v)); assertEqual(t.contains(3), true); assertEqual(t.contains(9), false);' },
+    ],
+    reference: `function bst() {
+  let root = null;
+  function insert(node, val) {
+    if (!node) return { val, left: null, right: null };
+    if (val < node.val) node.left = insert(node.left, val);
+    else node.right = insert(node.right, val);
+    return node;
+  }
+  return {
+    add(val) { root = insert(root, val); },
+    contains(val) {
+      let n = root;
+      while (n) {
+        if (val === n.val) return true;
+        n = val < n.val ? n.left : n.right;
+      }
+      return false;
+    },
+  };
+}
+`,
+  },
+  {
+    problemId: 'dsb-inorder',
+    title: 'In-Order Tree Traversal',
+    language: 'js',
+    starter: 'function inorder(node) {\n  // node: { val, left, right } | null. return values in-order\n}\n',
+    tests: [
+      { name: 'left, root, right', body: 'assertEqual(inorder({ val: 2, left: { val: 1, left: null, right: null }, right: { val: 3, left: null, right: null } }), [1, 2, 3]);' },
+    ],
+    reference: `function inorder(node) {
+  if (!node) return [];
+  return [...inorder(node.left), node.val, ...inorder(node.right)];
+}
+`,
+  },
+  {
+    problemId: 'dsb-level-order',
+    title: 'Level-Order Tree Traversal',
+    language: 'js',
+    starter: 'function levelOrder(root) {\n  // return values grouped by depth, e.g. [[2], [1, 3]]\n}\n',
+    tests: [
+      { name: 'by depth', body: 'assertEqual(levelOrder({ val: 2, left: { val: 1, left: null, right: null }, right: { val: 3, left: null, right: null } }), [[2], [1, 3]]);' },
+    ],
+    reference: `function levelOrder(root) {
+  if (!root) return [];
+  const out = [];
+  let level = [root];
+  while (level.length) {
+    out.push(level.map((n) => n.val));
+    const next = [];
+    for (const n of level) {
+      if (n.left) next.push(n.left);
+      if (n.right) next.push(n.right);
+    }
+    level = next;
+  }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'dsb-reverse-list',
+    title: 'Reverse A Linked List',
+    language: 'js',
+    starter: 'function reverseList(head) {\n  // head: { val, next } | null. return the new head\n}\n',
+    tests: [
+      { name: 'reverses', body: 'const c = { val: 3, next: null }, b = { val: 2, next: c }, a = { val: 1, next: b }; let n = reverseList(a); const out = []; while (n) { out.push(n.val); n = n.next; } assertEqual(out, [3, 2, 1]);' },
+    ],
+    reference: `function reverseList(head) {
+  let prev = null;
+  while (head) {
+    const next = head.next;
+    head.next = prev;
+    prev = head;
+    head = next;
+  }
+  return prev;
+}
+`,
+  },
+  {
+    problemId: 'dsb-hashmap',
+    title: 'Build A HashMap',
+    language: 'js',
+    starter: 'class HashMap {\n  set(key, val) {}\n  get(key) {} // value or undefined\n}\n',
+    tests: [
+      { name: 'set/get/overwrite', body: "const m = new HashMap(); m.set('a', 1); m.set('b', 2); m.set('a', 3); assertEqual(m.get('a'), 3); assertEqual(m.get('b'), 2); assertEqual(m.get('z'), undefined);" },
+    ],
+    reference: `class HashMap {
+  constructor(size = 8) { this.buckets = Array.from({ length: size }, () => []); }
+  _idx(key) {
+    let h = 0;
+    for (const ch of String(key)) h = (h * 31 + ch.charCodeAt(0)) % this.buckets.length;
+    return h;
+  }
+  set(key, val) {
+    const b = this.buckets[this._idx(key)];
+    const e = b.find((p) => p[0] === key);
+    if (e) e[1] = val;
+    else b.push([key, val]);
+  }
+  get(key) {
+    const b = this.buckets[this._idx(key)];
+    const e = b.find((p) => p[0] === key);
+    return e ? e[1] : undefined;
+  }
+}
+`,
+  },
 ]
