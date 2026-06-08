@@ -515,6 +515,16 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'graph-num-islands', concept: `Each unvisited land cell is a new island; sink it with flood fill.`, idiom: `on a 1: count++, sink the 4 neighbors`, mistake: `Not marking visited cells double-counts.` },
   { problemId: 'graph-bipartite', concept: `Two-color with BFS; a same-color edge means not bipartite.`, idiom: `color[m] = color[n] ^ 1`, mistake: `Any odd-length cycle is not bipartite.` },
   { problemId: 'graph-can-reach', concept: `Traverse from start; reachable if you ever hit end.`, idiom: `stack/queue + a seen set`, mistake: `start === end should return true.` },
+
+  // ----- Search engine + pub/sub -----
+  { problemId: 'search-tokenize', concept: `Normalize text into comparable tokens before indexing.`, idiom: `lowercase, split, strip non-alphanumerics, drop empties`, mistake: `Leaving case/punctuation makes "Cat," != "cat".` },
+  { problemId: 'search-inverted-index', concept: `An inverted index maps each term to the docs that contain it.`, idiom: `for each unique term in a doc: index[term].push(doc.id)`, mistake: `Use a Set per doc so a repeated word is not added twice.` },
+  { problemId: 'search-and-query', concept: `An AND query is the intersection of the terms' posting lists.`, idiom: `lists.reduce((acc, l) => acc.filter((id) => l.includes(id)))`, mistake: `A missing term yields an empty list — no results.` },
+  { problemId: 'search-or-query', concept: `An OR query is the deduped union of posting lists.`, idiom: `add all ids to a Set, then sort`, mistake: `Forgetting to dedupe or sort the result.` },
+  { problemId: 'search-tf-rank', concept: `Rank docs by how often the query terms appear (term frequency).`, idiom: `score = sum of term counts; sort by score desc, id asc`, mistake: `Include only docs whose score is > 0.` },
+  { problemId: 'search-prefix', concept: `Autocomplete returns index terms starting with the prefix.`, idiom: `Object.keys(index).filter((t) => t.startsWith(prefix))`, mistake: `Scanning documents instead of the index terms.` },
+  { problemId: 'pubsub-topic-match', concept: `A subscription matches a topic segment by segment; * is one segment.`, idiom: `equal length && every seg === '*' || matches`, mistake: `"order.*" must not match "order.created.v2".` },
+  { problemId: 'pubsub-fanout', concept: `Deliver a message to every subscriber whose pattern matches.`, idiom: `subscribers.filter(matches).map((s) => s.id)`, mistake: `Delivering to all subscribers regardless of topic.` },
 ]
 
 // Worked examples (input -> output), merged onto the lessons above and shown by
@@ -1017,6 +1027,16 @@ const examples: Record<string, string> = {
   'graph-num-islands': `[[1,1,0],[0,1,0],[0,0,1]] -> 2`,
   'graph-bipartite': `single edge -> true, triangle -> false`,
   'graph-can-reach': `({a:[b], b:[c]}, a, c) -> true`,
+
+  // Search engine + pub/sub
+  'search-tokenize': `"Hello, World!" -> ["hello", "world"]`,
+  'search-inverted-index': `[{1,"cat dog"},{2,"dog bird"}] -> {cat:[1], dog:[1,2], bird:[2]}`,
+  'search-and-query': `({cat:[1,2], dog:[2,3]}, ["cat","dog"]) -> [2]`,
+  'search-or-query': `({cat:[1], dog:[2,3]}, ["cat","dog"]) -> [1,2,3]`,
+  'search-tf-rank': `(docs, ["cat"]) -> [1, 2] (by term frequency)`,
+  'search-prefix': `({cat, car, dog}, "ca") -> ["car", "cat"]`,
+  'pubsub-topic-match': `("order.*", "order.created") -> true`,
+  'pubsub-fanout': `(subs, "order.created") -> ["a"]`,
 }
 
 export const problemLessons: ProblemLesson[] = lessonBase.map((l) =>

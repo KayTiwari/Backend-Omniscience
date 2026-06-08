@@ -985,6 +985,7 @@ export const extraSubjects: Subject[] = [
       drill('math-is-prime', 'Is Prime', 'Warmup'),
       drill('math-digit-sum', 'Sum Of Digits', 'Warmup'),
       drill('math-palindrome-number', 'Palindrome Number', 'Warmup'),
+      drill('search-tokenize', 'Tokenize Text', 'Warmup'),
       drill('ds-trie-autocomplete', "Trie Autocomplete"),
       drill('ds-moving-average', "Moving Average"),
       drill('algo-binary-search', "Binary Search"),
@@ -1012,6 +1013,10 @@ export const extraSubjects: Subject[] = [
       drill('graph-components', 'Count Connected Components'),
       drill('graph-shortest-unweighted', 'Shortest Path (unweighted, BFS)'),
       drill('graph-num-islands', 'Number Of Islands'),
+      drill('search-inverted-index', 'Build An Inverted Index'),
+      drill('search-and-query', 'AND Query (intersect)'),
+      drill('search-or-query', 'OR Query (union)'),
+      drill('search-prefix', 'Prefix (Autocomplete) Search'),
       drill('algo-longest-unique', 'Longest Substring Without Repeats', 'Hard'),
       drill('algo-coin-change', 'Fewest Coins (Coin Change)', 'Hard'),
       drill('algo-quicksort', 'Quicksort', 'Hard'),
@@ -1026,6 +1031,7 @@ export const extraSubjects: Subject[] = [
       drill('graph-bipartite', 'Is The Graph Bipartite', 'Hard'),
       drill('graph-topo-sort', 'Topological Sort (Kahn)', 'Hard'),
       drill('graph-dijkstra', 'Dijkstra Shortest Distances', 'Hard'),
+      drill('search-tf-rank', 'Rank By Term Frequency', 'Hard'),
     ],
   },
   {
@@ -1112,6 +1118,7 @@ export const extraSubjects: Subject[] = [
     icon: DistributedIcon,
     color: '#2f80ed',
     problems: [
+      drill('pubsub-topic-match', 'Topic Match With Wildcards', 'Warmup'),
       drill('msg-partition', "Partition By Key"),
       drill('msg-round-robin', "Round-Robin Assignment"),
       drill('scale-weighted-pick', "Weighted Pick"),
@@ -1138,6 +1145,7 @@ export const extraSubjects: Subject[] = [
       drill('db-in-clause', "Build An IN Clause"),
       drill('db-optimistic-lock', "Optimistic Lock Check"),
       drill('dist-leader-election', "Leader Election (Bully)"),
+      drill('pubsub-fanout', 'Fan Out To Subscribers'),
     ],
   },
   {
