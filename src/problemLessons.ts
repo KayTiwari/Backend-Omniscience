@@ -76,6 +76,14 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'py-flatten-deep', concept: `Recursion flattens nesting of any depth.`, idiom: `if isinstance(x, list):\n    out.extend(flatten_deep(x))`, mistake: `Handling only one level of nesting.` },
   { problemId: 'py-fib-memo', concept: `@lru_cache memoizes a function automatically.`, idiom: `@lru_cache(maxsize=None)\ndef fib(n): ...`, mistake: `Plain recursion is exponential without caching.` },
   { problemId: 'py-anagram-groups', concept: `Sorted letters are a canonical key shared by anagrams.`, idiom: `groups[''.join(sorted(w))].append(w)`, mistake: `Comparing words directly misses anagrams.` },
+  { problemId: 'py-generator-fn', concept: `yield produces values lazily, one at a time.`, idiom: `for i in range(n): yield i * i`, mistake: `Building a full list defeats the point; iterate it.` },
+  { problemId: 'py-context-manager', concept: `__enter__/__exit__ run setup and guaranteed teardown around a with block.`, idiom: `def __enter__(self): ...; def __exit__(self, *a): ...`, mistake: `__exit__ returning True silently swallows exceptions.` },
+  { problemId: 'py-star-args', concept: `*args collects extra positional arguments into a tuple.`, idiom: `def total(*args): return sum(args)`, mistake: `sum needs an iterable, which args already is.` },
+  { problemId: 'py-kwargs', concept: `**kwargs collects extra keyword arguments into a dict.`, idiom: `def f(**kwargs): return dict(kwargs)`, mistake: `kwargs is already a dict; no need to rebuild manually.` },
+  { problemId: 'py-sorted-tuple-key', concept: `A tuple key sorts by the first element, then the next.`, idiom: `sorted(words, key=lambda w: (len(w), w))`, mistake: `Two sorts can undo each other; one tuple key is stable.` },
+  { problemId: 'py-set-comprehension', concept: `A set comprehension builds a set of unique values.`, idiom: `{len(w) for w in words}`, mistake: `Using [] makes a list with duplicates.` },
+  { problemId: 'py-dict-comprehension-filter', concept: `A dict comprehension can filter with an if clause.`, idiom: `{k: v for k, v in d.items() if v > 0}`, mistake: `Iterating d gives keys; use d.items() for pairs.` },
+  { problemId: 'py-unzip', concept: `zip(*pairs) transposes rows into columns.`, idiom: `[list(t) for t in zip(*pairs)]`, mistake: `zip(*[]) is empty; handle the no-pairs case.` },
 
   // ----- JavaScript Fundamentals -----
   { problemId: 'jsf-sum-for', concept: `Accumulate a total with a for...of loop.`, idiom: `let total = 0\nfor (const n of nums) total += n`, mistake: `Forgetting to initialize total before the loop.` },
@@ -542,6 +550,14 @@ const examples: Record<string, string> = {
   'py-flatten-deep': `[1, [2, [3]]] -> [1, 2, 3]`,
   'py-fib-memo': `10 -> 55`,
   'py-anagram-groups': `["eat", "tea", "bat"] -> [["bat"], ["eat", "tea"]]`,
+  'py-generator-fn': `list(squares(4)) -> [0, 1, 4, 9]`,
+  'py-context-manager': `with Tag() -> events ["open", "use", "close"]`,
+  'py-star-args': `total(1, 2, 3) -> 6, total() -> 0`,
+  'py-kwargs': `to_dict(a=1, b=2) -> {"a": 1, "b": 2}`,
+  'py-sorted-tuple-key': `["bb","a","cc","b"] -> ["a","b","bb","cc"]`,
+  'py-set-comprehension': `["a","bb","cc","d"] -> {1, 2}`,
+  'py-dict-comprehension-filter': `{"a":1,"b":-2,"c":3} -> {"a":1,"c":3}`,
+  'py-unzip': `[(1,"a"),(2,"b")] -> [[1,2],["a","b"]]`,
 
   // JavaScript Fundamentals
   'jsf-sum-for': `[1, 2, 3] -> 6`,
