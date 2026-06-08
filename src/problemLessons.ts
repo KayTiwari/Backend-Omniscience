@@ -84,6 +84,14 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'py-set-comprehension', concept: `A set comprehension builds a set of unique values.`, idiom: `{len(w) for w in words}`, mistake: `Using [] makes a list with duplicates.` },
   { problemId: 'py-dict-comprehension-filter', concept: `A dict comprehension can filter with an if clause.`, idiom: `{k: v for k, v in d.items() if v > 0}`, mistake: `Iterating d gives keys; use d.items() for pairs.` },
   { problemId: 'py-unzip', concept: `zip(*pairs) transposes rows into columns.`, idiom: `[list(t) for t in zip(*pairs)]`, mistake: `zip(*[]) is empty; handle the no-pairs case.` },
+  { problemId: 'py-heapq-smallest', concept: `heapq.nsmallest(k, xs) returns the k smallest efficiently.`, idiom: `heapq.nsmallest(k, nums)`, mistake: `Sorting everything is O(n log n); a heap is O(n log k).` },
+  { problemId: 'py-bisect-insort', concept: `bisect.insort inserts while keeping the list sorted.`, idiom: `bisect.insort(arr, x)`, mistake: `append + re-sort each time is wasteful.` },
+  { problemId: 'py-deque-rotate', concept: `deque.rotate(k) shifts elements right by k in O(k).`, idiom: `d = deque(items); d.rotate(k)`, mistake: `Negative k rotates left.` },
+  { problemId: 'py-counter-most-common', concept: `Counter.most_common(k) returns the top-k (value, count) pairs.`, idiom: `Counter(text.split()).most_common(k)`, mistake: `It returns pairs; unpack to get the words.` },
+  { problemId: 'py-defaultdict-int', concept: `defaultdict(int) starts missing keys at 0 for counting.`, idiom: `freq[ch] += 1`, mistake: `A plain dict raises KeyError on first access.` },
+  { problemId: 'py-namedtuple', concept: `namedtuple gives a lightweight, named, immutable record.`, idiom: `Point = namedtuple('Point', ['x', 'y'])`, mistake: `It is still a tuple; fields are read-only.` },
+  { problemId: 'py-accumulate', concept: `itertools.accumulate yields a running total.`, idiom: `list(itertools.accumulate(nums))`, mistake: `It returns an iterator; wrap in list().` },
+  { problemId: 'py-bisect-search', concept: `bisect_left finds the insertion point; confirm the value matches.`, idiom: `i = bisect_left(arr, x); arr[i] == x ? i : -1`, mistake: `bisect alone gives a position, not a found check.` },
 
   // ----- JavaScript Fundamentals -----
   { problemId: 'jsf-sum-for', concept: `Accumulate a total with a for...of loop.`, idiom: `let total = 0\nfor (const n of nums) total += n`, mistake: `Forgetting to initialize total before the loop.` },
@@ -568,6 +576,14 @@ const examples: Record<string, string> = {
   'py-set-comprehension': `["a","bb","cc","d"] -> {1, 2}`,
   'py-dict-comprehension-filter': `{"a":1,"b":-2,"c":3} -> {"a":1,"c":3}`,
   'py-unzip': `[(1,"a"),(2,"b")] -> [[1,2],["a","b"]]`,
+  'py-heapq-smallest': `([5,1,3,2,4], 2) -> [1, 2]`,
+  'py-bisect-insort': `([1,3,5], 4) -> [1, 3, 4, 5]`,
+  'py-deque-rotate': `([1,2,3,4,5], 2) -> [4, 5, 1, 2, 3]`,
+  'py-counter-most-common': `("a b a c a b", 2) -> ["a", "b"]`,
+  'py-defaultdict-int': `"aabbc" -> {"a": 2, "b": 2, "c": 1}`,
+  'py-namedtuple': `make_point(3, 4) -> (3, 4)`,
+  'py-accumulate': `[1,2,3,4] -> [1, 3, 6, 10]`,
+  'py-bisect-search': `([1,3,5,7], 5) -> 2, missing -> -1`,
 
   // JavaScript Fundamentals
   'jsf-sum-for': `[1, 2, 3] -> 6`,
