@@ -3750,4 +3750,118 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Bit manipulation (interview classics) ---------------------------
+  {
+    problemId: 'bit-count-ones',
+    title: 'Count Set Bits',
+    language: 'js',
+    starter: 'function countOnes(n) {\n  // how many 1 bits are in n\n}\n',
+    tests: [
+      { name: 'popcount', body: 'assertEqual(countOnes(7), 3); assertEqual(countOnes(0), 0); assertEqual(countOnes(8), 1);' },
+    ],
+    reference: `function countOnes(n) {
+  let c = 0;
+  while (n) { c += n & 1; n >>>= 1; }
+  return c;
+}
+`,
+  },
+  {
+    problemId: 'bit-single-number',
+    title: 'Single Number (XOR)',
+    language: 'js',
+    starter: 'function singleNumber(nums) {\n  // every value appears twice except one — find it\n}\n',
+    tests: [
+      { name: 'xor cancels pairs', body: 'assertEqual(singleNumber([2,2,1]), 1); assertEqual(singleNumber([4,1,2,1,2]), 4);' },
+    ],
+    reference: `function singleNumber(nums) {
+  return nums.reduce((a, b) => a ^ b, 0);
+}
+`,
+  },
+  {
+    problemId: 'bit-power-of-two',
+    title: 'Is A Power Of Two',
+    language: 'js',
+    starter: 'function isPowerOfTwo(n) {\n  // true when n is 1, 2, 4, 8, ...\n}\n',
+    tests: [
+      { name: 'n & (n-1)', body: 'assertEqual(isPowerOfTwo(16), true); assertEqual(isPowerOfTwo(0), false); assertEqual(isPowerOfTwo(6), false);' },
+    ],
+    reference: `function isPowerOfTwo(n) {
+  return n > 0 && (n & (n - 1)) === 0;
+}
+`,
+  },
+  {
+    problemId: 'bit-toggle',
+    title: 'Toggle The i-th Bit',
+    language: 'js',
+    starter: 'function toggleBit(n, i) {\n  // flip bit i of n\n}\n',
+    tests: [
+      { name: 'xor a shifted 1', body: 'assertEqual(toggleBit(5, 1), 7); assertEqual(toggleBit(7, 1), 5);' },
+    ],
+    reference: `function toggleBit(n, i) {
+  return n ^ (1 << i);
+}
+`,
+  },
+  {
+    problemId: 'bit-lowest-set',
+    title: 'Isolate The Lowest Set Bit',
+    language: 'js',
+    starter: 'function lowestSetBit(n) {\n  // the value of the lowest 1 bit (e.g. 12 -> 4)\n}\n',
+    tests: [
+      { name: 'n & -n', body: 'assertEqual(lowestSetBit(12), 4); assertEqual(lowestSetBit(1), 1);' },
+    ],
+    reference: `function lowestSetBit(n) {
+  return n & -n;
+}
+`,
+  },
+  {
+    problemId: 'bit-hamming',
+    title: 'Hamming Distance',
+    language: 'js',
+    starter: 'function hamming(a, b) {\n  // count the bit positions where a and b differ\n}\n',
+    tests: [
+      { name: 'xor then popcount', body: 'assertEqual(hamming(1, 4), 2); assertEqual(hamming(3, 1), 1);' },
+    ],
+    reference: `function hamming(a, b) {
+  let x = a ^ b, c = 0;
+  while (x) { c += x & 1; x >>>= 1; }
+  return c;
+}
+`,
+  },
+  {
+    problemId: 'bit-missing-number',
+    title: 'Missing Number (XOR)',
+    language: 'js',
+    starter: 'function missingNumber(nums) {\n  // nums holds 0..n with one missing — find it\n}\n',
+    tests: [
+      { name: 'xor indices and values', body: 'assertEqual(missingNumber([3,0,1]), 2); assertEqual(missingNumber([0,1]), 2);' },
+    ],
+    reference: `function missingNumber(nums) {
+  let x = nums.length;
+  for (let i = 0; i < nums.length; i++) x ^= i ^ nums[i];
+  return x;
+}
+`,
+  },
+  {
+    problemId: 'bit-reverse',
+    title: 'Reverse Bits (fixed width)',
+    language: 'js',
+    starter: 'function reverseBits(n, width) {\n  // reverse the low `width` bits of n\n}\n',
+    tests: [
+      { name: 'reverses width bits', body: 'assertEqual(reverseBits(1, 8), 128); assertEqual(reverseBits(2, 8), 64);' },
+    ],
+    reference: `function reverseBits(n, width) {
+  let r = 0;
+  for (let i = 0; i < width; i++) { r = (r << 1) | (n & 1); n >>>= 1; }
+  return r;
+}
+`,
+  },
 ]
