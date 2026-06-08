@@ -4349,4 +4349,132 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Array / collection utilities ------------------------------------
+  {
+    problemId: 'arr-zip',
+    title: 'zip Two Arrays',
+    language: 'js',
+    starter: 'function zip(a, b) {\n  // pair items by index, stopping at the shorter array\n}\n',
+    tests: [
+      { name: 'pairs by index', body: "assertEqual(zip([1,2,3], ['a','b']), [[1,'a'],[2,'b']]);" },
+    ],
+    reference: `function zip(a, b) {
+  const n = Math.min(a.length, b.length);
+  const out = [];
+  for (let i = 0; i < n; i++) out.push([a[i], b[i]]);
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'arr-partition',
+    title: 'partition By Predicate',
+    language: 'js',
+    starter: 'function partition(arr, pred) {\n  // return [passes, fails]\n}\n',
+    tests: [
+      { name: 'splits in two', body: 'assertEqual(partition([1,2,3,4], (x) => x % 2 === 0), [[2,4],[1,3]]);' },
+    ],
+    reference: `function partition(arr, pred) {
+  const pass = [], fail = [];
+  for (const x of arr) (pred(x) ? pass : fail).push(x);
+  return [pass, fail];
+}
+`,
+  },
+  {
+    problemId: 'arr-range',
+    title: 'range (start, end, step)',
+    language: 'js',
+    starter: 'function range(start, end, step = 1) {\n  // numbers from start up to (not including) end\n}\n',
+    tests: [
+      { name: 'with and without step', body: 'assertEqual(range(0, 5), [0,1,2,3,4]); assertEqual(range(1, 10, 3), [1,4,7]);' },
+    ],
+    reference: `function range(start, end, step = 1) {
+  const out = [];
+  for (let i = start; i < end; i += step) out.push(i);
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'arr-take-while',
+    title: 'takeWhile',
+    language: 'js',
+    starter: 'function takeWhile(arr, pred) {\n  // take leading items while pred is true\n}\n',
+    tests: [
+      { name: 'stops at first false', body: 'assertEqual(takeWhile([1,2,3,1], (x) => x < 3), [1,2]);' },
+    ],
+    reference: `function takeWhile(arr, pred) {
+  const out = [];
+  for (const x of arr) {
+    if (!pred(x)) break;
+    out.push(x);
+  }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'arr-drop-while',
+    title: 'dropWhile',
+    language: 'js',
+    starter: 'function dropWhile(arr, pred) {\n  // drop leading items while pred is true, keep the rest\n}\n',
+    tests: [
+      { name: 'keeps the tail', body: 'assertEqual(dropWhile([1,2,3,1], (x) => x < 3), [3,1]);' },
+    ],
+    reference: `function dropWhile(arr, pred) {
+  let i = 0;
+  while (i < arr.length && pred(arr[i])) i++;
+  return arr.slice(i);
+}
+`,
+  },
+  {
+    problemId: 'arr-count-by',
+    title: 'countBy A Function',
+    language: 'js',
+    starter: 'function countBy(arr, fn) {\n  // tally items by the key fn returns\n}\n',
+    tests: [
+      { name: 'tallies', body: "assertEqual(countBy([1,2,3,4], (x) => (x % 2 === 0 ? 'even' : 'odd')), { odd: 2, even: 2 });" },
+    ],
+    reference: `function countBy(arr, fn) {
+  const out = {};
+  for (const x of arr) {
+    const k = fn(x);
+    out[k] = (out[k] || 0) + 1;
+  }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'arr-windows',
+    title: 'Sliding Windows',
+    language: 'js',
+    starter: 'function windows(arr, size) {\n  // every contiguous slice of length size\n}\n',
+    tests: [
+      { name: 'overlapping slices', body: 'assertEqual(windows([1,2,3,4], 2), [[1,2],[2,3],[3,4]]);' },
+    ],
+    reference: `function windows(arr, size) {
+  const out = [];
+  for (let i = 0; i + size <= arr.length; i++) out.push(arr.slice(i, i + size));
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'arr-flatten-depth',
+    title: 'flatten To A Depth',
+    language: 'js',
+    starter: 'function flattenDepth(arr, depth) {\n  // flatten nested arrays up to `depth` levels\n}\n',
+    tests: [
+      { name: 'respects depth', body: 'assertEqual(flattenDepth([1,[2,[3]]], 1), [1,2,[3]]); assertEqual(flattenDepth([1,[2,[3]]], 2), [1,2,3]);' },
+    ],
+    reference: `function flattenDepth(arr, depth) {
+  if (depth <= 0) return arr.slice();
+  return arr.reduce((acc, x) => acc.concat(Array.isArray(x) ? flattenDepth(x, depth - 1) : x), []);
+}
+`,
+  },
 ]
