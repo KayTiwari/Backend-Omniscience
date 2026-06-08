@@ -1436,12 +1436,12 @@ h1 {
   color: #52635f;
 }
 
-/* current: solid blue, clearly active */
+/* current: next target, not completed yet */
 .confidence-ladder span.current {
   border-color: var(--brand-b);
-  background: var(--brand-b);
-  color: #ffffff;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--brand-b) 35%, transparent);
+  background: color-mix(in srgb, var(--brand-b) 8%, var(--field));
+  color: var(--brand-b);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand-b) 18%, transparent);
 }
 
 .mastery-steps {
@@ -2905,9 +2905,9 @@ input:focus-visible {
 
 .app-shell[data-theme='dark'] .confidence-ladder span.current {
   border-color: var(--brand-b);
-  background: var(--brand-b);
-  color: #ffffff;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--brand-b) 35%, transparent);
+  background: color-mix(in srgb, var(--brand-b) 10%, var(--field));
+  color: color-mix(in srgb, var(--brand-b) 86%, #ffffff);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand-b) 20%, transparent);
 }
 
 .app-shell[data-theme='dark'] .check-button,

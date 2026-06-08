@@ -772,9 +772,7 @@ function App() {
     ? progress.defended[activeProblem.id]
       ? 'Can defend'
       : 'Can build'
-    : codeRequirementCorrect
-      ? 'Can build'
-      : recallComplete && tutorialCorrect
+    : recallComplete && tutorialCorrect
         ? 'Can explain'
         : recallAnsweredCount > 0 || tutorialCorrectCount > 0 || solutionChecked
           ? 'Learned'
@@ -1453,7 +1451,7 @@ function App() {
                               type="button"
                             >
                               <span>{String.fromCharCode(65 + optionIndex)}</span>
-                              {renderGlossaryText(option)}
+                              {option}
                             </button>
                           )
                         })}
@@ -1833,7 +1831,7 @@ function App() {
                             type="button"
                           >
                             <span>{String.fromCharCode(65 + optionIndex)}</span>
-                            {renderGlossaryText(option)}
+                            {option}
                           </button>
                         )
                       })}
