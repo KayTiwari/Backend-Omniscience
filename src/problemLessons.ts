@@ -419,6 +419,16 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'dsb-level-order', concept: `Level-order is BFS: process the current level, then its children.`, idiom: `level = next (collected children)`, mistake: `Mutating the queue while iterating it.` },
   { problemId: 'dsb-reverse-list', concept: `Reverse a singly linked list by re-pointing next as you walk.`, idiom: `next = head.next; head.next = prev; prev = head`, mistake: `Losing the rest of the list by not saving next first.` },
   { problemId: 'dsb-hashmap', concept: `A hashmap hashes the key to a bucket and chains collisions.`, idiom: `idx = hash(key) % size; bucket holds [key, val] pairs`, mistake: `Not updating an existing key creates duplicates.` },
+
+  // ----- Bit manipulation -----
+  { problemId: 'bit-count-ones', concept: `Count set bits by testing the low bit and shifting.`, idiom: `c += n & 1; n >>>= 1`, mistake: `Use >>> (unsigned) so the loop ends.` },
+  { problemId: 'bit-single-number', concept: `XOR cancels equal pairs, leaving the unique value.`, idiom: `nums.reduce((a, b) => a ^ b, 0)`, mistake: `Only works when every other value is paired.` },
+  { problemId: 'bit-power-of-two', concept: `A power of two has exactly one set bit.`, idiom: `n > 0 && (n & (n - 1)) === 0`, mistake: `Forgetting the n > 0 guard (0 sneaks through).` },
+  { problemId: 'bit-toggle', concept: `XOR with a shifted 1 flips a single bit.`, idiom: `n ^ (1 << i)`, mistake: `Using OR sets but never clears.` },
+  { problemId: 'bit-lowest-set', concept: `n & -n isolates the lowest set bit.`, idiom: `return n & -n`, mistake: `Confusing it with clearing the lowest bit (n & (n-1)).` },
+  { problemId: 'bit-hamming', concept: `Hamming distance is popcount of the XOR.`, idiom: `x = a ^ b; count its 1 bits`, mistake: `Comparing decimal digits instead of bits.` },
+  { problemId: 'bit-missing-number', concept: `XOR all indices and values; the missing one survives.`, idiom: `x ^= i ^ nums[i], seeded with n`, mistake: `Summation works too but can overflow at scale.` },
+  { problemId: 'bit-reverse', concept: `Shift bits out of n and into r to reverse a fixed width.`, idiom: `r = (r << 1) | (n & 1); n >>>= 1`, mistake: `Wrong width leaves bits unreversed.` },
 ]
 
 // Worked examples (input -> output), merged onto the lessons above and shown by
@@ -825,6 +835,16 @@ const examples: Record<string, string> = {
   'dsb-level-order': `tree (2 with left 1, right 3) -> [[2], [1, 3]]`,
   'dsb-reverse-list': `1 -> 2 -> 3 reversed -> [3, 2, 1]`,
   'dsb-hashmap': `set("a",1); set("a",3) -> get("a") -> 3`,
+
+  // Bit manipulation
+  'bit-count-ones': `7 -> 3, 8 -> 1`,
+  'bit-single-number': `[4,1,2,1,2] -> 4`,
+  'bit-power-of-two': `16 -> true, 6 -> false`,
+  'bit-toggle': `(5, 1) -> 7, (7, 1) -> 5`,
+  'bit-lowest-set': `12 -> 4, 1 -> 1`,
+  'bit-hamming': `(1, 4) -> 2`,
+  'bit-missing-number': `[3,0,1] -> 2`,
+  'bit-reverse': `(1, 8) -> 128, (2, 8) -> 64`,
 }
 
 export const problemLessons: ProblemLesson[] = lessonBase.map((l) =>
