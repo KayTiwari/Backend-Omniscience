@@ -93,6 +93,16 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'py-accumulate', concept: `itertools.accumulate yields a running total.`, idiom: `list(itertools.accumulate(nums))`, mistake: `It returns an iterator; wrap in list().` },
   { problemId: 'py-bisect-search', concept: `bisect_left finds the insertion point; confirm the value matches.`, idiom: `i = bisect_left(arr, x); arr[i] == x ? i : -1`, mistake: `bisect alone gives a position, not a found check.` },
 
+  // ----- Python web/backend (Django/DRF/Flask-flavored) -----
+  { problemId: 'pyweb-queryset-filter', concept: `Keep objects matching every key=value, like Django's .filter(**kw).`, idiom: `all(o.get(k) == v for k, v in filters.items())`, mistake: `Matching any filter instead of all.` },
+  { problemId: 'pyweb-serialize', concept: `A serializer exposes only an allowlist of fields.`, idiom: `{k: obj[k] for k in fields if k in obj}`, mistake: `Dumping the whole object leaks internal fields.` },
+  { problemId: 'pyweb-paginate', concept: `DRF pagination returns count, results, and whether more exist.`, idiom: `items[start:start + size], has_next = start + size < count`, mistake: `Off-by-one on has_next at the last page.` },
+  { problemId: 'pyweb-route-match', concept: `Match path segments, capturing <param> placeholders.`, idiom: `pp.startswith('<') -> params[name] = value`, mistake: `Different segment counts must return None.` },
+  { problemId: 'pyweb-validate', concept: `Collect a {field: "required"} map for missing/empty fields.`, idiom: `{f: 'required' for f in required if not data.get(f)}`, mistake: `not data.get(f) treats 0/"" as missing — intended here.` },
+  { problemId: 'pyweb-permission', concept: `Staff may always act; otherwise only the owner.`, idiom: `user.is_staff or obj.owner == user.id`, mistake: `Checking role but skipping ownership (or vice versa).` },
+  { problemId: 'pyweb-status-for', concept: `Map a domain exception to an HTTP status in one place.`, idiom: `{'NotFound': 404, ...}.get(error, 500)`, mistake: `Defaulting unknown errors to 200 instead of 500.` },
+  { problemId: 'pyweb-query-params', concept: `Parse query params with typed defaults.`, idiom: `int(query.get('page', 1))`, mistake: `Query values are strings; coerce ints.` },
+
   // ----- JavaScript Fundamentals -----
   { problemId: 'jsf-sum-for', concept: `Accumulate a total with a for...of loop.`, idiom: `let total = 0\nfor (const n of nums) total += n`, mistake: `Forgetting to initialize total before the loop.` },
   { problemId: 'jsf-countdown-while', concept: `A while loop repeats until the condition is false.`, idiom: `while (n > 0) { out.push(n); n-- }`, mistake: `Not decrementing n creates an infinite loop.` },
@@ -584,6 +594,16 @@ const examples: Record<string, string> = {
   'py-namedtuple': `make_point(3, 4) -> (3, 4)`,
   'py-accumulate': `[1,2,3,4] -> [1, 3, 6, 10]`,
   'py-bisect-search': `([1,3,5,7], 5) -> 2, missing -> -1`,
+
+  // Python web/backend
+  'pyweb-queryset-filter': `filter(objs, active=True) -> only active objects`,
+  'pyweb-serialize': `({id,name,password}, [id,name]) -> {id, name}`,
+  'pyweb-paginate': `([1,2,3,4,5], 1, 2) -> {count:5, results:[1,2], has_next:True}`,
+  'pyweb-route-match': `("/users/<id>/", "/users/42/") -> {"id": "42"}`,
+  'pyweb-validate': `({name:"a"}, [name,email]) -> {email:"required"}`,
+  'pyweb-permission': `staff -> true, owner -> true, other -> false`,
+  'pyweb-status-for': `"NotFound" -> 404, "Boom" -> 500`,
+  'pyweb-query-params': `{page:"2", search:"x"} -> {page:2, size:20, search:"x"}`,
 
   // JavaScript Fundamentals
   'jsf-sum-for': `[1, 2, 3] -> 6`,
