@@ -4662,4 +4662,134 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Search engine basics (inverted index) ---------------------------
+  {
+    problemId: 'search-tokenize',
+    title: 'Tokenize Text',
+    language: 'js',
+    starter: 'function tokenize(text) {\n  // lowercase, split on spaces, strip non-alphanumerics, drop empties\n}\n',
+    tests: [
+      { name: 'normalizes', body: 'assertEqual(tokenize("Hello, World!"), ["hello", "world"]);' },
+    ],
+    reference: `function tokenize(text) {
+  return text.toLowerCase().split(' ').map((w) => w.replace(/[^a-z0-9]/g, '')).filter(Boolean);
+}
+`,
+  },
+  {
+    problemId: 'search-inverted-index',
+    title: 'Build An Inverted Index',
+    language: 'js',
+    starter: 'function buildIndex(docs) {\n  // docs: [{id, text}]. return { term: [docId, ...] }\n}\n',
+    tests: [
+      { name: 'term -> doc ids', body: 'assertEqual(buildIndex([{id:1,text:"cat dog"},{id:2,text:"dog bird"}]), {cat:[1], dog:[1,2], bird:[2]});' },
+    ],
+    reference: `function buildIndex(docs) {
+  const index = {};
+  for (const doc of docs) {
+    for (const term of new Set(doc.text.toLowerCase().split(' '))) {
+      if (!term) continue;
+      (index[term] ||= []).push(doc.id);
+    }
+  }
+  return index;
+}
+`,
+  },
+  {
+    problemId: 'search-and-query',
+    title: 'AND Query (intersect)',
+    language: 'js',
+    starter: 'function andQuery(index, terms) {\n  // doc ids that contain ALL terms\n}\n',
+    tests: [
+      { name: 'intersection', body: 'assertEqual(andQuery({cat:[1,2], dog:[2,3]}, ["cat","dog"]), [2]);' },
+    ],
+    reference: `function andQuery(index, terms) {
+  const lists = terms.map((t) => index[t] || []);
+  if (lists.length === 0) return [];
+  return lists.reduce((acc, list) => acc.filter((id) => list.includes(id)));
+}
+`,
+  },
+  {
+    problemId: 'search-or-query',
+    title: 'OR Query (union)',
+    language: 'js',
+    starter: 'function orQuery(index, terms) {\n  // doc ids containing ANY term, sorted ascending, no dupes\n}\n',
+    tests: [
+      { name: 'union sorted', body: 'assertEqual(orQuery({cat:[1], dog:[2,3]}, ["cat","dog"]), [1,2,3]);' },
+    ],
+    reference: `function orQuery(index, terms) {
+  const set = new Set();
+  for (const t of terms) for (const id of index[t] || []) set.add(id);
+  return [...set].sort((a, b) => a - b);
+}
+`,
+  },
+  {
+    problemId: 'search-tf-rank',
+    title: 'Rank By Term Frequency',
+    language: 'js',
+    starter: 'function rankByTf(docs, terms) {\n  // score = total term occurrences; return matching ids by score desc, id asc\n}\n',
+    tests: [
+      { name: 'ranks by score', body: 'assertEqual(rankByTf([{id:1,text:"cat cat dog"},{id:2,text:"cat bird"}], ["cat"]), [1,2]);' },
+    ],
+    reference: `function rankByTf(docs, terms) {
+  const score = (text) => terms.reduce((s, t) => s + text.toLowerCase().split(' ').filter((w) => w === t).length, 0);
+  return docs
+    .map((d) => ({ id: d.id, score: score(d.text) }))
+    .filter((d) => d.score > 0)
+    .sort((a, b) => b.score - a.score || a.id - b.id)
+    .map((d) => d.id);
+}
+`,
+  },
+  {
+    problemId: 'search-prefix',
+    title: 'Prefix (Autocomplete) Search',
+    language: 'js',
+    starter: 'function prefixSearch(index, prefix) {\n  // index terms starting with prefix, sorted\n}\n',
+    tests: [
+      { name: 'matches prefix', body: 'assertEqual(prefixSearch({cat:[1], car:[2], dog:[3]}, "ca"), ["car","cat"]);' },
+    ],
+    reference: `function prefixSearch(index, prefix) {
+  return Object.keys(index).filter((t) => t.startsWith(prefix)).sort();
+}
+`,
+  },
+
+  // ----- Pub/Sub topic routing -------------------------------------------
+  {
+    problemId: 'pubsub-topic-match',
+    title: 'Topic Match With Wildcards',
+    language: 'js',
+    starter: "function topicMatches(pattern, topic) {\n  // '*' matches exactly one segment; 'order.*' matches 'order.created'\n}\n",
+    tests: [
+      { name: 'wildcard segments', body: 'assertEqual(topicMatches("order.*", "order.created"), true); assertEqual(topicMatches("order.*", "user.created"), false); assertEqual(topicMatches("order.*", "order.created.v2"), false);' },
+    ],
+    reference: `function topicMatches(pattern, topic) {
+  const p = pattern.split('.'), t = topic.split('.');
+  if (p.length !== t.length) return false;
+  return p.every((seg, i) => seg === '*' || seg === t[i]);
+}
+`,
+  },
+  {
+    problemId: 'pubsub-fanout',
+    title: 'Fan Out To Subscribers',
+    language: 'js',
+    starter: 'function fanout(subscribers, topic) {\n  // subscribers: [{id, pattern}]. return ids whose pattern matches the topic\n}\n',
+    tests: [
+      { name: 'delivers to matches', body: 'assertEqual(fanout([{id:"a",pattern:"order.*"},{id:"b",pattern:"user.*"}], "order.created"), ["a"]);' },
+    ],
+    reference: `function fanout(subscribers, topic) {
+  const matches = (pattern) => {
+    const p = pattern.split('.'), t = topic.split('.');
+    return p.length === t.length && p.every((s, i) => s === '*' || s === t[i]);
+  };
+  return subscribers.filter((s) => matches(s.pattern)).map((s) => s.id);
+}
+`,
+  },
 ]
