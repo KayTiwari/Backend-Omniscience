@@ -10,6 +10,7 @@ function glossaryLabel(entry: GlossaryTerm) {
   return synonyms ? `${entry.term}: ${entry.definition} Synonyms: ${synonyms}.` : `${entry.term}: ${entry.definition}`
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- helper colocated with the component; Codex may move it to a .ts file
 export function renderGlossaryText(text: string): ReactNode {
   if (!text) return text
   const lower = text.toLowerCase()
