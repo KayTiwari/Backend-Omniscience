@@ -1191,6 +1191,13 @@ h1 {
   font-weight: 800;
 }
 
+.dictionary-card-focus {
+  border-color: var(--brand-b);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--brand-b) 42%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--brand-b) 16%, transparent);
+}
+
 .home-section {
   display: grid;
   gap: 12px;

@@ -30,7 +30,7 @@ import {
 } from './course'
 import { validateCourse } from './courseValidation'
 import { applyEditorKey } from './editorKeys'
-import { glossaryTerms } from './glossary'
+import { glossaryId, glossaryTerms } from './glossary'
 import { renderGlossaryText } from './GlossaryText'
 import type { GradeResult, GradeSpec } from './grader/types'
 import { highlight } from './highlight'
@@ -204,6 +204,25 @@ function App() {
 
     window.addEventListener('hashchange', syncFromHash)
     return () => window.removeEventListener('hashchange', syncFromHash)
+  }, [])
+
+  useEffect(() => {
+    const openGlossary = (event: Event) => {
+      const id = (event as CustomEvent<{ id?: string }>).detail?.id
+      if (!id) return
+      setIsHome(true)
+      window.history.replaceState(null, '', window.location.pathname)
+      window.requestAnimationFrame(() => {
+        const target = document.getElementById(id)
+        if (target instanceof HTMLDetailsElement) target.open = true
+        target?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        target?.classList.add('dictionary-card-focus')
+        window.setTimeout(() => target?.classList.remove('dictionary-card-focus'), 1600)
+      })
+    }
+
+    window.addEventListener('backend-omniscience:open-glossary', openGlossary)
+    return () => window.removeEventListener('backend-omniscience:open-glossary', openGlossary)
   }, [])
 
   const activeSubject = subjects.find((subject) => subject.id === activeSubjectId) ?? subjects[0]
@@ -1190,7 +1209,11 @@ function App() {
               </div>
               <div className="dictionary-grid">
                 {glossaryTerms.map((entry) => (
-                  <details key={entry.term} className="dictionary-card">
+                  <details
+                    key={entry.term}
+                    id={glossaryId(entry.term)}
+                    className="dictionary-card"
+                  >
                     <summary>{entry.term}</summary>
                     <p>{renderGlossaryText(entry.definition)}</p>
                     {entry.synonyms && entry.synonyms.length > 0 && (

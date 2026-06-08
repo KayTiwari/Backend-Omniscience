@@ -409,6 +409,10 @@ export type GlossaryMatch = {
   entry: GlossaryTerm
 }
 
+export function glossaryId(term: string) {
+  return `glossary-${term.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`
+}
+
 export const glossaryMatchers = glossaryTerms
   .flatMap((entry) => [entry.term, ...(entry.synonyms ?? [])].map((label) => ({ label, entry })))
   .sort((a, b) => b.label.length - a.label.length)

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { glossaryMatchers, type GlossaryTerm } from './glossary'
+import { glossaryId, glossaryMatchers, type GlossaryTerm } from './glossary'
 
 function isWordChar(value: string | undefined) {
   return value !== undefined && /[a-zA-Z0-9]/.test(value)
@@ -40,14 +40,33 @@ export function renderGlossaryText(text: string): ReactNode {
     }
 
     const label = text.slice(cursor, cursor + match.label.length)
+    const targetId = glossaryId(match.entry.term)
+    const goToGlossary = () => {
+      window.dispatchEvent(
+        new CustomEvent('backend-omniscience:open-glossary', {
+          detail: { id: targetId },
+        }),
+      )
+    }
     nodes.push(
       <dfn
         key={`${cursor}:${match.entry.term}`}
         className="glossary-term"
+        role="link"
         tabIndex={0}
-        title={glossaryLabel(match.entry)}
         aria-label={glossaryLabel(match.entry)}
         data-definition={match.entry.definition}
+        onClick={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          goToGlossary()
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return
+          event.preventDefault()
+          event.stopPropagation()
+          goToGlossary()
+        }}
       >
         {label}
       </dfn>,
