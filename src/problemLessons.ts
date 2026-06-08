@@ -439,6 +439,16 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'fmt-bytes', concept: `Divide by 1024 until under 1024, picking the unit.`, idiom: `while (n >= 1024) { n /= 1024; i++ }`, mistake: `Using 1000 instead of 1024 for binary units.` },
   { problemId: 'fmt-ordinal', concept: `Ordinal suffix is th, except 1st/2nd/3rd, but the teens are all th.`, idiom: `s[(v - 20) % 10] || s[v] || s[0]`, mistake: `11/12/13 must be th, not st/nd/rd.` },
   { problemId: 'fmt-truncate', concept: `Return the string as-is if short, else slice and add "...".`, idiom: `str.length <= max ? str : str.slice(0, max) + '...'`, mistake: `Truncating strings that already fit.` },
+
+  // ----- String processing -----
+  { problemId: 'str-roman-to-int', concept: `Add each numeral, but subtract when a smaller one precedes a larger.`, idiom: `total += cur < next ? -cur : cur`, mistake: `Treating IV as 6 instead of 4.` },
+  { problemId: 'str-int-to-roman', concept: `Greedily subtract the largest value (incl. CM, CD, XC...).`, idiom: `while (n >= v) { out += sym; n -= v }`, mistake: `Omitting the subtractive pairs like CM and IV.` },
+  { problemId: 'str-caesar', concept: `Shift each letter within its case, wrapping mod 26.`, idiom: `((code - base + shift) % 26 + 26) % 26 + base`, mistake: `Negative shifts need the extra + 26 to stay positive.` },
+  { problemId: 'str-first-unique', concept: `Count chars first, then return the first with count 1.`, idiom: `count pass, then find count === 1`, mistake: `Returning the char instead of its index.` },
+  { problemId: 'str-clean-palindrome', concept: `Normalize (lowercase, strip non-alnum), then compare to its reverse.`, idiom: `clean === [...clean].reverse().join('')`, mistake: `Forgetting to strip punctuation and case.` },
+  { problemId: 'str-title-case', concept: `Uppercase the first letter of each word, lowercase the rest.`, idiom: `w[0].toUpperCase() + w.slice(1).toLowerCase()`, mistake: `Not lowercasing the tail (THE -> The).` },
+  { problemId: 'str-is-rotation', concept: `b is a rotation of a iff it is a substring of a + a (same length).`, idiom: `a.length === b.length && (a + a).includes(b)`, mistake: `Skipping the equal-length check.` },
+  { problemId: 'str-count-vowels', concept: `Match all vowels (either case) and count them.`, idiom: `(s.match(/[aeiou]/gi) || []).length`, mistake: `match returns null when there are none.` },
 ]
 
 // Worked examples (input -> output), merged onto the lessons above and shown by
@@ -865,6 +875,16 @@ const examples: Record<string, string> = {
   'fmt-bytes': `1536 -> "1.5 KB", 512 -> "512 B"`,
   'fmt-ordinal': `1 -> "1st", 11 -> "11th", 21 -> "21st"`,
   'fmt-truncate': `("hello world", 5) -> "hello..."`,
+
+  // String processing
+  'str-roman-to-int': `"XIV" -> 14, "MCMXCIV" -> 1994`,
+  'str-int-to-roman': `14 -> "XIV", 1994 -> "MCMXCIV"`,
+  'str-caesar': `("abc", 1) -> "bcd", ("xyz", 3) -> "abc"`,
+  'str-first-unique': `"loveleetcode" -> 2, "aabb" -> -1`,
+  'str-clean-palindrome': `"A man, a plan, a canal: Panama" -> true`,
+  'str-title-case': `"the QUICK fox" -> "The Quick Fox"`,
+  'str-is-rotation': `("abcde", "cdeab") -> true`,
+  'str-count-vowels': `"hello" -> 2, "AEIOU" -> 5`,
 }
 
 export const problemLessons: ProblemLesson[] = lessonBase.map((l) =>
