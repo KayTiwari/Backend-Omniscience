@@ -127,6 +127,14 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'sqldrill-avg', concept: `AVG is sum over count; guard the empty case.`, idiom: `rows.length ? sum / rows.length : 0`, mistake: `Dividing by zero on an empty list.` },
   { problemId: 'sqldrill-inner-join', concept: `INNER JOIN matches rows on a key and merges them.`, idiom: `index the right side by key, then merge matches`, mistake: `An O(n*m) nested loop instead of a hash index.` },
   { problemId: 'sqldrill-update-where', concept: `UPDATE ... WHERE patches matching rows immutably.`, idiom: `rows.map((r) => (pred(r) ? { ...r, ...patch } : r))`, mistake: `Mutating rows in place.` },
+  { problemId: 'sqldrill-having', concept: `HAVING filters groups by an aggregate, after GROUP BY.`, idiom: `count groups, then keep those passing the threshold`, mistake: `WHERE filters rows; HAVING filters groups.` },
+  { problemId: 'sqldrill-left-join', concept: `LEFT JOIN keeps every left row, matched or not.`, idiom: `index right by key; merge or leave the left row`, mistake: `An inner join drops unmatched left rows.` },
+  { problemId: 'sqldrill-self-join', concept: `A self join relates a table to itself (row to its manager).`, idiom: `look up managerId in a map of id -> name`, mistake: `Forgetting the null case for the top of the chain.` },
+  { problemId: 'sqldrill-running-total', concept: `A window running total is a cumulative sum across ordered rows.`, idiom: `sum += row[value]; attach it`, mistake: `Resetting the sum mid-pass.` },
+  { problemId: 'sqldrill-rank', concept: `RANK orders rows and gives ties the same rank, skipping the next.`, idiom: `same value -> same rank; next distinct -> current count`, mistake: `DENSE_RANK would not skip; RANK does.` },
+  { problemId: 'sqldrill-dedupe-latest', concept: `Keep the newest row per key by comparing timestamps.`, idiom: `keep r when its ts beats the stored one`, mistake: `Keeping the first seen instead of the latest.` },
+  { problemId: 'sqldrill-upsert', concept: `UPSERT replaces the row with a matching key, else inserts.`, idiom: `findIndex by key: replace or append`, mistake: `Appending a duplicate instead of replacing.` },
+  { problemId: 'sqldrill-subquery-in', concept: `WHERE key IN (subquery) filters by membership in a set.`, idiom: `new Set(values); filter rows whose key is in it`, mistake: `Array.includes is O(n) per row; use a Set.` },
 
   // ----- TypeScript drills -----
   { problemId: 'ts-typed-sum', concept: `Annotate params and the return so callers are type-checked.`, idiom: `function sum(nums: number[]): number`, mistake: `Omitting the return type lets a wrong return slip through.` },
@@ -552,6 +560,14 @@ const examples: Record<string, string> = {
   'sqldrill-avg': `([{ n: 2 }, { n: 4 }], "n") -> 3, [] -> 0`,
   'sqldrill-inner-join': `join rows where left.uid === right.id, merging both`,
   'sqldrill-update-where': `set { done: true } on rows where id === 1`,
+  'sqldrill-having': `([{t:"a"},{t:"a"},{t:"b"}], "t", 2) -> ["a"]`,
+  'sqldrill-left-join': `([{uid:1},{uid:2}], [{id:1,name:"a"}]) -> [{uid:1,id:1,name:"a"}, {uid:2}]`,
+  'sqldrill-self-join': `[A (no mgr), B (mgr A)] -> [{name:"A",manager:null}, {name:"B",manager:"A"}]`,
+  'sqldrill-running-total': `[{n:1},{n:2},{n:3}] -> totals 1, 3, 6`,
+  'sqldrill-rank': `[90, 80, 90] -> ranks 1, 1, 3`,
+  'sqldrill-dedupe-latest': `id 1 at t1 and t2 -> keep the t2 row`,
+  'sqldrill-upsert': `upsert([{id:1,v:"a"}], {id:1,v:"b"}) -> [{id:1,v:"b"}]`,
+  'sqldrill-subquery-in': `([{uid:1},{uid:2},{uid:3}], [1,3]) -> [{uid:1},{uid:3}]`,
 
   // TypeScript drills
   'ts-typed-sum': `[1, 2, 3] -> 6`,
