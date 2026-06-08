@@ -4106,4 +4106,137 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Math & numbers --------------------------------------------------
+  {
+    problemId: 'math-is-prime',
+    title: 'Is Prime',
+    language: 'js',
+    starter: 'function isPrime(n) {\n  // true if n is prime (check divisors up to sqrt n)\n}\n',
+    tests: [
+      { name: 'small cases', body: 'assertEqual(isPrime(2), true); assertEqual(isPrime(17), true); assertEqual(isPrime(15), false); assertEqual(isPrime(1), false);' },
+    ],
+    reference: `function isPrime(n) {
+  if (n < 2) return false;
+  for (let i = 2; i * i <= n; i++) if (n % i === 0) return false;
+  return true;
+}
+`,
+  },
+  {
+    problemId: 'math-sieve',
+    title: 'Sieve Of Eratosthenes',
+    language: 'js',
+    starter: 'function primesUpTo(n) {\n  // all primes <= n\n}\n',
+    tests: [
+      { name: 'primes', body: 'assertEqual(primesUpTo(10), [2,3,5,7]); assertEqual(primesUpTo(1), []);' },
+    ],
+    reference: `function primesUpTo(n) {
+  const sieve = Array(n + 1).fill(true);
+  const out = [];
+  for (let i = 2; i <= n; i++) {
+    if (sieve[i]) { out.push(i); for (let j = i * i; j <= n; j += i) sieve[j] = false; }
+  }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'math-lcm',
+    title: 'Least Common Multiple',
+    language: 'js',
+    starter: 'function lcm(a, b) {\n  // smallest number divisible by both (use gcd)\n}\n',
+    tests: [
+      { name: 'via gcd', body: 'assertEqual(lcm(4, 6), 12); assertEqual(lcm(3, 5), 15);' },
+    ],
+    reference: `function lcm(a, b) {
+  const gcd = (x, y) => (y === 0 ? x : gcd(y, x % y));
+  return (a / gcd(a, b)) * b;
+}
+`,
+  },
+  {
+    problemId: 'math-digit-sum',
+    title: 'Sum Of Digits',
+    language: 'js',
+    starter: 'function digitSum(n) {\n  // sum the decimal digits (ignore sign)\n}\n',
+    tests: [
+      { name: 'adds digits', body: 'assertEqual(digitSum(1234), 10); assertEqual(digitSum(0), 0); assertEqual(digitSum(-99), 18);' },
+    ],
+    reference: `function digitSum(n) {
+  n = Math.abs(n);
+  let s = 0;
+  while (n > 0) { s += n % 10; n = Math.floor(n / 10); }
+  return s;
+}
+`,
+  },
+  {
+    problemId: 'math-reverse-int',
+    title: 'Reverse An Integer',
+    language: 'js',
+    starter: 'function reverseInt(n) {\n  // 123 -> 321, -120 -> -21\n}\n',
+    tests: [
+      { name: 'keeps sign', body: 'assertEqual(reverseInt(123), 321); assertEqual(reverseInt(-120), -21); assertEqual(reverseInt(100), 1);' },
+    ],
+    reference: `function reverseInt(n) {
+  const sign = Math.sign(n);
+  const r = parseInt(String(Math.abs(n)).split('').reverse().join(''), 10);
+  return sign * r;
+}
+`,
+  },
+  {
+    problemId: 'math-palindrome-number',
+    title: 'Palindrome Number',
+    language: 'js',
+    starter: 'function isPalindromeNumber(n) {\n  // negatives are never palindromes\n}\n',
+    tests: [
+      { name: 'reads the same', body: 'assertEqual(isPalindromeNumber(121), true); assertEqual(isPalindromeNumber(-121), false); assertEqual(isPalindromeNumber(10), false);' },
+    ],
+    reference: `function isPalindromeNumber(n) {
+  if (n < 0) return false;
+  const s = String(n);
+  return s === s.split('').reverse().join('');
+}
+`,
+  },
+  {
+    problemId: 'math-fast-power',
+    title: 'Fast Exponentiation',
+    language: 'js',
+    starter: 'function power(base, exp) {\n  // base^exp for exp >= 0, by squaring\n}\n',
+    tests: [
+      { name: 'squares', body: 'assertEqual(power(2, 10), 1024); assertEqual(power(3, 0), 1); assertEqual(power(5, 3), 125);' },
+    ],
+    reference: `function power(base, exp) {
+  let result = 1;
+  while (exp > 0) {
+    if (exp & 1) result *= base;
+    base *= base;
+    exp >>= 1;
+  }
+  return result;
+}
+`,
+  },
+  {
+    problemId: 'math-int-sqrt',
+    title: 'Integer Square Root',
+    language: 'js',
+    starter: 'function intSqrt(n) {\n  // floor of the square root, via binary search\n}\n',
+    tests: [
+      { name: 'floors', body: 'assertEqual(intSqrt(16), 4); assertEqual(intSqrt(8), 2); assertEqual(intSqrt(1), 1); assertEqual(intSqrt(0), 0);' },
+    ],
+    reference: `function intSqrt(n) {
+  if (n < 2) return n;
+  let lo = 1, hi = n, ans = 0;
+  while (lo <= hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (mid * mid <= n) { ans = mid; lo = mid + 1; } else hi = mid - 1;
+  }
+  return ans;
+}
+`,
+  },
 ]
