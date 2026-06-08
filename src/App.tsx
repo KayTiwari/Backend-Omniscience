@@ -733,17 +733,19 @@ function App() {
     (isCodingProblem ? codeRequirementCorrect : activeProblem.choices ? quizRequirementCorrect : true)
   const masterySteps = [
     {
-      label: 'Recall',
+      label: 'Recall it',
       detail: `${recallAnsweredCount}/${recallPrompts.length}`,
+      help: 'Write the idea in your own words before peeking.',
       done: recallComplete,
     },
     {
-      label: 'Guided',
+      label: 'Answer guided questions',
       detail: `${tutorialCorrectCount}/${tutorialChecks.length}`,
+      help: 'Lock the teaching checkpoints one at a time.',
       done: tutorialCorrect,
     },
     {
-      label: isCodingProblem ? 'Code' : activeProblem.choices ? 'Quiz' : 'Apply',
+      label: isCodingProblem ? 'Run the code' : activeProblem.choices ? 'Answer the quiz' : 'Apply the prompt',
       detail: isCodingProblem
         ? activeGradeResult?.passed
           ? 'passed'
@@ -754,14 +756,20 @@ function App() {
           ? quizCorrect
             ? 'correct'
             : 'answer'
-          : solutionChecked
+        : solutionChecked
             ? 'checked'
             : 'check prompt',
+      help: isCodingProblem
+        ? 'Use the editor and pass the runnable tests.'
+        : activeProblem.choices
+          ? 'Choose an answer and read the feedback.'
+          : 'Use Check Solution after you attempt the prompt.',
       done: applyRequirementDone,
     },
     {
-      label: 'Checks',
+      label: 'Prove it',
       detail: `${acceptanceCorrectCount}/${acceptanceChecks.length}`,
+      help: 'Answer the solution-check questions correctly.',
       done: acceptanceCorrect,
     },
   ]
@@ -1312,6 +1320,7 @@ function App() {
                   {step.done ? <Check size={14} /> : <Circle size={14} />}
                   <strong>{step.label}</strong>
                   <small>{step.detail}</small>
+                  <em>{step.help}</em>
                 </span>
               ))}
             </div>
@@ -1427,34 +1436,31 @@ function App() {
               </>
             ) : (
               <>
-                <div className="visual-lesson">
-                  <InteractiveDiagram
-                    nodes={teachingModel.diagram}
-                    explanations={teachingModel.diagramExplanations}
-                  />
-                  <p>{renderGlossaryText(teachingModel.mentalModel)}</p>
+                <div className="lesson-focus">
+                  <section className="lesson-focus-card lesson-focus-card-primary">
+                    <span>Core Idea</span>
+                    <p>{renderGlossaryText(teachingModel.mentalModel)}</p>
+                  </section>
                 </div>
 
-                <div className="lesson-grid">
-                  <section>
-                    <h4>Plain-English Fundamentals</h4>
+                <section className="lesson-walkthrough">
+                  <h4>Learn It In Order</h4>
+                  <ol>
+                    {teachingModel.tutorial.map((item) => (
+                      <li key={item}>{renderLessonListItem(item)}</li>
+                    ))}
+                  </ol>
+                </section>
+
+                <div className="lesson-detail-row">
+                  <details>
+                    <summary>Foundation Notes</summary>
                     <ul>
                       {teachingModel.fundamentals.map((item) => (
                         <li key={item}>{renderLessonListItem(item)}</li>
                       ))}
                     </ul>
-                  </section>
-                  <section>
-                    <h4>Tutorial Steps</h4>
-                    <ol>
-                      {teachingModel.tutorial.map((item) => (
-                        <li key={item}>{renderLessonListItem(item)}</li>
-                      ))}
-                    </ol>
-                  </section>
-                </div>
-
-                <div className="lesson-detail-row">
+                  </details>
                   <details>
                     <summary>Advanced Knowledge</summary>
                     <ul>
