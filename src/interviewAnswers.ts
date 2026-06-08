@@ -547,4 +547,54 @@ export const interviewAnswers: InterviewAnswer[] = [
     systemDesign:
       'Used by caches and sharded stores to scale without mass remapping; virtual nodes smooth out hotspots and uneven distribution.',
   },
+  {
+    key: 'big-o',
+    topic: 'Big-O complexity',
+    subjectId: 'algorithms',
+    simple: 'Big-O describes how runtime or space grows as the input grows.',
+    senior:
+      'Focus on the dominant term and worst case: O(1), O(log n), O(n), O(n log n), O(n^2); a hash lookup is O(1), a nested loop O(n^2).',
+    systemDesign:
+      'It sets real capacity limits: an O(n^2) report that is fine at 1k rows melts at 1M, so pick algorithms and indexes whose cost grows sub-linearly with data and traffic.',
+  },
+  {
+    key: 'dynamic-programming',
+    topic: 'Dynamic programming',
+    subjectId: 'algorithms',
+    simple: 'DP solves a problem by reusing answers to overlapping subproblems.',
+    senior:
+      'Define the state and recurrence, then memoize (top-down) or fill a table (bottom-up) to avoid recomputing; it turns exponential into polynomial.',
+    systemDesign:
+      'The framing matters more than the puzzles: cache expensive overlapping computations, and recognize when a greedy shortcut is wrong and you need the full table.',
+  },
+  {
+    key: 'recursion',
+    topic: 'Recursion',
+    subjectId: 'algorithms',
+    simple: 'A function that calls itself on a smaller input until a base case.',
+    senior:
+      'Every recursion needs a base case and progress toward it; watch stack depth and switch to iteration or memoization when it gets deep.',
+    systemDesign:
+      'Deep recursion risks a stack overflow on large inputs; trees and divide-and-conquer fit naturally, but bound the depth or go iterative.',
+  },
+  {
+    key: 'sql-joins',
+    topic: 'SQL joins',
+    subjectId: 'sql',
+    simple: 'A join combines rows from two tables on a matching key.',
+    senior:
+      'INNER keeps only matches; LEFT keeps all left rows; the join key should be indexed or it becomes a slow scan.',
+    systemDesign:
+      'Joins are where query plans live or die: index the join columns, watch fan-out multiplying rows, and pre-aggregate or denormalize hot read paths.',
+  },
+  {
+    key: 'sql-window-functions',
+    topic: 'SQL window functions',
+    subjectId: 'sql',
+    simple: 'Window functions compute across related rows without collapsing them.',
+    senior:
+      'RANK, ROW_NUMBER, and running SUM over PARTITION BY ... ORDER BY keep every row while adding an aggregate, unlike GROUP BY which collapses them.',
+    systemDesign:
+      'They do top-N-per-group, running totals, and latest-per-key in one query instead of N+1 app loops; mind the sort cost on large partitions.',
+  },
 ]
