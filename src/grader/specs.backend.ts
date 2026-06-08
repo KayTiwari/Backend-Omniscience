@@ -3984,4 +3984,126 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- String processing (interview + backend staples) -----------------
+  {
+    problemId: 'str-roman-to-int',
+    title: 'Roman Numeral To Int',
+    language: 'js',
+    starter: 'function romanToInt(s) {\n  // "XIV" -> 14 (subtract when a smaller numeral precedes a larger)\n}\n',
+    tests: [
+      { name: 'subtractive cases', body: 'assertEqual(romanToInt("XIV"), 14); assertEqual(romanToInt("MCMXCIV"), 1994); assertEqual(romanToInt("III"), 3);' },
+    ],
+    reference: `function romanToInt(s) {
+  const map = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };
+  let total = 0;
+  for (let i = 0; i < s.length; i++) {
+    const cur = map[s[i]], next = map[s[i + 1]] || 0;
+    total += cur < next ? -cur : cur;
+  }
+  return total;
+}
+`,
+  },
+  {
+    problemId: 'str-int-to-roman',
+    title: 'Int To Roman Numeral',
+    language: 'js',
+    starter: 'function intToRoman(n) {\n  // 14 -> "XIV"\n}\n',
+    tests: [
+      { name: 'greedy table', body: 'assertEqual(intToRoman(14), "XIV"); assertEqual(intToRoman(1994), "MCMXCIV");' },
+    ],
+    reference: `function intToRoman(n) {
+  const vals = [[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[90,'XC'],[50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];
+  let out = '';
+  for (const [v, sym] of vals) while (n >= v) { out += sym; n -= v; }
+  return out;
+}
+`,
+  },
+  {
+    problemId: 'str-caesar',
+    title: 'Caesar Cipher',
+    language: 'js',
+    starter: 'function caesar(s, shift) {\n  // shift letters by `shift`, wrapping, preserving case and non-letters\n}\n',
+    tests: [
+      { name: 'wraps the alphabet', body: 'assertEqual(caesar("abc", 1), "bcd"); assertEqual(caesar("xyz", 3), "abc"); assertEqual(caesar("Hello, World", 1), "Ifmmp, Xpsme");' },
+    ],
+    reference: `function caesar(s, shift) {
+  return s.replace(/[a-z]/gi, (ch) => {
+    const base = ch <= 'Z' ? 65 : 97;
+    return String.fromCharCode((((ch.charCodeAt(0) - base + shift) % 26) + 26) % 26 + base);
+  });
+}
+`,
+  },
+  {
+    problemId: 'str-first-unique',
+    title: 'First Unique Character',
+    language: 'js',
+    starter: 'function firstUniqueChar(s) {\n  // index of the first non-repeating char, or -1\n}\n',
+    tests: [
+      { name: 'counts then scans', body: 'assertEqual(firstUniqueChar("leetcode"), 0); assertEqual(firstUniqueChar("loveleetcode"), 2); assertEqual(firstUniqueChar("aabb"), -1);' },
+    ],
+    reference: `function firstUniqueChar(s) {
+  const counts = {};
+  for (const ch of s) counts[ch] = (counts[ch] || 0) + 1;
+  for (let i = 0; i < s.length; i++) if (counts[s[i]] === 1) return i;
+  return -1;
+}
+`,
+  },
+  {
+    problemId: 'str-clean-palindrome',
+    title: 'Valid Palindrome (ignore non-alnum)',
+    language: 'js',
+    starter: 'function isCleanPalindrome(s) {\n  // ignore case and non-alphanumerics\n}\n',
+    tests: [
+      { name: 'normalizes first', body: 'assertEqual(isCleanPalindrome("A man, a plan, a canal: Panama"), true); assertEqual(isCleanPalindrome("race a car"), false);' },
+    ],
+    reference: `function isCleanPalindrome(s) {
+  const clean = s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return clean === [...clean].reverse().join('');
+}
+`,
+  },
+  {
+    problemId: 'str-title-case',
+    title: 'Title Case',
+    language: 'js',
+    starter: 'function titleCase(s) {\n  // capitalize the first letter of each word, lowercase the rest\n}\n',
+    tests: [
+      { name: 'per word', body: 'assertEqual(titleCase("hello world"), "Hello World"); assertEqual(titleCase("the QUICK fox"), "The Quick Fox");' },
+    ],
+    reference: `function titleCase(s) {
+  return s.split(' ').map((w) => (w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : w)).join(' ');
+}
+`,
+  },
+  {
+    problemId: 'str-is-rotation',
+    title: 'String Rotation Check',
+    language: 'js',
+    starter: 'function isRotation(a, b) {\n  // is b a rotation of a? (trick: check a+a)\n}\n',
+    tests: [
+      { name: 'doubling trick', body: 'assertEqual(isRotation("abcde", "cdeab"), true); assertEqual(isRotation("abc", "acb"), false); assertEqual(isRotation("", ""), true);' },
+    ],
+    reference: `function isRotation(a, b) {
+  return a.length === b.length && (a + a).includes(b);
+}
+`,
+  },
+  {
+    problemId: 'str-count-vowels',
+    title: 'Count Vowels',
+    language: 'js',
+    starter: 'function countVowels(s) {\n  // count a, e, i, o, u (either case)\n}\n',
+    tests: [
+      { name: 'either case', body: 'assertEqual(countVowels("hello"), 2); assertEqual(countVowels("xyz"), 0); assertEqual(countVowels("AEIOU"), 5);' },
+    ],
+    reference: `function countVowels(s) {
+  return (s.match(/[aeiou]/gi) || []).length;
+}
+`,
+  },
 ]
