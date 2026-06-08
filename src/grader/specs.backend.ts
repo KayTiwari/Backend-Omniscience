@@ -3645,7 +3645,7 @@ function rleDecode(s) {
     language: 'js',
     starter: 'function leftJoin(left, right, leftKey, rightKey) {\n  // every left row, merged with its match (or left as-is when none)\n}\n',
     tests: [
-      { name: 'keeps unmatched left', body: "assertEqual(leftJoin([{uid:1},{uid:2}], [{id:1,name:'a'}], 'uid', 'id'), [{uid:1,name:'a',id:1},{uid:2}]);" },
+      { name: 'keeps unmatched left', body: "assertEqual(leftJoin([{uid:1},{uid:2}], [{id:1,name:'a'}], 'uid', 'id'), [{uid:1,id:1,name:'a'},{uid:2}]);" },
     ],
     reference: `function leftJoin(left, right, leftKey, rightKey) {
   const idx = new Map(right.map((r) => [r[rightKey], r]));
