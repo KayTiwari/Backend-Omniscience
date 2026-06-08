@@ -469,6 +469,16 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'fn-flip', concept: `flip swaps the order of the first two arguments.`, idiom: `(a, b) => fn(b, a)`, mistake: `Useful for non-commutative ops like subtract/divide.` },
   { problemId: 'fn-negate', concept: `negate returns a predicate with the opposite truth value.`, idiom: `(...args) => !pred(...args)`, mistake: `Forwarding all args so multi-arg predicates work.` },
   { problemId: 'fn-pipe-value', concept: `Thread a starting value through a list of functions.`, idiom: `fns.reduce((acc, fn) => fn(acc), x)`, mistake: `Returning a function instead of the final value.` },
+
+  // ----- Array / collection utilities -----
+  { problemId: 'arr-zip', concept: `Pair items by index, stopping at the shorter array.`, idiom: `for i < min(len): out.push([a[i], b[i]])`, mistake: `Reading past the shorter array's end.` },
+  { problemId: 'arr-partition', concept: `Split into items that pass and items that fail a predicate.`, idiom: `(pred(x) ? pass : fail).push(x)`, mistake: `Returning only the passes.` },
+  { problemId: 'arr-range', concept: `Generate numbers from start up to (not including) end by step.`, idiom: `for (i = start; i < end; i += step)`, mistake: `end is exclusive; a zero step loops forever.` },
+  { problemId: 'arr-take-while', concept: `Take leading items until the predicate first fails.`, idiom: `if (!pred(x)) break; out.push(x)`, mistake: `filter keeps all matches; takeWhile stops at the first miss.` },
+  { problemId: 'arr-drop-while', concept: `Skip leading items while the predicate holds, keep the rest.`, idiom: `advance i while pred; return slice(i)`, mistake: `Dropping every match instead of just the leading run.` },
+  { problemId: 'arr-count-by', concept: `Tally items by the key a function returns.`, idiom: `out[fn(x)] = (out[fn(x)] || 0) + 1`, mistake: `Storing items instead of counts.` },
+  { problemId: 'arr-windows', concept: `Every contiguous slice of a fixed length.`, idiom: `for i + size <= len: slice(i, i + size)`, mistake: `Off-by-one lets the last window run past the end.` },
+  { problemId: 'arr-flatten-depth', concept: `Flatten nested arrays only up to a given depth.`, idiom: `depth <= 0 ? copy : concat(recurse(depth - 1))`, mistake: `Flattening fully ignores the depth limit.` },
 ]
 
 // Worked examples (input -> output), merged onto the lessons above and shown by
@@ -925,6 +935,16 @@ const examples: Record<string, string> = {
   'fn-flip': `flip((a,b)=>a-b)(2,5) -> 3`,
   'fn-negate': `negate((x)=>x>0)(-1) -> true`,
   'fn-pipe-value': `pipeValue(3, (x)=>x+1, (x)=>x*2) -> 8`,
+
+  // Array / collection utilities
+  'arr-zip': `([1,2,3], ["a","b"]) -> [[1,"a"],[2,"b"]]`,
+  'arr-partition': `([1,2,3,4], even) -> [[2,4],[1,3]]`,
+  'arr-range': `(0, 5) -> [0,1,2,3,4], (1,10,3) -> [1,4,7]`,
+  'arr-take-while': `([1,2,3,1], x<3) -> [1,2]`,
+  'arr-drop-while': `([1,2,3,1], x<3) -> [3,1]`,
+  'arr-count-by': `([1,2,3,4], parity) -> { odd: 2, even: 2 }`,
+  'arr-windows': `([1,2,3,4], 2) -> [[1,2],[2,3],[3,4]]`,
+  'arr-flatten-depth': `([1,[2,[3]]], 1) -> [1,2,[3]]`,
 }
 
 export const problemLessons: ProblemLesson[] = lessonBase.map((l) =>
