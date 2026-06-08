@@ -459,6 +459,16 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'math-palindrome-number', concept: `A number reads the same forwards and backwards (negatives never do).`, idiom: `s === reverse(s)`, mistake: `Treating -121 as a palindrome.` },
   { problemId: 'math-fast-power', concept: `Square the base and halve the exponent (binary exponentiation).`, idiom: `if (exp & 1) result *= base; base *= base; exp >>= 1`, mistake: `Multiplying base exp times is O(exp), not O(log exp).` },
   { problemId: 'math-int-sqrt', concept: `Binary-search the largest m where m*m <= n.`, idiom: `mid*mid <= n ? ans = mid, lo = mid+1 : hi = mid-1`, mistake: `Float Math.sqrt can be off by one for large n.` },
+
+  // ----- Functional / higher-order JS -----
+  { problemId: 'fn-compose', concept: `compose runs functions right-to-left.`, idiom: `fns.reduceRight((acc, fn) => fn(acc), x)`, mistake: `Reducing left-to-right makes it pipe, not compose.` },
+  { problemId: 'fn-pipe', concept: `pipe runs functions left-to-right.`, idiom: `fns.reduce((acc, fn) => fn(acc), x)`, mistake: `Order matters: pipe is the reverse of compose.` },
+  { problemId: 'fn-curry3', concept: `Currying turns f(a,b,c) into f(a)(b)(c), one arg per call.`, idiom: `(a) => (b) => (c) => fn(a, b, c)`, mistake: `Returning fn(a,b,c) too early instead of nested funcs.` },
+  { problemId: 'fn-once', concept: `once caches the first result and ignores later calls.`, idiom: `if (!called) { called = true; result = fn(...) }`, mistake: `Re-running fn or losing the cached result.` },
+  { problemId: 'fn-partial', concept: `Partial application pre-binds the leading arguments.`, idiom: `(...rest) => fn(...preset, ...rest)`, mistake: `Putting preset args after rest.` },
+  { problemId: 'fn-flip', concept: `flip swaps the order of the first two arguments.`, idiom: `(a, b) => fn(b, a)`, mistake: `Useful for non-commutative ops like subtract/divide.` },
+  { problemId: 'fn-negate', concept: `negate returns a predicate with the opposite truth value.`, idiom: `(...args) => !pred(...args)`, mistake: `Forwarding all args so multi-arg predicates work.` },
+  { problemId: 'fn-pipe-value', concept: `Thread a starting value through a list of functions.`, idiom: `fns.reduce((acc, fn) => fn(acc), x)`, mistake: `Returning a function instead of the final value.` },
 ]
 
 // Worked examples (input -> output), merged onto the lessons above and shown by
@@ -905,6 +915,16 @@ const examples: Record<string, string> = {
   'math-palindrome-number': `121 -> true, -121 -> false`,
   'math-fast-power': `(2, 10) -> 1024`,
   'math-int-sqrt': `16 -> 4, 8 -> 2`,
+
+  // Functional / higher-order JS
+  'fn-compose': `compose((x)=>x+1, (x)=>x*2)(3) -> 7`,
+  'fn-pipe': `pipe((x)=>x+1, (x)=>x*2)(3) -> 8`,
+  'fn-curry3': `curry3((a,b,c)=>a+b+c)(1)(2)(3) -> 6`,
+  'fn-once': `f(); f() -> the underlying fn ran once`,
+  'fn-partial': `partial(add3, 1, 2)(3) -> 6`,
+  'fn-flip': `flip((a,b)=>a-b)(2,5) -> 3`,
+  'fn-negate': `negate((x)=>x>0)(-1) -> true`,
+  'fn-pipe-value': `pipeValue(3, (x)=>x+1, (x)=>x*2) -> 8`,
 }
 
 export const problemLessons: ProblemLesson[] = lessonBase.map((l) =>
