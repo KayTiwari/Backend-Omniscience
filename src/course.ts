@@ -929,6 +929,16 @@ function getProblemPhaseRank(problem: Problem) {
   return 8
 }
 
+// Strip noisy display prefixes from titles (keep "Review"). Applied after the
+// phase sort so getProblemPhaseRank still sees the original "Tutorial:"/etc.
+function cleanProblemTitle(title: string): string {
+  return title
+    .replace(/^Tutorial:\s*/i, '')
+    .replace(/^Progression\s+\d+:\s*/i, '')
+    .replace(/^\d+\.\s+/, '')
+    .trim()
+}
+
 function sortProblemsByPhase(problems: Problem[]) {
   return problems
     .map((problem, index) => ({ problem, index }))
@@ -936,7 +946,7 @@ function sortProblemsByPhase(problems: Problem[]) {
       const rankDelta = getProblemPhaseRank(left.problem) - getProblemPhaseRank(right.problem)
       return rankDelta || left.index - right.index
     })
-    .map(({ problem }) => problem)
+    .map(({ problem }) => ({ ...problem, title: cleanProblemTitle(problem.title) }))
 }
 
 function sortSubjectsByTrack(items: Subject[]) {
