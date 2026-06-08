@@ -539,6 +539,14 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'doc-set-path', concept: `$set writes a nested dotted path, creating objects along the way.`, idiom: `walk keys, cloning each level, set the last`, mistake: `Mutating nested objects in place instead of cloning.` },
   { problemId: 'doc-group-sum', concept: `Aggregation groups by a key and sums another field.`, idiom: `out[d[groupKey]] += d[sumKey]`, mistake: `Summing the wrong field or not defaulting to 0.` },
   { problemId: 'doc-sort-limit', concept: `Sort the collection by a field, then take the first n.`, idiom: `[...docs].sort(byKey).slice(0, n)`, mistake: `sort mutates; copy first.` },
+
+  // ----- Testing as code -----
+  { problemId: 'test-assert-same', concept: `An assertion throws on mismatch so a failing test is loud.`, idiom: `if (stringify(a) !== stringify(b)) throw`, mistake: `Returning false instead of throwing hides failures.` },
+  { problemId: 'test-expect-throws', concept: `To test error paths, assert the call throws.`, idiom: `try { fn(); return false } catch { return true }`, mistake: `Not wrapping in try/catch lets the throw escape the test.` },
+  { problemId: 'test-spy', concept: `A spy is a function that records how it was called.`, idiom: `function spy(...args){ spy.calls.push(args) }`, mistake: `Storing only the last call instead of all of them.` },
+  { problemId: 'test-stub-returns', concept: `A stub returns canned values so tests are deterministic.`, idiom: `let i = 0; return () => values[i++]`, mistake: `Returning the same value every call.` },
+  { problemId: 'test-fake-clock', concept: `A fake clock makes time deterministic in tests.`, idiom: `now: () => t, tick: (ms) => { t += ms }`, mistake: `Using real Date.now makes tests flaky.` },
+  { problemId: 'test-run-cases', concept: `A table-driven runner checks many input/expected pairs.`, idiom: `for ([input, expected] of cases) compare fn(input)`, mistake: `Stopping at the first failure instead of counting all.` },
 ]
 
 // Worked examples (input -> output), merged onto the lessons above and shown by
@@ -1067,6 +1075,14 @@ const examples: Record<string, string> = {
   'js-zero-variables': `makeProfile() -> {name:"backend", count:2, label:"backend:2"}`,
   'js-zero-function-return': `("Ada", "Lovelace") -> "Ada Lovelace"`,
   'js-zero-if-else': `active admin -> "allow"; otherwise -> "deny"`,
+
+  // Testing as code
+  'test-assert-same': `assertSame(1,1) -> true; assertSame(1,2) throws`,
+  'test-expect-throws': `throws(() => { throw e }) -> true; throws(() => 1) -> false`,
+  'test-spy': `s(1); s(2,3) -> s.calls = [[1],[2,3]]`,
+  'test-stub-returns': `stubReturns([1,2]) -> 1, then 2`,
+  'test-fake-clock': `makeClock(1000); tick(50) -> now() 1050`,
+  'test-run-cases': `(x=>x*2, [[1,2],[2,4],[3,5]]) -> {passed:2, failed:1}`,
 }
 
 export const problemLessons: ProblemLesson[] = lessonBase.map((l) =>
