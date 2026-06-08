@@ -790,4 +790,110 @@ def count_words(text):
     return None
 `,
   },
+
+  // ----- Python idioms: generators, context managers, *args/**kwargs -----
+  {
+    problemId: 'py-generator-fn',
+    title: 'Generator Function (yield)',
+    language: 'py',
+    starter: 'def squares(n):\n    # yield 0, 1, 4, ... for i in range(n)\n    pass\n',
+    tests: [
+      { name: 'lazy squares', body: 'assert list(squares(4)) == [0, 1, 4, 9]' },
+    ],
+    reference: `def squares(n):
+    for i in range(n):
+        yield i * i
+`,
+  },
+  {
+    problemId: 'py-context-manager',
+    title: 'Context Manager (with)',
+    language: 'py',
+    starter: 'class Tag:\n    # record "open" on enter and "close" on exit, in self.events\n    pass\n',
+    tests: [
+      { name: 'enter/exit order', body: "t = Tag()\nwith t:\n    t.events.append('use')\nassert t.events == ['open', 'use', 'close']" },
+    ],
+    reference: `class Tag:
+    def __init__(self):
+        self.events = []
+    def __enter__(self):
+        self.events.append('open')
+        return self
+    def __exit__(self, *a):
+        self.events.append('close')
+        return False
+`,
+  },
+  {
+    problemId: 'py-star-args',
+    title: '*args',
+    language: 'py',
+    starter: 'def total(*args):\n    # sum any number of positional args\n    pass\n',
+    tests: [
+      { name: 'variadic sum', body: 'assert total(1, 2, 3) == 6\nassert total() == 0' },
+    ],
+    reference: `def total(*args):
+    return sum(args)
+`,
+  },
+  {
+    problemId: 'py-kwargs',
+    title: '**kwargs',
+    language: 'py',
+    starter: 'def to_dict(**kwargs):\n    # collect keyword args into a dict\n    pass\n',
+    tests: [
+      { name: 'collects kwargs', body: "assert to_dict(a=1, b=2) == {'a': 1, 'b': 2}" },
+    ],
+    reference: `def to_dict(**kwargs):
+    return dict(kwargs)
+`,
+  },
+  {
+    problemId: 'py-sorted-tuple-key',
+    title: 'Sort By Multiple Keys',
+    language: 'py',
+    starter: 'def sort_words(words):\n    # by length, then alphabetically\n    pass\n',
+    tests: [
+      { name: 'tuple key', body: "assert sort_words(['bb', 'a', 'cc', 'b']) == ['a', 'b', 'bb', 'cc']" },
+    ],
+    reference: `def sort_words(words):
+    return sorted(words, key=lambda w: (len(w), w))
+`,
+  },
+  {
+    problemId: 'py-set-comprehension',
+    title: 'Set Comprehension',
+    language: 'py',
+    starter: 'def unique_lengths(words):\n    # the distinct word lengths\n    pass\n',
+    tests: [
+      { name: 'distinct lengths', body: "assert unique_lengths(['a', 'bb', 'cc', 'd']) == {1, 2}" },
+    ],
+    reference: `def unique_lengths(words):
+    return {len(w) for w in words}
+`,
+  },
+  {
+    problemId: 'py-dict-comprehension-filter',
+    title: 'Dict Comprehension With Filter',
+    language: 'py',
+    starter: 'def positives(d):\n    # keep only entries with a positive value\n    pass\n',
+    tests: [
+      { name: 'filters values', body: "assert positives({'a': 1, 'b': -2, 'c': 3}) == {'a': 1, 'c': 3}" },
+    ],
+    reference: `def positives(d):
+    return {k: v for k, v in d.items() if v > 0}
+`,
+  },
+  {
+    problemId: 'py-unzip',
+    title: 'Unzip With zip(*)',
+    language: 'py',
+    starter: 'def unzip(pairs):\n    # [(1,"a"),(2,"b")] -> [[1,2],["a","b"]]\n    pass\n',
+    tests: [
+      { name: 'splat transpose', body: "assert unzip([(1, 'a'), (2, 'b')]) == [[1, 2], ['a', 'b']]" },
+    ],
+    reference: `def unzip(pairs):
+    return [list(t) for t in zip(*pairs)] if pairs else [[], []]
+`,
+  },
 ]
