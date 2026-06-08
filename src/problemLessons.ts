@@ -19,6 +19,12 @@ export type ProblemLesson = {
 }
 
 const lessonBase: ProblemLesson[] = [
+  { problemId: 'js-zero-variables', concept: `Variables are names for values; const means the name is not reassigned, let means it can change.`, idiom: `const name = 'backend';\nlet count = 1;\ncount += 1;`, mistake: `Printing values with console.log instead of returning the object the tests expect.` },
+  { problemId: 'js-zero-function-return', concept: `A function receives inputs through parameters and gives a result back with return.`, idiom: `function fullName(firstName, lastName) {\n  return firstName + ' ' + lastName;\n}`, mistake: `Using console.log inside the function but returning undefined.` },
+  { problemId: 'js-zero-if-else', concept: `if/else chooses which branch runs based on a boolean condition.`, idiom: `if (user.active === true && user.role === 'admin') return 'allow';\nreturn 'deny';`, mistake: `Checking only one condition or forgetting that every branch must return a value.` },
+  { problemId: 'py-zero-variable-return', concept: `Python variables are names bound to values; return sends a value back to the caller.`, idiom: `name = 'backend'\ncount = 1\ncount += 1\nreturn {'name': name, 'count': count}`, mistake: `Using print() when the grader expects a returned value.` },
+  { problemId: 'py-zero-function-params', concept: `A Python function receives inputs through parameters and returns one result.`, idiom: `def full_name(first_name, last_name):\n    return first_name + ' ' + last_name`, mistake: `Forgetting indentation or printing instead of returning.` },
+  { problemId: 'py-zero-if-else', concept: `if/else chooses a branch; indentation tells Python which lines belong to that branch.`, idiom: `if user.get('active') is True and user.get('role') == 'admin':\n    return 'allow'\nreturn 'deny'`, mistake: `Mis-indenting return statements or checking only one required condition.` },
   { problemId: 'py-is-even', concept: `Even vs odd is a remainder check: a number is even when dividing by 2 leaves nothing.`, idiom: `return n % 2 == 0`, mistake: `Returning n % 2 gives 0 or 1, not a boolean.` },
   { problemId: 'py-max-of-three', concept: `max() takes several arguments and returns the largest one.`, idiom: `return max(a, b, c)`, mistake: `Hand-writing nested if/else when max() already does it.` },
   { problemId: 'py-sum-loop', concept: `Build a total by adding each item as you loop (an accumulator).`, idiom: `total = 0\nfor n in nums:\n    total += n`, mistake: `Forgetting to initialize total before the loop.` },

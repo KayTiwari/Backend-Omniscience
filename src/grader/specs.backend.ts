@@ -5,6 +5,63 @@ import type { GradeSpec } from './types.ts'
 // data & performance -> real-time. Each ships a reference solution that the
 // self-test runs against its own tests.
 export const backendSpecs: GradeSpec[] = [
+  // ----- JavaScript from zero --------------------------------------------
+  {
+    problemId: 'js-zero-variables',
+    title: 'Variables: const And let',
+    language: 'js',
+    starter:
+      "function makeProfile() {\n  // create name='backend', count=1; increment count; return { name, count, label }\n}\n",
+    tests: [
+      {
+        name: 'returns named values',
+        body: "assertEqual(makeProfile(), { name: 'backend', count: 2, label: 'backend:2' });",
+      },
+    ],
+    reference: `function makeProfile() {
+  const name = 'backend';
+  let count = 1;
+  count += 1;
+  return { name, count, label: name + ':' + count };
+}
+`,
+  },
+  {
+    problemId: 'js-zero-function-return',
+    title: 'Function: Parameters And Return',
+    language: 'js',
+    starter:
+      "function fullName(firstName, lastName) {\n  // return 'First Last'\n}\n",
+    tests: [
+      {
+        name: 'combines names',
+        body: "assertEqual(fullName('Ada', 'Lovelace'), 'Ada Lovelace'); assertEqual(fullName('Grace', 'Hopper'), 'Grace Hopper');",
+      },
+    ],
+    reference: `function fullName(firstName, lastName) {
+  return firstName + ' ' + lastName;
+}
+`,
+  },
+  {
+    problemId: 'js-zero-if-else',
+    title: 'If / Else: Choose A Branch',
+    language: 'js',
+    starter:
+      "function canAccess(user) {\n  // return 'allow' only when user.active is true and user.role is 'admin'; else 'deny'\n}\n",
+    tests: [
+      {
+        name: 'allows only active admins',
+        body: "assertEqual(canAccess({ active: true, role: 'admin' }), 'allow'); assertEqual(canAccess({ active: false, role: 'admin' }), 'deny'); assertEqual(canAccess({ active: true, role: 'user' }), 'deny');",
+      },
+    ],
+    reference: `function canAccess(user) {
+  if (user.active === true && user.role === 'admin') return 'allow';
+  return 'deny';
+}
+`,
+  },
+
   // ----- HTTP layer -------------------------------------------------------
   {
     problemId: 'internet-request-line',

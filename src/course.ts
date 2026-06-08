@@ -30,6 +30,7 @@ import { progressionProblems } from './course.progression'
 import { roadmapGapProblems } from './course.roadmapGaps'
 import { typescriptFundamentalProblems } from './course.typescriptFundamentals'
 import { tutorialProblems } from './course.tutorials'
+import { zeroRampProblems } from './course.zeroRamp'
 import { tutorials as longTutorials } from './tutorials'
 
 export type ProblemType = 'lesson' | 'coding' | 'quiz' | 'debug' | 'design'
@@ -965,6 +966,7 @@ const mergedSubjects: Subject[] = [
     ...subject,
     problems: sortProblemsByPhase([
       ...subject.problems,
+      ...(zeroRampProblems[subject.id] ?? []),
       ...(progressionProblems[subject.id] ?? []),
       ...(tutorialProblems[subject.id] ?? []),
       ...(moreTutorialProblems[subject.id] ?? []),
@@ -980,6 +982,7 @@ const mergedSubjects: Subject[] = [
   ...extraSubjects.map((subject) => ({
     ...subject,
     problems: sortProblemsByPhase([
+      ...(zeroRampProblems[subject.id] ?? []),
       ...subject.problems,
       ...(progressionProblems[subject.id] ?? []),
       ...(subject.id === 'typescript' ? typescriptFundamentalProblems : []),

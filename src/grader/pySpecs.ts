@@ -5,6 +5,49 @@ import type { GradeSpec } from './types.ts'
 // comprehensions, then small backend-flavored logic. Test bodies use Python
 // `assert`. Each reference is verified against its tests with python3.
 export const pySpecs: GradeSpec[] = [
+  // ----- Python from zero -------------------------------------------------
+  {
+    problemId: 'py-zero-variable-return',
+    title: 'Variables And Return',
+    language: 'py',
+    starter: "def make_profile():\n    # name='backend', count=1; increment count; return {'name', 'count', 'label'}\n    pass\n",
+    tests: [
+      { name: 'returns named values', body: "assert make_profile() == {'name': 'backend', 'count': 2, 'label': 'backend:2'}" },
+    ],
+    reference: `def make_profile():
+    name = 'backend'
+    count = 1
+    count += 1
+    return {'name': name, 'count': count, 'label': f'{name}:{count}'}
+`,
+  },
+  {
+    problemId: 'py-zero-function-params',
+    title: 'Function Parameters',
+    language: 'py',
+    starter: "def full_name(first_name, last_name):\n    # return 'First Last'\n    pass\n",
+    tests: [
+      { name: 'combines names', body: "assert full_name('Ada', 'Lovelace') == 'Ada Lovelace'\nassert full_name('Grace', 'Hopper') == 'Grace Hopper'" },
+    ],
+    reference: `def full_name(first_name, last_name):
+    return first_name + ' ' + last_name
+`,
+  },
+  {
+    problemId: 'py-zero-if-else',
+    title: 'If / Else: Choose A Branch',
+    language: 'py',
+    starter: "def can_access(user):\n    # return 'allow' only when user['active'] is True and user['role'] == 'admin'; else 'deny'\n    pass\n",
+    tests: [
+      { name: 'allows only active admins', body: "assert can_access({'active': True, 'role': 'admin'}) == 'allow'\nassert can_access({'active': False, 'role': 'admin'}) == 'deny'\nassert can_access({'active': True, 'role': 'user'}) == 'deny'" },
+    ],
+    reference: `def can_access(user):
+    if user.get('active') is True and user.get('role') == 'admin':
+        return 'allow'
+    return 'deny'
+`,
+  },
+
   // ----- Loops & basics ---------------------------------------------------
   {
     problemId: 'py-sum-loop',
