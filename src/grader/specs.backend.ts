@@ -4477,4 +4477,189 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Graph algorithms (interview classics) ---------------------------
+  {
+    problemId: 'graph-topo-sort',
+    title: 'Topological Sort (Kahn)',
+    language: 'js',
+    starter: "function topoSort(adj) {\n  // adj: { node: [deps...] }. return a valid order (ties broken alphabetically)\n}\n",
+    tests: [
+      { name: 'orders by dependency', body: "assertEqual(topoSort({ a:['b','c'], b:['d'], c:['d'], d:[] }), ['a','b','c','d']);" },
+    ],
+    reference: `function topoSort(adj) {
+  const indeg = {};
+  for (const n in adj) indeg[n] = indeg[n] || 0;
+  for (const n in adj) for (const m of adj[n]) indeg[m] = (indeg[m] || 0) + 1;
+  const queue = Object.keys(adj).filter((n) => indeg[n] === 0).sort();
+  const order = [];
+  while (queue.length) {
+    const n = queue.shift();
+    order.push(n);
+    for (const m of adj[n]) { indeg[m]--; if (indeg[m] === 0) { queue.push(m); queue.sort(); } }
+  }
+  return order;
+}
+`,
+  },
+  {
+    problemId: 'graph-has-cycle',
+    title: 'Detect A Cycle (directed)',
+    language: 'js',
+    starter: 'function hasCycle(adj) {\n  // true if the directed graph has a cycle\n}\n',
+    tests: [
+      { name: 'cycle vs DAG', body: "assertEqual(hasCycle({ a:['b'], b:['c'], c:['a'] }), true); assertEqual(hasCycle({ a:['b'], b:['c'], c:[] }), false);" },
+    ],
+    reference: `function hasCycle(adj) {
+  const state = {};
+  function dfs(n) {
+    if (state[n] === 1) return true;
+    if (state[n] === 2) return false;
+    state[n] = 1;
+    for (const m of adj[n] || []) if (dfs(m)) return true;
+    state[n] = 2;
+    return false;
+  }
+  return Object.keys(adj).some((n) => dfs(n));
+}
+`,
+  },
+  {
+    problemId: 'graph-components',
+    title: 'Count Connected Components',
+    language: 'js',
+    starter: 'function countComponents(adj) {\n  // undirected adjacency; count separate groups\n}\n',
+    tests: [
+      { name: 'counts groups', body: "assertEqual(countComponents({ a:['b'], b:['a'], c:[] }), 2); assertEqual(countComponents({ a:['b'], b:['a'], c:['d'], d:['c'] }), 2);" },
+    ],
+    reference: `function countComponents(adj) {
+  const seen = new Set();
+  let count = 0;
+  function dfs(n) {
+    seen.add(n);
+    for (const m of adj[n] || []) if (!seen.has(m)) dfs(m);
+  }
+  for (const n of Object.keys(adj)) if (!seen.has(n)) { count++; dfs(n); }
+  return count;
+}
+`,
+  },
+  {
+    problemId: 'graph-shortest-unweighted',
+    title: 'Shortest Path (unweighted, BFS)',
+    language: 'js',
+    starter: 'function shortestPath(adj, start, end) {\n  // number of edges on the shortest path, or -1\n}\n',
+    tests: [
+      { name: 'bfs distance', body: "assertEqual(shortestPath({ a:['b','c'], b:['d'], c:['d'], d:[] }, 'a', 'd'), 2); assertEqual(shortestPath({ a:[] }, 'a', 'a'), 0); assertEqual(shortestPath({ a:['b'], b:[] }, 'b', 'a'), -1);" },
+    ],
+    reference: `function shortestPath(adj, start, end) {
+  if (start === end) return 0;
+  const seen = new Set([start]);
+  let frontier = [start], dist = 0;
+  while (frontier.length) {
+    dist++;
+    const next = [];
+    for (const n of frontier) for (const m of adj[n] || []) {
+      if (m === end) return dist;
+      if (!seen.has(m)) { seen.add(m); next.push(m); }
+    }
+    frontier = next;
+  }
+  return -1;
+}
+`,
+  },
+  {
+    problemId: 'graph-dijkstra',
+    title: 'Dijkstra Shortest Distances',
+    language: 'js',
+    starter: 'function dijkstra(adj, start) {\n  // adj: { node: [[neighbor, weight]...] }. return { node: distance }\n}\n',
+    tests: [
+      { name: 'weighted distances', body: "assertEqual(dijkstra({ a:[['b',1],['c',4]], b:[['c',2]], c:[] }, 'a'), { a:0, b:1, c:3 });" },
+    ],
+    reference: `function dijkstra(adj, start) {
+  const dist = {};
+  for (const n of Object.keys(adj)) dist[n] = Infinity;
+  dist[start] = 0;
+  const visited = new Set();
+  while (visited.size < Object.keys(adj).length) {
+    let u = null, best = Infinity;
+    for (const n of Object.keys(adj)) if (!visited.has(n) && dist[n] < best) { best = dist[n]; u = n; }
+    if (u === null) break;
+    visited.add(u);
+    for (const [v, w] of adj[u]) if (dist[u] + w < dist[v]) dist[v] = dist[u] + w;
+  }
+  return dist;
+}
+`,
+  },
+  {
+    problemId: 'graph-num-islands',
+    title: 'Number Of Islands',
+    language: 'js',
+    starter: 'function numIslands(grid) {\n  // count groups of connected 1s (4-directional)\n}\n',
+    tests: [
+      { name: 'flood fill', body: 'assertEqual(numIslands([[1,1,0],[0,1,0],[0,0,1]]), 2);' },
+    ],
+    reference: `function numIslands(grid) {
+  const rows = grid.length, cols = grid[0] ? grid[0].length : 0;
+  let count = 0;
+  function sink(r, c) {
+    if (r < 0 || c < 0 || r >= rows || c >= cols || grid[r][c] !== 1) return;
+    grid[r][c] = 0;
+    sink(r + 1, c); sink(r - 1, c); sink(r, c + 1); sink(r, c - 1);
+  }
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) if (grid[r][c] === 1) { count++; sink(r, c); }
+  return count;
+}
+`,
+  },
+  {
+    problemId: 'graph-bipartite',
+    title: 'Is The Graph Bipartite',
+    language: 'js',
+    starter: 'function isBipartite(adj) {\n  // can the nodes be 2-colored with no same-color edge?\n}\n',
+    tests: [
+      { name: 'edge vs triangle', body: "assertEqual(isBipartite({ a:['b'], b:['a'] }), true); assertEqual(isBipartite({ a:['b','c'], b:['a','c'], c:['a','b'] }), false);" },
+    ],
+    reference: `function isBipartite(adj) {
+  const color = {};
+  for (const start of Object.keys(adj)) {
+    if (color[start] !== undefined) continue;
+    color[start] = 0;
+    const queue = [start];
+    while (queue.length) {
+      const n = queue.shift();
+      for (const m of adj[n] || []) {
+        if (color[m] === undefined) { color[m] = color[n] ^ 1; queue.push(m); }
+        else if (color[m] === color[n]) return false;
+      }
+    }
+  }
+  return true;
+}
+`,
+  },
+  {
+    problemId: 'graph-can-reach',
+    title: 'Can Reach (DFS)',
+    language: 'js',
+    starter: 'function canReach(adj, start, end) {\n  // is end reachable from start?\n}\n',
+    tests: [
+      { name: 'reachability', body: "assertEqual(canReach({ a:['b'], b:['c'], c:[] }, 'a', 'c'), true); assertEqual(canReach({ a:['b'], b:['c'], c:[] }, 'c', 'a'), false);" },
+    ],
+    reference: `function canReach(adj, start, end) {
+  const seen = new Set();
+  const stack = [start];
+  while (stack.length) {
+    const n = stack.pop();
+    if (n === end) return true;
+    if (seen.has(n)) continue;
+    seen.add(n);
+    for (const m of adj[n] || []) stack.push(m);
+  }
+  return start === end;
+}
+`,
+  },
 ]
