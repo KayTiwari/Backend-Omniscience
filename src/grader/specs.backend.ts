@@ -4954,4 +4954,101 @@ function rleDecode(s) {
 }
 `,
   },
+
+  // ----- Testing as code (write the tools you test with) -----------------
+  {
+    problemId: 'test-assert-same',
+    title: 'An Assertion Helper',
+    language: 'js',
+    starter: 'function assertSame(actual, expected) {\n  // throw on mismatch (deep), return true when equal\n}\n',
+    tests: [
+      { name: 'passes and throws', body: "assertEqual(assertSame(1, 1), true); assertEqual(assertSame({a:1}, {a:1}), true); let threw = false; try { assertSame(1, 2); } catch { threw = true; } assertEqual(threw, true);" },
+    ],
+    reference: `function assertSame(actual, expected) {
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    throw new Error('expected ' + JSON.stringify(expected) + ' but got ' + JSON.stringify(actual));
+  }
+  return true;
+}
+`,
+  },
+  {
+    problemId: 'test-expect-throws',
+    title: 'Assert A Function Throws',
+    language: 'js',
+    starter: 'function throws(fn) {\n  // true if fn() throws, false otherwise\n}\n',
+    tests: [
+      { name: 'catches throws', body: "assertEqual(throws(() => { throw new Error('x'); }), true); assertEqual(throws(() => 1), false);" },
+    ],
+    reference: `function throws(fn) {
+  try {
+    fn();
+    return false;
+  } catch {
+    return true;
+  }
+}
+`,
+  },
+  {
+    problemId: 'test-spy',
+    title: 'A Spy That Records Calls',
+    language: 'js',
+    starter: 'function makeSpy() {\n  // return a function that records each call args in spy.calls\n}\n',
+    tests: [
+      { name: 'records args', body: 'const s = makeSpy(); s(1); s(2, 3); assertEqual(s.calls, [[1],[2,3]]); assertEqual(s.calls.length, 2);' },
+    ],
+    reference: `function makeSpy() {
+  function spy(...args) { spy.calls.push(args); }
+  spy.calls = [];
+  return spy;
+}
+`,
+  },
+  {
+    problemId: 'test-stub-returns',
+    title: 'A Stub With Queued Returns',
+    language: 'js',
+    starter: 'function stubReturns(values) {\n  // return a function that yields values[0], values[1], ... on each call\n}\n',
+    tests: [
+      { name: 'returns in order', body: 'const stub = stubReturns([1, 2]); assertEqual(stub(), 1); assertEqual(stub(), 2);' },
+    ],
+    reference: `function stubReturns(values) {
+  let i = 0;
+  return () => values[i++];
+}
+`,
+  },
+  {
+    problemId: 'test-fake-clock',
+    title: 'A Fake Clock',
+    language: 'js',
+    starter: 'function makeClock(start) {\n  // return { now(), tick(ms) } where tick advances now()\n}\n',
+    tests: [
+      { name: 'advances on tick', body: 'const c = makeClock(1000); assertEqual(c.now(), 1000); c.tick(50); assertEqual(c.now(), 1050);' },
+    ],
+    reference: `function makeClock(start) {
+  let t = start;
+  return { now: () => t, tick: (ms) => { t += ms; } };
+}
+`,
+  },
+  {
+    problemId: 'test-run-cases',
+    title: 'A Parametrized Test Runner',
+    language: 'js',
+    starter: 'function runCases(fn, cases) {\n  // cases: [[input, expected]]. return { passed, failed }\n}\n',
+    tests: [
+      { name: 'counts results', body: 'assertEqual(runCases((x) => x * 2, [[1,2],[2,4],[3,5]]), { passed: 2, failed: 1 });' },
+    ],
+    reference: `function runCases(fn, cases) {
+  let passed = 0, failed = 0;
+  for (const [input, expected] of cases) {
+    if (JSON.stringify(fn(input)) === JSON.stringify(expected)) passed++;
+    else failed++;
+  }
+  return { passed, failed };
+}
+`,
+  },
 ]
