@@ -525,6 +525,14 @@ const lessonBase: ProblemLesson[] = [
   { problemId: 'search-prefix', concept: `Autocomplete returns index terms starting with the prefix.`, idiom: `Object.keys(index).filter((t) => t.startsWith(prefix))`, mistake: `Scanning documents instead of the index terms.` },
   { problemId: 'pubsub-topic-match', concept: `A subscription matches a topic segment by segment; * is one segment.`, idiom: `equal length && every seg === '*' || matches`, mistake: `"order.*" must not match "order.created.v2".` },
   { problemId: 'pubsub-fanout', concept: `Deliver a message to every subscriber whose pattern matches.`, idiom: `subscribers.filter(matches).map((s) => s.id)`, mistake: `Delivering to all subscribers regardless of topic.` },
+
+  // ----- NoSQL / document database -----
+  { problemId: 'doc-match', concept: `A document matches when every query field equals the doc's (array fields match on contains).`, idiom: `Array.isArray(v) ? v.includes(q) : v === q`, mistake: `Treating an array field like a scalar equality.` },
+  { problemId: 'doc-find', concept: `find filters a collection by the match rule.`, idiom: `collection.filter(matchDoc)`, mistake: `Returning the whole collection on an empty query is fine; on a real query, filter.` },
+  { problemId: 'doc-projection', concept: `Projection keeps (or drops) a set of fields.`, idiom: `include ? pick(fields) : omit(fields)`, mistake: `Mixing include and exclude in one projection.` },
+  { problemId: 'doc-set-path', concept: `$set writes a nested dotted path, creating objects along the way.`, idiom: `walk keys, cloning each level, set the last`, mistake: `Mutating nested objects in place instead of cloning.` },
+  { problemId: 'doc-group-sum', concept: `Aggregation groups by a key and sums another field.`, idiom: `out[d[groupKey]] += d[sumKey]`, mistake: `Summing the wrong field or not defaulting to 0.` },
+  { problemId: 'doc-sort-limit', concept: `Sort the collection by a field, then take the first n.`, idiom: `[...docs].sort(byKey).slice(0, n)`, mistake: `sort mutates; copy first.` },
 ]
 
 // Worked examples (input -> output), merged onto the lessons above and shown by
@@ -1037,6 +1045,14 @@ const examples: Record<string, string> = {
   'search-prefix': `({cat, car, dog}, "ca") -> ["car", "cat"]`,
   'pubsub-topic-match': `("order.*", "order.created") -> true`,
   'pubsub-fanout': `(subs, "order.created") -> ["a"]`,
+
+  // NoSQL / document database
+  'doc-match': `({name:"a", tags:["x"]}, {tags:"x"}) -> true`,
+  'doc-find': `([{active:true},{active:false}], {active:true}) -> [the active one]`,
+  'doc-projection': `({a:1,b:2,c:3}, ["a","b"]) -> {a:1,b:2}`,
+  'doc-set-path': `({a:{b:1}}, "a.b", 2) -> {a:{b:2}}`,
+  'doc-group-sum': `([{cat:"a",n:1},{cat:"a",n:2}], "cat","n") -> {a:3}`,
+  'doc-sort-limit': `([{n:3},{n:1},{n:2}], "n", 2) -> [{n:1},{n:2}]`,
 }
 
 export const problemLessons: ProblemLesson[] = lessonBase.map((l) =>
