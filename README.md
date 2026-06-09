@@ -51,3 +51,8 @@ Add or edit subjects and problems in `src/course.ts`. The GUI updates automatica
 - Give every problem a prompt, a positive minute estimate, and at least one checklist item.
 - For quizzes, include at least two `choices` and a zero-based `correctChoice`.
 - Prefer small, forceful exercises over long passive lessons.
+
+## Contributors
+
+- **Abhi K. Tiwari** (creator)
+- **Claude (Anthropic)**, AI pair programmer
