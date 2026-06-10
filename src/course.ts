@@ -32,6 +32,7 @@ import { typescriptFundamentalProblems } from './course.typescriptFundamentals'
 import { tutorialProblems } from './course.tutorials'
 import { zeroRampProblems } from './course.zeroRamp'
 import { csharpSubject } from './course.csharp'
+import { foundationProblems } from './course.foundations'
 import { tutorials as longTutorials } from './tutorials'
 
 export type ProblemType = 'lesson' | 'coding' | 'quiz' | 'debug' | 'design'
@@ -58,6 +59,9 @@ export type InteractiveLesson = {
   // lesson body. Falls back to writeDrillId when omitted.
   drills?: string[]
   writeDrillId?: string
+  // Up to three takeaways shown as a "Lock It In" recap at the end of the
+  // lesson. Retention consolidation: the learner re-reads exactly what to keep.
+  recap?: string[]
 }
 
 export type Problem = {
@@ -943,6 +947,9 @@ function getProblemPhaseRank(problem: Problem) {
   const title = problem.title.toLowerCase()
   const id = problem.id.toLowerCase()
 
+  // Foundational rung ladders open every course, ahead of glossaries and
+  // tutorials, so a true beginner always starts at zero.
+  if (id.includes('-rung-') || title.startsWith('rung ')) return -1
   if (id.includes('glossary') || title.includes('glossary')) return 0
   if (id.includes('tutorial') || title.startsWith('tutorial:')) return 0
   if (problem.type === 'lesson') return 1
@@ -992,6 +999,7 @@ const mergedSubjects: Subject[] = [
   ...coreSubjects.map((subject) => ({
     ...subject,
     problems: sortProblemsByPhase([
+      ...(foundationProblems[subject.id] ?? []),
       ...subject.problems,
       ...(zeroRampProblems[subject.id] ?? []),
       ...(progressionProblems[subject.id] ?? []),
@@ -1009,6 +1017,7 @@ const mergedSubjects: Subject[] = [
   ...[...extraSubjects, csharpSubject].map((subject) => ({
     ...subject,
     problems: sortProblemsByPhase([
+      ...(foundationProblems[subject.id] ?? []),
       ...(zeroRampProblems[subject.id] ?? []),
       ...subject.problems,
       ...(progressionProblems[subject.id] ?? []),

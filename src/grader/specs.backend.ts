@@ -7,6 +7,57 @@ import type { GradeSpec } from './types.ts'
 export const backendSpecs: GradeSpec[] = [
   // ----- JavaScript from zero --------------------------------------------
   {
+    problemId: 'js-zero-hello',
+    title: 'Return A Greeting',
+    language: 'js',
+    starter: 'function hello() {\n  // return the text "Hello, world!"\n}\n',
+    tests: [
+      { name: 'returns the greeting', body: "assertEqual(hello(), 'Hello, world!');" },
+    ],
+    reference: `function hello() {
+  return 'Hello, world!';
+}
+`,
+  },
+  {
+    problemId: 'js-zero-total-cost',
+    title: 'Total Cost',
+    language: 'js',
+    starter: 'function totalCost(price, quantity) {\n  // return price times quantity\n}\n',
+    tests: [
+      {
+        name: 'multiplies price and quantity',
+        body: 'assertEqual(totalCost(3, 4), 12); assertEqual(totalCost(10, 0), 0); assertEqual(totalCost(5, 1), 5);',
+      },
+    ],
+    reference: `function totalCost(price, quantity) {
+  return price * quantity;
+}
+`,
+  },
+  {
+    problemId: 'js-zero-active-summary',
+    title: 'Active User Summary',
+    language: 'js',
+    starter:
+      "function summarize(users) {\n  // keep users where active is true; return { activeCount, names }\n}\n",
+    tests: [
+      {
+        name: 'summarizes active users',
+        body: "assertEqual(summarize([{ name: 'Kay', active: true }, { name: 'Sam', active: false }, { name: 'Lee', active: true }]), { activeCount: 2, names: ['Kay', 'Lee'] });",
+      },
+      {
+        name: 'handles none active',
+        body: "assertEqual(summarize([{ name: 'Sam', active: false }]), { activeCount: 0, names: [] });",
+      },
+    ],
+    reference: `function summarize(users) {
+  const names = users.filter((u) => u.active).map((u) => u.name);
+  return { activeCount: names.length, names };
+}
+`,
+  },
+  {
     problemId: 'js-zero-variables',
     title: 'Variables: const And let',
     language: 'js',

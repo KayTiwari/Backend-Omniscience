@@ -1328,6 +1328,16 @@ function App() {
                     })}
                   </div>
                 )}
+                {interactive.recap && interactive.recap.length > 0 && (
+                  <div className="interactive-step interactive-recap">
+                    <span className="interactive-badge">Lock it in</span>
+                    <ul>
+                      {interactive.recap.map((item) => (
+                        <li key={item}>{renderGlossaryText(item)}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </section>
             )}
 
