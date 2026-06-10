@@ -47,6 +47,44 @@ export const pySpecs: GradeSpec[] = [
     return 'deny'
 `,
   },
+  {
+    problemId: 'py-zero-say-hello',
+    title: 'Return A Greeting',
+    language: 'py',
+    starter: 'def hello():\n    # return the text "Hello, world!"\n    pass\n',
+    tests: [
+      { name: 'returns the greeting', body: 'assert hello() == "Hello, world!"' },
+    ],
+    reference: `def hello():
+    return "Hello, world!"
+`,
+  },
+  {
+    problemId: 'py-zero-total-cost',
+    title: 'Total Cost',
+    language: 'py',
+    starter: 'def total_cost(price, quantity):\n    # return price times quantity\n    pass\n',
+    tests: [
+      { name: 'multiplies price and quantity', body: 'assert total_cost(3, 4) == 12\nassert total_cost(10, 0) == 0\nassert total_cost(5, 1) == 5' },
+    ],
+    reference: `def total_cost(price, quantity):
+    return price * quantity
+`,
+  },
+  {
+    problemId: 'py-zero-active-summary',
+    title: 'Active User Summary',
+    language: 'py',
+    starter: "def summarize(users):\n    # keep users where active is True; return {'active_count', 'names'}\n    pass\n",
+    tests: [
+      { name: 'summarizes active users', body: "assert summarize([{'name': 'Kay', 'active': True}, {'name': 'Sam', 'active': False}, {'name': 'Lee', 'active': True}]) == {'active_count': 2, 'names': ['Kay', 'Lee']}" },
+      { name: 'handles none active', body: "assert summarize([{'name': 'Sam', 'active': False}]) == {'active_count': 0, 'names': []}" },
+    ],
+    reference: `def summarize(users):
+    names = [u['name'] for u in users if u['active']]
+    return {'active_count': len(names), 'names': names}
+`,
+  },
 
   // ----- Loops & basics ---------------------------------------------------
   {

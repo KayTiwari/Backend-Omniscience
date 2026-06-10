@@ -31,9 +31,34 @@ import { roadmapGapProblems } from './course.roadmapGaps'
 import { typescriptFundamentalProblems } from './course.typescriptFundamentals'
 import { tutorialProblems } from './course.tutorials'
 import { zeroRampProblems } from './course.zeroRamp'
+import { csharpSubject } from './course.csharp'
 import { tutorials as longTutorials } from './tutorials'
 
 export type ProblemType = 'lesson' | 'coding' | 'quiz' | 'debug' | 'design'
+
+// One multiple-choice "predict the output" check tied to a concrete code snippet.
+// Unlike the auto-generated guided questions, the options and the correct index
+// are authored, so beginners answer questions about real Python, not study habits.
+export type PredictCheck = {
+  question: string
+  options: string[]
+  correct: number
+  why: string
+}
+
+// Foundational, hands-on lesson content. When a Problem carries this, the app
+// shows a runnable worked example, authored predict-the-output checks, and a
+// "change one thing" tweak instead of the generic teaching scaffold.
+export type InteractiveLesson = {
+  intro?: string
+  example: { code: string; output: string; explain?: string }
+  predicts: PredictCheck[]
+  tweak?: { instruction: string; reveal: string }
+  // Drill problem ids whose runnable editor + tests are embedded directly in the
+  // lesson body. Falls back to writeDrillId when omitted.
+  drills?: string[]
+  writeDrillId?: string
+}
 
 export type Problem = {
   id: string
@@ -51,6 +76,7 @@ export type Problem = {
   answer?: string
   choices?: string[]
   correctChoice?: number
+  interactive?: InteractiveLesson
 }
 
 export type ProblemDifficulty = 'Warmup' | 'Core' | 'Hard' | 'Boss'
@@ -883,6 +909,7 @@ const subjectOrder = [
   'language',
   'js-fundamentals',
   'python-fundamentals',
+  'csharp-fundamentals',
   'internet',
   'api',
   'security',
@@ -979,7 +1006,7 @@ const mergedSubjects: Subject[] = [
       ...(capstoneProblems[subject.id] ?? []),
     ]),
   })),
-  ...extraSubjects.map((subject) => ({
+  ...[...extraSubjects, csharpSubject].map((subject) => ({
     ...subject,
     problems: sortProblemsByPhase([
       ...(zeroRampProblems[subject.id] ?? []),

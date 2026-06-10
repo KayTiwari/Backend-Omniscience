@@ -270,3 +270,22 @@ export function CloudStorageIcon({ size = 16, className }: P) {
     </svg>
   )
 }
+
+export function CSharpIcon({ size = 16, className }: P) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <rect x="3" y="3" width="26" height="26" rx="6" fill="#512BD4" />
+      <text
+        x="16"
+        y="21.5"
+        textAnchor="middle"
+        fontSize="13"
+        fontWeight="700"
+        fontFamily="system-ui, sans-serif"
+        fill="#ffffff"
+      >
+        C#
+      </text>
+    </svg>
+  )
+}

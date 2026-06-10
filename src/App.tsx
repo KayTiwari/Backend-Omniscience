@@ -34,10 +34,11 @@ import { glossaryId, glossaryTerms } from './glossary'
 import { renderGlossaryText } from './GlossaryText'
 import type { GradeResult, GradeSpec } from './grader/types'
 import { highlight } from './highlight'
+import { InlineDrill } from './InlineDrill'
 import { InteractiveDiagram } from './InteractiveDiagram'
+import { parseProse, renderProse } from './LessonProse'
 import { ScrollProgress } from './ScrollProgress'
 import { interviewAnswers } from './interviewAnswers'
-import { renderMarkdown } from './miniMarkdown'
 import { getTeachingModel } from './problemTeaching'
 import { projects } from './projects'
 import { quickWrites } from './quickWrite'
@@ -173,6 +174,8 @@ function App() {
   const [runningProblemId, setRunningProblemId] = useState('')
   const [theme, setTheme] = useState<Theme>(() => loadTheme())
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [celebrating, setCelebrating] = useState(false)
+  const celebrateTimerRef = useRef<number | undefined>(undefined)
   const importInputRef = useRef<HTMLInputElement>(null)
   const codeHighlightRef = useRef<HTMLPreElement>(null)
   const graderModuleRef = useRef<Promise<GraderModule> | null>(null)
@@ -247,10 +250,15 @@ function App() {
     return graderModule
   }
 
+  const hasInlineDrills =
+    !!activeProblem.interactive &&
+    ((activeProblem.interactive.drills?.length ?? 0) > 0 ||
+      !!activeProblem.interactive.writeDrillId)
   useEffect(() => {
-    if (!isCodingProblem || specsByProblemId.has(activeProblem.id)) return
+    const needsSpecs = isCodingProblem || hasInlineDrills
+    if (!needsSpecs || specsByProblemId.size > 0) return
     void loadGrader()
-  }, [activeProblem.id, isCodingProblem, specsByProblemId])
+  }, [activeProblem.id, isCodingProblem, hasInlineDrills, specsByProblemId])
 
   function getProblemConfidence(problem: Problem): ConfidenceLevel {
     if (completedSet.has(problem.id) && progress.defended[problem.id]) return 'Can defend'
@@ -426,6 +434,9 @@ function App() {
       completed.add(problemId)
       return { ...current, completed: [...completed] }
     })
+    setCelebrating(true)
+    window.clearTimeout(celebrateTimerRef.current)
+    celebrateTimerRef.current = window.setTimeout(() => setCelebrating(false), 2200)
   }
 
   function updateNote(problemId: string, value: string) {
@@ -535,23 +546,23 @@ function App() {
     }
   }
 
-  async function runCodingTests() {
+  async function runCodingTests(problemId: string = activeProblem.id) {
     const graderModule = await loadGrader()
     const spec =
-      specsByProblemId.get(activeProblem.id) ??
-      graderModule.allSpecs.find((candidate) => candidate.problemId === activeProblem.id)
+      specsByProblemId.get(problemId) ??
+      graderModule.allSpecs.find((candidate) => candidate.problemId === problemId)
     if (!spec) return
 
-    setRunningProblemId(activeProblem.id)
-    const code = progress.code[activeProblem.id] ?? spec.starter
+    setRunningProblemId(problemId)
+    const code = progress.code[problemId] ?? spec.starter
     const result = await graderModule.grade(spec, code)
-    setGradeResults((current) => ({ ...current, [activeProblem.id]: result }))
+    setGradeResults((current) => ({ ...current, [problemId]: result }))
     setRunningProblemId('')
 
     if (
+      problemId === activeProblem.id &&
       result.passed &&
       solutionChecked &&
-      recallComplete &&
       tutorialCorrect &&
       acceptanceCorrect &&
       quizRequirementCorrect &&
@@ -574,115 +585,37 @@ function App() {
       : activeProblem.id.startsWith('ts-')
         ? 'ts'
         : 'js')
-  const highlightedCode = useMemo(() => {
-    if (!activeSpec) return ''
-    return highlight(activeCode || '\n', activeCodeLanguage)
-  }, [activeCode, activeCodeLanguage, activeSpec])
+  const highlightedCode = activeSpec ? highlight(activeCode || '\n', activeCodeLanguage) : ''
   const teachingModel = getTeachingModel(activeSubject, activeProblem)
   const activeGradeResult = gradeResults[activeProblem.id]
   const isRunningTests = runningProblemId === activeProblem.id
   const previousProblem = activeIndex > 0 ? allProblems[activeIndex - 1] : undefined
   const nextProblem = activeIndex < allProblems.length - 1 ? allProblems[activeIndex + 1] : undefined
-  const acceptanceChecks = activeProblem.checklist.map((item, index) => {
-    const distractors = [
-      'Skip this for now and rely on manual testing later.',
-      'Mention the concept by name without explaining how it behaves.',
-      'Assume the framework handles this automatically in production.',
-      'Only test the happy path and ignore failure behavior.',
-      ...activeProblem.checklist.filter((_, itemIndex) => itemIndex !== index),
-    ].filter((choice) => choice !== item)
-    const options = [item, ...distractors.slice(0, 3)]
-    const rotation = (activeProblem.id.length + index) % options.length
-    const rotated = [...options.slice(rotation), ...options.slice(0, rotation)]
-
-    return {
-      correctChoice: rotated.indexOf(item),
-      explanation: `Correct: ${item} This matters because it is one of the observable behaviors your solution must prove, not a passive checklist item.`,
-      options: rotated,
-      question: `Which answer best satisfies checkpoint ${index + 1}?`,
-    }
-  })
-  const tutorialChecks = teachingModel.tutorial.map((item, index) => {
-    const distractors = [
-      'Skip the model and jump straight to the final answer.',
-      'Memorize the keyword only, without describing what it does.',
-      'Assume the framework hides this detail from production engineers.',
-      'Only handle the happy path and ignore how this can fail.',
-      ...teachingModel.tutorial.filter((_, itemIndex) => itemIndex !== index),
-    ].filter((choice) => choice !== item)
-    const options = [item, ...distractors.slice(0, 3)]
-    const rotation =
-      (activeSubject.id.length + activeProblem.id.length + index) % options.length
-    const rotated = [...options.slice(rotation), ...options.slice(0, rotation)]
-
-    return {
-      correctChoice: rotated.indexOf(item),
-      explanation: `Correct: ${item} This is the next small move because ${activeSubject.title} should be learned one boundary, input, or behavior at a time before the main drill.`,
-      options: rotated,
-      question: `Guided step ${index + 1}: what should you do next?`,
-    }
-  })
-  const recallPrompts = activeQuickWrites.length > 0
-    ? activeQuickWrites.map((item, index) => ({
+  const interactive = activeProblem.interactive
+  const interactiveDrillIds = interactive
+    ? (interactive.drills ?? (interactive.writeDrillId ? [interactive.writeDrillId] : []))
+    : []
+  // Only authored questions gate progress. Interactive lessons carry real
+  // predict-the-output checks; everything else has no generated quiz filler.
+  const tutorialChecks = interactive
+    ? interactive.predicts.map((predict) => ({
+        correctChoice: predict.correct,
+        explanation: predict.why,
+        options: predict.options,
+        question: predict.question,
+      }))
+    : []
+  // Optional deep practice: authored quick-writes only, never generated filler
+  // and never a completion gate.
+  const recallPrompts = interactive
+    ? []
+    : activeQuickWrites.map((item, index) => ({
         badge: index === 0 ? 'Interview recall' : 'Production recall',
         expected: item.expected,
         placeholder: 'Write the answer you would say out loud in an interview.',
         productionAnchor: item.productionAnchor,
         prompt: item.prompt,
       }))
-    : (() => {
-        const firstFundamental = teachingModel.fundamentals[0] ?? teachingModel.mentalModel
-        const secondFundamental = teachingModel.fundamentals[1] ?? teachingModel.fundamentals[0]
-        const firstTutorialStep = teachingModel.tutorial[0] ?? activeProblem.checklist[0]
-        const firstChecklistItem = activeProblem.checklist[0] ?? activeProblem.prompt
-        const productionRisk =
-          activeProblem.production ??
-          teachingModel.advanced[0] ??
-          'In production, misunderstanding this creates bugs that are hard to debug because the symptom shows up far away from the root cause.'
-
-        return [
-          {
-            badge: 'Define it',
-            expected: [
-              `A strong beginner answer for ${activeProblem.title}: ${firstFundamental}`,
-              'Name the concept before using implementation details.',
-              'Say what problem it solves.',
-            ],
-            placeholder: `Define ${activeProblem.title} in 2-4 plain-English sentences.`,
-            productionAnchor:
-              'In production, a clear definition helps you choose the right layer to inspect before changing code.',
-            prompt: `For "${activeProblem.title}", what is the first concept a total beginner needs to understand?`,
-          },
-          {
-            badge: 'Use it',
-            expected: [
-              `A strong answer should include: ${secondFundamental}`,
-              `For this problem, your next move is: ${firstTutorialStep}`,
-              'Mention one thing the concept does not do.',
-            ],
-            placeholder: `Name what it does, what it does not do, and the next step you would take.`,
-            productionAnchor:
-              'In production, knowing the boundary prevents you from blaming a framework or service for work it never promised to do.',
-            prompt: `For "${activeProblem.title}", what does this concept do, what does it not do, and what should you do next?`,
-          },
-          {
-            badge: 'Production',
-            expected: [
-              `Connect the concept to observable behavior: ${productionRisk}`,
-              `Prove this checkpoint: ${firstChecklistItem}`,
-              'Name the symptom you would look for first.',
-            ],
-            placeholder: `Write one realistic bug, the symptom you would see, and what you would check first.`,
-            productionAnchor:
-              'A production answer should move from symptom to likely layer to the evidence you would collect.',
-            prompt: `For "${activeProblem.title}", what bug could happen in production if you misunderstand this?`,
-          },
-        ]
-      })()
-  const recallAnsweredCount = recallPrompts.filter(
-    (_, index) => (progress.recallAnswer[`${activeProblem.id}:${index}`] ?? '').trim().length > 0,
-  ).length
-  const recallComplete = recallAnsweredCount === recallPrompts.length
   const tutorialCorrect = tutorialChecks.every(
     (check, index) =>
       progress.tutorialChoice[`${activeProblem.id}:${index}`] === check.correctChoice,
@@ -697,22 +630,12 @@ function App() {
   )
   const visibleTutorialCount =
     firstIncompleteTutorialIndex === -1 ? tutorialChecks.length : firstIncompleteTutorialIndex + 1
-  const acceptanceCorrect = acceptanceChecks.every(
-    (check, index) =>
-      progress.criterionChoice[`${activeProblem.id}:${index}`] === check.correctChoice,
+  // The checklist is a one-click self-check, stored as 1 in criterionChoice.
+  const checklistChecked = activeProblem.checklist.map(
+    (_, index) => progress.criterionChoice[`${activeProblem.id}:${index}`] === 1,
   )
-  const acceptanceCorrectCount = acceptanceChecks.filter(
-    (check, index) =>
-      progress.criterionChoice[`${activeProblem.id}:${index}`] === check.correctChoice,
-  ).length
-  const firstIncompleteAcceptanceIndex = acceptanceChecks.findIndex(
-    (check, index) =>
-      progress.criterionChoice[`${activeProblem.id}:${index}`] !== check.correctChoice,
-  )
-  const visibleAcceptanceCount =
-    firstIncompleteAcceptanceIndex === -1
-      ? acceptanceChecks.length
-      : firstIncompleteAcceptanceIndex + 1
+  const acceptanceCorrect = checklistChecked.every(Boolean)
+  const acceptanceCorrectCount = checklistChecked.filter(Boolean).length
   const quizRequirementCorrect =
     !activeProblem.choices || activeProblem.correctChoice === undefined || quizCorrect
   const codeRequirementCorrect = !isCodingProblem || activeGradeResult?.passed === true
@@ -721,31 +644,24 @@ function App() {
     : activeProblem.choices
       ? quizRequirementCorrect
       : solutionChecked
-  const canComplete =
-    recallComplete &&
-    tutorialCorrect &&
-    acceptanceCorrect &&
-    applyRequirementDone
+  const canComplete = tutorialCorrect && acceptanceCorrect && applyRequirementDone
   const canCompleteAfterCheck =
-    recallComplete &&
     tutorialCorrect &&
     acceptanceCorrect &&
     (isCodingProblem ? codeRequirementCorrect : activeProblem.choices ? quizRequirementCorrect : true)
   const masterySteps = [
+    ...(tutorialChecks.length > 0
+      ? [
+          {
+            label: 'Predict it',
+            detail: `${tutorialCorrectCount}/${tutorialChecks.length}`,
+            help: 'Run the snippet in your head, then answer.',
+            done: tutorialCorrect,
+          },
+        ]
+      : []),
     {
-      label: 'Recall it',
-      detail: `${recallAnsweredCount}/${recallPrompts.length}`,
-      help: 'Write the idea in your own words before peeking.',
-      done: recallComplete,
-    },
-    {
-      label: 'Answer guided questions',
-      detail: `${tutorialCorrectCount}/${tutorialChecks.length}`,
-      help: 'Lock the teaching checkpoints one at a time.',
-      done: tutorialCorrect,
-    },
-    {
-      label: isCodingProblem ? 'Run the code' : activeProblem.choices ? 'Answer the quiz' : 'Apply the prompt',
+      label: isCodingProblem ? 'Run the code' : activeProblem.choices ? 'Answer the quiz' : 'Apply it',
       detail: isCodingProblem
         ? activeGradeResult?.passed
           ? 'passed'
@@ -767,9 +683,9 @@ function App() {
       done: applyRequirementDone,
     },
     {
-      label: 'Prove it',
-      detail: `${acceptanceCorrectCount}/${acceptanceChecks.length}`,
-      help: 'Answer the solution-check questions correctly.',
+      label: 'Check yourself',
+      detail: `${acceptanceCorrectCount}/${activeProblem.checklist.length}`,
+      help: 'Tick each skill once you can honestly do it.',
       done: acceptanceCorrect,
     },
   ]
@@ -780,9 +696,9 @@ function App() {
     ? progress.defended[activeProblem.id]
       ? 'Can defend'
       : 'Can build'
-    : recallComplete && tutorialCorrect
+    : tutorialCorrect && (acceptanceCorrectCount > 0 || applyRequirementDone)
         ? 'Can explain'
-        : recallAnsweredCount > 0 || tutorialCorrectCount > 0 || solutionChecked
+        : tutorialCorrectCount > 0 || acceptanceCorrectCount > 0 || solutionChecked
           ? 'Learned'
           : 'Not started'
 
@@ -850,6 +766,22 @@ function App() {
       data-theme={theme}
     >
       <ScrollProgress />
+      {celebrating && (
+        <div className="celebrate-pop" role="status" aria-live="polite">
+          <span className="celebrate-emoji">
+            {activeSubject.problems.every((problem) => completedSet.has(problem.id)) ? '🏆' : '🎉'}
+          </span>
+          <strong>
+            {activeSubject.problems.every((problem) => completedSet.has(problem.id))
+              ? `${activeSubject.title} complete!`
+              : 'Lesson complete!'}
+          </strong>
+          <em>
+            {activeSubject.problems.filter((problem) => completedSet.has(problem.id)).length} of{' '}
+            {activeSubject.problems.length} in this course
+          </em>
+        </div>
+      )}
       <button
         className="nav-collapse-tab"
         onClick={() => setSidebarCollapsed((current) => !current)}
@@ -1014,7 +946,9 @@ function App() {
           <div className="topbar-title">
             <span>{isHome ? 'Dashboard' : activeSubject.title}</span>
             <strong>
-              {isHome ? 'Choose your next gauntlet' : `Problem ${activeIndex + 1} of ${allProblems.length}`}
+              {isHome
+                ? 'Choose your course'
+                : `Lesson ${activeSubject.problems.findIndex((problem) => problem.id === activeProblem.id) + 1} of ${activeSubject.problems.length} · ${activeSubject.problems.filter((problem) => completedSet.has(problem.id)).length} done`}
             </strong>
           </div>
           <div className="topbar-actions">
@@ -1295,8 +1229,8 @@ function App() {
               <strong>{activeConfidence}</strong>
               <p>
                 {nextMasteryStep
-                  ? `${nextMasteryStep.detail} complete. Finish this step to unlock the next hit of progress.`
-                  : 'You can explain, build, and defend this problem. Check solutions to lock it in.'}
+                  ? `Next up: ${nextMasteryStep.label.toLowerCase()}. ${nextMasteryStep.help}`
+                  : 'All steps done. Hit Complete this problem to lock it in.'}
               </p>
             </div>
             <div className="mastery-meter" aria-label={`${masteryPercent}% mastered`}>
@@ -1326,6 +1260,11 @@ function App() {
             </div>
           </section>
 
+          <section className="prompt-block task-block">
+            <h3>Your Task</h3>
+            {renderProse(activeProblem.prompt)}
+          </section>
+
           <section className="learn-first-block" aria-label="Learn first">
             <div className="learn-first-heading">
               <div>
@@ -1335,12 +1274,69 @@ function App() {
               <span>{activeSubject.title}</span>
             </div>
 
+            {interactive && (
+              <section className="interactive-lesson" aria-label="Hands-on Python">
+                {interactive.intro && (
+                  <p className="interactive-intro">{renderGlossaryText(interactive.intro)}</p>
+                )}
+                <div className="interactive-step">
+                  <span className="interactive-badge">See it run</span>
+                  <pre className="interactive-code"><code>{interactive.example.code}</code></pre>
+                  <details className="interactive-run">
+                    <summary>Run ▶</summary>
+                    <pre className="interactive-output"><code>{interactive.example.output}</code></pre>
+                    {interactive.example.explain && (
+                      <p>{renderGlossaryText(interactive.example.explain)}</p>
+                    )}
+                  </details>
+                </div>
+                {interactive.tweak && (
+                  <div className="interactive-step">
+                    <span className="interactive-badge">Now you try</span>
+                    <p>{renderGlossaryText(interactive.tweak.instruction)}</p>
+                    <details className="interactive-run">
+                      <summary>Show what happens</summary>
+                      <p>{renderGlossaryText(interactive.tweak.reveal)}</p>
+                    </details>
+                  </div>
+                )}
+                {interactiveDrillIds.length > 0 && (
+                  <div className="interactive-step interactive-write">
+                    <p className="interactive-write-lead">
+                      Now write it yourself and run the tests. Edit the function, then click Run tests.
+                    </p>
+                    {interactiveDrillIds.map((drillId) => {
+                      const spec = specsByProblemId.get(drillId)
+                      if (!spec) {
+                        return (
+                          <p key={drillId} className="interactive-intro">
+                            Loading runnable drill...
+                          </p>
+                        )
+                      }
+                      return (
+                        <InlineDrill
+                          key={drillId}
+                          spec={spec}
+                          code={progress.code[drillId] ?? spec.starter}
+                          onChange={(value) => updateCode(drillId, value)}
+                          onRun={() => void runCodingTests(drillId)}
+                          running={runningProblemId === drillId}
+                          result={gradeResults[drillId]}
+                        />
+                      )
+                    })}
+                  </div>
+                )}
+              </section>
+            )}
+
             {teachingModel.problemLesson ? (
               <>
                 <div className="lesson-focus">
                   <section className="lesson-focus-card lesson-focus-card-primary">
                     <span>Concept</span>
-                    <p>{renderGlossaryText(teachingModel.problemLesson.concept)}</p>
+                    {renderProse(teachingModel.problemLesson.concept)}
                   </section>
 
                   <section className="lesson-focus-card">
@@ -1394,18 +1390,20 @@ function App() {
                 <div className="lesson-focus">
                   <section className="lesson-focus-card lesson-focus-card-primary">
                     <span>Core Idea</span>
-                    <p>{renderGlossaryText(teachingModel.mentalModel)}</p>
+                    {renderProse(teachingModel.mentalModel)}
                   </section>
                 </div>
 
-                <section className="lesson-walkthrough">
-                  <h4>Follow This Path</h4>
-                  <ol>
-                    {activeProblem.walkthrough.map((item) => (
-                      <li key={item}>{renderLessonListItem(item)}</li>
-                    ))}
-                  </ol>
-                </section>
+                {!interactive && (
+                  <section className="lesson-walkthrough">
+                    <h4>Follow This Path</h4>
+                    <ol>
+                      {activeProblem.walkthrough.map((item) => (
+                        <li key={item}>{renderLessonListItem(item)}</li>
+                      ))}
+                    </ol>
+                  </section>
+                )}
 
                 <div className="lesson-detail-row">
                   <details>
@@ -1439,7 +1437,7 @@ function App() {
                 <div className="lesson-focus">
                   <section className="lesson-focus-card lesson-focus-card-primary">
                     <span>Core Idea</span>
-                    <p>{renderGlossaryText(teachingModel.mentalModel)}</p>
+                    {renderProse(teachingModel.mentalModel)}
                   </section>
                 </div>
 
@@ -1481,23 +1479,20 @@ function App() {
               </>
             )}
 
-            <section className="recall-checks" aria-label="Quick write practice">
-              <div className="guided-tutorial-heading">
-                <h4>Quick Write</h4>
-                <p>
-                  Answer the targeted prompt first, then compare it with the model answer.
-                </p>
-              </div>
+            {recallPrompts.length > 0 && (
+            <details className="recall-checks optional-section" aria-label="Quick write practice">
+              <summary>
+                <h4>Optional: Quick Write</h4>
+                <p>Say it in your own words. Great interview prep, never required.</p>
+              </summary>
               <div className="recall-grid">
                 {recallPrompts.map((item, index) => {
                   const value = progress.recallAnswer[`${activeProblem.id}:${index}`] ?? ''
-                  const hasAnswer = value.trim().length > 0
 
                   return (
                     <section key={`${item.prompt}:${index}`} className="recall-card">
                       <div className="recall-card-heading">
                         <span>{item.badge}</span>
-                        {hasAnswer && <strong>+5 XP</strong>}
                       </div>
                       <h4>{renderGlossaryText(item.prompt)}</h4>
                       <textarea
@@ -1526,14 +1521,14 @@ function App() {
                   )
                 })}
               </div>
-            </section>
+            </details>
+            )}
 
-            <section className="guided-tutorial-checks" aria-label="Guided tutorial questions">
+            {tutorialChecks.length > 0 && (
+            <section className="guided-tutorial-checks" aria-label="Predict the output">
               <div className="guided-tutorial-heading">
-                <h4>Guided Tutorial Questions</h4>
-                <p>
-                  {tutorialCorrectCount}/{tutorialChecks.length} locked. Correct answers unlock the next step.
-                </p>
+                <h4>Predict The Output</h4>
+                <p>Run the snippet above in your head first, then check your prediction.</p>
               </div>
               <div className="criterion-list">
                 {tutorialChecks.slice(0, visibleTutorialCount).map((check, index) => {
@@ -1575,7 +1570,7 @@ function App() {
                     )}
                     {answered && (
                       <p className={`criterion-feedback ${correct ? 'pass' : 'fail'}`}>
-                        {correct ? 'Correct. +10 XP.' : 'Not quite.'}{' '}
+                        {correct ? 'Correct.' : 'Not quite.'}{' '}
                         {renderGlossaryText(check.explanation)}
                       </p>
                     )}
@@ -1585,20 +1580,21 @@ function App() {
               </div>
               {visibleTutorialCount < tutorialChecks.length && (
                 <p className="unlock-note">
-                  {tutorialChecks.length - visibleTutorialCount} more guided question
+                  {tutorialChecks.length - visibleTutorialCount} more prediction
                   {tutorialChecks.length - visibleTutorialCount === 1 ? '' : 's'} waiting.
                 </p>
               )}
             </section>
+            )}
 
           </section>
 
           {activeInterviewAnswers.length > 0 && (
-            <section className="interview-panel" aria-label="Explain it in an interview">
-              <div className="guided-tutorial-heading">
-                <h3>Explain It In An Interview</h3>
+            <details className="interview-panel optional-section" aria-label="Explain it in an interview">
+              <summary>
+                <h3>Optional: Explain It In An Interview</h3>
                 <p>Practice the same concept at junior, senior, and system-design depth.</p>
-              </div>
+              </summary>
               <div className="interview-answer-list">
                 {activeInterviewAnswers.map((answer) => (
                   <details key={answer.key} className="interview-answer-card">
@@ -1641,7 +1637,7 @@ function App() {
                   {progress.defended[activeProblem.id] ? 'Can defend' : 'Mark defended'}
                 </button>
               </div>
-            </section>
+            </details>
           )}
 
           <section className="learning-path" aria-label="Learning path">
@@ -1678,31 +1674,23 @@ function App() {
                     <summary>
                       {tut.title} · {tut.minutes} min
                     </summary>
-                    <div
-                      className="learn-body"
-                      dangerouslySetInnerHTML={{ __html: renderMarkdown(tut.body) }}
-                    />
+                    <div className="learn-body">{renderProse(tut.body)}</div>
                   </details>
                 ))}
             </section>
           )}
 
-          <section className="prompt-block">
-            <h3>Prompt</h3>
-            <p>{renderGlossaryText(activeProblem.prompt)}</p>
-          </section>
-
           {activeProblem.explanation && (
             <section className="explanation-block">
               <h3>Explanation</h3>
-              <p>{renderGlossaryText(activeProblem.explanation)}</p>
+              {renderProse(activeProblem.explanation)}
             </section>
           )}
 
           {activeProblem.production && (
-            <section className="production-block">
+            <section className="production-block production-callout">
               <h3>Why This Matters In Production</h3>
-              <p>{renderGlossaryText(activeProblem.production)}</p>
+              {renderProse(activeProblem.production)}
             </section>
           )}
 
@@ -1720,7 +1708,11 @@ function App() {
           {activeProblem.example && (
             <section className="example-block">
               <h3>Example</h3>
-              <pre>{activeProblem.example}</pre>
+              {parseProse(activeProblem.example).some((block) => block.kind === 'flow') ? (
+                renderProse(activeProblem.example)
+              ) : (
+                <pre>{activeProblem.example}</pre>
+              )}
             </section>
           )}
 
@@ -1872,8 +1864,11 @@ function App() {
           )}
 
           {activeProblem.questions && (
-            <section className="review-block">
-              <h3>Review Questions</h3>
+            <details className="review-block optional-section">
+              <summary>
+                <h3>Optional: Review Questions</h3>
+                <p>Test yourself before moving on.</p>
+              </summary>
               <div className="review-card-grid">
                 {activeProblem.questions.map((question, index) => (
                   <details key={question} className="review-card">
@@ -1900,75 +1895,37 @@ function App() {
                   </details>
                 ))}
               </div>
-            </section>
+            </details>
           )}
 
           <section className="solution-check-block">
             <div className="solution-heading">
               <div>
-                <h3>Solution Checks</h3>
+                <h3>Check Yourself</h3>
                 <p>
-                  {acceptanceCorrectCount}/{acceptanceChecks.length} locked. Correct answers unlock the next checkpoint.
+                  Tick each skill once you can honestly do it. {acceptanceCorrectCount}/
+                  {activeProblem.checklist.length} checked.
                 </p>
               </div>
-              {solutionChecked && (
-                <strong className={canComplete ? 'pass' : 'fail'}>
-                  {canComplete ? 'Ready to move on.' : 'Review the misses.'}
-                </strong>
-              )}
+              {acceptanceCorrect && <strong className="pass">All checked. Nice.</strong>}
             </div>
-            <div className="criterion-list">
-              {acceptanceChecks.slice(0, visibleAcceptanceCount).map((check, index) => {
-                const selected = progress.criterionChoice[`${activeProblem.id}:${index}`]
-                const answered = selected !== undefined
-                const correct = selected === check.correctChoice
-
+            <div className="self-check-list">
+              {activeProblem.checklist.map((item, index) => {
+                const checked = checklistChecked[index]
                 return (
-                  <section key={check.question} className="criterion-card">
-                    <h4>{check.question}</h4>
-                    <div className="criterion-choices">
-                      {check.options.map((option, optionIndex) => {
-                        const isSelected = selected === optionIndex
-                        const isCorrect = check.correctChoice === optionIndex
-                        const reveal =
-                          isSelected || (answered && isCorrect) || (solutionChecked && isCorrect)
-
-                        return (
-                          <button
-                            key={option}
-                            className={`criterion-choice ${isSelected ? 'selected' : ''} ${
-                              reveal && isCorrect ? 'correct' : ''
-                            } ${reveal && isSelected && !isCorrect ? 'wrong' : ''}`}
-                            onClick={() => selectCriterion(activeProblem.id, index, optionIndex)}
-                            type="button"
-                          >
-                            <span>{String.fromCharCode(65 + optionIndex)}</span>
-                            {option}
-                          </button>
-                        )
-                      })}
-                    </div>
-                    {solutionChecked && !answered && (
-                      <p className="criterion-feedback fail">
-                        Pick an answer here. Correct answer: {check.options[check.correctChoice]}.
-                      </p>
-                    )}
-                    {answered && (
-                      <p className={`criterion-feedback ${correct ? 'pass' : 'fail'}`}>
-                        {correct ? 'Correct. +10 XP.' : 'Not quite.'}{' '}
-                        {renderGlossaryText(check.explanation)}
-                      </p>
-                    )}
-                  </section>
+                  <button
+                    key={item}
+                    type="button"
+                    className={`self-check-item ${checked ? 'checked' : ''}`}
+                    onClick={() => selectCriterion(activeProblem.id, index, checked ? 0 : 1)}
+                    aria-pressed={checked}
+                  >
+                    {checked ? <Check size={16} /> : <Circle size={16} />}
+                    <span>{renderGlossaryText(item)}</span>
+                  </button>
                 )
               })}
             </div>
-            {visibleAcceptanceCount < acceptanceChecks.length && (
-              <p className="unlock-note">
-                {acceptanceChecks.length - visibleAcceptanceCount} more solution check
-                {acceptanceChecks.length - visibleAcceptanceCount === 1 ? '' : 's'} waiting.
-              </p>
-            )}
           </section>
 
           <details className="notes-block">
@@ -1990,7 +1947,11 @@ function App() {
               type="button"
             >
               <Check size={18} />
-              {completedSet.has(activeProblem.id) ? 'Solutions passed' : 'Check solutions'}
+              {completedSet.has(activeProblem.id)
+                ? 'Completed'
+                : canComplete || canCompleteAfterCheck
+                  ? 'Complete this problem'
+                  : 'Check my progress'}
             </button>
             <button className="reset-button" onClick={resetProgress} type="button">
               <RotateCcw size={17} />

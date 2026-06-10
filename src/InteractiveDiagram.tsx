@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { renderGlossaryText } from './GlossaryText'
+import { renderProse } from './LessonProse'
 
 const PALETTE = [
   '#e84a5f',
@@ -74,7 +74,7 @@ export function InteractiveDiagram({ nodes, explanations }: Props) {
           >
             {formatNodeLabel(nodes[selected])}
           </div>
-          <p>{renderGlossaryText(explanations[selected])}</p>
+          {renderProse(explanations[selected])}
         </div>
       )}
     </div>
