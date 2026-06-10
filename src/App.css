@@ -3994,3 +3994,167 @@ input:focus-visible {
   color: var(--ink);
   font-weight: 500;
 }
+
+/* ----- Lesson pager (Learn / Predict / Practice / Prove) ----- */
+.lesson-pager {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.lesson-pager-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 150px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: var(--field);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 140ms var(--ease-out), background 140ms var(--ease-out);
+}
+
+.lesson-pager-step:hover {
+  border-color: var(--brand-b);
+}
+
+.lesson-pager-step.current {
+  border-color: var(--brand-b);
+  background: color-mix(in srgb, var(--brand-b) 6%, var(--field));
+  box-shadow: inset 0 0 0 1px var(--brand-b);
+}
+
+.lesson-pager-step.done .lesson-pager-dot {
+  background: var(--mint);
+  color: #fff;
+}
+
+.lesson-pager-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--brand-b) 12%, transparent);
+  color: var(--brand-b);
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.lesson-pager-label {
+  display: grid;
+  line-height: 1.25;
+}
+
+.lesson-pager-label strong {
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.lesson-pager-label small {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.lesson-pager-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 26px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--field);
+}
+
+.lesson-pager-nav span {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.lesson-pager-nav button {
+  border: 1px solid var(--line);
+  background: var(--field);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 140ms var(--ease-out), color 140ms var(--ease-out);
+}
+
+.lesson-pager-nav button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.lesson-pager-nav .pager-continue:not(:disabled) {
+  background: var(--brand-b);
+  border-color: var(--brand-b);
+  color: #fff;
+}
+
+/* ----- Mental model card + lesson diagram ----- */
+.mental-model-block {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.mental-model-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid color-mix(in srgb, #7c3aed 35%, transparent);
+  border-left: 4px solid #7c3aed;
+  border-radius: 10px;
+  background: color-mix(in srgb, #7c3aed 5%, var(--field));
+  padding: 14px 16px;
+}
+
+.mental-model-card .interactive-badge {
+  color: #7c3aed;
+  background: color-mix(in srgb, #7c3aed 12%, transparent);
+}
+
+.mental-model-card p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.predict-snippet {
+  margin-bottom: 14px;
+}
+
+.predict-snippet > summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-b);
+  width: fit-content;
+}
+
+.predict-snippet[open] > summary {
+  margin-bottom: 8px;
+}
+
+.practice-drills {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.recap-block {
+  margin-top: 22px;
+}

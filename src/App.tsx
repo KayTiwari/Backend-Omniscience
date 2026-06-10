@@ -175,6 +175,9 @@ function App() {
   const [theme, setTheme] = useState<Theme>(() => loadTheme())
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [celebrating, setCelebrating] = useState(false)
+  // Lesson page navigation, keyed to the problem so switching problems lands
+  // back on the first page without an effect.
+  const [lessonNav, setLessonNav] = useState({ problemId: '', step: 0 })
   const celebrateTimerRef = useRef<number | undefined>(undefined)
   const importInputRef = useRef<HTMLInputElement>(null)
   const codeHighlightRef = useRef<HTMLPreElement>(null)
@@ -248,6 +251,11 @@ function App() {
       return new Map(graderModule.allSpecs.map((spec) => [spec.problemId, spec]))
     })
     return graderModule
+  }
+
+  const lessonStep = lessonNav.problemId === activeProblem.id ? lessonNav.step : 0
+  function setLessonStep(step: number) {
+    setLessonNav({ problemId: activeProblem.id, step })
   }
 
   const hasInlineDrills =
@@ -701,6 +709,37 @@ function App() {
         : tutorialCorrectCount > 0 || acceptanceCorrectCount > 0 || solutionChecked
           ? 'Learned'
           : 'Not started'
+  // Lesson pages: each cognitive step gets its own screen instead of one long
+  // scroll. Pages without content for this problem are skipped automatically.
+  const lessonPages = [
+    {
+      id: 'learn' as const,
+      label: 'Learn',
+      hint: 'Read and run',
+      done: tutorialCorrectCount > 0 || applyRequirementDone || acceptanceCorrectCount > 0,
+    },
+    ...(tutorialChecks.length > 0
+      ? [{ id: 'predict' as const, label: 'Predict', hint: 'Check yourself', done: tutorialCorrect }]
+      : []),
+    ...(interactiveDrillIds.length > 0 || isCodingProblem || activeProblem.choices
+      ? [
+          {
+            id: 'practice' as const,
+            label: 'Practice',
+            hint: isCodingProblem || interactiveDrillIds.length > 0 ? 'Write code' : 'Answer it',
+            done: applyRequirementDone,
+          },
+        ]
+      : []),
+    {
+      id: 'prove' as const,
+      label: 'Prove',
+      hint: 'Lock it in',
+      done: acceptanceCorrect && completedSet.has(activeProblem.id),
+    },
+  ]
+  const pageIndex = Math.min(lessonStep, lessonPages.length - 1)
+  const activePage = lessonPages[pageIndex].id
 
   function checkSolutions() {
     setProgress((current) => ({
@@ -1265,6 +1304,43 @@ function App() {
             {renderProse(activeProblem.prompt)}
           </section>
 
+          <nav className="lesson-pager" aria-label="Lesson pages">
+            {lessonPages.map((page, index) => (
+              <button
+                key={page.id}
+                type="button"
+                className={`lesson-pager-step ${index === pageIndex ? 'current' : ''} ${page.done ? 'done' : ''}`}
+                onClick={() => setLessonStep(index)}
+              >
+                <span className="lesson-pager-dot">
+                  {page.done ? <Check size={13} /> : index + 1}
+                </span>
+                <span className="lesson-pager-label">
+                  <strong>{page.label}</strong>
+                  <small>{page.hint}</small>
+                </span>
+              </button>
+            ))}
+          </nav>
+
+          {activePage === 'learn' && (interactive?.mental || interactive?.diagram) && (
+            <section className="mental-model-block" aria-label="Mental model">
+              {interactive.mental && (
+                <div className="mental-model-card">
+                  <span className="interactive-badge">Mental model</span>
+                  <p>{renderGlossaryText(interactive.mental)}</p>
+                </div>
+              )}
+              {interactive.diagram && (
+                <InteractiveDiagram
+                  nodes={interactive.diagram.nodes}
+                  explanations={interactive.diagram.explanations}
+                />
+              )}
+            </section>
+          )}
+
+          {activePage === 'learn' && (
           <section className="learn-first-block" aria-label="Learn first">
             <div className="learn-first-heading">
               <div>
@@ -1298,44 +1374,6 @@ function App() {
                       <summary>Show what happens</summary>
                       <p>{renderGlossaryText(interactive.tweak.reveal)}</p>
                     </details>
-                  </div>
-                )}
-                {interactiveDrillIds.length > 0 && (
-                  <div className="interactive-step interactive-write">
-                    <p className="interactive-write-lead">
-                      Now write it yourself and run the tests. Edit the function, then click Run tests.
-                    </p>
-                    {interactiveDrillIds.map((drillId) => {
-                      const spec = specsByProblemId.get(drillId)
-                      if (!spec) {
-                        return (
-                          <p key={drillId} className="interactive-intro">
-                            Loading runnable drill...
-                          </p>
-                        )
-                      }
-                      return (
-                        <InlineDrill
-                          key={drillId}
-                          spec={spec}
-                          code={progress.code[drillId] ?? spec.starter}
-                          onChange={(value) => updateCode(drillId, value)}
-                          onRun={() => void runCodingTests(drillId)}
-                          running={runningProblemId === drillId}
-                          result={gradeResults[drillId]}
-                        />
-                      )
-                    })}
-                  </div>
-                )}
-                {interactive.recap && interactive.recap.length > 0 && (
-                  <div className="interactive-step interactive-recap">
-                    <span className="interactive-badge">Lock it in</span>
-                    <ul>
-                      {interactive.recap.map((item) => (
-                        <li key={item}>{renderGlossaryText(item)}</li>
-                      ))}
-                    </ul>
                   </div>
                 )}
               </section>
@@ -1488,8 +1526,10 @@ function App() {
                 </div>
               </>
             )}
+          </section>
+          )}
 
-            {recallPrompts.length > 0 && (
+          {activePage === 'prove' && recallPrompts.length > 0 && (
             <details className="recall-checks optional-section" aria-label="Quick write practice">
               <summary>
                 <h4>Optional: Quick Write</h4>
@@ -1532,14 +1572,20 @@ function App() {
                 })}
               </div>
             </details>
-            )}
+          )}
 
-            {tutorialChecks.length > 0 && (
+          {activePage === 'predict' && tutorialChecks.length > 0 && (
             <section className="guided-tutorial-checks" aria-label="Predict the output">
               <div className="guided-tutorial-heading">
                 <h4>Predict The Output</h4>
-                <p>Run the snippet above in your head first, then check your prediction.</p>
+                <p>Run the snippet from the Learn page in your head, then check your prediction.</p>
               </div>
+              {interactive && (
+                <details className="predict-snippet">
+                  <summary>Peek at the snippet again</summary>
+                  <pre className="interactive-code"><code>{interactive.example.code}</code></pre>
+                </details>
+              )}
               <div className="criterion-list">
                 {tutorialChecks.slice(0, visibleTutorialCount).map((check, index) => {
                   const selected = progress.tutorialChoice[`${activeProblem.id}:${index}`]
@@ -1595,11 +1641,9 @@ function App() {
                 </p>
               )}
             </section>
-            )}
+          )}
 
-          </section>
-
-          {activeInterviewAnswers.length > 0 && (
+          {activePage === 'prove' && activeInterviewAnswers.length > 0 && (
             <details className="interview-panel optional-section" aria-label="Explain it in an interview">
               <summary>
                 <h3>Optional: Explain It In An Interview</h3>
@@ -1650,83 +1694,93 @@ function App() {
             </details>
           )}
 
-          <section className="learning-path" aria-label="Learning path">
-            <button
-              type="button"
-              onClick={() => previousProblem && openProblemById(previousProblem.id)}
-              disabled={!previousProblem}
-            >
-              <span>Previous</span>
-              <strong>{previousProblem?.title ?? 'Start of course'}</strong>
-            </button>
-            <div>
-              <span>Now</span>
-              <strong>{teachingModel.practiceMode}</strong>
-              {isCodingProblem && <small>Runnable assessment attached</small>}
-            </div>
-            <button
-              type="button"
-              onClick={() => nextProblem && openProblemById(nextProblem.id)}
-              disabled={!nextProblem}
-            >
-              <span>Next</span>
-              <strong>{nextProblem?.title ?? 'End of course'}</strong>
-            </button>
-          </section>
-
-          {tutorials.some((tut) => tut.subjectId === activeSubject.id) && (
-            <section className="prompt-block learn-block">
-              <h3>Learn</h3>
-              {tutorials
-                .filter((tut) => tut.subjectId === activeSubject.id)
-                .map((tut) => (
-                  <details key={tut.id} className="learn-item">
-                    <summary>
-                      {tut.title} · {tut.minutes} min
-                    </summary>
-                    <div className="learn-body">{renderProse(tut.body)}</div>
-                  </details>
-                ))}
-            </section>
-          )}
-
-          {activeProblem.explanation && (
-            <section className="explanation-block">
-              <h3>Explanation</h3>
-              {renderProse(activeProblem.explanation)}
-            </section>
-          )}
-
-          {activeProblem.production && (
-            <section className="production-block production-callout">
-              <h3>Why This Matters In Production</h3>
-              {renderProse(activeProblem.production)}
-            </section>
-          )}
-
-          {activeProblem.walkthrough && (
-            <section className="walkthrough-block">
-              <h3>Guided Walkthrough</h3>
-              <ol>
-                {activeProblem.walkthrough.map((step) => (
-                  <li key={step}>{renderGlossaryText(step)}</li>
-                ))}
-              </ol>
-            </section>
-          )}
-
-          {activeProblem.example && (
-            <section className="example-block">
-              <h3>Example</h3>
-              {parseProse(activeProblem.example).some((block) => block.kind === 'flow') ? (
-                renderProse(activeProblem.example)
-              ) : (
-                <pre>{activeProblem.example}</pre>
+          {activePage === 'learn' && (
+            <>
+              {activeProblem.explanation && (
+                <section className="explanation-block">
+                  <h3>Explanation</h3>
+                  {renderProse(activeProblem.explanation)}
+                </section>
               )}
+
+              {activeProblem.production && (
+                <section className="production-block production-callout">
+                  <h3>Why This Matters In Production</h3>
+                  {renderProse(activeProblem.production)}
+                </section>
+              )}
+
+              {activeProblem.walkthrough && (
+                <section className="walkthrough-block">
+                  <h3>Guided Walkthrough</h3>
+                  <ol>
+                    {activeProblem.walkthrough.map((step) => (
+                      <li key={step}>{renderGlossaryText(step)}</li>
+                    ))}
+                  </ol>
+                </section>
+              )}
+
+              {activeProblem.example && (
+                <section className="example-block">
+                  <h3>Example</h3>
+                  {parseProse(activeProblem.example).some((block) => block.kind === 'flow') ? (
+                    renderProse(activeProblem.example)
+                  ) : (
+                    <pre>{activeProblem.example}</pre>
+                  )}
+                </section>
+              )}
+
+              {tutorials.some((tut) => tut.subjectId === activeSubject.id) && (
+                <section className="prompt-block learn-block">
+                  <h3>Go Deeper: Subject Tutorials</h3>
+                  {tutorials
+                    .filter((tut) => tut.subjectId === activeSubject.id)
+                    .map((tut) => (
+                      <details key={tut.id} className="learn-item">
+                        <summary>
+                          {tut.title} · {tut.minutes} min
+                        </summary>
+                        <div className="learn-body">{renderProse(tut.body)}</div>
+                      </details>
+                    ))}
+                </section>
+              )}
+            </>
+          )}
+
+          {activePage === 'practice' && interactiveDrillIds.length > 0 && (
+            <section className="practice-drills" aria-label="Write it yourself">
+              <div className="guided-tutorial-heading">
+                <h4>Write It Yourself</h4>
+                <p>Edit the function, then click Run tests until everything passes.</p>
+              </div>
+              {interactiveDrillIds.map((drillId) => {
+                const spec = specsByProblemId.get(drillId)
+                if (!spec) {
+                  return (
+                    <p key={drillId} className="interactive-intro">
+                      Loading runnable drill...
+                    </p>
+                  )
+                }
+                return (
+                  <InlineDrill
+                    key={drillId}
+                    spec={spec}
+                    code={progress.code[drillId] ?? spec.starter}
+                    onChange={(value) => updateCode(drillId, value)}
+                    onRun={() => void runCodingTests(drillId)}
+                    running={runningProblemId === drillId}
+                    result={gradeResults[drillId]}
+                  />
+                )
+              })}
             </section>
           )}
 
-          {activeProblem.choices && (
+          {activePage === 'practice' && activeProblem.choices && (
             <section className="quiz-block">
               <h3>Choose</h3>
               <div className="choices">
@@ -1769,7 +1823,7 @@ function App() {
             </section>
           )}
 
-          {isCodingProblem && !activeSpec && (
+          {activePage === 'practice' && isCodingProblem && !activeSpec && (
             <section className="coding-block">
               <div className="coding-heading">
                 <div>
@@ -1780,7 +1834,7 @@ function App() {
             </section>
           )}
 
-          {activeSpec && (
+          {activePage === 'practice' && activeSpec && (
             <section className="coding-block">
               <div className="coding-heading">
                 <div>
@@ -1873,7 +1927,18 @@ function App() {
             </section>
           )}
 
-          {activeProblem.questions && (
+          {activePage === 'prove' && interactive?.recap && interactive.recap.length > 0 && (
+            <section className="interactive-step interactive-recap recap-block">
+              <span className="interactive-badge">Lock it in</span>
+              <ul>
+                {interactive.recap.map((item) => (
+                  <li key={item}>{renderGlossaryText(item)}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {activePage === 'prove' && activeProblem.questions && (
             <details className="review-block optional-section">
               <summary>
                 <h3>Optional: Review Questions</h3>
@@ -1908,6 +1973,7 @@ function App() {
             </details>
           )}
 
+          {activePage === 'prove' && (
           <section className="solution-check-block">
             <div className="solution-heading">
               <div>
@@ -1938,6 +2004,9 @@ function App() {
             </div>
           </section>
 
+          )}
+
+          {activePage === 'prove' && (
           <details className="notes-block">
             <summary>
               <h3>Notes</h3>
@@ -1950,6 +2019,9 @@ function App() {
             />
           </details>
 
+          )}
+
+          {activePage === 'prove' && (
           <div className="actions">
             <button
               className={`check-button ${completedSet.has(activeProblem.id) ? 'done' : ''}`}
@@ -1968,6 +2040,52 @@ function App() {
               Reset progress
             </button>
           </div>
+          )}
+
+          <div className="lesson-pager-nav">
+            <button
+              type="button"
+              disabled={pageIndex === 0}
+              onClick={() => setLessonStep(pageIndex - 1)}
+            >
+              ← Back
+            </button>
+            <span>
+              {lessonPages[pageIndex].label} · page {pageIndex + 1} of {lessonPages.length}
+            </span>
+            <button
+              type="button"
+              className="pager-continue"
+              disabled={pageIndex === lessonPages.length - 1}
+              onClick={() => setLessonStep(pageIndex + 1)}
+            >
+              Continue →
+            </button>
+          </div>
+
+          <section className="learning-path" aria-label="Learning path">
+            <button
+              type="button"
+              onClick={() => previousProblem && openProblemById(previousProblem.id)}
+              disabled={!previousProblem}
+            >
+              <span>Previous</span>
+              <strong>{previousProblem?.title ?? 'Start of course'}</strong>
+            </button>
+            <div>
+              <span>Now</span>
+              <strong>{teachingModel.practiceMode}</strong>
+              {isCodingProblem && <small>Runnable assessment attached</small>}
+            </div>
+            <button
+              type="button"
+              onClick={() => nextProblem && openProblemById(nextProblem.id)}
+              disabled={!nextProblem}
+            >
+              <span>Next</span>
+              <strong>{nextProblem?.title ?? 'End of course'}</strong>
+            </button>
+          </section>
         </article>
         )}
       </section>

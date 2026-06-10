@@ -201,6 +201,17 @@ export const csharpSubject: Subject = {
         'Explain why var is still static typing.',
       ],
       interactive: {
+        mental:
+          'A type declaration is a signed contract with the compiler: it reads every line of your code before anything runs and rejects the build over any broken promise.',
+        diagram: {
+          nodes: ['Declare type', 'Compiler checks', 'Build fails early', 'Runtime trusts'],
+          explanations: [
+            'int count = 42 promises this name holds whole numbers, forever.',
+            'The compiler verifies every assignment and every use across the whole program, before it runs.',
+            'A violation like count = "hello" stops the build with a named file and line. The bug never reaches a user.',
+            'At runtime, nothing needs re-checking: code can trust its values because the contract was enforced up front.',
+          ],
+        },
         example: {
           code: 'int count = 42;\ndouble price = 19.99;\nstring name = "Ada";\nbool active = true;\n\nConsole.WriteLine(count.GetType());\nConsole.WriteLine(price.GetType());\nConsole.WriteLine(name.GetType());\nConsole.WriteLine(active);',
           output: 'System.Int32\nSystem.Double\nSystem.String\nTrue',
@@ -823,6 +834,17 @@ export const csharpSubject: Subject = {
         'Explain what private set enforces.',
       ],
       interactive: {
+        mental:
+          'A class is a blueprint and instances are houses built from it: each house has its own rooms, and private set means only the house keys change the furniture.',
+        diagram: {
+          nodes: ['Class blueprint', 'new instance', 'Own state', 'private set'],
+          explanations: [
+            'The class declares the shape once: properties for data, methods for behavior.',
+            'Every new Counter() builds an independent object from the blueprint.',
+            'Each instance owns its values: incrementing one counter never touches another.',
+            'Access modifiers guard the data: outside code can read Value yet only methods inside the class may change it.',
+          ],
+        },
         example: {
           code: 'var a = new Counter();\nvar b = new Counter();\na.Increment();\na.Increment();\nb.Increment();\n\nConsole.WriteLine(a.Value);\nConsole.WriteLine(b.Value);\n\nclass Counter\n{\n    public int Value { get; private set; }\n\n    public void Increment() => Value++;\n}',
           output: '2\n1',
@@ -902,6 +924,17 @@ export const csharpSubject: Subject = {
         'Explain the difference between the two.',
       ],
       interactive: {
+        mental:
+          'LINQ is the conveyor belt with named stations: Where inspects and discards, Select reshapes, ToList boxes up the result.',
+        diagram: {
+          nodes: ['Collection', 'Where', 'Select', 'ToList'],
+          explanations: [
+            'Any list or sequence enters the belt; the original is never modified.',
+            'The Where station tests each item with a lambda and drops the failures.',
+            'The Select station reshapes each survivor: from a user to just its email.',
+            'ToList runs the belt and boxes the results into a real list. Pointed at a database, the same chain compiles to SQL.',
+          ],
+        },
         example: {
           code: 'var nums = new List<int> { 1, 2, 3, 4, 5, 6 };\n\nvar evens = nums.Where(n => n % 2 == 0).ToList();\nConsole.WriteLine(string.Join(", ", evens));\n\nvar squares = evens.Select(n => n * n);\nConsole.WriteLine(string.Join(", ", squares));\n\nConsole.WriteLine(nums.Count(n => n > 3));\nConsole.WriteLine(nums.Any(n => n > 100));',
           output: '2, 4, 6\n4, 16, 36\n3\nFalse',
@@ -1048,6 +1081,17 @@ If you can read and modify this program confidently, you have crossed from 0 to 
         'Explain how this mirrors a real endpoint.',
       ],
       interactive: {
+        mental:
+          'Records in, pipeline through, summary out: the assembly line, now with the compiler guarding every station.',
+        diagram: {
+          nodes: ['record type', 'List of records', 'Where + Select', 'Summary'],
+          explanations: [
+            'One line declares the data shape, and the compiler enforces it everywhere.',
+            'The list stands in for rows from a database, every element guaranteed to be a User.',
+            'The pipeline filters by the business rule and projects the needed field, type-checked end to end.',
+            'The output is the response shape. Swap the list for a table and this is an Entity Framework query.',
+          ],
+        },
         intro: 'Everything from rungs 1 through 14 appears in this one program.',
         example: {
           code: 'var users = new List<User>\n{\n    new("Kay", true),\n    new("Sam", false),\n    new("Lee", true),\n};\n\nvar activeNames = users\n    .Where(u => u.Active)\n    .Select(u => u.Name)\n    .ToList();\n\nConsole.WriteLine($"Active: {activeNames.Count}");\nConsole.WriteLine(string.Join(", ", activeNames));\n\nrecord User(string Name, bool Active);',

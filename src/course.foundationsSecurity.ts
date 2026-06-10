@@ -38,6 +38,18 @@ export const securityFoundations: Problem[] = [
       'Explain why most attacks are automated.',
     ],
     interactive: {
+      mental:
+        'Treat every request like a package from a stranger: inspect the contents, and ignore how pretty the form it supposedly came from was.',
+      diagram: {
+        nodes: ['Attacker input', 'Trust boundary', 'Validate', 'Neutralize', 'Safe core'],
+        explanations: [
+          'Anything a client can set: body fields, query strings, headers, cookies, paths, uploads. Attackers compose requests directly; your form is irrelevant.',
+          'The line where outside data enters your system. Everything crossing it is hostile until checked.',
+          'Presence, type, format, bounds, allowlist: the API ladder checklist, applied as a security layer.',
+          'Wherever data meets an interpreter, use the inert channel: parameterized SQL, escaped HTML, argument arrays for shells.',
+          'Inside the boundary, code can finally trust its inputs, because the door did its job.',
+        ],
+      },
       example: {
         code: '# Your form sends this:\nPOST /login {"email": "kay@example.com", "password": "..."}\n\n# An attacker sends whatever they want:\ncurl -X POST https://yoursite.com/login \\\n  -H "content-type: application/json" \\\n  -d \'{"email": {"$ne": null}, "password": "x", "admin": true}\'',
         output:
@@ -114,6 +126,18 @@ export const securityFoundations: Problem[] = [
       'Explain salting.',
     ],
     interactive: {
+      mental:
+        'A password hash is a meat grinder: meat in, no recipe back out, and deliberately slow grinding ruins the thief whole weekend.',
+      diagram: {
+        nodes: ['Password', '+ Salt', 'Slow hash', 'Stored', 'Compare'],
+        explanations: [
+          'Exists in memory only during signup and login. Never written to disk, logs, or email.',
+          'A random per-user value mixed in, so identical passwords produce unrelated hashes and precomputed tables are useless.',
+          'bcrypt, scrypt, or Argon2, tuned to take around 100ms. Slowness is the defense: GPU guessing drops from billions to dozens per second.',
+          'Only the salted hash persists. A stolen table is a pile of grinders output, with each guess costing real compute.',
+          'Login re-hashes the attempt with the same salt and compares results. The original is never needed again.',
+        ],
+      },
       example: {
         code: '// signup\nconst stored = await bcrypt.hash("hunter2", 12);\n// stored: "$2b$12$N9qo8uLOickgx2ZMRZoMye..." (salt lives inside)\n\n// login\nconst ok = await bcrypt.compare("hunter2", stored);\nconst bad = await bcrypt.compare("hunter3", stored);',
         output: 'ok:  true\nbad: false\n\nThe original "hunter2" was never stored anywhere.',
@@ -196,6 +220,18 @@ export const securityFoundations: Problem[] = [
       'State what JWT signatures do and do not provide.',
     ],
     interactive: {
+      mental:
+        'A session is a coat check (the club keeps your coat, you hold a numbered ticket); a JWT is a stamped wristband (anyone can read it, only the club can stamp it, and it works until it expires).',
+      diagram: {
+        nodes: ['Login', 'Session record', 'Cookie id', 'Signed JWT', 'Bearer header'],
+        explanations: [
+          'Credentials are verified once, against the hashed password from the previous rung.',
+          'Session pattern: the server stores a record and remembers. Logout deletes it, killing the credential instantly.',
+          'The browser holds only a random id in a cookie flagged HttpOnly, Secure, and SameSite, attached automatically to every request.',
+          'Token pattern: the server signs a payload (user id, expiry) and keeps nothing. Anyone can read it; nobody can alter it without breaking the signature.',
+          'The client sends it manually in Authorization: Bearer. Verification is a signature check, which scales across services but makes revocation the hard part.',
+        ],
+      },
       example: {
         code: '# Session flow                        # Token flow\nPOST /login                            POST /login\n  -> server stores session abc123        -> server signs a JWT\n  <- Set-Cookie: sid=abc123;             <- {"token": "eyJhbGc..."}\n     HttpOnly; Secure; SameSite=Lax\n\nGET /profile                           GET /profile\n  Cookie: sid=abc123 (automatic)         Authorization: Bearer eyJhbGc...\n  -> server looks up abc123              -> server verifies the signature',
         output:
@@ -283,6 +319,17 @@ export const securityFoundations: Problem[] = [
       'Explain output escaping for HTML.',
     ],
     interactive: {
+      mental:
+        'Injection is a forged form field that escapes its box and rewrites the whole form; parameters are boxes nothing can escape.',
+      diagram: {
+        nodes: ['User input', 'Glued = code', 'Parameterized = data', 'Same cure for HTML'],
+        explanations: [
+          'Hostile text arrives in any field: a name containing quotes and SQL, a comment containing script tags.',
+          'String concatenation pastes it into the query text, where the database reads it as instructions. One tautology and the WHERE matches every row.',
+          'Placeholders send SQL and values down separate channels. The same hostile text arrives as an inert value, compared literally, matching nothing.',
+          'XSS is the identical disease in the browser interpreter, and output escaping is its parameterized query. One rule everywhere: data never becomes code.',
+        ],
+      },
       example: {
         code: "// vulnerable: data glued into code\nconst q = \"SELECT * FROM users WHERE name = '\" + input + \"'\";\n// attacker input:  ' OR '1'='1\n// q becomes: SELECT * FROM users WHERE name = '' OR '1'='1'\n\n// safe: data stays data\nawait db.query('SELECT * FROM users WHERE name = $1', [input]);",
         output:
@@ -366,6 +413,18 @@ export const securityFoundations: Problem[] = [
       'Explain the three HTTPS guarantees.',
     ],
     interactive: {
+      mental:
+        'A committed secret is a tattoo: deleting the commit is a cover-up, everyone already took photos. Keys live in wallets (the environment), never on skin (the repo).',
+      diagram: {
+        nodes: ['Secret', '.gitignore .env', 'Env vars', 'Code reads name', 'Rotate'],
+        explanations: [
+          'Database passwords, API keys, signing keys: anything that grants access. Scanners watch public repos in real time.',
+          'The .env file holds local values and never enters git. A committed .env.example documents the names without the values.',
+          'Production platforms inject real values as environment variables, different per deployment, visible to the process alone.',
+          'Code references process.env.DATABASE_URL: the name of the secret, never the secret. The repo stays clean forever.',
+          'Leaked or suspected keys get revoked immediately and rotated on schedule. History cannot be unleaked; rotation is the only cure.',
+        ],
+      },
       example: {
         code: '// committed to git: permanent, scanned, exploited\nconst db = connect("postgres://admin:Hunter2!@prod-db:5432/app");\n\n// environment: the value never enters the repo\nconst db = connect(process.env.DATABASE_URL);\n\n// .gitignore        // .env.example (committed)\n.env                  DATABASE_URL=\n                      STRIPE_KEY=',
         output:

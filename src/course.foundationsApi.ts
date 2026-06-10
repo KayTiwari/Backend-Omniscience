@@ -35,6 +35,17 @@ export const apiFoundations: Problem[] = [
       'Give an example of two clients sharing one API.',
     ],
     interactive: {
+      mental:
+        'An API is a restaurant menu: you can only order what is listed, the kitchen chaos stays hidden, and changing the menu surprises every regular at once.',
+      diagram: {
+        nodes: ['Client', 'Contract', 'Hidden internals', 'Response'],
+        explanations: [
+          'Any program that sends requests: a browser app, a mobile app, a partner server. All of them read the same menu.',
+          'The documented surface: which methods and paths exist, what bodies they take, what responses they return. This is what API design designs.',
+          'The database, the language, the framework, the messy refactors: invisible behind the contract, free to change any time.',
+          'The agreed shape comes back: status code plus JSON body. Clients build against this and nothing else.',
+        ],
+      },
       example: {
         code: '# The contract for one endpoint, written as docs:\nGET /users/{id}',
         output:
@@ -109,6 +120,17 @@ export const apiFoundations: Problem[] = [
       'Round-trip with parse and stringify.',
     ],
     interactive: {
+      mental:
+        'JSON is the shipping container of data: one standard shape that every language can load, ship, and unload.',
+      diagram: {
+        nodes: ['Object {}', 'Array []', 'Primitives', 'parse / stringify'],
+        explanations: [
+          'Braces hold key-value pairs with double-quoted keys: a record, like a user.',
+          'Brackets hold an ordered list: usually many records, like rows from a query.',
+          'Strings in double quotes, bare numbers, true, false, and null. Six types total; that is the entire grammar.',
+          'Every language converts both ways: parse turns text into live data, stringify turns data into text for the wire.',
+        ],
+      },
       example: {
         code: 'const text = \'{"name": "Kay", "active": true, "orders": [{"id": 101, "amount": 40}]}\';\n\nconst user = JSON.parse(text);\nconsole.log(user.orders[0].amount);\nconsole.log(JSON.stringify({ ok: true }));',
         output: '40\n{"ok":true}',
@@ -181,6 +203,17 @@ export const apiFoundations: Problem[] = [
       'Express ownership with one nesting level.',
     ],
     interactive: {
+      mental:
+        'Routes are nouns on doors, and the HTTP method is what you do when you walk through: same door, different verbs.',
+      diagram: {
+        nodes: ['/users', '/users/42', '/users/42/orders', 'POST actions'],
+        explanations: [
+          'The collection. GET lists it, POST creates into it. Plural noun, no verbs in the path.',
+          'One item by id. GET reads it, PATCH edits it, DELETE removes it. The standard surface is these two paths times the verbs.',
+          'One nesting level reads as ownership: the orders belonging to user 42. Deeper nesting becomes a maze; query filters often serve better.',
+          'Operations that defy nouns (retry, publish, cancel) become POST to an action subresource. Keep them rare and consistent.',
+        ],
+      },
       example: {
         code: '# One resource, the complete standard surface:',
         output:
@@ -254,6 +287,18 @@ export const apiFoundations: Problem[] = [
       'Keep internals out of error bodies.',
     ],
     interactive: {
+      mental:
+        'An error response is an incident report form: the same fields every time, so anyone can file one and anyone can read one.',
+      diagram: {
+        nodes: ['Status code', 'error code', 'message', 'details', 'request_id'],
+        explanations: [
+          'The HTTP verdict picks the family: 400 invalid input, 404 missing, 409 conflict, 500 our fault.',
+          'A stable machine-readable identifier like email_taken. Client code branches on this, never on prose.',
+          'A human sentence safe to show a user. Free to be reworded without breaking anyone.',
+          'Per-field explanations for validation failures, so a form can highlight exactly what to fix in one round trip.',
+          'A correlation id that finds the full story in server logs. Support trades this id instead of stack traces.',
+        ],
+      },
       example: {
         code: '# POST /users with a bad email and a short password:',
         output:
@@ -331,6 +376,18 @@ export const apiFoundations: Problem[] = [
       'Return a complete 400 in one pass.',
     ],
     interactive: {
+      mental:
+        'Validation is a bouncer with a four-point checklist (presence, type, format, bounds) and a guest list: unknown fields do not get in.',
+      diagram: {
+        nodes: ['Presence', 'Type', 'Format', 'Bounds', 'Allowlist'],
+        explanations: [
+          'Required fields exist at all. Missing email on a signup stops here.',
+          'Each field is the right kind: quantity is a number, email a string. Text from forms and URLs fails here constantly.',
+          'The value has the right shape: the email matches an address pattern, the date parses.',
+          'The value is in range: quantity between 1 and 100, name under 200 characters. Negative quantities die here.',
+          'Only declared fields are accepted; everything else is dropped. This single check kills mass-assignment attacks like a self-granted admin role.',
+        ],
+      },
       example: {
         code: '# POST /signup body from an untrusted client:\n{\n  "email": "kay@",\n  "quantity": "-3",\n  "role": "admin"\n}',
         output:
@@ -404,6 +461,17 @@ export const apiFoundations: Problem[] = [
       'Pin the underlying sort.',
     ],
     interactive: {
+      mental:
+        'Pagination is reading a book: limit is the page size, offset is how deep you are, and ORDER BY is the binding that keeps pages from shuffling.',
+      diagram: {
+        nodes: ['Stable sort', 'Skip offset', 'Take limit', 'Envelope'],
+        explanations: [
+          'An explicit ORDER BY with a unique tiebreak pins every row in place. Without it, page boundaries drift and rows repeat or vanish.',
+          'OFFSET skips past the rows earlier pages already showed.',
+          'LIMIT takes one page worth, capped server-side so nobody requests a million rows.',
+          'The response wraps items with total, limit, offset, and has_more, so clients can render controls without guessing.',
+        ],
+      },
       example: {
         code: 'GET /orders?limit=2&offset=2',
         output:

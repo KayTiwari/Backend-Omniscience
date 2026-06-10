@@ -203,6 +203,17 @@ export const zeroRampProblems: Record<string, Problem[]> = {
         'Trace count = count + 1 step by step.',
       ],
       interactive: {
+        mental:
+          'A variable is a name tag on a box: assignment moves the tag to a new box, and the old box just loses its tag.',
+        diagram: {
+          nodes: ['name = value', 'Right side first', 'Re-tag', 'Old value dropped'],
+          explanations: [
+            'Assignment binds a name to a value. The name is the tag; the value is the box.',
+            'In count = count + 1, the right side computes first using the current value.',
+            'The result gets the tag: count now points at the new value.',
+            'Nothing points at the old value anymore, and Python cleans it up. Names move; values never change in place.',
+          ],
+        },
         example: {
           code: 'name = "Kay"\ncount = 1\ncount = count + 1\nprint(name, count)',
           output: 'Kay 2',
@@ -539,6 +550,17 @@ export const zeroRampProblems: Record<string, Problem[]> = {
         'Add a key by assigning to it.',
       ],
       interactive: {
+        mental:
+          'A dict is a row of labeled boxes: square brackets demand the box exists, .get peeks politely and brings a fallback.',
+        diagram: {
+          nodes: ['Key: value', '[] lookup', '.get fallback', 'Assign adds'],
+          explanations: [
+            'Each entry maps a key to a value: the record shape of Python, and what JSON objects become.',
+            'user["name"] returns the value or raises KeyError when the key is absent. Loud and immediate.',
+            'user.get("email", "none") returns the fallback instead of raising: the polite read for optional fields.',
+            'Assigning to a new key adds it; assigning to an existing key overwrites. Keys stay unique.',
+          ],
+        },
         example: {
           code: 'user = {"name": "Kay", "role": "admin"}\nprint(user["name"])\nprint(user.get("email", "none"))\nuser["active"] = True\nprint(user)',
           output: "Kay\nnone\n{'name': 'Kay', 'role': 'admin', 'active': True}",
@@ -635,6 +657,17 @@ export const zeroRampProblems: Record<string, Problem[]> = {
         'Read a simple list comprehension.',
       ],
       interactive: {
+        mental:
+          'A comprehension is the sieve and the paint sprayer in one line: choose with the if, transform with the expression.',
+        diagram: {
+          nodes: ['List', 'if filters', 'Expression maps', 'New list'],
+          explanations: [
+            'The source list flows in unchanged; comprehensions always build a new list.',
+            'The trailing if keeps only items where the test is true.',
+            'The leading expression decides what each survivor becomes: n * n turns values into squares.',
+            'The result is a fresh list, ready to chain or return. This one line replaces a loop, an if, and an append.',
+          ],
+        },
         example: {
           code: 'nums = [1, 2, 3, 4, 5, 6]\nevens = []\nfor n in nums:\n    if n % 2 == 0:\n        evens.append(n)\nprint(evens)\nprint([n * n for n in evens])',
           output: '[2, 4, 6]\n[4, 16, 36]',
@@ -731,6 +764,17 @@ export const zeroRampProblems: Record<string, Problem[]> = {
         'Return a summary dict.',
       ],
       interactive: {
+        mental:
+          'Records in, pipeline through, summary out: the same assembly line as every backend in every language.',
+        diagram: {
+          nodes: ['List of dicts', 'Filter', 'Project', 'Summary dict'],
+          explanations: [
+            'The input mirrors a database result or parsed JSON: a list of records with named fields.',
+            'The if clause keeps the records that matter: the business rule in one expression.',
+            'The expression extracts what the response needs: just the names.',
+            'A dict packages the count and the list: serialized, this is a JSON API response.',
+          ],
+        },
         intro: 'Everything so far was a building block. This is the shape of real backend work.',
         example: {
           code: 'users = [\n    {"name": "Kay", "active": True},\n    {"name": "Sam", "active": False},\n    {"name": "Lee", "active": True},\n]\nactive_names = [u["name"] for u in users if u["active"]]\nsummary = {"active_count": len(active_names), "names": active_names}\nprint(summary)',

@@ -56,6 +56,18 @@ The two tables below appear in every rung of this ladder, so read them once now:
       'Explain what SQL is.',
     ],
     interactive: {
+      mental:
+        'A database is a warehouse of spreadsheets with a librarian who never sleeps: tables are the sheets, rows the entries, and SQL is how you ask the librarian.',
+      diagram: {
+        nodes: ['Table', 'Row', 'Column', 'Foreign key', 'SQL'],
+        explanations: [
+          'One kind of thing, laid out like a spreadsheet: users, orders, products. Each table declares its columns once.',
+          'One record: the user Kay, order 101. New data means new rows; the shape never changes.',
+          'One typed field every row has. The type is enforced: text in a number column is rejected at the door.',
+          'A column holding the id of a row in another table, like user_id on orders. Following these pointers is what makes the data relational.',
+          'The question language. You describe the result you want; the engine plans how to fetch it.',
+        ],
+      },
       intro: 'These two tables are the cast of the whole ladder. Meet them once, use them everywhere.',
       example: {
         code: '-- users                              -- orders\n-- one row per person                  -- one row per purchase\nSELECT * FROM users;                   SELECT * FROM orders;',
@@ -121,6 +133,16 @@ The mental model that makes SQL click: every query takes tables in and produces 
       'Say why explicit columns beat * in code.',
     ],
     interactive: {
+      mental:
+        'SELECT is a copy machine with column stencils: you choose which columns it copies, and the original is never touched.',
+      diagram: {
+        nodes: ['FROM table', 'Pick columns', 'Result table'],
+        explanations: [
+          'Name the source table. All of its rows are candidates until later clauses narrow them.',
+          'List exactly the columns you want back. The star * means all of them, fine for exploring, avoided in code.',
+          'Every query returns a table: the columns you picked, the rows that qualified. This table-in, table-out model is all of SQL.',
+        ],
+      },
       example: {
         code: 'SELECT name, role FROM users;',
         output: ' name | role\n------+--------\n Kay  | admin\n Sam  | viewer\n Lee  | editor',
@@ -190,6 +212,17 @@ WHERE is also the difference between asking for a cup of water and asking for th
       'Filter on a numeric comparison.',
     ],
     interactive: {
+      mental:
+        'WHERE is a bouncer checking every row at the door: each row is judged alone, and only true gets in.',
+      diagram: {
+        nodes: ['All rows', 'Test each row', 'Keep matches', 'Result'],
+        explanations: [
+          'The FROM table supplies every row as a candidate.',
+          'The WHERE condition runs once per row using that row values. There is no loop to write; the engine does the scan.',
+          'Rows where the condition is true survive. AND demands both conditions on the same row; OR widens the net.',
+          'The survivors flow on to sorting, limiting, or straight to the result.',
+        ],
+      },
       example: {
         code: "SELECT name, role FROM users\nWHERE role = 'admin' OR role = 'editor';",
         output: ' name | role\n------+--------\n Kay  | admin\n Lee  | editor',
@@ -256,6 +289,17 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       'Explain why pagination requires an explicit order.',
     ],
     interactive: {
+      mental:
+        'ORDER BY lines everyone up; LIMIT takes the first N from the line.',
+      diagram: {
+        nodes: ['Filter', 'Sort', 'Cut', 'Result'],
+        explanations: [
+          'WHERE runs first and picks the qualifying rows.',
+          'ORDER BY arranges them: DESC for largest first, multiple keys read left to right.',
+          'LIMIT keeps the first N after the sort. Without an explicit sort, the N rows are arbitrary.',
+          'Top-N answered: largest orders, newest users, slowest queries. Every leaderboard is this shape.',
+        ],
+      },
       example: {
         code: 'SELECT id, amount FROM orders\nORDER BY amount DESC\nLIMIT 2;',
         output: ' id  | amount\n-----+--------\n 103 |    120\n 102 |     75',
@@ -326,6 +370,17 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       'Preview a write with a SELECT first.',
     ],
     interactive: {
+      mental:
+        'Writes are surgery and the WHERE clause is the aim: INSERT adds, UPDATE rewires, DELETE removes, all exactly where you point.',
+      diagram: {
+        nodes: ['Preview SELECT', 'Same WHERE', 'Run the write', 'Check count'],
+        explanations: [
+          'Before any UPDATE or DELETE, run a SELECT with the intended WHERE to see exactly which rows will be hit.',
+          'Reuse the identical WHERE in the write statement. The preview and the surgery must aim at the same rows.',
+          'Execute. UPDATE rewrites the named columns of every matching row; DELETE removes them; no WHERE means the whole table.',
+          'The database reports how many rows changed. A surprising count is your last chance to notice a bad aim.',
+        ],
+      },
       example: {
         code: "UPDATE users SET role = 'viewer' WHERE id = 3;\n\nSELECT name, role FROM users;",
         output: ' name | role\n------+--------\n Kay  | admin\n Sam  | viewer\n Lee  | viewer',
@@ -397,6 +452,17 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       'Predict the row count of an inner join.',
     ],
     interactive: {
+      mental:
+        'JOIN is a matchmaking party: the ON rule decides which rows pair up, and every pair walks out as one wider row.',
+      diagram: {
+        nodes: ['orders rows', 'ON rule', 'users rows', 'Matched pairs'],
+        explanations: [
+          'The left side supplies its rows: every order, each carrying a user_id pointer.',
+          'ON orders.user_id = users.id is the matching rule: pair rows where the pointer equals the identity.',
+          'The right side supplies its rows: every user, each with a unique id.',
+          'Each match becomes one row with columns from both sides. Two orders for Kay means Kay appears twice: the count follows the pairs.',
+        ],
+      },
       example: {
         code: 'SELECT users.name, orders.amount, orders.status\nFROM orders\nJOIN users ON orders.user_id = users.id;',
         output:
@@ -479,6 +545,17 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       'Name result columns with AS.',
     ],
     interactive: {
+      mental:
+        'GROUP BY sorts rows into labeled buckets, and the aggregates write one summary line per bucket.',
+      diagram: {
+        nodes: ['Rows', 'Bucket by column', 'Aggregate per bucket', 'One row each'],
+        explanations: [
+          'The filtered rows arrive from FROM and WHERE as usual.',
+          'GROUP BY status drops each row into the bucket matching its value: paid rows together, pending together.',
+          'COUNT, SUM, AVG, MIN, MAX run once per bucket over its members.',
+          'The result has one row per bucket. Selecting a bare column that varies inside a bucket is ambiguous, and PostgreSQL rejects it.',
+        ],
+      },
       example: {
         code: 'SELECT status, COUNT(*) AS order_count, SUM(amount) AS total\nFROM orders\nGROUP BY status;',
         output:
@@ -550,6 +627,17 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       'Decide which column deserves an index and defend it.',
     ],
     interactive: {
+      mental:
+        'A primary key is a fingerprint, NULL is an empty box (nothing equals it, even another empty box), and an index is the index page of a book.',
+      diagram: {
+        nodes: ['Primary key', 'Foreign key', 'NULL', 'Index'],
+        explanations: [
+          'The unique, never-null identity of each row. The database enforces it: duplicate ids are rejected, never overwritten.',
+          'A pointer at another table identity, like user_id on orders. The database can refuse orders whose user does not exist.',
+          'The absence of a value, distinct from empty string or zero. Comparisons with = never match it; IS NULL and IS NOT NULL exist for exactly this.',
+          'A sorted lookup structure that turns full-table scans into direct jumps. Index what you filter and join on; pay a small tax on writes.',
+        ],
+      },
       example: {
         code: "SELECT name FROM users WHERE email IS NULL;\n\n-- compare with the trap:\nSELECT name FROM users WHERE email = NULL;",
         output: ' name\n------\n Sam\n\n(0 rows)',

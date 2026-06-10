@@ -52,6 +52,12 @@ export type PredictCheck = {
 // "change one thing" tweak instead of the generic teaching scaffold.
 export type InteractiveLesson = {
   intro?: string
+  // A one-sentence analogy that gives the concept a memorable shape, shown as
+  // a highlighted Mental Model card on the Learn page.
+  mental?: string
+  // An authored concept diagram: ordered nodes with a click-to-read
+  // explanation per node, rendered with InteractiveDiagram.
+  diagram?: { nodes: string[]; explanations: string[] }
   example: { code: string; output: string; explain?: string }
   predicts: PredictCheck[]
   tweak?: { instruction: string; reveal: string }

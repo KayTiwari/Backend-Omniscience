@@ -297,6 +297,17 @@ You may also meet var in old code. It predates const and let and has looser scop
       'Detect NaN with Number.isNaN.',
     ],
     interactive: {
+      mental:
+        'The + operator is a chameleon: between numbers it adds, anywhere near a string it glues.',
+      diagram: {
+        nodes: ['number + number', 'string near +', 'Number() converts', 'NaN poisons'],
+        explanations: [
+          'Pure arithmetic: 7 + 3 is 10, and division keeps decimals.',
+          'One string operand flips + into concatenation: 2 + "2" is "22". Form inputs and URL params arrive as strings, so this trap is everywhere.',
+          'Convert deliberately at the boundary: Number("2") is 2, then math is safe everywhere after.',
+          'Converting nonsense yields NaN, which silently corrupts every later calculation. Number.isNaN detects it.',
+        ],
+      },
       example: {
         code: 'console.log(7 + 3);\nconsole.log(7 / 2);\nconsole.log(7 % 2);\nconsole.log(2 + "2");\nconsole.log(Number("2") + 2);',
         output: '10\n3.5\n1\n22\n4',
@@ -653,6 +664,18 @@ You may also meet var in old code. It predates const and let and has looser scop
       'List keys with Object.keys.',
     ],
     interactive: {
+      mental:
+        'An object is a labeled filing cabinet: a missing folder hands you undefined, and opening a folder inside a missing drawer is the crash.',
+      diagram: {
+        nodes: ['Object', 'Dot read', 'Missing field', '?? default', '?. safe walk'],
+        explanations: [
+          'Named fields holding values: the record shape of JavaScript, and exactly what JSON parses into.',
+          'user.name reads a field; user["name"] does the same when the key lives in a variable.',
+          'Reading an absent field quietly returns undefined. The error comes one step later, far from the cause.',
+          'The ?? operator fills in only for null and undefined, so legitimate zeros and empty strings survive.',
+          'user?.profile?.city walks a path and yields undefined instead of throwing when a link is missing.',
+        ],
+      },
       example: {
         code: 'const user = { name: "Kay", role: "admin" };\n\nconsole.log(user.name);\nconsole.log(user.email ?? "none");\nuser.active = true;\nconsole.log(Object.keys(user));',
         output: "Kay\nnone\n[ 'name', 'role', 'active' ]",
@@ -792,6 +815,17 @@ You may also meet var in old code. It predates const and let and has looser scop
       'Reduce to a single value.',
     ],
     interactive: {
+      mental:
+        'filter is a sieve, map is a paint sprayer, reduce is a snowball rolling downhill gathering everything into one.',
+      diagram: {
+        nodes: ['Array', 'filter: choose', 'map: transform', 'reduce: fold'],
+        explanations: [
+          'The raw list: rows, items, messages. Untouched by everything that follows, because all three return new values.',
+          'Keeps the items where the arrow test is true. Same items, possibly fewer.',
+          'Passes every item through the arrow and collects the results. Same length, new items.',
+          'Carries an accumulator across the items and returns the final value: sums, counts, groupings.',
+        ],
+      },
       example: {
         code: 'const nums = [1, 2, 3, 4, 5, 6];\n\nconst evens = nums.filter((n) => n % 2 === 0);\nconsole.log(evens);\n\nconsole.log(evens.map((n) => n * n));\n\nconsole.log(nums.reduce((sum, n) => sum + n, 0));',
         output: '[ 2, 4, 6 ]\n[ 4, 16, 36 ]\n21',
@@ -865,6 +899,18 @@ Read it, predict it, then flip the filter and watch one character change the bus
       'Explain how this maps to an API endpoint.',
     ],
     interactive: {
+      mental:
+        'Records in, pipeline through, summary out: the assembly line every backend endpoint runs.',
+      diagram: {
+        nodes: ['Array of objects', 'filter (rule)', 'map (shape)', 'Summary', 'JSON out'],
+        explanations: [
+          'The input is what a database query or request body gives you: a list of records.',
+          'The filter arrow is the business rule: which records matter for this request.',
+          'The map arrow is the response shape: which fields the client actually needs.',
+          'A new object packages the result: a count, a list, whatever the contract promises.',
+          'Serialized to JSON, this is the response body. Swap the literal array for rows and this is production code.',
+        ],
+      },
       intro: 'Everything from the previous twelve rungs in one real program.',
       example: {
         code: 'const users = [\n  { name: "Kay", active: true },\n  { name: "Sam", active: false },\n  { name: "Lee", active: true },\n];\n\nconst activeNames = users\n  .filter((u) => u.active)\n  .map((u) => u.name);\n\nconst summary = { activeCount: activeNames.length, names: activeNames };\nconsole.log(summary);',

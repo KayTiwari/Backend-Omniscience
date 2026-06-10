@@ -39,6 +39,20 @@ The flow below is worth saying out loud until it feels boring. It is the map for
       'Name one failure mode for one hop.',
     ],
     interactive: {
+      mental:
+        'The web is a postal service: the URL addresses the envelope, DNS finds the building, TCP and TLS are the sealed courier, and your backend is the mailroom that writes the reply.',
+      diagram: {
+        nodes: ['Type URL', 'DNS lookup', 'TCP connect', 'TLS encrypt', 'Request', 'Server code', 'Response'],
+        explanations: [
+          'You give the browser an address. Nothing has left your machine yet; the URL is just structured text naming a destination and a resource.',
+          'DNS translates the hostname into an IP address, like looking up a street address for a building name. Wrong DNS means every later step talks to the wrong machine.',
+          'TCP opens a reliable two-way byte pipe to that IP. It guarantees ordered delivery, and nothing more: no encryption, no meaning.',
+          'TLS wraps the pipe in encryption and proves the server is who it claims via certificates. This is the s in https.',
+          'The HTTP request travels through the pipe: a verb, a path, headers, maybe a body. Plain structured text.',
+          'The server program receives it, routes by path, runs your handler code, talks to databases, and builds a response. This step is the backend job.',
+          'The response travels back through the same pipe: a status verdict, headers, and the body the client asked for.',
+        ],
+      },
       example: {
         code: '# You type this into a browser:\nhttps://example.com\n\n# The journey your request takes:',
         output:
@@ -116,6 +130,17 @@ One address, four decisions: how to talk, to whom, about what, with which option
       'Construct a URL with two query parameters.',
     ],
     interactive: {
+      mental:
+        'A URL is a mailing address: the scheme is the carrier, the host is the building, the path is the apartment, and the query string is the delivery instructions.',
+      diagram: {
+        nodes: ['Scheme', 'Host', 'Path', 'Query'],
+        explanations: [
+          'https decides how to talk: which protocol, and that the connection is encrypted. http without the s is the unencrypted ancestor.',
+          'api.example.com names which machine to find via DNS. Subdomains conventionally separate services.',
+          '/users/42 names the resource on that machine. The router on the server reads it to pick which code runs.',
+          'Everything after ? is options as key=value pairs: filters, pagination, search. Values always arrive as text.',
+        ],
+      },
       example: {
         code: 'https://api.example.com/users/42?fields=name&limit=10',
         output:
@@ -185,6 +210,17 @@ The request below is real, captured from curl talking to example.com. This is ge
       'Capture a real request with curl -v.',
     ],
     interactive: {
+      mental:
+        'A request is a form letter: the first line states what you want, the headers are labeled fields, and the body is the enclosed package.',
+      diagram: {
+        nodes: ['Request line', 'Headers', 'Blank line', 'Body'],
+        explanations: [
+          'METHOD path VERSION, like GET / HTTP/2. The verb says the kind of action; the path says which resource.',
+          'One Name: value pair per line. Host picks the site, Authorization carries credentials, Accept declares formats the client understands.',
+          'A single empty line marks where headers end. Everything before it is metadata.',
+          'The payload for POST and PUT: form data or JSON. GET requests almost never carry one.',
+        ],
+      },
       example: {
         code: '# captured with: curl -v https://example.com\n# lines the client sent:',
         output: 'GET / HTTP/2\nHost: example.com\nUser-Agent: curl/8.7.1\nAccept: */*',
@@ -256,6 +292,17 @@ The response below is real, from example.com, trimmed to the essential headers. 
       'Capture a full response with curl -i.',
     ],
     interactive: {
+      mental:
+        'A response is the reply envelope: a verdict stamped on top, labels describing the contents, then the contents themselves.',
+      diagram: {
+        nodes: ['Status line', 'Headers', 'Blank line', 'Body'],
+        explanations: [
+          'Version plus a three-digit verdict: HTTP/2 200. The first thing every client and dashboard reads.',
+          'Metadata about the payload and the response: content-type tells the client how to interpret the body, cache headers say how long to keep it.',
+          'The same empty-line divider as the request. Symmetry makes both messages easy to read raw.',
+          'The payload your handler built: HTML for browsers, JSON for APIs. This is what users actually see.',
+        ],
+      },
       example: {
         code: '# captured with: curl -i https://example.com (trimmed)',
         output:
@@ -330,6 +377,17 @@ The load-bearing distinction is 4xx versus 5xx: whose fault. A 4xx says fix the 
       'Explain why error code accuracy matters for monitoring.',
     ],
     interactive: {
+      mental:
+        'Status codes are five traffic lights: 2 means go, 3 means detour, 4 means you erred, 5 means we erred.',
+      diagram: {
+        nodes: ['2xx Success', '3xx Redirect', '4xx Client error', '5xx Server error'],
+        explanations: [
+          'It worked. 200 for reads, 201 when something was created, 204 for success with nothing to say.',
+          'Look elsewhere. 301 moved permanently, 302 temporarily, 304 your cached copy is still good.',
+          'The request was wrong. 400 malformed, 401 unidentified, 403 known and refused, 404 missing, 429 slow down. The client must change something.',
+          'The server failed. 500 unhandled crash, 502 and 503 infrastructure trouble. These are your bugs, and monitoring alarms on them.',
+        ],
+      },
       example: {
         code: '# One request, many possible verdicts:\nGET /users/42',
         output:
@@ -404,6 +462,18 @@ The load-bearing distinction is 4xx versus 5xx: whose fault. A 4xx says fix the 
       'Explain the POST retry hazard.',
     ],
     interactive: {
+      mental:
+        'Methods are verbs stamped on the envelope: the same address means different work depending on the stamp.',
+      diagram: {
+        nodes: ['GET read', 'POST create', 'PUT replace', 'PATCH modify', 'DELETE remove'],
+        explanations: [
+          'Reads a resource with no side effects. Safe and idempotent, which is why caches and prefetchers trust it.',
+          'Creates or triggers. The body carries the new thing. Neither safe nor idempotent: a retried POST can create twice.',
+          'Replaces a resource wholesale at a known address. Idempotent: the same PUT twice leaves the same result.',
+          'Modifies part of a resource: send only the changed fields. The polite verb for updates.',
+          'Removes the resource. Idempotent: deleting twice is still deleted.',
+        ],
+      },
       example: {
         code: '# The verb changes the meaning; the path stays the same:\nGET    /users/42\nPUT    /users/42\nPATCH  /users/42\nDELETE /users/42\nPOST   /users',
         output:
@@ -470,6 +540,18 @@ The load-bearing distinction is 4xx versus 5xx: whose fault. A 4xx says fix the 
       'List the four usual integration failure causes.',
     ],
     interactive: {
+      mental:
+        'An API call is a vending machine: exact buttons in (method, path, JSON), predictable item out (status code, JSON).',
+      diagram: {
+        nodes: ['Compose request', 'Declare JSON', 'Server validates', '201 + body', 'Client parses'],
+        explanations: [
+          'Pick the verb and path: POST /users to create. curl -X sets the method.',
+          'content-type: application/json is the promise; the -d body keeps it. Servers reject mismatches.',
+          'The server checks presence, types, format, and bounds before any logic runs. Bad input gets a 400 with details.',
+          'Success answers 201 Created with the new resource echoed, including the server-assigned id.',
+          'The client parses the JSON text into live data with the tools from the language ladders.',
+        ],
+      },
       intro: 'Every rung of this ladder appears in this one exchange.',
       example: {
         code: 'curl -X POST https://api.example.com/users \\\n  -H "content-type: application/json" \\\n  -d \'{"name": "Kay", "role": "admin"}\'',
