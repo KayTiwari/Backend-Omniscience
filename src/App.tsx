@@ -29,7 +29,7 @@ import {
 } from './course'
 import { validateCourse } from './courseValidation'
 import { applyEditorKey } from './editorKeys'
-import { glossaryId, glossaryTerms } from './glossary'
+import { appendixTargetByGlossaryId } from './course.appendix'
 import { renderGlossaryText } from './GlossaryText'
 import type { GradeResult, GradeSpec } from './grader/types'
 import { highlight } from './highlight'
@@ -213,15 +213,17 @@ function App() {
     const openGlossary = (event: Event) => {
       const id = (event as CustomEvent<{ id?: string }>).detail?.id
       if (!id) return
-      setIsHome(true)
-      window.history.replaceState(null, '', window.location.pathname)
-      window.requestAnimationFrame(() => {
+      const problemId = appendixTargetByGlossaryId[id]
+      if (!problemId) return
+      const location = findProblemLocation(problemId)
+      if (!location) return
+      openProblem(location.subject, location.problem)
+      window.setTimeout(() => {
         const target = document.getElementById(id)
-        if (target instanceof HTMLDetailsElement) target.open = true
         target?.scrollIntoView({ behavior: 'smooth', block: 'center' })
         target?.classList.add('dictionary-card-focus')
         window.setTimeout(() => target?.classList.remove('dictionary-card-focus'), 1600)
-      })
+      }, 150)
     }
 
     window.addEventListener('backend-omniscience:open-glossary', openGlossary)
@@ -1043,6 +1045,50 @@ function App() {
               </div>
             </section>
 
+            <section className="home-section" aria-label="Courses by track">
+              {subjectTracks.map((track) => (
+                <div key={track.label} className="home-track">
+                  <div className="home-track-heading">
+                    <h3>{track.label}</h3>
+                    <span>{track.subjectIds.length} courses</span>
+                  </div>
+                  <div className="subject-grid">
+                    {subjectSummaries
+                      .filter((subject) => track.subjectIds.includes(subject.id))
+                      .map((subject) => {
+                        const SubjectIcon = subject.icon
+                        return (
+                          <button
+                            key={subject.id}
+                            className="subject-card"
+                            onClick={() => openProblem(subject, subject.problems[0])}
+                            type="button"
+                            style={{ '--card-color': subject.color } as React.CSSProperties}
+                          >
+                            <span className="subject-card-icon" style={{ color: subject.color, background: `${subject.color}18` }}>
+                              <SubjectIcon size={22} />
+                            </span>
+                            <span className="subject-card-copy">
+                              <strong>{subject.title}</strong>
+                              <small>{renderGlossaryText(subject.subtitle)}</small>
+                            </span>
+                            <span className="subject-card-progress">
+                              <span style={{ width: `${subject.percent}%`, background: subject.color }} />
+                            </span>
+                            <span className="subject-card-footer">
+                              <span>
+                                {subject.done}/{subject.problems.length} done · {subject.codingCount} drills
+                              </span>
+                              <ArrowRight size={16} />
+                            </span>
+                          </button>
+                        )
+                      })}
+                  </div>
+                </div>
+              ))}
+            </section>
+
             <section className="request-lifecycle-view" aria-label="Follow the request">
               <div className="home-section-heading">
                 <div>
@@ -1162,68 +1208,44 @@ function App() {
               </div>
             </section>
 
-            <section className="home-section">
-              <h3>Subjects</h3>
-              <div className="subject-grid">
-                {subjectSummaries.map((subject) => {
-                  const SubjectIcon = subject.icon
-                  return (
-                    <button
-                      key={subject.id}
-                      className="subject-card"
-                      onClick={() => openProblem(subject, subject.problems[0])}
-                      type="button"
-                      style={{ '--card-color': subject.color } as React.CSSProperties}
-                    >
-                      <span className="subject-card-icon" style={{ color: subject.color, background: `${subject.color}18` }}>
-                        <SubjectIcon size={22} />
-                      </span>
-                      <span className="subject-card-copy">
-                        <strong>{subject.title}</strong>
-                        <small>{renderGlossaryText(subject.subtitle)}</small>
-                      </span>
-                      <span className="subject-card-meta">
-                        {subject.confidenceCounts['Can defend']} defend
-                      </span>
-                      <span className="subject-card-progress">
-                        <span style={{ width: `${subject.percent}%`, background: subject.color }} />
-                      </span>
-                      <span className="subject-card-footer">
-                        <span>
-                          {subject.confidenceCounts['Can build']} build · {subject.codingCount} drills
-                        </span>
-                        <ArrowRight size={16} />
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-            </section>
 
-            <section className="dictionary-view" aria-label="Dictionary appendix">
-              <div className="home-section-heading">
-                <div>
-                  <h3>Dictionary Appendix</h3>
-                  <p>Hover underlined terms in lessons, or scan the key terms here.</p>
-                </div>
-              </div>
-              <div className="dictionary-grid">
-                {glossaryTerms.map((entry) => (
-                  <details
-                    key={entry.term}
-                    id={glossaryId(entry.term)}
-                    className="dictionary-card"
-                  >
-                    <summary>{entry.term}</summary>
-                    <p>{renderGlossaryText(entry.definition)}</p>
-                    {entry.synonyms && entry.synonyms.length > 0 && (
-                      <small>Also called: {entry.synonyms.join(', ')}</small>
-                    )}
-                  </details>
-                ))}
-              </div>
-            </section>
           </article>
+        ) : activeProblem.id.startsWith('appendix-') ? (
+        <article className="problem-panel reference-view">
+          <p className="eyebrow">Encyclopedia</p>
+          <h2>{activeProblem.title.replace(/^Appendix: /, '')}</h2>
+          {renderProse(activeProblem.explanation)}
+          <section className="reference-facts" aria-label="Need to know">
+            <h3>Need To Know</h3>
+            <ul>
+              {activeProblem.checklist.map((fact) => (
+                <li key={fact}>{renderGlossaryText(fact)}</li>
+              ))}
+            </ul>
+          </section>
+          <section className="learning-path" aria-label="Encyclopedia pages">
+            <button
+              type="button"
+              onClick={() => previousProblem && openProblemById(previousProblem.id)}
+              disabled={!previousProblem}
+            >
+              <span>Previous</span>
+              <strong>{previousProblem?.title.replace(/^Appendix: /, '') ?? 'Start'}</strong>
+            </button>
+            <div>
+              <span>Reference</span>
+              <strong>Glossary & Maps</strong>
+            </div>
+            <button
+              type="button"
+              onClick={() => nextProblem && openProblemById(nextProblem.id)}
+              disabled={!nextProblem}
+            >
+              <span>Next</span>
+              <strong>{nextProblem?.title.replace(/^Appendix: /, '') ?? 'End'}</strong>
+            </button>
+          </section>
+        </article>
         ) : (
         <article className="problem-panel">
           <div className="problem-heading">

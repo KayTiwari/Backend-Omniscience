@@ -1,5 +1,5 @@
 import type { Problem, Subject } from './course'
-import { glossaryTerms } from './glossary'
+import { glossaryId, glossaryTerms } from './glossary'
 import { BookIcon } from './TechIcons'
 
 // The glossary as a reference course: every term rendered as a concept card,
@@ -153,6 +153,16 @@ function sectionProblem(section: AppendixSection, extraTerms: string[] = []): Pr
 // glossary entries always surface somewhere in the appendix.
 const claimed = new Set(SECTIONS.flatMap((section) => section.terms))
 const unclaimed = glossaryTerms.map((entry) => entry.term).filter((term) => !claimed.has(term))
+
+// Inline glossary term clicks deep-link into the encyclopedia: glossaryId of
+// the term resolves to the appendix module that holds its card.
+export const appendixTargetByGlossaryId: Record<string, string> = {}
+for (const section of SECTIONS) {
+  for (const term of section.terms) appendixTargetByGlossaryId[glossaryId(term)] = section.id
+}
+for (const term of unclaimed) {
+  appendixTargetByGlossaryId[glossaryId(term)] = SECTIONS[SECTIONS.length - 1].id
+}
 
 export const appendixSubject: Subject = {
   id: 'appendix-glossary',

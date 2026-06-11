@@ -4239,3 +4239,83 @@ input:focus-visible {
 .lesson-pager-nav {
   margin-top: 18px;
 }
+
+/* ----- Encyclopedia (appendix) view ----- */
+.reference-view .eyebrow {
+  margin-top: 8px;
+}
+
+.reference-view h2 {
+  margin-bottom: 18px;
+}
+
+.reference-view .lesson-prose {
+  max-width: none;
+}
+
+.reference-view .concept-grid {
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.reference-facts {
+  margin-top: 26px;
+  border: 1px solid color-mix(in srgb, var(--gold, #c9a961) 35%, var(--line));
+  border-left: 4px solid var(--gold, #c9a961);
+  border-radius: 10px;
+  padding: 16px 18px;
+  background: color-mix(in srgb, var(--gold, #c9a961) 5%, var(--field));
+}
+
+.reference-facts h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+.reference-facts ul {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+/* ----- Home: track-grouped courses ----- */
+.home-track {
+  margin-top: 22px;
+}
+
+.home-track:first-child {
+  margin-top: 0;
+}
+
+.home-track-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.home-track-heading h3 {
+  margin: 0;
+}
+
+.home-track-heading span {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.concept-card.dictionary-card-focus {
+  border-color: var(--brand-b);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-b) 35%, transparent);
+}

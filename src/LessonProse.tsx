@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { renderGlossaryText } from './GlossaryText'
+import { glossaryId } from './glossary'
 
 // Structured renderer for lesson prose. Course content arrives as plain
 // strings (some with the mini-markdown subset: **bold**, 4-space code blocks,
@@ -135,7 +136,7 @@ export function renderProse(text: string | undefined): ReactNode {
       <div className="concept-grid" key={`concepts-${out.length}`}>
         {conceptRun.map((block, index) =>
           block.kind === 'concept' ? (
-            <section className="concept-card" key={`${block.term}-${index}`}>
+            <section className="concept-card" key={`${block.term}-${index}`} id={glossaryId(block.term)}>
               <h5>{block.term}</h5>
               <p>{renderInline(block.text)}</p>
             </section>
