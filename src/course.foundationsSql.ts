@@ -1,7 +1,7 @@
 import type { Problem } from './course'
 
 // SQL from absolute zero. Examples use two small tables (users, orders) that
-// carry through every rung so the data stays familiar. All query results
+// carry through every module so the data stays familiar. All query results
 // verified against a real database engine.
 
 const usersTable = ` id | name | role   | email
@@ -20,7 +20,7 @@ const ordersTable = ` id  | user_id | amount | status
 export const sqlFoundations: Problem[] = [
   {
     id: 'sql-rung-what-is-a-database',
-    title: 'Rung 1: What Is A Database?',
+    title: 'Module 1: What Is A Database?',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 12,
@@ -36,7 +36,7 @@ export const sqlFoundations: Problem[] = [
 
 **SQL.** Structured Query Language, the language every relational database speaks. You describe what you want; the database figures out how to get it. PostgreSQL is the open source engine this course targets, and the SQL here works almost everywhere.
 
-The two tables below appear in every rung of this ladder, so read them once now: three users, four orders, and a user_id column on orders pointing at who placed each one.`,
+The two tables below appear in every module of this course, so read them once now: three users, four orders, and a user_id column on orders pointing at who placed each one.`,
     production:
       'Nearly every backend you will ever touch sits in front of a relational database. When an app is slow, the database is the first suspect; when data is wrong, the database is where truth gets checked. SQL fluency is the single most transferable backend skill.',
     walkthrough: [
@@ -91,7 +91,7 @@ The two tables below appear in every rung of this ladder, so read them once now:
       ],
       tweak: {
         instruction: 'Find every order belonging to Kay by scanning the orders table by eye.',
-        reveal: 'Orders 101 and 103 both have user_id 1. In two rungs, WHERE will do this scan for you.',
+        reveal: 'Orders 101 and 103 both have user_id 1. Two modules from now, WHERE will do this scan for you.',
       },
       recap: [
         'A database keeps data alive, safe, and queryable across restarts.',
@@ -102,7 +102,7 @@ The two tables below appear in every rung of this ladder, so read them once now:
   },
   {
     id: 'sql-rung-select',
-    title: 'Rung 2: SELECT: Ask For Columns',
+    title: 'Module 2: SELECT: Ask For Columns',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 10,
@@ -180,7 +180,7 @@ The mental model that makes SQL click: every query takes tables in and produces 
   },
   {
     id: 'sql-rung-where',
-    title: 'Rung 3: WHERE: Filter Rows',
+    title: 'Module 3: WHERE: Filter Rows',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 12,
@@ -195,7 +195,7 @@ The mental model that makes SQL click: every query takes tables in and produces 
 
 WHERE is also the difference between asking for a cup of water and asking for the ocean: without it, you get every row in the table.`,
     production:
-      "A missing or wrong WHERE on a read means a slow query hauling the whole table. The same mistake on a write is catastrophic, as the rung on UPDATE and DELETE will make vivid. Production engineers read the WHERE clause first when reviewing any query.",
+      "A missing or wrong WHERE on a read means a slow query hauling the whole table. The same mistake on a write is catastrophic, as the module on UPDATE and DELETE will make vivid. Production engineers read the WHERE clause first when reviewing any query.",
     walkthrough: [
       "Filter users to role = 'admin'.",
       'Widen it with OR to include editors.',
@@ -257,7 +257,7 @@ WHERE is also the difference between asking for a cup of water and asking for th
   },
   {
     id: 'sql-rung-order-limit',
-    title: 'Rung 4: ORDER BY And LIMIT',
+    title: 'Module 4: ORDER BY And LIMIT',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 10,
@@ -338,7 +338,7 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
   },
   {
     id: 'sql-rung-write',
-    title: 'Rung 5: INSERT, UPDATE, DELETE',
+    title: 'Module 5: INSERT, UPDATE, DELETE',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 14,
@@ -419,7 +419,7 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
   },
   {
     id: 'sql-rung-join',
-    title: 'Rung 6: JOIN: Combine Tables',
+    title: 'Module 6: JOIN: Combine Tables',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 16,
@@ -513,7 +513,7 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
   },
   {
     id: 'sql-rung-group',
-    title: 'Rung 7: GROUP BY And Aggregates',
+    title: 'Module 7: GROUP BY And Aggregates',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 15,
@@ -584,7 +584,7 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       tweak: {
         instruction: 'Group by user_id instead of status and predict the bucket count.',
         reveal:
-          'Three buckets: user 1 has 2 orders totaling 160, users 2 and 3 have one each. Joining this back to users for names is exactly rung 6 plus rung 7 composed.',
+          'Three buckets: user 1 has 2 orders totaling 160, users 2 and 3 have one each. Joining this back to users for names is exactly module 6 plus module 7 composed.',
       },
       writeDrillId: 'db-group-by',
       recap: [
@@ -596,7 +596,7 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
   },
   {
     id: 'sql-rung-keys-null',
-    title: 'Rung 8: Primary Keys, NULL, And Indexes',
+    title: 'Module 8: Primary Keys, NULL, And Indexes',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 14,

@@ -5,8 +5,8 @@ import { jsFoundations } from './course.foundationsJs'
 import { securityFoundations } from './course.foundationsSecurity'
 import { sqlFoundations } from './course.foundationsSql'
 
-// Foundational rung ladders, keyed by subject id. Each ladder opens its course
-// (phase rank sorts rungs first) so a true beginner always starts at zero:
+// Foundational module sequences, keyed by subject id. Each one opens its course
+// (phase rank sorts modules first) so a true beginner always starts at zero:
 // see real code or traffic run, predict it, tweak it, write it, lock it in.
 export const foundationProblems: Record<string, Problem[]> = {
   'js-fundamentals': jsFoundations,

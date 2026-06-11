@@ -971,9 +971,9 @@ function getProblemPhaseRank(problem: Problem) {
   const title = problem.title.toLowerCase()
   const id = problem.id.toLowerCase()
 
-  // Foundational rung ladders open every course, ahead of glossaries and
+  // Foundational modules open every course, ahead of glossaries and
   // tutorials, so a true beginner always starts at zero.
-  if (id.includes('-rung-') || title.startsWith('rung ')) return -1
+  if (id.includes('-rung-') || title.startsWith('module ')) return -1
   if (id.includes('glossary') || title.includes('glossary')) return 0
   if (id.includes('tutorial') || title.startsWith('tutorial:')) return 0
   if (problem.type === 'lesson') return 1

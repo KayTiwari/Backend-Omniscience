@@ -15,7 +15,7 @@ export const csharpSubject: Subject = {
   problems: [
     {
       id: 'cs-rung-what-is-dotnet',
-      title: 'Rung 1: What Is .NET, And Why Does It Exist?',
+      title: 'Module 1: What Is .NET, And Why Does It Exist?',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 15,
@@ -93,7 +93,7 @@ export const csharpSubject: Subject = {
     },
     {
       id: 'cs-rung-program-shape',
-      title: 'Rung 2: The Shape Of A C# Program',
+      title: 'Module 2: The Shape Of A C# Program',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 12,
@@ -164,7 +164,7 @@ export const csharpSubject: Subject = {
     },
     {
       id: 'cs-rung-types',
-      title: 'Rung 3: Static Types: int, double, string, bool',
+      title: 'Module 3: Static Types: int, double, string, bool',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 14,
@@ -251,7 +251,7 @@ export const csharpSubject: Subject = {
     },
     {
       id: 'cs-rung-strings',
-      title: 'Rung 4: Strings And Interpolation',
+      title: 'Module 4: Strings And Interpolation',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 14,
@@ -320,7 +320,7 @@ export const csharpSubject: Subject = {
     },
     {
       id: 'cs-rung-numbers',
-      title: 'Rung 5: Numbers, Division, And The Integer Trap',
+      title: 'Module 5: Numbers, Division, And The Integer Trap',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 12,
@@ -383,7 +383,7 @@ export const csharpSubject: Subject = {
     },
     {
       id: 'cs-rung-booleans',
-      title: 'Rung 6: Booleans, Comparison, And Logic',
+      title: 'Module 6: Booleans, Comparison, And Logic',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 11,
@@ -454,7 +454,7 @@ export const csharpSubject: Subject = {
     },
     {
       id: 'cs-rung-if-else',
-      title: 'Rung 7: If, Else If, Else',
+      title: 'Module 7: If, Else If, Else',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 12,
@@ -519,7 +519,7 @@ export const csharpSubject: Subject = {
     },
     {
       id: 'cs-rung-collections',
-      title: 'Rung 8: Arrays And List<T>',
+      title: 'Module 8: Arrays And List<T>',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 15,
@@ -592,7 +592,7 @@ export const csharpSubject: Subject = {
     },
     {
       id: 'cs-rung-loops',
-      title: 'Rung 9: Loops: foreach, for, while',
+      title: 'Module 9: Loops: foreach, for, while',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 14,
@@ -658,7 +658,7 @@ export const csharpSubject: Subject = {
     },
     {
       id: 'cs-rung-dictionaries',
-      title: 'Rung 10: Dictionary<TKey, TValue>',
+      title: 'Module 10: Dictionary<TKey, TValue>',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 14,
@@ -725,7 +725,7 @@ export const csharpSubject: Subject = {
     },
     {
       id: 'cs-rung-methods',
-      title: 'Rung 11: Methods: Signatures And Return Types',
+      title: 'Module 11: Methods: Signatures And Return Types',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 15,
@@ -798,7 +798,7 @@ export const csharpSubject: Subject = {
     },
     {
       id: 'cs-rung-classes',
-      title: 'Rung 12: Classes, Properties, And Objects',
+      title: 'Module 12: Classes, Properties, And Objects',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 18,
@@ -888,7 +888,7 @@ export const csharpSubject: Subject = {
     },
     {
       id: 'cs-rung-linq',
-      title: 'Rung 13: LINQ: Where, Select, Count',
+      title: 'Module 13: LINQ: Where, Select, Count',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 16,
@@ -906,7 +906,7 @@ export const csharpSubject: Subject = {
 
 **Reading chains.** Production code chains these left to right: users.Where(u => u.Active).Select(u => u.Email).ToList() reads as filter, then shape, then materialize. This one line replaces ten lines of loop and accumulator.`,
       production:
-        'LINQ is also the API of Entity Framework Core: the same Where and Select compile into SQL when pointed at a database table. Learning it on lists transfers directly to database queries, which is why this rung matters more than any other for backend job-readiness.',
+        'LINQ is also the API of Entity Framework Core: the same Where and Select compile into SQL when pointed at a database table. Learning it on lists transfers directly to database queries, which is why this module matters more than any other for backend job-readiness.',
       walkthrough: [
         'Filter a list with Where and a lambda.',
         'Transform the survivors with Select.',
@@ -974,7 +974,7 @@ export const csharpSubject: Subject = {
     },
     {
       id: 'cs-rung-exceptions',
-      title: 'Rung 14: Exceptions And try / catch',
+      title: 'Module 14: Exceptions And try / catch',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 13,
@@ -1045,13 +1045,13 @@ export const csharpSubject: Subject = {
     },
     {
       id: 'cs-rung-capstone',
-      title: 'Rung 15: Capstone: Records To Summary (0 to 1)',
+      title: 'Module 15: Capstone: Records To Summary (0 to 1)',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 18,
       prompt:
         'Put everything together: model records, filter with LINQ, and build a summary, the exact shape of real backend work.',
-      explanation: `This is the payoff rung. The program below is a miniature of what a real API endpoint does: take typed records, keep the relevant ones, shape a response.
+      explanation: `This is the payoff module. The program below is a miniature of what a real API endpoint does: take typed records, keep the relevant ones, shape a response.
 
 **Records.** record User(string Name, bool Active); declares an immutable data type in one line: the constructor, the properties, value equality, and a readable ToString all come free. Production DTOs (data transfer objects) are records exactly like this.
 
@@ -1092,7 +1092,7 @@ If you can read and modify this program confidently, you have crossed from 0 to 
             'The output is the response shape. Swap the list for a table and this is an Entity Framework query.',
           ],
         },
-        intro: 'Everything from rungs 1 through 14 appears in this one program.',
+        intro: 'Everything from modules 1 through 14 appears in this one program.',
         example: {
           code: 'var users = new List<User>\n{\n    new("Kay", true),\n    new("Sam", false),\n    new("Lee", true),\n};\n\nvar activeNames = users\n    .Where(u => u.Active)\n    .Select(u => u.Name)\n    .ToList();\n\nConsole.WriteLine($"Active: {activeNames.Count}");\nConsole.WriteLine(string.Join(", ", activeNames));\n\nrecord User(string Name, bool Active);',
           output: 'Active: 2\nKay, Lee',
@@ -1135,7 +1135,7 @@ If you can read and modify this program confidently, you have crossed from 0 to 
     },
     {
       id: 'cs-rung-aspnet',
-      title: 'Rung 16: Where This Goes: ASP.NET Core And The Ecosystem',
+      title: 'Module 16: Where This Goes: ASP.NET Core And The Ecosystem',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 16,
@@ -1149,7 +1149,7 @@ If you can read and modify this program confidently, you have crossed from 0 to 
 
 **The ecosystem map.** NuGet is the package manager (the npm or pip of .NET). Entity Framework Core talks to databases using the LINQ you learned on lists. xUnit writes tests. Serilog structures logs. Docker images for ASP.NET are first-class and most production deployments run on Linux containers.
 
-**Your route from here.** Console fluency (rungs 1 to 15), then a minimal API with two or three routes, then EF Core against SQLite, then auth and deployment. Each step reuses everything below it.`,
+**Your route from here.** Console fluency (modules 1 to 15), then a minimal API with two or three routes, then EF Core against SQLite, then auth and deployment. Each step reuses everything below it.`,
       production:
         'A real service adds middleware (auth, logging, error handling), configuration per environment, health checks for the orchestrator, and dependency injection wiring. All of it is registered in this same Program.cs, which is why understanding this small file unlocks reading production startup code.',
       walkthrough: [
@@ -1213,7 +1213,7 @@ If you can read and modify this program confidently, you have crossed from 0 to 
         tweak: {
           instruction: 'Add: app.MapGet("/greet/{name}", (string name) => $"Hello, {name}!"); and call /greet/Kay.',
           reveal:
-            'It returns Hello, Kay!. The {name} route segment binds into the typed string parameter automatically. Typed parameter binding is rungs 3 and 11 doing web work.',
+            'It returns Hello, Kay!. The {name} route segment binds into the typed string parameter automatically. Typed parameter binding is modules 3 and 11 doing web work.',
         },
       },
     },

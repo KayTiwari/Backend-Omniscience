@@ -6,7 +6,7 @@ import type { Problem } from './course'
 export const apiFoundations: Problem[] = [
   {
     id: 'api-rung-what-is-an-api',
-    title: 'Rung 1: What Is An API?',
+    title: 'Module 1: What Is An API?',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 11,
@@ -89,7 +89,7 @@ export const apiFoundations: Problem[] = [
   },
   {
     id: 'api-rung-json',
-    title: 'Rung 2: JSON: The Data Language',
+    title: 'Module 2: JSON: The Data Language',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 11,
@@ -100,7 +100,7 @@ export const apiFoundations: Problem[] = [
 
 **The strict rules.** Keys must be double-quoted ("name", never name or 'name'). No trailing commas. No comments. Double quotes only. These rules are stricter than JavaScript itself, and each one is a parse error waiting for hand-written JSON.
 
-**Nesting tells stories.** An object can hold arrays of objects: a user with a list of orders, each order with items. Reading nested JSON by indenting it mentally is the core skill, and it is the same skill as reading the objects-and-arrays rungs of the language ladders.
+**Nesting tells stories.** An object can hold arrays of objects: a user with a list of orders, each order with items. Reading nested JSON by indenting it mentally is the core skill, and it is the same skill as reading the objects-and-arrays modules of the language courses.
 
 **Parsing and serializing.** Languages convert between text and live data: JSON.parse and JSON.stringify in JavaScript, equivalents everywhere else. APIs serialize on the way out and parse on the way in.`,
     production:
@@ -171,7 +171,7 @@ export const apiFoundations: Problem[] = [
   },
   {
     id: 'api-rung-resources',
-    title: 'Rung 3: Resources And Routes',
+    title: 'Module 3: Resources And Routes',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 13,
@@ -254,7 +254,7 @@ export const apiFoundations: Problem[] = [
   },
   {
     id: 'api-rung-errors',
-    title: 'Rung 4: Error Responses Worth Reading',
+    title: 'Module 4: Error Responses Worth Reading',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 13,
@@ -343,7 +343,7 @@ export const apiFoundations: Problem[] = [
   },
   {
     id: 'api-rung-validation',
-    title: 'Rung 5: Validate At The Door',
+    title: 'Module 5: Validate At The Door',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 14,
@@ -354,7 +354,7 @@ export const apiFoundations: Problem[] = [
 
 **Reject unknown fields, or at least ignore them.** A request setting "role": "admin" on a self-service signup should not work just because the field landed in the database write. Allowlisting expected fields is the safe default.
 
-**Fail fast with the 400 envelope.** Collect all field errors in one pass and return them together (the previous rung's shape), so the client fixes everything in one round trip instead of playing whack-a-mole.
+**Fail fast with the 400 envelope.** Collect all field errors in one pass and return them together (the previous module's shape), so the client fixes everything in one round trip instead of playing whack-a-mole.
 
 **Validation is not security by itself,** but it is the first layer: most injection attacks and corrupt-data incidents enter through an unvalidated field. The security ladder picks this thread up directly.`,
     production:
@@ -414,9 +414,9 @@ export const apiFoundations: Problem[] = [
         },
       ],
       tweak: {
-        instruction: 'Write the 400 body this validation produces, using the error envelope from the previous rung.',
+        instruction: 'Write the 400 body this validation produces, using the error envelope from the previous module.',
         reveal:
-          '{"error": "validation_failed", "message": "...", "details": {"email": "must be a valid email address", "quantity": "must be a number between 1 and 100"}}. Two rungs composing into one response.',
+          '{"error": "validation_failed", "message": "...", "details": {"email": "must be a valid email address", "quantity": "must be a number between 1 and 100"}}. Two modules composing into one response.',
       },
       writeDrillId: 'api-create-user-validation',
       recap: [
@@ -428,7 +428,7 @@ export const apiFoundations: Problem[] = [
   },
   {
     id: 'api-rung-pagination',
-    title: 'Rung 6: Pagination: Lists That Scale',
+    title: 'Module 6: Pagination: Lists That Scale',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 14,

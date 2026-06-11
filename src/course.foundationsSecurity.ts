@@ -6,7 +6,7 @@ import type { Problem } from './course'
 export const securityFoundations: Problem[] = [
   {
     id: 'security-rung-attacker-model',
-    title: 'Rung 1: Think Like The Attacker',
+    title: 'Module 1: Think Like The Attacker',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 12,
@@ -93,7 +93,7 @@ export const securityFoundations: Problem[] = [
   },
   {
     id: 'security-rung-passwords',
-    title: 'Rung 2: Passwords: Hash, Never Store',
+    title: 'Module 2: Passwords: Hash, Never Store',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 14,
@@ -187,7 +187,7 @@ export const securityFoundations: Problem[] = [
   },
   {
     id: 'security-rung-sessions-tokens',
-    title: 'Rung 3: Sessions And Tokens: Staying Logged In',
+    title: 'Module 3: Sessions And Tokens: Staying Logged In',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 15,
@@ -225,7 +225,7 @@ export const securityFoundations: Problem[] = [
       diagram: {
         nodes: ['Login', 'Session record', 'Cookie id', 'Signed JWT', 'Bearer header'],
         explanations: [
-          'Credentials are verified once, against the hashed password from the previous rung.',
+          'Credentials are verified once, against the hashed password from the previous module.',
           'Session pattern: the server stores a record and remembers. Logout deletes it, killing the credential instantly.',
           'The browser holds only a random id in a cookie flagged HttpOnly, Secure, and SameSite, attached automatically to every request.',
           'Token pattern: the server signs a payload (user id, expiry) and keeps nothing. Anyone can read it; nobody can alter it without breaking the signature.',
@@ -286,7 +286,7 @@ export const securityFoundations: Problem[] = [
   },
   {
     id: 'security-rung-injection',
-    title: 'Rung 4: Injection: Data Must Never Become Code',
+    title: 'Module 4: Injection: Data Must Never Become Code',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 15,
@@ -380,18 +380,18 @@ export const securityFoundations: Problem[] = [
   },
   {
     id: 'security-rung-secrets',
-    title: 'Rung 5: Secrets, HTTPS, And The Boring Discipline',
+    title: 'Module 5: Secrets, HTTPS, And The Boring Discipline',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 13,
     prompt: 'Keep credentials out of code, understand what HTTPS actually buys, and adopt the habits that prevent famous incidents.',
-    explanation: `The last rung is the unglamorous layer where most real breaches start: leaked credentials and unencrypted channels.
+    explanation: `The last module is the unglamorous layer where most real breaches start: leaked credentials and unencrypted channels.
 
 **Secrets never enter the repository.** Database passwords, API keys, signing keys: one git commit makes them permanent history that survives deletion, and scanners watch public repositories in real time, with leaked AWS keys exploited in minutes. Secrets live in environment variables or a secrets manager, and code reads process.env.DATABASE_URL without ever knowing the value at rest.
 
 **.env files stay local.** The .env file pattern works only with .env in .gitignore from the first commit, plus a committed .env.example listing the names without values, so teammates know what to set.
 
-**What HTTPS buys.** Encryption (nobody on the network reads the traffic, including the coffee shop wifi and the ISP), integrity (nobody alters it in flight), and authentication (you are talking to the real server, via certificates). Without it, the session cookie from rung 3 crosses the network readable, and one public wifi sniff equals a stolen login.
+**What HTTPS buys.** Encryption (nobody on the network reads the traffic, including the coffee shop wifi and the ISP), integrity (nobody alters it in flight), and authentication (you are talking to the real server, via certificates). Without it, the session cookie from module 3 crosses the network readable, and one public wifi sniff equals a stolen login.
 
 **Rotation and least privilege.** Keys get rotated on a schedule and revoked on any suspicion; each service gets credentials that can do only its own job, so one leak does not open everything. None of this is clever, which is exactly the point: security is mostly the discipline of boring habits, held every day.`,
     production:

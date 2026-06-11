@@ -86,7 +86,7 @@ export const zeroRampProblems: Record<string, Problem[]> = {
   'python-fundamentals': [
     {
       id: 'py-rung-print',
-      title: 'Rung 1: Run Code And Print',
+      title: 'Module 1: Run Code And Print',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 8,
@@ -135,7 +135,7 @@ export const zeroRampProblems: Record<string, Problem[]> = {
     },
     {
       id: 'py-rung-types',
-      title: 'Rung 2: Values And Types',
+      title: 'Module 2: Values And Types',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 8,
@@ -183,7 +183,7 @@ export const zeroRampProblems: Record<string, Problem[]> = {
     },
     {
       id: 'py-rung-variables',
-      title: 'Rung 3: Variables',
+      title: 'Module 3: Variables',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 9,
@@ -242,7 +242,7 @@ export const zeroRampProblems: Record<string, Problem[]> = {
     },
     {
       id: 'py-rung-strings',
-      title: 'Rung 4: Strings',
+      title: 'Module 4: Strings',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 11,
@@ -290,7 +290,7 @@ export const zeroRampProblems: Record<string, Problem[]> = {
     },
     {
       id: 'py-rung-numbers',
-      title: 'Rung 5: Numbers And Math',
+      title: 'Module 5: Numbers And Math',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 9,
@@ -338,7 +338,7 @@ export const zeroRampProblems: Record<string, Problem[]> = {
     },
     {
       id: 'py-rung-booleans',
-      title: 'Rung 6: Booleans And Logic',
+      title: 'Module 6: Booleans And Logic',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 9,
@@ -386,7 +386,7 @@ export const zeroRampProblems: Record<string, Problem[]> = {
     },
     {
       id: 'py-rung-conditionals',
-      title: 'Rung 7: If / Elif / Else',
+      title: 'Module 7: If / Elif / Else',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 10,
@@ -434,7 +434,7 @@ export const zeroRampProblems: Record<string, Problem[]> = {
     },
     {
       id: 'py-rung-lists',
-      title: 'Rung 8: Lists',
+      title: 'Module 8: Lists',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 11,
@@ -482,7 +482,7 @@ export const zeroRampProblems: Record<string, Problem[]> = {
     },
     {
       id: 'py-rung-loops',
-      title: 'Rung 9: For And While Loops',
+      title: 'Module 9: For And While Loops',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 11,
@@ -530,7 +530,7 @@ export const zeroRampProblems: Record<string, Problem[]> = {
     },
     {
       id: 'py-rung-dicts',
-      title: 'Rung 10: Dicts',
+      title: 'Module 10: Dicts',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 11,
@@ -589,7 +589,7 @@ export const zeroRampProblems: Record<string, Problem[]> = {
     },
     {
       id: 'py-rung-functions',
-      title: 'Rung 11: Functions',
+      title: 'Module 11: Functions',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 11,
@@ -637,7 +637,7 @@ export const zeroRampProblems: Record<string, Problem[]> = {
     },
     {
       id: 'py-rung-transform',
-      title: 'Rung 12: Filter, Transform, Accumulate',
+      title: 'Module 12: Filter, Transform, Accumulate',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 12,
@@ -696,7 +696,7 @@ export const zeroRampProblems: Record<string, Problem[]> = {
     },
     {
       id: 'py-rung-errors',
-      title: 'Rung 13: Errors And try / except',
+      title: 'Module 13: Errors And try / except',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 10,
@@ -744,7 +744,7 @@ export const zeroRampProblems: Record<string, Problem[]> = {
     },
     {
       id: 'py-rung-capstone',
-      title: 'Rung 14: Build A Summary (0 to 1)',
+      title: 'Module 14: Build A Summary (0 to 1)',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 14,

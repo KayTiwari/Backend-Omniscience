@@ -6,7 +6,7 @@ import type { Problem } from './course'
 export const httpFoundations: Problem[] = [
   {
     id: 'http-rung-what-happens',
-    title: 'Rung 1: What Happens When You Visit A URL?',
+    title: 'Module 1: What Happens When You Visit A URL?',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 12,
@@ -96,7 +96,7 @@ The flow below is worth saying out loud until it feels boring. It is the map for
   },
   {
     id: 'http-rung-urls',
-    title: 'Rung 2: Anatomy Of A URL',
+    title: 'Module 2: Anatomy Of A URL',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 10,
@@ -177,7 +177,7 @@ One address, four decisions: how to talk, to whom, about what, with which option
   },
   {
     id: 'http-rung-request',
-    title: 'Rung 3: The Request: Method, Path, Headers',
+    title: 'Module 3: The Request: Method, Path, Headers',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 12,
@@ -260,14 +260,14 @@ The request below is real, captured from curl talking to example.com. This is ge
   },
   {
     id: 'http-rung-response',
-    title: 'Rung 4: The Response: Status, Headers, Body',
+    title: 'Module 4: The Response: Status, Headers, Body',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 12,
     prompt: 'Read a raw HTTP response: the status line, the headers, and the body your code builds.',
     explanation: `The response mirrors the request shape: a status line, headers, a blank line, then the body.
 
-**The status line.** Version and a three-digit code: HTTP/2 200. The code is the server's one-glance verdict on how it went; the next rung maps the families.
+**The status line.** Version and a three-digit code: HTTP/2 200. The code is the server's one-glance verdict on how it went; the next module maps the families.
 
 **Response headers.** content-type tells the client how to interpret the body (text/html renders as a page, application/json parses as data). date, server, and cache headers describe the response itself. As a backend developer, your code sets these.
 
@@ -343,7 +343,7 @@ The response below is real, from example.com, trimmed to the essential headers. 
   },
   {
     id: 'http-rung-status-codes',
-    title: 'Rung 5: Status Codes By Family',
+    title: 'Module 5: Status Codes By Family',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 12,
@@ -428,7 +428,7 @@ The load-bearing distinction is 4xx versus 5xx: whose fault. A 4xx says fix the 
   },
   {
     id: 'http-rung-methods',
-    title: 'Rung 6: Methods: GET, POST, PUT, PATCH, DELETE',
+    title: 'Module 6: Methods: GET, POST, PUT, PATCH, DELETE',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 13,
@@ -509,16 +509,16 @@ The load-bearing distinction is 4xx versus 5xx: whose fault. A 4xx says fix the 
   },
   {
     id: 'http-rung-json-api',
-    title: 'Rung 7: JSON APIs: The Full Conversation',
+    title: 'Module 7: JSON APIs: The Full Conversation',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 14,
     prompt: 'Put it all together: a JSON request, a JSON response, and curl driving the whole exchange.',
-    explanation: `Browsers fetch HTML; programs fetch JSON. An API is just HTTP where both sides agree the bodies are JSON, and at this rung you can read the entire conversation.
+    explanation: `Browsers fetch HTML; programs fetch JSON. An API is just HTTP where both sides agree the bodies are JSON, and at this module you can read the entire conversation.
 
 **The request side.** POST /users with content-type: application/json and a JSON body. The header is the promise; the body keeps it. Servers reject mismatches, which is the most common beginner integration error.
 
-**The response side.** 201 Created, content-type: application/json, and a JSON body echoing the new resource with its server-assigned id. The client parses it with the JSON tools from your language rungs: this is where the object and string lessons cash out.
+**The response side.** 201 Created, content-type: application/json, and a JSON body echoing the new resource with its server-assigned id. The client parses it with the JSON tools from your language modules: this is where the object and string lessons cash out.
 
 **Driving it with curl.** -X picks the method, -H adds a header, -d supplies the body. With those three flags you can exercise any API on earth from a terminal, no app required. That makes curl the lingua franca of bug reports: a failing request pasted as a curl command is reproducible by anyone.`,
     production:
@@ -552,7 +552,7 @@ The load-bearing distinction is 4xx versus 5xx: whose fault. A 4xx says fix the 
           'The client parses the JSON text into live data with the tools from the language ladders.',
         ],
       },
-      intro: 'Every rung of this ladder appears in this one exchange.',
+      intro: 'Every module of this course appears in this one exchange.',
       example: {
         code: 'curl -X POST https://api.example.com/users \\\n  -H "content-type: application/json" \\\n  -d \'{"name": "Kay", "role": "admin"}\'',
         output:
@@ -581,7 +581,7 @@ The load-bearing distinction is 4xx versus 5xx: whose fault. A 4xx says fix the 
           question: 'To fetch user 43 afterward, the request is...',
           options: ['POST /users/43', 'GET /users/43', 'GET /users?create=43'],
           correct: 1,
-          why: 'Reading is GET, and the path names the resource. The verbs and paths compose exactly as the previous rungs promised.',
+          why: 'Reading is GET, and the path names the resource. The verbs and paths compose exactly as the previous modules promised.',
         },
       ],
       tweak: {

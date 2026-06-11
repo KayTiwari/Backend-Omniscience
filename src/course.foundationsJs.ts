@@ -1,13 +1,13 @@
 import type { Problem } from './course'
 
-// JavaScript from absolute zero: a rung ladder where every lesson shows real
+// JavaScript from absolute zero: a module sequence where every lesson shows real
 // code with verified output, asks for predictions, embeds a runnable drill,
 // and closes with a Lock It In recap. Outputs verified with Node.
 
 export const jsFoundations: Problem[] = [
   {
     id: 'js-rung-print',
-    title: 'Rung 1: Run JavaScript And Print',
+    title: 'Module 1: Run JavaScript And Print',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 8,
@@ -68,7 +68,7 @@ A program is a list of statements that run top to bottom. console.log shows a va
   },
   {
     id: 'js-rung-types',
-    title: 'Rung 2: Values And typeof',
+    title: 'Module 2: Values And typeof',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 9,
@@ -132,7 +132,7 @@ A program is a list of statements that run top to bottom. console.log shows a va
   },
   {
     id: 'js-rung-variables',
-    title: 'Rung 3: Variables: const And let',
+    title: 'Module 3: Variables: const And let',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 10,
@@ -198,7 +198,7 @@ You may also meet var in old code. It predates const and let and has looser scop
   },
   {
     id: 'js-rung-strings',
-    title: 'Rung 4: Strings And Template Literals',
+    title: 'Module 4: Strings And Template Literals',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 11,
@@ -264,7 +264,7 @@ You may also meet var in old code. It predates const and let and has looser scop
   },
   {
     id: 'js-rung-numbers',
-    title: 'Rung 5: Numbers And The Coercion Trap',
+    title: 'Module 5: Numbers And The Coercion Trap',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 11,
@@ -343,7 +343,7 @@ You may also meet var in old code. It predates const and let and has looser scop
   },
   {
     id: 'js-rung-booleans',
-    title: 'Rung 6: Comparisons: Always ===',
+    title: 'Module 6: Comparisons: Always ===',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 10,
@@ -414,7 +414,7 @@ You may also meet var in old code. It predates const and let and has looser scop
   },
   {
     id: 'js-rung-if-else',
-    title: 'Rung 7: If / Else If / Else',
+    title: 'Module 7: If / Else If / Else',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 10,
@@ -483,7 +483,7 @@ You may also meet var in old code. It predates const and let and has looser scop
   },
   {
     id: 'js-rung-arrays',
-    title: 'Rung 8: Arrays',
+    title: 'Module 8: Arrays',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 12,
@@ -560,7 +560,7 @@ You may also meet var in old code. It predates const and let and has looser scop
   },
   {
     id: 'js-rung-loops',
-    title: 'Rung 9: Loops: for...of, for, while',
+    title: 'Module 9: Loops: for...of, for, while',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 11,
@@ -629,7 +629,7 @@ You may also meet var in old code. It predates const and let and has looser scop
   },
   {
     id: 'js-rung-objects',
-    title: 'Rung 10: Objects',
+    title: 'Module 10: Objects',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 12,
@@ -646,7 +646,7 @@ You may also meet var in old code. It predates const and let and has looser scop
 
 **Writing.** Assigning to a new field adds it; assigning to an existing one overwrites.`,
     production:
-      'Every JSON request body parses into an object, and optional fields are the norm. Handlers read fields defensively with ?? and ?. because clients omit fields constantly. The "cannot read properties of undefined" error is the most common crash in Node backends, and this rung is its vaccine.',
+      'Every JSON request body parses into an object, and optional fields are the norm. Handlers read fields defensively with ?? and ?. because clients omit fields constantly. The "cannot read properties of undefined" error is the most common crash in Node backends, and this module is its vaccine.',
     walkthrough: [
       'Build an object literal with two fields.',
       'Read a present field, then a missing one.',
@@ -714,7 +714,7 @@ You may also meet var in old code. It predates const and let and has looser scop
   },
   {
     id: 'js-rung-functions',
-    title: 'Rung 11: Functions And Arrows',
+    title: 'Module 11: Functions And Arrows',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 12,
@@ -782,7 +782,7 @@ You may also meet var in old code. It predates const and let and has looser scop
   },
   {
     id: 'js-rung-transform',
-    title: 'Rung 12: map, filter, reduce',
+    title: 'Module 12: map, filter, reduce',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 14,
@@ -797,7 +797,7 @@ You may also meet var in old code. It predates const and let and has looser scop
 
 **Chains.** They return new arrays, so they chain: users.filter(...).map(...) reads as choose, then shape. The original array is never mutated, which means no spooky action at a distance.`,
     production:
-      'This is the literal shape of handler code: filter rows by a flag, map to the response fields, reduce for a total. The same vocabulary appears in Python, C# LINQ, Java streams, and SQL, so this rung is learning every backend language at once.',
+      'This is the literal shape of handler code: filter rows by a flag, map to the response fields, reduce for a total. The same vocabulary appears in Python, C# LINQ, Java streams, and SQL, so this module is learning every backend language at once.',
     walkthrough: [
       'Filter evens from a list and read the arrow as a yes/no test.',
       'Map the survivors to their squares.',
@@ -870,12 +870,12 @@ You may also meet var in old code. It predates const and let and has looser scop
   },
   {
     id: 'js-rung-capstone',
-    title: 'Rung 13: Capstone: Records To Summary (0 to 1)',
+    title: 'Module 13: Capstone: Records To Summary (0 to 1)',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 15,
     prompt: 'Combine everything: take records, filter them, shape a summary. This is real backend code.',
-    explanation: `This program is a miniature API endpoint, built entirely from rungs 1 through 12.
+    explanation: `This program is a miniature API endpoint, built entirely from modules 1 through 12.
 
 The data is an array of objects, exactly what a database query or JSON request body gives you. The pipeline filters the active records and maps out the names: choose, then shape. The summary is a new object holding a count and a list, which is precisely the JSON a real endpoint would return.
 
@@ -890,7 +890,7 @@ Read it, predict it, then flip the filter and watch one character change the bus
     ],
     questions: [
       'What database concept does the users array stand in for?',
-      'Which rungs does this program combine?',
+      'Which modules does this program combine?',
       'What changes to return inactive users instead?',
     ],
     checklist: [
@@ -911,7 +911,7 @@ Read it, predict it, then flip the filter and watch one character change the bus
           'Serialized to JSON, this is the response body. Swap the literal array for rows and this is production code.',
         ],
       },
-      intro: 'Everything from the previous twelve rungs in one real program.',
+      intro: 'Everything from the previous twelve modules in one real program.',
       example: {
         code: 'const users = [\n  { name: "Kay", active: true },\n  { name: "Sam", active: false },\n  { name: "Lee", active: true },\n];\n\nconst activeNames = users\n  .filter((u) => u.active)\n  .map((u) => u.name);\n\nconst summary = { activeCount: activeNames.length, names: activeNames };\nconsole.log(summary);',
         output: "{ activeCount: 2, names: [ 'Kay', 'Lee' ] }",

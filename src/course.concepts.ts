@@ -2,7 +2,7 @@ import type { Subject } from './course'
 import { CacheIcon, QueueIcon, TestTubeIcon } from './TechIcons'
 
 // Three concept courses filling the gaps in the backend track: caching,
-// queues and background jobs, and testing. Same interactive rung format as
+// queues and background jobs, and testing. Same interactive module format as
 // the rest of the site; every code example output verified with Node, and
 // every embedded drill maps to an existing graded spec.
 
@@ -16,7 +16,7 @@ export const cachingSubject: Subject = {
   problems: [
     {
       id: 'caching-rung-why',
-      title: 'Rung 1: Why Caching Exists',
+      title: 'Module 1: Why Caching Exists',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 12,
@@ -102,7 +102,7 @@ export const cachingSubject: Subject = {
     },
     {
       id: 'caching-rung-http',
-      title: 'Rung 2: HTTP Caching: Cache-Control And ETags',
+      title: 'Module 2: HTTP Caching: Cache-Control And ETags',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 14,
@@ -194,7 +194,7 @@ export const cachingSubject: Subject = {
     },
     {
       id: 'caching-rung-memoize',
-      title: 'Rung 3: Application Caching: Memoization And TTLs',
+      title: 'Module 3: Application Caching: Memoization And TTLs',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 13,
@@ -208,7 +208,7 @@ export const cachingSubject: Subject = {
 
 **TTLs for impure data.** Database rows and API responses change behind your back, so their cache entries carry a time-to-live: store the value with a timestamp and treat it as a miss after, say, 60 seconds. The TTL is your staleness budget, a direct dial between freshness and load.
 
-**Where this lives.** In-process caches (a Map, an LRU library) are per-instance: ten servers means ten caches warming separately. That is fine for small hot data and the reason the next rungs introduce shared caches.`,
+**Where this lives.** In-process caches (a Map, an LRU library) are per-instance: ten servers means ten caches warming separately. That is fine for small hot data and the reason the next modules introduce shared caches.`,
       production:
         'Config lookups, feature flags, permission checks, and rendered fragments are the everyday memoization targets. The recurring bug is memoizing something that was quietly impure, like a function reading the current time or a global, and serving its frozen first answer forever.',
       walkthrough: [
@@ -278,7 +278,7 @@ export const cachingSubject: Subject = {
     },
     {
       id: 'caching-rung-eviction',
-      title: 'Rung 4: Eviction: LRU And Bounded Memory',
+      title: 'Module 4: Eviction: LRU And Bounded Memory',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 13,
@@ -361,7 +361,7 @@ export const cachingSubject: Subject = {
     },
     {
       id: 'caching-rung-invalidation',
-      title: 'Rung 5: Invalidation: The Famously Hard Part',
+      title: 'Module 5: Invalidation: The Famously Hard Part',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 14,
@@ -450,7 +450,7 @@ export const cachingSubject: Subject = {
     },
     {
       id: 'caching-rung-layers',
-      title: 'Rung 6: The Cache Map: Browser To CDN To Redis',
+      title: 'Module 6: The Cache Map: Browser To CDN To Redis',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 13,
@@ -458,11 +458,11 @@ export const cachingSubject: Subject = {
         'Place every cache layer on one map and decide what belongs in each.',
       explanation: `A real request can be served from four different caches before reaching your database. Knowing the map tells you what to cache where, and where to look when something stale appears.
 
-**Browser cache.** Closest to the user, free, controlled by your headers (rung 2). Static assets and anything personal-and-cacheable.
+**Browser cache.** Closest to the user, free, controlled by your headers (module 2). Static assets and anything personal-and-cacheable.
 
 **CDN.** Shared cache at the network edge, also header-controlled. One copy serves a whole region: static files, public API responses, images.
 
-**Redis (or Memcached).** The shared application cache. All your server instances see the same entries, which fixes the per-instance cold cache problem from rung 3. Sessions, computed results, hot query results, rate-limit counters. It costs a network hop, around a millisecond, which is still 10 to 50 times cheaper than the database.
+**Redis (or Memcached).** The shared application cache. All your server instances see the same entries, which fixes the per-instance cold cache problem from module 3. Sessions, computed results, hot query results, rate-limit counters. It costs a network hop, around a millisecond, which is still 10 to 50 times cheaper than the database.
 
 **In-process memory.** A Map inside the server. Fastest possible, per instance, best for small hot data like config and feature flags, usually with a short TTL so instances converge.
 
@@ -552,7 +552,7 @@ export const queuesSubject: Subject = {
   problems: [
     {
       id: 'queues-rung-why',
-      title: 'Rung 1: Why Queues Exist',
+      title: 'Module 1: Why Queues Exist',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 12,
@@ -641,7 +641,7 @@ export const queuesSubject: Subject = {
     },
     {
       id: 'queues-rung-delivery',
-      title: 'Rung 2: At-Least-Once: Why Duplicates Are Normal',
+      title: 'Module 2: At-Least-Once: Why Duplicates Are Normal',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 13,
@@ -655,7 +655,7 @@ export const queuesSubject: Subject = {
 
 **The contract.** This is at-least-once delivery: every message is processed one or more times. The alternative, at-most-once (ack before working), risks silently losing work on a crash, which is worse for almost everything. Exactly-once delivery, despite marketing, is achievable only as at-least-once plus deduplication on your side.
 
-**The reframe.** Duplicates are weather. They are a normal, expected input that every consumer must handle, and the next rung is the standard technique.`,
+**The reframe.** Duplicates are weather. They are a normal, expected input that every consumer must handle, and the next module is the standard technique.`,
       production:
         'The duplicate-charge incident is the canonical version: a payment worker processed a charge, crashed before acking, and the redelivery charged the card again. Every team that runs queues either designs for duplicates or learns this lesson from a customer.',
       walkthrough: [
@@ -729,7 +729,7 @@ export const queuesSubject: Subject = {
     },
     {
       id: 'queues-rung-idempotency',
-      title: 'Rung 3: Idempotent Consumers',
+      title: 'Module 3: Idempotent Consumers',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 14,
@@ -779,7 +779,7 @@ export const queuesSubject: Subject = {
           code: "const seen = new Set();\n\nfunction processOnce(id, msg) {\n  if (seen.has(id)) {\n    console.log('skip duplicate', id);\n    return;\n  }\n  seen.add(id);\n  console.log('sending', msg);\n}\n\nprocessOnce('m1', 'email:42');\nprocessOnce('m1', 'email:42');",
           output: 'sending email:42\nskip duplicate m1',
           explain:
-            'Same redelivery as the previous rung, harmless this time. In production the Set is a database table or Redis, so the memory survives worker restarts.',
+            'Same redelivery as the previous module, harmless this time. In production the Set is a database table or Redis, so the memory survives worker restarts.',
         },
         predicts: [
           {
@@ -818,7 +818,7 @@ export const queuesSubject: Subject = {
     },
     {
       id: 'queues-rung-retries',
-      title: 'Rung 4: Retries: Backoff And Jitter',
+      title: 'Module 4: Retries: Backoff And Jitter',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 13,
@@ -858,7 +858,7 @@ export const queuesSubject: Subject = {
           nodes: ['Failure', 'Transient?', 'Backoff delay', 'Add jitter', 'Retry or give up'],
           explanations: [
             'The attempt failed: timeout, 5xx, connection refused, or a permanent rejection.',
-            'Permanent failures (bad payload, validation) skip retrying entirely; they go straight toward the dead letter rung.',
+            'Permanent failures (bad payload, validation) skip retrying entirely; they go straight toward the dead letter module.',
             'Transient failures wait exponentially longer each attempt: 1s, 2s, 4s, 8s, capped.',
             'A random fraction of the delay spreads thousands of simultaneous failures into a smooth trickle.',
             'After max attempts the message escalates rather than retrying forever.',
@@ -906,7 +906,7 @@ export const queuesSubject: Subject = {
     },
     {
       id: 'queues-rung-dlq',
-      title: 'Rung 5: Dead Letter Queues',
+      title: 'Module 5: Dead Letter Queues',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 12,
@@ -996,7 +996,7 @@ export const queuesSubject: Subject = {
     },
     {
       id: 'queues-rung-ordering',
-      title: 'Rung 6: Ordering, Partitions, And Fan-Out',
+      title: 'Module 6: Ordering, Partitions, And Fan-Out',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 14,
@@ -1106,7 +1106,7 @@ export const testingSubject: Subject = {
   problems: [
     {
       id: 'testing-rung-why',
-      title: 'Rung 1: Why Tests Exist, And The Pyramid',
+      title: 'Module 1: Why Tests Exist, And The Pyramid',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 12,
@@ -1191,7 +1191,7 @@ export const testingSubject: Subject = {
     },
     {
       id: 'testing-rung-assertions',
-      title: 'Rung 2: Anatomy Of A Test: Arrange, Act, Assert',
+      title: 'Module 2: Anatomy Of A Test: Arrange, Act, Assert',
       type: 'lesson',
       difficulty: 'Warmup',
       minutes: 12,
@@ -1279,7 +1279,7 @@ export const testingSubject: Subject = {
     },
     {
       id: 'testing-rung-table',
-      title: 'Rung 3: Table-Driven Tests',
+      title: 'Module 3: Table-Driven Tests',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 12,
@@ -1366,7 +1366,7 @@ export const testingSubject: Subject = {
     },
     {
       id: 'testing-rung-failure',
-      title: 'Rung 4: Testing The Failure Paths',
+      title: 'Module 4: Testing The Failure Paths',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 12,
@@ -1454,7 +1454,7 @@ export const testingSubject: Subject = {
     },
     {
       id: 'testing-rung-doubles',
-      title: 'Rung 5: Test Doubles: Stubs And Spies',
+      title: 'Module 5: Test Doubles: Stubs And Spies',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 14,
@@ -1530,7 +1530,7 @@ export const testingSubject: Subject = {
         tweak: {
           instruction: 'Write the fakeApi for testing a timeout: charge throws. What does chargeUser need to make that branch survivable?',
           reveal:
-            'charge: () => { throw new Error("timeout") }, and chargeUser needs try/catch handling, which the previous rung taught you to assert. The doubles rung and the failure rung compose.',
+            'charge: () => { throw new Error("timeout") }, and chargeUser needs try/catch handling, which the previous module taught you to assert. The doubles module and the failure module compose.',
         },
         drills: ['test-stub-returns', 'test-spy'],
         recap: [
@@ -1542,7 +1542,7 @@ export const testingSubject: Subject = {
     },
     {
       id: 'testing-rung-determinism',
-      title: 'Rung 6: Determinism: Time, Randomness, And Flaky Tests',
+      title: 'Module 6: Determinism: Time, Randomness, And Flaky Tests',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 13,
@@ -1582,7 +1582,7 @@ export const testingSubject: Subject = {
           nodes: ['Flake source', 'Inject the clock', 'Advance explicitly', 'Same result forever'],
           explanations: [
             'The test depends on something it does not control: wall-clock time, randomness, leftover state, machine speed, the network.',
-            'Time becomes a parameter: code calls clock.now() instead of Date.now(), and tests pass in a controllable clock. Same seam idea as the doubles rung.',
+            'Time becomes a parameter: code calls clock.now() instead of Date.now(), and tests pass in a controllable clock. Same seam idea as the doubles module.',
             'The test moves time deliberately: tick(31 days), then assert expiry. No waiting, no midnight edge cases, no slow-CI races.',
             'The experiment is sealed. It produces the same answer on a laptop, in CI, at 11:59pm on December 31st.',
           ],
