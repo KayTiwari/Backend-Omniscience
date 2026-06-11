@@ -7,7 +7,6 @@ import {
   ChevronRight,
   Circle,
   Code2,
-  Download,
   Flame,
   Home,
   ListChecks,
@@ -18,7 +17,6 @@ import {
   SkipForward,
   Sun,
   Trophy,
-  Upload,
 } from 'lucide-react'
 import './App.css'
 import {
@@ -167,7 +165,6 @@ function App() {
   const [query, setQuery] = useState('')
   const [homeQuery, setHomeQuery] = useState('')
   const [progress, setProgress] = useState<ProgressState>(() => loadProgress())
-  const [importMessage, setImportMessage] = useState('')
   const [gradeResults, setGradeResults] = useState<Record<string, GradeResult>>({})
   const [specsByProblemId, setSpecsByProblemId] = useState<Map<string, GradeSpec>>(
     () => new Map(),
@@ -180,7 +177,6 @@ function App() {
   // back on the first page without an effect.
   const [lessonNav, setLessonNav] = useState({ problemId: '', step: 0 })
   const celebrateTimerRef = useRef<number | undefined>(undefined)
-  const importInputRef = useRef<HTMLInputElement>(null)
   const codeHighlightRef = useRef<HTMLPreElement>(null)
   const graderModuleRef = useRef<Promise<GraderModule> | null>(null)
 
@@ -300,10 +296,6 @@ function App() {
   const completedCount = completedSet.size
   const gradableCount = allProblems.filter((problem) => problem.type === 'coding').length
   const totalMinutes = allProblems.reduce((sum, problem) => sum + problem.minutes, 0)
-  const completedMinutes = allProblems
-    .filter((problem) => completedSet.has(problem.id))
-    .reduce((sum, problem) => sum + problem.minutes, 0)
-  const remainingMinutes = totalMinutes - completedMinutes
   const completionPercent = Math.round((completedCount / allProblems.length) * 100)
   const activeIndex = allProblems.findIndex((problem) => problem.id === activeProblem.id)
   const courseWarnings = useMemo(() => validateCourse(subjects), [])
@@ -511,48 +503,6 @@ function App() {
 
   function resetProgress() {
     setProgress(emptyProgress)
-  }
-
-  function exportProgress() {
-    const payload = {
-      app: 'Backend Omniscience',
-      exportedAt: new Date().toISOString(),
-      progress,
-    }
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: 'application/json',
-    })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'backend-omniscience-progress.json'
-    link.click()
-    URL.revokeObjectURL(url)
-  }
-
-  async function importProgress(file: File | undefined) {
-    if (!file) return
-    try {
-      const text = await file.text()
-      const parsed = JSON.parse(text) as { progress?: Partial<ProgressState> }
-      const imported = parsed.progress ?? {}
-      setProgress({
-        completed: [...new Set(imported.completed ?? [])].filter((problemId) =>
-          problemIds.has(problemId),
-        ),
-        notes: imported.notes ?? {},
-        recallAnswer: imported.recallAnswer ?? {},
-        selectedChoice: imported.selectedChoice ?? {},
-        criterionChoice: imported.criterionChoice ?? {},
-        tutorialChoice: imported.tutorialChoice ?? {},
-        checkedSolutions: imported.checkedSolutions ?? {},
-        defended: imported.defended ?? {},
-        code: imported.code ?? {},
-      })
-      setImportMessage('Progress imported.')
-    } catch {
-      setImportMessage('Import failed. Choose a Backend Omniscience progress JSON file.')
-    }
   }
 
   async function runCodingTests(problemId: string = activeProblem.id) {
@@ -905,45 +855,6 @@ function App() {
           <span>Home</span>
         </button>
 
-
-        <div className="progress-block">
-          <div className="progress-copy">
-            <span>{completedCount} solved</span>
-            <span>{allProblems.length} total</span>
-          </div>
-          <div className="progress-track" aria-label={`${completionPercent}% complete`}>
-            <div style={{ width: `${completionPercent}%` }} />
-          </div>
-          <strong>{completionPercent}% complete</strong>
-          <div className="time-stats">
-            <span>{Math.round(totalMinutes / 60)}h curriculum</span>
-            <span>{Math.max(0, Math.round(remainingMinutes / 60))}h left</span>
-          </div>
-          <div className="test-stats">
-            <Code2 size={15} />
-            <span>{gradableCount} runnable coding drills</span>
-          </div>
-          <div className="progress-tools">
-            <button onClick={exportProgress} type="button">
-              <Download size={15} />
-              Export
-            </button>
-            <button onClick={() => importInputRef.current?.click()} type="button">
-              <Upload size={15} />
-              Import
-            </button>
-            <input
-              ref={importInputRef}
-              accept="application/json"
-              type="file"
-              onChange={(event) => {
-                void importProgress(event.target.files?.[0])
-                event.target.value = ''
-              }}
-            />
-          </div>
-          {importMessage && <span className="import-message">{importMessage}</span>}
-        </div>
 
         <label className="search-box">
           <Search size={16} />
