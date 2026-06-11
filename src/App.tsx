@@ -24,6 +24,7 @@ import './App.css'
 import {
   allProblems,
   subjects,
+  subjectTracks,
   type Problem,
   type ProblemType,
   type Subject,
@@ -908,6 +909,13 @@ function App() {
 
         <nav className="subject-list" aria-label="Course subjects">
           {filteredSubjects.map((subject) => {
+            const track = subjectTracks.find((candidate) =>
+              candidate.subjectIds.includes(subject.id),
+            )
+            const firstOfTrack =
+              track &&
+              filteredSubjects.find((candidate) => track.subjectIds.includes(candidate.id)) ===
+                subject
             const subjectDone = subject.problems.filter((problem) =>
               completedSet.has(problem.id),
             ).length
@@ -916,6 +924,11 @@ function App() {
 
             return (
               <section key={subject.id} className="subject-group">
+                {firstOfTrack && (
+                  <div className="track-divider">
+                    <span>{track.label}</span>
+                  </div>
+                )}
                 <button
                   className={`subject-button ${
                     subject.id === expandedSubjectId ? 'active' : ''

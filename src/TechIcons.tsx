@@ -289,3 +289,40 @@ export function CSharpIcon({ size = 16, className }: P) {
     </svg>
   )
 }
+
+export function CacheIcon({ size = 16, className }: P) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" className={className} aria-hidden="true"
+      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <ellipse cx="16" cy="7" rx="10" ry="4" />
+      <path d="M6 7v9c0 2.2 4.5 4 10 4s10-1.8 10-4V7" />
+      <path d="M6 16v9c0 2.2 4.5 4 10 4s10-1.8 10-4v-9" opacity="0.4" />
+      <path d="M18 12l-5 7h4l-2 6 6-8h-4l1-5z" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+export function QueueIcon({ size = 16, className }: P) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" className={className} aria-hidden="true"
+      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="7" height="10" rx="1.5" />
+      <rect x="13" y="11" width="7" height="10" rx="1.5" opacity="0.7" />
+      <rect x="23" y="11" width="6" height="10" rx="1.5" opacity="0.4" />
+      <path d="M10 26h12" />
+      <path d="M19 23l3 3-3 3" />
+    </svg>
+  )
+}
+
+export function TestTubeIcon({ size = 16, className }: P) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" className={className} aria-hidden="true"
+      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3h8" />
+      <path d="M14 3v10l-6.5 11a4 4 0 0 0 3.4 6h10.2a4 4 0 0 0 3.4-6L18 13V3" />
+      <path d="M11 20h10" />
+      <path d="M13.5 25l2 2 4-4" />
+    </svg>
+  )
+}

@@ -33,6 +33,7 @@ import { tutorialProblems } from './course.tutorials'
 import { zeroRampProblems } from './course.zeroRamp'
 import { csharpSubject } from './course.csharp'
 import { foundationProblems } from './course.foundations'
+import { conceptSubjects } from './course.concepts'
 import { tutorials as longTutorials } from './tutorials'
 
 export type ProblemType = 'lesson' | 'coding' | 'quiz' | 'debug' | 'design'
@@ -915,37 +916,54 @@ const coreSubjects: Subject[] = [
   },
 ]
 
-const subjectOrder = [
-  'language',
-  'js-fundamentals',
-  'python-fundamentals',
-  'csharp-fundamentals',
-  'internet',
-  'api',
-  'security',
-  'sql',
-  'performance',
-  'architecture',
-  'files-storage',
-  'files',
-  'observability-ops',
-  'devops',
-  'distributed',
-  'system-design',
-  'typescript',
-  'nodejs',
-  'python',
-  'flask',
-  'django',
-  'typescript-drills',
-  'api-drills',
-  'sql-drills',
-  'security-drills',
-  'http-networking',
-  'utilities',
-  'algorithms',
-  'capstone',
+// The course catalog is two tracks: backend concepts first (the transferable
+// knowledge), then languages and frameworks. The sidebar renders a divider
+// between them.
+export const subjectTracks: { label: string; subjectIds: string[] }[] = [
+  {
+    label: 'Backend Concepts',
+    subjectIds: [
+      'internet',
+      'http-networking',
+      'api',
+      'api-drills',
+      'sql',
+      'sql-drills',
+      'security',
+      'security-drills',
+      'caching',
+      'queues',
+      'testing',
+      'architecture',
+      'performance',
+      'files-storage',
+      'devops',
+      'observability-ops',
+      'distributed',
+      'system-design',
+      'utilities',
+      'algorithms',
+      'capstone',
+    ],
+  },
+  {
+    label: 'Languages & Frameworks',
+    subjectIds: [
+      'language',
+      'js-fundamentals',
+      'typescript',
+      'typescript-drills',
+      'nodejs',
+      'python-fundamentals',
+      'python',
+      'flask',
+      'django',
+      'csharp-fundamentals',
+    ],
+  },
 ]
+
+const subjectOrder = subjectTracks.flatMap((track) => track.subjectIds)
 
 const subjectRank = new Map(subjectOrder.map((id, index) => [id, index]))
 
@@ -1020,7 +1038,7 @@ const mergedSubjects: Subject[] = [
       ...(capstoneProblems[subject.id] ?? []),
     ]),
   })),
-  ...[...extraSubjects, csharpSubject].map((subject) => ({
+  ...[...extraSubjects, csharpSubject, ...conceptSubjects].map((subject) => ({
     ...subject,
     problems: sortProblemsByPhase([
       ...(foundationProblems[subject.id] ?? []),
