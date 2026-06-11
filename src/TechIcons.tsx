@@ -326,3 +326,15 @@ export function TestTubeIcon({ size = 16, className }: P) {
     </svg>
   )
 }
+
+export function BookIcon({ size = 16, className }: P) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" className={className} aria-hidden="true"
+      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 5a2 2 0 0 1 2-2h18v24H8a2 2 0 0 0-2 2V5z" />
+      <path d="M6 27a2 2 0 0 1 2-2h18" />
+      <path d="M11 9h10" />
+      <path d="M11 14h7" />
+    </svg>
+  )
+}

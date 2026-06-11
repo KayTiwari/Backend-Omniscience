@@ -34,6 +34,7 @@ import { zeroRampProblems } from './course.zeroRamp'
 import { csharpSubject } from './course.csharp'
 import { foundationProblems } from './course.foundations'
 import { conceptSubjects } from './course.concepts'
+import { appendixSubject } from './course.appendix'
 import { tutorials as longTutorials } from './tutorials'
 
 export type ProblemType = 'lesson' | 'coding' | 'quiz' | 'debug' | 'design'
@@ -961,6 +962,10 @@ export const subjectTracks: { label: string; subjectIds: string[] }[] = [
       'csharp-fundamentals',
     ],
   },
+  {
+    label: 'Appendix',
+    subjectIds: ['appendix-glossary'],
+  },
 ]
 
 const subjectOrder = subjectTracks.flatMap((track) => track.subjectIds)
@@ -1038,7 +1043,7 @@ const mergedSubjects: Subject[] = [
       ...(capstoneProblems[subject.id] ?? []),
     ]),
   })),
-  ...[...extraSubjects, csharpSubject, ...conceptSubjects].map((subject) => ({
+  ...[...extraSubjects, csharpSubject, ...conceptSubjects, appendixSubject].map((subject) => ({
     ...subject,
     problems: sortProblemsByPhase([
       ...(foundationProblems[subject.id] ?? []),

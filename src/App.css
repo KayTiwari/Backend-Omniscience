@@ -4187,3 +4187,55 @@ input:focus-visible {
   height: 1px;
   background: var(--line);
 }
+
+/* ----- Compact lesson pages: fit a viewport without scrolling ----- */
+.mastery-panel {
+  padding: 12px 16px;
+}
+
+.mastery-steps span em {
+  display: none;
+}
+
+.mastery-steps {
+  gap: 8px;
+}
+
+.task-block {
+  margin-top: 14px;
+  padding: 12px 16px;
+}
+
+.lesson-pager {
+  margin-top: 14px;
+}
+
+.mental-model-block {
+  margin-top: 16px;
+}
+
+.interactive-lesson {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.explanation-block,
+.production-block,
+.walkthrough-block,
+.example-block,
+.quiz-block,
+.coding-block,
+.review-block,
+.solution-check-block,
+.notes-block {
+  margin-top: 16px;
+}
+
+.deep-notes[open] > *:not(summary) {
+  margin-top: 14px;
+}
+
+.lesson-pager-nav {
+  margin-top: 18px;
+}

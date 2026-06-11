@@ -800,6 +800,65 @@ function App() {
     )
   }
 
+  // The long-form write-up for a lesson. Interactive modules tuck this
+  // behind a Go Deeper details so the Learn page fits without scrolling;
+  // legacy lessons still show it inline as their main content.
+  const learnDeepBlocks = (
+    <>
+            {activeProblem.explanation && (
+              <section className="explanation-block">
+                <h3>Explanation</h3>
+                {renderProse(activeProblem.explanation)}
+              </section>
+            )}
+
+            {activeProblem.production && (
+              <section className="production-block production-callout">
+                <h3>Why This Matters In Production</h3>
+                {renderProse(activeProblem.production)}
+              </section>
+            )}
+
+            {activeProblem.walkthrough && (
+              <section className="walkthrough-block">
+                <h3>Guided Walkthrough</h3>
+                <ol>
+                  {activeProblem.walkthrough.map((step) => (
+                    <li key={step}>{renderGlossaryText(step)}</li>
+                  ))}
+                </ol>
+              </section>
+            )}
+
+            {activeProblem.example && (
+              <section className="example-block">
+                <h3>Example</h3>
+                {parseProse(activeProblem.example).some((block) => block.kind === 'flow') ? (
+                  renderProse(activeProblem.example)
+                ) : (
+                  <pre>{activeProblem.example}</pre>
+                )}
+              </section>
+            )}
+
+            {tutorials.some((tut) => tut.subjectId === activeSubject.id) && (
+              <section className="prompt-block learn-block">
+                <h3>Go Deeper: Subject Tutorials</h3>
+                {tutorials
+                  .filter((tut) => tut.subjectId === activeSubject.id)
+                  .map((tut) => (
+                    <details key={tut.id} className="learn-item">
+                      <summary>
+                        {tut.title} · {tut.minutes} min
+                      </summary>
+                      <div className="learn-body">{renderProse(tut.body)}</div>
+                    </details>
+                  ))}
+              </section>
+            )}
+    </>
+  )
+
   return (
     <main
       className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}
@@ -1353,7 +1412,36 @@ function App() {
             </section>
           )}
 
-          {activePage === 'learn' && (
+          {activePage === 'learn' && interactive && (
+            <section className="interactive-lesson" aria-label="Hands-on example">
+              {interactive.intro && (
+                <p className="interactive-intro">{renderGlossaryText(interactive.intro)}</p>
+              )}
+              <div className="interactive-step">
+                <span className="interactive-badge">See it run</span>
+                <pre className="interactive-code"><code>{interactive.example.code}</code></pre>
+                <details className="interactive-run">
+                  <summary>Run ▶</summary>
+                  <pre className="interactive-output"><code>{interactive.example.output}</code></pre>
+                  {interactive.example.explain && (
+                    <p>{renderGlossaryText(interactive.example.explain)}</p>
+                  )}
+                </details>
+              </div>
+              {interactive.tweak && (
+                <div className="interactive-step">
+                  <span className="interactive-badge">Now you try</span>
+                  <p>{renderGlossaryText(interactive.tweak.instruction)}</p>
+                  <details className="interactive-run">
+                    <summary>Show what happens</summary>
+                    <p>{renderGlossaryText(interactive.tweak.reveal)}</p>
+                  </details>
+                </div>
+              )}
+            </section>
+          )}
+
+          {activePage === 'learn' && !interactive && (
           <section className="learn-first-block" aria-label="Learn first">
             <div className="learn-first-heading">
               <div>
@@ -1362,35 +1450,6 @@ function App() {
               </div>
               <span>{activeSubject.title}</span>
             </div>
-
-            {interactive && (
-              <section className="interactive-lesson" aria-label="Hands-on Python">
-                {interactive.intro && (
-                  <p className="interactive-intro">{renderGlossaryText(interactive.intro)}</p>
-                )}
-                <div className="interactive-step">
-                  <span className="interactive-badge">See it run</span>
-                  <pre className="interactive-code"><code>{interactive.example.code}</code></pre>
-                  <details className="interactive-run">
-                    <summary>Run ▶</summary>
-                    <pre className="interactive-output"><code>{interactive.example.output}</code></pre>
-                    {interactive.example.explain && (
-                      <p>{renderGlossaryText(interactive.example.explain)}</p>
-                    )}
-                  </details>
-                </div>
-                {interactive.tweak && (
-                  <div className="interactive-step">
-                    <span className="interactive-badge">Now you try</span>
-                    <p>{renderGlossaryText(interactive.tweak.instruction)}</p>
-                    <details className="interactive-run">
-                      <summary>Show what happens</summary>
-                      <p>{renderGlossaryText(interactive.tweak.reveal)}</p>
-                    </details>
-                  </div>
-                )}
-              </section>
-            )}
 
             {teachingModel.problemLesson ? (
               <>
@@ -1707,61 +1766,17 @@ function App() {
             </details>
           )}
 
-          {activePage === 'learn' && (
-            <>
-              {activeProblem.explanation && (
-                <section className="explanation-block">
-                  <h3>Explanation</h3>
-                  {renderProse(activeProblem.explanation)}
-                </section>
-              )}
-
-              {activeProblem.production && (
-                <section className="production-block production-callout">
-                  <h3>Why This Matters In Production</h3>
-                  {renderProse(activeProblem.production)}
-                </section>
-              )}
-
-              {activeProblem.walkthrough && (
-                <section className="walkthrough-block">
-                  <h3>Guided Walkthrough</h3>
-                  <ol>
-                    {activeProblem.walkthrough.map((step) => (
-                      <li key={step}>{renderGlossaryText(step)}</li>
-                    ))}
-                  </ol>
-                </section>
-              )}
-
-              {activeProblem.example && (
-                <section className="example-block">
-                  <h3>Example</h3>
-                  {parseProse(activeProblem.example).some((block) => block.kind === 'flow') ? (
-                    renderProse(activeProblem.example)
-                  ) : (
-                    <pre>{activeProblem.example}</pre>
-                  )}
-                </section>
-              )}
-
-              {tutorials.some((tut) => tut.subjectId === activeSubject.id) && (
-                <section className="prompt-block learn-block">
-                  <h3>Go Deeper: Subject Tutorials</h3>
-                  {tutorials
-                    .filter((tut) => tut.subjectId === activeSubject.id)
-                    .map((tut) => (
-                      <details key={tut.id} className="learn-item">
-                        <summary>
-                          {tut.title} · {tut.minutes} min
-                        </summary>
-                        <div className="learn-body">{renderProse(tut.body)}</div>
-                      </details>
-                    ))}
-                </section>
-              )}
-            </>
+          {activePage === 'learn' && interactive && (
+            <details className="optional-section deep-notes">
+              <summary>
+                <h3>Go Deeper: Full Notes</h3>
+                <p>The complete write-up, production notes, and subject tutorials.</p>
+              </summary>
+              {learnDeepBlocks}
+            </details>
           )}
+
+          {activePage === 'learn' && !interactive && learnDeepBlocks}
 
           {activePage === 'practice' && interactiveDrillIds.length > 0 && (
             <section className="practice-drills" aria-label="Write it yourself">
