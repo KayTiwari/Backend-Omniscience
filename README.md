@@ -52,6 +52,17 @@ Add or edit subjects and problems in `src/course.ts`. The GUI updates automatica
 - For quizzes, include at least two `choices` and a zero-based `correctChoice`.
 - Prefer small, forceful exercises over long passive lessons.
 
+## Contributing
+
+Contributions are welcome: new course modules, drills, glossary terms, bug
+fixes, and UI improvements. Open an issue or a PR. See the Curriculum
+Authoring Rules above for content conventions, and run `npm run check`
+before submitting.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
 ## Contributors
 
 - **Abhi K. Tiwari** (creator)
