@@ -847,7 +847,7 @@ function App() {
             <Flame size={22} />
           </div>
           <div>
-            <p className="eyebrow">Roadmap gauntlet</p>
+            <p className="eyebrow">0 → 1 Backend</p>
             <h1>Backend Omniscience</h1>
           </div>
         </button>
@@ -1010,10 +1010,10 @@ function App() {
             <section className="home-hero">
               <div>
                 <p className="eyebrow">Backend Omniscience</p>
-                <h2>Choose your next backend rep.</h2>
+                <h2>0 → 1 Backend.</h2>
                 <p>
-                  Work subject by subject, jump into coding drills, or continue from the next
-                  unsolved problem.
+                  From your first line of code to production systems. Work subject by
+                  subject, jump into coding drills, or continue where you left off.
                 </p>
               </div>
               <button
