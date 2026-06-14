@@ -11,10 +11,20 @@ is an engine gap.
 
 ---
 
+## Status
+
+- Engine extended with **ring** and **sequence** shapes (done). Tree, grid, and
+  state shapes still pending.
+- 18 diagrams backfilled (consistent hashing ring, JWT/transaction sequences,
+  idempotency, rate limit, index, throughput, eventual consistency, IP, port,
+  packet, horizontal scaling, DynamoDB, Cassandra, RabbitMQ, SQS, Lambda, Docker).
+- **12 entries still picture-less:** CIDR, MySQL, MongoDB, Memcached,
+  Elasticsearch, Nginx, ZooKeeper, Prometheus, Apache Spark, Apache Flink,
+  server-sent events, saga.
+
 ## 1. Concept entries that have prose but no diagram (engine ready)
 
-29 encyclopedia entries are written but picture-less. Each wants one small box
-diagram.
+The 12 above. Each wants one small box diagram.
 
 - **idempotency** — check id -> work -> record, duplicate skips
 - **rate limit** — token bucket: tokens refill, request takes one or 429
@@ -52,22 +62,16 @@ multi-node diagrams. Priority set:
 
 ## 3. New diagram SHAPES the engine cannot draw yet (extend Diagram.tsx first)
 
-These concepts are best shown in a shape our box+arrow engine does not support.
-Build the shape, then author the diagram.
-
-- **Ring (circular)** — consistent hashing (servers + keys on a circle), DynamoDB/
-  Cassandra partition ring. Currently faked as a row.
-- **Tree** — B-tree (how a database index actually looks), trie (autocomplete
-  prefixes), heap. The "8 data structures that power databases" angle.
-- **2D grid** — geohash cells / quadtree for location data.
-- **Sequence / lifeline** — ordered message exchanges between actors over time:
+- **Ring (circular)** — DONE. Used by consistent hashing, DynamoDB, Cassandra.
+- **Sequence / lifeline** — DONE. Used by JWT and transaction. Still to author:
   TLS handshake, OAuth authorization-code flow, two-phase commit, the full
-  request lifecycle, cache-aside read. Our flow boxes approximate this but a real
-  sequence diagram (lifelines + numbered messages) reads far better.
-- **State machine** — circuit breaker (closed/open/half-open cycle), TCP
+  request lifecycle, cache-aside read.
+- **Tree** — TODO. B-tree (how a database index actually looks), trie
+  (autocomplete prefixes), heap.
+- **2D grid** — TODO. geohash cells / quadtree for location data.
+- **State machine** — TODO. circuit breaker (closed/open/half-open cycle), TCP
   connection states. Currently faked as a row.
-- **Layered/encapsulation** — packet wrapping down the OSI/TCP-IP stack (headers
-  added per layer). OSI is a stack today; the wrapping version is richer.
+- **Layered/encapsulation** — TODO. packet wrapping down the OSI/TCP-IP stack.
 
 ## Notes
 
