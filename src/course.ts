@@ -35,6 +35,7 @@ import { csharpSubject } from './course.csharp'
 import { foundationProblems } from './course.foundations'
 import { conceptSubjects } from './course.concepts'
 import { appendixSubject } from './course.appendix'
+import { systemDesignPractice } from './course.systemDesignPractice'
 import { tutorials as longTutorials } from './tutorials'
 
 export type ProblemType = 'lesson' | 'coding' | 'quiz' | 'debug' | 'design'
@@ -859,6 +860,7 @@ const coreSubjects: Subject[] = [
           'Include moderation and retention concerns.',
         ],
       },
+      ...systemDesignPractice,
     ],
   },
   {
