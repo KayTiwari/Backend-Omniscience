@@ -47,7 +47,6 @@ import { getTeachingModel } from './problemTeaching'
 import { projects } from './projects'
 import { quickWrites } from './quickWrite'
 import { requestLifecycle } from './requestLifecycle'
-import { tutorials } from './tutorials'
 import './highlight.css'
 
 type ProgressState = {
@@ -801,26 +800,6 @@ function App() {
               </section>
             )}
 
-            {tutorials.some((tut) => tut.subjectId === activeSubject.id) && (
-              <section className="prompt-block learn-block">
-                <h3>Go Deeper: Subject Tutorials</h3>
-                <div className="tutorial-links">
-                  {tutorials
-                    .filter((tut) => tut.subjectId === activeSubject.id)
-                    .map((tut) => (
-                      <button
-                        key={tut.id}
-                        type="button"
-                        className="tutorial-link"
-                        onClick={() => openProblemById(tut.id)}
-                      >
-                        <span>{tut.title}</span>
-                        <small>{tut.minutes} min →</small>
-                      </button>
-                    ))}
-                </div>
-              </section>
-            )}
     </>
   )
 
@@ -1885,7 +1864,7 @@ function App() {
             <>
               <button type="button" className="deep-open" onClick={() => setOpenModal('fullnotes')}>
                 <span>Full Notes</span>
-                <small>The complete write-up, production notes, and subject tutorials →</small>
+                <small>The complete write-up and production notes →</small>
               </button>
               {openModal === 'fullnotes' && (
                 <Modal title="Full Notes" onClose={() => setOpenModal(null)}>
