@@ -430,6 +430,100 @@ export const glossaryTerms: GlossaryTerm[] = [
       'An architecture that splits a system into small, independently deployable services that each own their data.',
     synonyms: ['microservice'],
   },
+  {
+    term: 'bloom filter',
+    definition:
+      'A tiny probabilistic structure that answers "have I definitely never seen this?" with no false negatives, used to skip expensive lookups.',
+  },
+  {
+    term: 'write-ahead log',
+    definition:
+      'A durable append-only log a database writes changes to before applying them, so a crash can be replayed and nothing committed is lost.',
+    synonyms: ['WAL'],
+  },
+  {
+    term: 'heartbeat',
+    definition:
+      'A periodic "I am alive" signal a node sends so the system can detect failures and react when the beats stop.',
+  },
+  {
+    term: 'quorum',
+    definition:
+      'The minimum number of nodes that must agree for a read or write to count, the knob that tunes consistency versus availability.',
+  },
+  {
+    term: 'leader election',
+    definition:
+      'The process by which distributed nodes agree on a single coordinator, and pick a new one when it fails.',
+  },
+  {
+    term: 'distributed lock',
+    definition:
+      'A lock shared across machines so only one node performs a critical action at a time, even though they do not share memory.',
+  },
+  {
+    term: 'strong consistency',
+    definition:
+      'A guarantee that every read returns the most recent write, the opposite end of the spectrum from eventual consistency.',
+  },
+  {
+    term: 'service discovery',
+    definition:
+      'A registry that tracks where each service instance currently lives, so callers resolve services by name instead of a hardcoded address.',
+  },
+  {
+    term: 'checksum',
+    definition:
+      'A small value computed from data so the receiver can detect corruption: recompute it and compare.',
+  },
+  {
+    term: 'IP address',
+    definition:
+      'The numeric address that identifies a machine on a network, so packets know where to go. IPv4 looks like 93.184.216.34; IPv6 is longer.',
+  },
+  {
+    term: 'port',
+    definition:
+      'A number (0-65535) that picks which program on a machine a connection is for, so one IP can run many services. HTTPS is 443, HTTP is 80.',
+  },
+  {
+    term: 'UDP',
+    definition:
+      'A fast, connectionless transport that fires packets with no delivery or ordering guarantees. Used for video, games, and DNS where speed beats reliability.',
+    synonyms: ['User Datagram Protocol'],
+  },
+  {
+    term: 'packet',
+    definition:
+      'A small unit of data with addressing metadata that travels the network independently and may arrive out of order or not at all.',
+  },
+  {
+    term: 'CIDR',
+    definition:
+      'Notation like 10.0.0.0/24 that describes a block of IP addresses, where the /N says how many leading bits are fixed.',
+    synonyms: ['subnet', 'subnetting'],
+  },
+  {
+    term: 'NAT',
+    definition:
+      'Network Address Translation: lets many devices share one public IP by rewriting addresses at the router.',
+    synonyms: ['Network Address Translation'],
+  },
+  {
+    term: 'firewall',
+    definition:
+      'A filter that allows or blocks network traffic by rules on source, destination, port, and protocol.',
+  },
+  {
+    term: 'OSI model',
+    definition:
+      'A seven-layer model of how network communication is organized, from physical wires up to the application.',
+  },
+  {
+    term: 'throughput',
+    definition:
+      'The actual rate of useful work a system delivers (requests/sec, bytes/sec), distinct from latency (delay per request) and bandwidth (max capacity).',
+  },
 ]
 
 export type GlossaryMatch = {

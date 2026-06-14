@@ -31,12 +31,12 @@ export type GlossaryEntry = {
 // Terms grouped into categories (mirrors the old appendix areas). Anything not
 // listed falls back to 'Operations'.
 const CATEGORY_TERMS: Record<GlossaryCategory, string[]> = {
-  'HTTP & Web': ['URL', 'DNS', 'TCP', 'TLS', 'HTTP', 'request', 'response', 'header', 'body', 'query string', 'status code', 'reverse proxy', 'CORS', 'request path', 'webhook'],
+  'HTTP & Web': ['URL', 'DNS', 'TCP', 'TLS', 'HTTP', 'request', 'response', 'header', 'body', 'query string', 'status code', 'reverse proxy', 'CORS', 'request path', 'webhook', 'IP address', 'port', 'UDP', 'packet', 'CIDR', 'NAT', 'firewall', 'OSI model'],
   APIs: ['API', 'endpoint', 'JSON', 'middleware', 'service', 'service shape', 'business rule', 'validation', 'controller', 'repository', 'config', 'framework', 'API gateway'],
-  Databases: ['database', 'SQL', 'PostgreSQL', 'table', 'primary key', 'foreign key', 'index', 'transaction', 'migration', 'N+1 query'],
+  Databases: ['database', 'SQL', 'PostgreSQL', 'table', 'primary key', 'foreign key', 'index', 'transaction', 'migration', 'N+1 query', 'write-ahead log', 'checksum'],
   Security: ['authentication', 'authorization', 'JWT', 'OAuth', 'CSRF', 'XSS'],
-  'Caching & Async': ['cache', 'CDN', 'cache invalidation', 'queue', 'worker', 'dead-letter queue', 'idempotency', 'retry', 'backpressure', 'rate limit'],
-  'Scale & Reliability': ['horizontal scaling', 'sharding', 'replication', 'load balancer', 'consistent hashing', 'microservices', 'CAP theorem', 'eventual consistency'],
+  'Caching & Async': ['cache', 'CDN', 'cache invalidation', 'queue', 'worker', 'dead-letter queue', 'idempotency', 'retry', 'backpressure', 'rate limit', 'bloom filter'],
+  'Scale & Reliability': ['horizontal scaling', 'sharding', 'replication', 'load balancer', 'consistent hashing', 'microservices', 'CAP theorem', 'eventual consistency', 'strong consistency', 'heartbeat', 'quorum', 'leader election', 'distributed lock', 'service discovery'],
   Operations: ['deployment', 'CI/CD', 'container', 'observability', 'log', 'metric', 'trace', 'latency', 'SLO', 'graceful shutdown'],
   'Language & Runtime': ['function', 'class', 'object', 'array', 'dictionary', 'for loop', 'while loop', 'runtime', 'concurrency model', 'side effect', 'memory usage', 'dependency management', 'runtime profiling'],
 }
@@ -502,7 +502,401 @@ const RICH: Record<string, Rich> = {
       'You like a post; the count updates instantly for you but takes a moment to reflect for users reading a different replica.',
       'A newly posted tweet appears for some followers a beat before others as it propagates.',
     ],
-    related: ['CAP theorem', 'replication', 'cache invalidation'],
+    related: ['CAP theorem', 'strong consistency', 'replication', 'cache invalidation'],
+  },
+
+  'strong consistency': {
+    body: [
+      '**Strong consistency guarantees every read returns the most recent write,** no matter which node answers. The instant a write commits, all readers see it. It is the intuitive model and the one money requires.',
+      '**It costs latency and availability.** Guaranteeing every reader sees the latest write means coordinating across nodes (waiting for a quorum, or routing reads to the primary), which is slower and, during a network partition, may mean refusing to answer at all (the CP side of CAP).',
+      '**Use it where a stale answer is a real bug:** account balances, inventory counts at checkout, unique-username checks. Use eventual consistency where brief lag is invisible.',
+    ],
+    examples: [
+      'A bank balance: after a withdrawal commits, every subsequent read must show the lower balance, never the old one.',
+      'A unique-username check must see other in-flight signups, so it reads with strong consistency.',
+    ],
+    diagrams: [
+      {
+        caption: 'Strong: the read waits for the write to be visible everywhere before answering.',
+        layout: 'row',
+        nodes: [
+          { id: 'w', label: 'Write commits', accent: 'primary' },
+          { id: 'sync', label: 'Replicate', sub: 'wait for quorum', accent: 'compute' },
+          { id: 'r', label: 'Read', sub: 'sees latest', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['eventual consistency', 'CAP theorem', 'quorum', 'transaction'],
+  },
+
+  'bloom filter': {
+    body: [
+      '**A bloom filter answers one question cheaply: "have I definitely never seen this key?"** It is a small bit array plus a few hash functions. Adding a key flips a few bits on; checking a key tests those bits. If any is 0, the key is definitely absent. If all are 1, it is probably present.',
+      '**No false negatives, some false positives.** It will never wrongly say "absent" for a key it holds, but it can wrongly say "maybe present" for one it does not, because bits collide. You tune the false-positive rate by sizing the array and the number of hashes.',
+      '**Why it matters: skip expensive lookups.** Databases (Cassandra, Bigtable) put a bloom filter in front of each on-disk file so a read can skip files that definitely lack the key, avoiding a disk hit. A web crawler checks one before fetching a URL it may have already crawled. Tiny memory, huge savings.',
+    ],
+    examples: [
+      'A 1 MB bloom filter can track millions of keys and answer "definitely not here" in nanoseconds, saving a disk or network read.',
+      'Cassandra checks a per-file bloom filter before reading that file, so a missing key touches no disk.',
+      'A "have you seen this URL?" check: a 0 bit means never, so the crawler fetches; all 1s means maybe, so it does the real check.',
+    ],
+    diagrams: [
+      {
+        caption: 'Any 0 bit means definitely absent; all 1s means probably present (check for real).',
+        layout: 'row',
+        nodes: [
+          { id: 'key', label: 'Key', accent: 'compute' },
+          { id: 'hash', label: 'k hash funcs', sub: 'set/test bits', accent: 'edge' },
+          { id: 'bits', label: 'Bit array', sub: 'any 0 = absent', accent: 'cache' },
+        ],
+      },
+    ],
+    related: ['cache', 'index', 'database', 'checksum'],
+  },
+
+  'write-ahead log': {
+    body: [
+      '**A write-ahead log (WAL) is how databases make crashes survivable.** Before applying a change to the actual data files, the database appends a record of that change to a durable, append-only log and flushes it to disk. Only then does it acknowledge the write.',
+      '**Recovery is replay.** If the process crashes mid-write, on restart the database replays the log from the last checkpoint, reapplying committed changes and discarding incomplete ones. Nothing acknowledged is ever lost: that is the Durability in ACID.',
+      '**Appends are fast.** Writing sequentially to the end of a log is far cheaper than updating scattered data pages, so the WAL also batches and speeds up writes. It is the same idea behind replication (replicas consume the log) and event sourcing.',
+    ],
+    examples: [
+      'PostgreSQL writes every change to its WAL first; a crash mid-transaction is recovered by replaying the log on startup.',
+      'Replication ships the WAL to replicas, which replay it to stay in sync with the primary.',
+    ],
+    diagrams: [
+      {
+        caption: 'Append to the durable log first, then apply to data files; recover by replaying.',
+        layout: 'row',
+        nodes: [
+          { id: 'w', label: 'Write', accent: 'compute' },
+          { id: 'wal', label: 'WAL', sub: 'append + flush', accent: 'storage' },
+          { id: 'data', label: 'Data files', sub: 'apply after', accent: 'primary' },
+        ],
+      },
+    ],
+    related: ['transaction', 'replication', 'database', 'checksum'],
+  },
+
+  heartbeat: {
+    body: [
+      '**A heartbeat is a periodic "I am alive" message** a node sends to a coordinator or its peers, every second or few seconds. As long as the beats arrive, the node is considered healthy.',
+      '**Missing beats trigger action.** If a node misses several heartbeats in a row, the system declares it dead and reacts: a load balancer pulls it from rotation, a cluster reassigns its work, a leader election starts. The beat interval and the miss threshold trade detection speed against false alarms from a brief network blip.',
+      '**It is the foundation of failure detection** in distributed systems: load balancer health checks, cluster membership, and primary failover all rest on heartbeats.',
+    ],
+    examples: [
+      'A worker sends a heartbeat every 5s; after 3 missed beats the scheduler reassigns its jobs to another worker.',
+      'A database replica heartbeats the primary; when the beats stop, failover promotes a replica.',
+    ],
+    diagrams: [
+      {
+        caption: 'Beats arrive: healthy. Beats stop: declared dead, work reassigned.',
+        layout: 'row',
+        nodes: [
+          { id: 'node', label: 'Node', accent: 'compute' },
+          { id: 'coord', label: 'Coordinator', sub: 'watches beats', accent: 'edge' },
+          { id: 'react', label: 'No beat -> react', sub: 'reassign / failover', accent: 'danger' },
+        ],
+        edges: [
+          { from: 'node', to: 'coord', label: 'beat every 5s' },
+          { from: 'coord', to: 'react', label: 'missed', dashed: true },
+        ],
+      },
+    ],
+    related: ['load balancer', 'leader election', 'quorum', 'service discovery'],
+  },
+
+  quorum: {
+    body: [
+      '**A quorum is the minimum number of nodes that must agree for an operation to count.** In a replicated store with N copies, a write may require W acknowledgements and a read R responses.',
+      '**The overlap rule.** If W + R > N, every read is guaranteed to overlap with the latest write on at least one node, which gives strong consistency. Lowering W or R increases availability and speed but risks reading stale data.',
+      '**It is the tuning knob for CAP.** A store like Cassandra or DynamoDB lets you choose W and R per operation, sliding between fast-and-eventually-consistent and slow-and-strongly-consistent. Quorums also underlie consensus and leader election: a leader needs a majority to act.',
+    ],
+    examples: [
+      'N=3, W=2, R=2: W+R=4 > 3, so reads always see the latest write (strong). Tolerates one node down.',
+      'N=3, W=1, R=1: fast and highly available, but a read can miss a recent write (eventual).',
+    ],
+    diagrams: [
+      {
+        caption: 'W + R > N means the read set overlaps the write set, so reads see the latest write.',
+        layout: 'gather',
+        nodes: [
+          { id: 'n1', label: 'Node 1', sub: 'wrote', accent: 'primary' },
+          { id: 'n2', label: 'Node 2', sub: 'wrote', accent: 'primary' },
+          { id: 'n3', label: 'Node 3', accent: 'replica' },
+          { id: 'read', label: 'Read 2 of 3', sub: 'overlaps a writer', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['strong consistency', 'eventual consistency', 'replication', 'leader election', 'CAP theorem'],
+  },
+
+  'leader election': {
+    body: [
+      '**Leader election is how distributed nodes agree on a single coordinator.** Many tasks need exactly one node in charge (assigning work, accepting writes, running a scheduled job), so the cluster elects a leader and the rest follow.',
+      '**When the leader dies, elect a new one.** Followers detect the missing heartbeat, then run an election: they vote, and a candidate that wins a majority (a quorum) becomes the new leader. Requiring a majority prevents two leaders existing at once (split-brain).',
+      '**Algorithms like Raft and Paxos** formalize this. You rarely implement it yourself; you rely on it inside tools like ZooKeeper, etcd, and Kafka, which use leader election under the hood.',
+    ],
+    examples: [
+      'Kafka elects a leader broker per partition; producers and consumers talk to the leader, and a new one is elected if it fails.',
+      'A cron job that must run once across 5 servers: the elected leader runs it, avoiding 5 duplicate runs.',
+    ],
+    diagrams: [
+      {
+        caption: 'Followers detect the dead leader, vote, and a majority winner becomes the new leader.',
+        layout: 'row',
+        nodes: [
+          { id: 'dead', label: 'Leader dies', accent: 'danger' },
+          { id: 'vote', label: 'Followers vote', sub: 'need a majority', accent: 'compute' },
+          { id: 'new', label: 'New leader', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['quorum', 'heartbeat', 'distributed lock', 'consistent hashing'],
+  },
+
+  'distributed lock': {
+    body: [
+      '**A distributed lock lets only one node perform a critical action at a time,** even though the nodes share no memory. It is the cross-machine version of a mutex.',
+      '**Why you need it.** Five servers each run a "charge subscriptions" job at midnight. Without coordination, a customer is charged five times. A distributed lock ensures exactly one server holds the lock and does the work.',
+      '**The hard parts.** The lock must expire (a holder that crashes must not block forever), so it carries a TTL with a fencing token to stop a slow, resumed holder from acting after its lease expired. Redis (Redlock) and ZooKeeper/etcd are common implementations. Often the better move is to make the operation idempotent so a missed lock is harmless.',
+    ],
+    examples: [
+      'Redis SET lock NX PX 30000: only one node gets the lock; it auto-releases after 30s if the holder dies.',
+      'A nightly billing job acquires a lock so only one of many instances runs it.',
+    ],
+    diagrams: [
+      {
+        caption: 'Only the lock holder runs the critical section; others wait or skip.',
+        layout: 'gather',
+        nodes: [
+          { id: 'a', label: 'Node A', sub: 'holds lock', accent: 'success' },
+          { id: 'b', label: 'Node B', sub: 'waits', accent: 'default' },
+          { id: 'c', label: 'Node C', sub: 'waits', accent: 'default' },
+          { id: 'job', label: 'Critical job', sub: 'runs once', accent: 'primary' },
+        ],
+        edges: [{ from: 'a', to: 'job', label: 'holder runs' }],
+      },
+    ],
+    related: ['idempotency', 'leader election', 'quorum', 'cache'],
+  },
+
+  'service discovery': {
+    body: [
+      '**Service discovery is the live registry of where each service is right now.** In a dynamic deployment, instances start, stop, crash, and move addresses constantly (autoscaling, redeploys), so callers cannot hardcode an address.',
+      '**How it works.** Each service registers itself on startup (and deregisters or stops heartbeating on shutdown). Callers look up a service by name and get a current, healthy address. A load balancer plus this registry keeps traffic flowing only to live instances.',
+      '**Two styles.** Client-side discovery: the caller queries the registry and picks an instance. Server-side: a load balancer or gateway does the lookup. Tools: Consul, etcd, and the built-in discovery in Kubernetes and cloud platforms.',
+    ],
+    examples: [
+      'The orders service redeploys to a new IP, re-registers, and callers resolve the new address automatically with no config edit.',
+      'Kubernetes gives each service a stable DNS name that resolves to whatever pods are currently healthy.',
+    ],
+    diagrams: [
+      {
+        caption: 'Services register; callers resolve by name to a current, healthy address.',
+        layout: 'row',
+        nodes: [
+          { id: 'svc', label: 'Service instance', sub: 'registers', accent: 'compute' },
+          { id: 'reg', label: 'Registry', sub: 'name -> address', accent: 'edge' },
+          { id: 'caller', label: 'Caller', sub: 'looks up by name', accent: 'compute' },
+        ],
+        edges: [
+          { from: 'svc', to: 'reg', label: 'register + heartbeat' },
+          { from: 'caller', to: 'reg', label: 'resolve' },
+        ],
+      },
+    ],
+    related: ['microservices', 'API gateway', 'load balancer', 'heartbeat'],
+  },
+
+  checksum: {
+    body: [
+      '**A checksum detects data corruption.** You run the data through a function that produces a small fixed-size value, send or store it alongside the data, and the receiver recomputes it. If the two differ, the data was corrupted in transit or on disk.',
+      '**It catches accidental damage, not tampering.** A simple checksum (CRC32) catches bit flips from a flaky network or a bad disk sector. It does not stop a malicious change, since an attacker can recompute it; for that you need a cryptographic hash or signature.',
+      '**Everywhere quietly.** TCP checksums every segment, storage systems checksum blocks to detect bit rot, and distributed systems checksum messages and files to verify a transfer arrived intact.',
+    ],
+    examples: [
+      'A file download ships with a SHA-256 sum; you recompute it locally and compare to confirm the download was not corrupted.',
+      'TCP drops and retransmits any segment whose checksum does not match.',
+    ],
+    diagrams: [
+      {
+        caption: 'Recompute on arrival and compare: a mismatch means corruption.',
+        layout: 'row',
+        nodes: [
+          { id: 'send', label: 'Data + checksum', accent: 'compute' },
+          { id: 'recv', label: 'Recompute', sub: 'on arrival', accent: 'edge' },
+          { id: 'cmp', label: 'Match?', sub: 'no = corrupt', accent: 'danger' },
+        ],
+      },
+    ],
+    related: ['write-ahead log', 'TCP', 'bloom filter'],
+  },
+
+  'IP address': {
+    body: [
+      '**An IP address is the numeric address of a machine on a network.** Every packet carries a source and destination IP so routers know where to send it, the way a letter needs a street address.',
+      '**IPv4 vs IPv6.** IPv4 is four numbers like 93.184.216.34, about 4 billion total, which the internet has run out of. IPv6 is much longer (eight hex groups) and effectively unlimited. Public IPs are globally unique; private ranges (10.x, 192.168.x) are reused inside networks and hidden behind NAT.',
+      '**DNS turns names into IPs.** You type api.example.com; DNS resolves it to an IP before any connection is made.',
+    ],
+    examples: [
+      'Public IPv4: 93.184.216.34. Private: 192.168.1.10 (only meaningful inside your home network).',
+      'localhost is 127.0.0.1, the machine talking to itself.',
+    ],
+    related: ['DNS', 'port', 'packet', 'CIDR', 'NAT'],
+  },
+
+  port: {
+    body: [
+      '**A port is a number that picks which program on a machine a connection is for.** One IP address runs many services; the port (0-65535) routes the traffic to the right one. An address is "IP:port", like 93.184.216.34:443.',
+      '**Well-known ports.** 80 is HTTP, 443 is HTTPS, 22 is SSH, 5432 is PostgreSQL, 6379 is Redis. Ports under 1024 are reserved; apps usually use higher ones in development (3000, 8080).',
+      "**Only one program can listen on a port at a time,** which is why \"address already in use\" appears when you start a server on a port another process already holds.",
+    ],
+    examples: [
+      'A web server listens on 443; a database on 5432; both on the same machine, told apart by port.',
+      'curl http://localhost:3000 connects to whatever is listening on port 3000.',
+    ],
+    related: ['IP address', 'TCP', 'HTTP'],
+  },
+
+  UDP: {
+    body: [
+      '**UDP (User Datagram Protocol) fires packets with no guarantees.** Unlike TCP, it does not establish a connection, confirm delivery, or reorder packets. It just sends, which makes it fast and lightweight.',
+      '**The trade is reliability for speed.** A lost UDP packet is simply gone; the application decides whether to care. This is right when a late packet is worse than a missing one.',
+      '**Where it wins:** live video and voice (a dropped frame is better than a stutter waiting for retransmission), online games, and DNS (one small request, one small reply, retry if needed).',
+    ],
+    examples: [
+      'A video call uses UDP: a lost frame is skipped, because pausing to resend it would freeze the call.',
+      'DNS uses UDP for its quick request/response, falling back to TCP for large replies.',
+    ],
+    diagrams: [
+      {
+        caption: 'TCP guarantees ordered, confirmed delivery; UDP just sends, trading reliability for speed.',
+        layout: 'row',
+        nodes: [
+          { id: 'tcp', label: 'TCP', sub: 'reliable, ordered', accent: 'primary' },
+          { id: 'udp', label: 'UDP', sub: 'fast, no guarantees', accent: 'edge' },
+        ],
+        edges: [{ from: 'tcp', to: 'udp', label: 'vs', dashed: true }],
+      },
+    ],
+    related: ['TCP', 'packet', 'IP address', 'DNS'],
+  },
+
+  packet: {
+    body: [
+      '**A packet is a small chunk of data with addressing metadata** that travels the network on its own. Big messages are split into many packets, each routed independently, then reassembled at the destination.',
+      '**They can arrive out of order, late, or not at all.** Each packet may take a different path. TCP numbers them and reassembles and retransmits so the application sees an ordered, complete stream; UDP leaves that to you.',
+      '**Each packet carries headers** (source and destination IP and port, sequence numbers) wrapping the actual payload, added and peeled off layer by layer as it moves down and up the stack.',
+    ],
+    examples: [
+      'A 1 MB file becomes hundreds of packets that may take different routes and arrive scrambled, then TCP reorders them.',
+      'A router reads each packet\'s destination IP and forwards it one hop closer.',
+    ],
+    related: ['TCP', 'UDP', 'IP address', 'OSI model'],
+  },
+
+  CIDR: {
+    body: [
+      '**CIDR notation describes a block of IP addresses** with a slash and a number: 10.0.0.0/24. The /N says how many leading bits are fixed (the network part); the rest are free for hosts.',
+      '**The /N is the size.** /24 fixes 24 bits, leaving 8 bits = 256 addresses. /16 leaves 16 bits = 65,536. Smaller /N means a bigger block. /32 is a single address.',
+      "**Used everywhere addresses are grouped:** subnets, routing tables, and firewall and cloud security rules (\"allow 10.0.0.0/8\" means the whole private range). Checking whether an IP falls in a block is a core networking operation.",
+    ],
+    examples: [
+      '10.0.0.0/24 covers 10.0.0.0 through 10.0.0.255 (256 addresses).',
+      'A security group rule "allow 0.0.0.0/0" means allow every IP on the internet (use with care).',
+    ],
+    related: ['IP address', 'NAT', 'firewall'],
+  },
+
+  NAT: {
+    body: [
+      '**NAT (Network Address Translation) lets many devices share one public IP.** Your phone, laptop, and TV all have private addresses (192.168.x); the router rewrites their traffic to use its single public IP on the way out, and reverses it on the way back.',
+      '**Why it exists.** IPv4 ran out of addresses, so NAT stretches one public IP across a whole network. It also incidentally hides internal devices, since the outside world only sees the router.',
+      '**The catch.** Outside machines cannot directly start a connection to a device behind NAT (there is no public address for it), which is why incoming connections need port forwarding and peer-to-peer apps need tricks to punch through.',
+    ],
+    examples: [
+      'Your home: 5 devices on 192.168.1.x all appear to websites as one public IP, the router translating each connection.',
+      'A server behind NAT needs port forwarding so outside traffic on a port reaches it.',
+    ],
+    diagrams: [
+      {
+        caption: 'The router rewrites many private addresses to one shared public IP.',
+        layout: 'gather',
+        nodes: [
+          { id: 'a', label: 'Laptop', sub: '192.168.1.2', accent: 'client' },
+          { id: 'b', label: 'Phone', sub: '192.168.1.3', accent: 'client' },
+          { id: 'router', label: 'Router (NAT)', sub: 'one public IP', accent: 'edge' },
+        ],
+      },
+    ],
+    related: ['IP address', 'CIDR', 'firewall'],
+  },
+
+  firewall: {
+    body: [
+      '**A firewall allows or blocks network traffic by rules.** Each rule matches on source and destination IP, port, and protocol, and says allow or deny. Default-deny (block everything, then allow what you need) is the safe posture.',
+      '**Where it sits.** At the network edge, on each host, or as a cloud "security group." A common setup: allow 443 (HTTPS) from anywhere to the load balancer, allow the database port only from the app servers, deny everything else.',
+      '**It is a perimeter, not a complete defense.** A firewall stops unwanted connections, but it does not validate the content of allowed traffic, so application-layer security (auth, validation) still matters.',
+    ],
+    examples: [
+      'A cloud security group: inbound 443 from 0.0.0.0/0, inbound 5432 only from the app subnet, everything else denied.',
+      'A database should never accept connections from the public internet; the firewall enforces that.',
+    ],
+    diagrams: [
+      {
+        caption: 'Rules on IP, port, and protocol let some traffic through and drop the rest.',
+        layout: 'row',
+        nodes: [
+          { id: 'in', label: 'Incoming traffic', accent: 'client' },
+          { id: 'fw', label: 'Firewall', sub: 'allow / deny rules', accent: 'edge' },
+          { id: 'app', label: 'Allowed -> app', accent: 'success' },
+        ],
+        edges: [
+          { from: 'in', to: 'fw' },
+          { from: 'fw', to: 'app', label: 'matches allow' },
+        ],
+      },
+    ],
+    related: ['CIDR', 'IP address', 'port', 'reverse proxy'],
+  },
+
+  'OSI model': {
+    body: [
+      '**The OSI model is a seven-layer map of how network communication is organized,** from the physical wire up to the application. Each layer does one job and talks only to the layers above and below it.',
+      '**The seven layers (bottom to top):** Physical (cables, signals), Data Link (MAC addresses, switches), Network (IP addresses, routers), Transport (TCP/UDP, ports), Session, Presentation (encryption, TLS), Application (HTTP, DNS). A handy mnemonic is "Please Do Not Throw Sausage Pizza Away."',
+      '**Why it helps.** It gives a shared vocabulary for where a problem lives: a cable issue is Layer 1, a routing issue Layer 3, an HTTP bug Layer 7. In practice the simpler TCP/IP model (Link, Internet, Transport, Application) is what engineers use day to day.',
+    ],
+    examples: [
+      'Your HTTP request (L7) is wrapped in TCP (L4), then IP (L3), then Ethernet (L2), then sent as signals (L1), and unwrapped in reverse at the server.',
+      '"It\'s a Layer 8 problem" is engineer slang for user error, the joke layer above the seven.',
+    ],
+    diagrams: [
+      {
+        caption: 'Seven layers, each wrapping the one above as data moves down to the wire.',
+        layout: 'stack',
+        nodes: [
+          { id: 'l7', label: 'Application', sub: 'HTTP, DNS', accent: 'compute' },
+          { id: 'l4', label: 'Transport', sub: 'TCP, UDP, ports', accent: 'edge' },
+          { id: 'l3', label: 'Network', sub: 'IP, routers', accent: 'primary' },
+          { id: 'l1', label: 'Physical / Link', sub: 'MAC, cables', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['TCP', 'UDP', 'IP address', 'packet'],
+  },
+
+  throughput: {
+    body: [
+      '**Throughput is the actual rate of useful work delivered:** requests per second, bytes per second, messages processed per minute. It answers "how much is the system really getting done?"',
+      '**Three numbers people confuse.** Latency is the delay for one request (how long you wait). Bandwidth is the maximum capacity of the pipe (the theoretical ceiling). Throughput is the real rate achieved (often below bandwidth, limited by latency, contention, or a bottleneck).',
+      '**The highway analogy:** latency is how long your car takes to drive the road, bandwidth is how many lanes there are, throughput is how many cars actually arrive per minute. A read-heavy system raises throughput with caching and replicas; a write-heavy one with sharding and queues.',
+    ],
+    examples: [
+      'A pipe with high bandwidth but high latency can still have low throughput if requests wait on each other (fixed by concurrency).',
+      'Adding read replicas raises read throughput without changing any single request\'s latency.',
+    ],
+    related: ['latency', 'horizontal scaling', 'load balancer', 'cache'],
   },
 }
 
