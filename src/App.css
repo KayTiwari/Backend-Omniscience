@@ -4584,3 +4584,88 @@ input:focus-visible {
   line-height: 1.5;
   text-align: center;
 }
+
+/* ===== AWS flashcards ===== */
+.aws-flashcard .aws-card-cat {
+  display: inline-block;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ff9900;
+  background: color-mix(in srgb, #ff9900 12%, transparent);
+  border-radius: 999px;
+  padding: 4px 12px;
+  margin-bottom: 14px;
+}
+
+.aws-card-front {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 30px 26px;
+  background: linear-gradient(160deg, color-mix(in srgb, #ff9900 6%, var(--field)), var(--field));
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.aws-card-front h2 {
+  margin: 0;
+  font-size: 34px;
+}
+
+.aws-card-full {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.aws-card-flip > summary {
+  cursor: pointer;
+  list-style: none;
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  background: #ff9900;
+  border-radius: 10px;
+  padding: 11px;
+  transition: background 140ms;
+}
+
+.aws-card-flip > summary::-webkit-details-marker { display: none; }
+.aws-card-flip[open] > summary { background: var(--silver-deep, #888892); }
+
+.aws-card-back {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-top: 12px;
+  display: grid;
+  gap: 14px;
+}
+
+.aws-card-what {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.aws-card-section h4 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--brand-b);
+}
+
+.aws-card-section ul {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 5px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+}

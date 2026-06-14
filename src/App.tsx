@@ -33,6 +33,7 @@ import { appendixTargetByGlossaryId } from './course.appendix'
 import { glossaryEntries, glossaryEntryById } from './glossaryEntries'
 import { glossaryId } from './glossary'
 import { Diagram } from './Diagram'
+import { awsCardById } from './course.aws'
 import { renderGlossaryText } from './GlossaryText'
 import type { GradeResult, GradeSpec } from './grader/types'
 import { highlight } from './highlight'
@@ -1215,6 +1216,43 @@ function App() {
 
 
           </article>
+        ) : awsCardById.has(activeProblem.id) ? (
+          (() => {
+            const c = awsCardById.get(activeProblem.id)!
+            return (
+              <article className="problem-panel aws-flashcard">
+                <span className="aws-card-cat">{c.category}</span>
+                <div className="aws-card-front">
+                  <h2>{c.service}</h2>
+                  <p className="aws-card-full">{c.full}</p>
+                </div>
+                <details className="aws-card-flip">
+                  <summary>Flip card</summary>
+                  <div className="aws-card-back">
+                    <p className="aws-card-what">{renderGlossaryText(c.what)}</p>
+                    <div className="aws-card-section">
+                      <h4>When to use</h4>
+                      <ul>{c.when.map((w) => <li key={w}>{renderGlossaryText(w)}</li>)}</ul>
+                    </div>
+                    <div className="aws-card-section">
+                      <h4>Remember</h4>
+                      <ul>{c.remember.map((r) => <li key={r}>{renderGlossaryText(r)}</li>)}</ul>
+                    </div>
+                  </div>
+                </details>
+                <section className="learning-path" aria-label="Flashcards">
+                  <button type="button" onClick={() => previousProblem && openProblemById(previousProblem.id)} disabled={!previousProblem}>
+                    <span>Previous</span>
+                    <strong>{previousProblem?.title ?? 'Start'}</strong>
+                  </button>
+                  <button type="button" onClick={() => nextProblem && openProblemById(nextProblem.id)} disabled={!nextProblem}>
+                    <span>Next card</span>
+                    <strong>{nextProblem?.title ?? 'End'}</strong>
+                  </button>
+                </section>
+              </article>
+            )
+          })()
         ) : activeProblem.id === 'appendix-index' ? (
           (() => {
             const q = encQuery.trim().toLowerCase()
