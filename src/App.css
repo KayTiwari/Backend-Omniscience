@@ -4669,3 +4669,143 @@ input:focus-visible {
   line-height: 1.5;
   color: var(--ink);
 }
+
+/* ===== Deep-section triggers + modal ===== */
+.deep-open {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 13px 16px;
+  margin-top: 18px;
+  background: var(--field);
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 140ms, background 140ms;
+}
+
+.deep-open:hover {
+  border-color: var(--brand-b);
+  background: color-mix(in srgb, var(--brand-b) 4%, var(--field));
+}
+
+.deep-open span {
+  font-weight: 700;
+  font-size: 14.5px;
+}
+
+.deep-open small {
+  font-size: 12.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.tutorial-links {
+  display: grid;
+  gap: 6px;
+}
+
+.tutorial-link {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 11px 15px;
+  background: var(--field);
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 140ms, transform 140ms;
+}
+
+.tutorial-link:hover {
+  border-color: var(--brand-b);
+  transform: translateX(2px);
+}
+
+.tutorial-link span {
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.tutorial-link small {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(8, 12, 22, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 5vh 16px;
+  animation: modal-fade 160ms var(--ease-out, ease) both;
+}
+
+.modal-panel {
+  width: 100%;
+  max-width: 820px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper, var(--field));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(8, 12, 22, 0.3);
+  animation: modal-rise 200ms var(--ease-out, ease) both;
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-head h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.modal-close {
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: inline-flex;
+}
+
+.modal-close:hover {
+  color: var(--ink);
+  background: var(--rule-soft, var(--line));
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+@keyframes modal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -33,6 +33,7 @@ import { appendixTargetByGlossaryId } from './course.appendix'
 import { glossaryEntries, glossaryEntryById } from './glossaryEntries'
 import { glossaryId } from './glossary'
 import { Diagram } from './Diagram'
+import { Modal } from './Modal'
 import { awsCardById } from './course.aws'
 import { renderGlossaryText } from './GlossaryText'
 import type { GradeResult, GradeSpec } from './grader/types'
@@ -168,6 +169,7 @@ function App() {
   const [activeProblemId, setActiveProblemId] = useState(initialLocation.problem.id)
   const [query, setQuery] = useState('')
   const [homeQuery, setHomeQuery] = useState('')
+  const [openModal, setOpenModal] = useState<string | null>(null)
   const [encQuery, setEncQuery] = useState('')
   const [encLetter, setEncLetter] = useState('')
   const [progress, setProgress] = useState<ProgressState>(() => loadProgress())
@@ -802,16 +804,21 @@ function App() {
             {tutorials.some((tut) => tut.subjectId === activeSubject.id) && (
               <section className="prompt-block learn-block">
                 <h3>Go Deeper: Subject Tutorials</h3>
-                {tutorials
-                  .filter((tut) => tut.subjectId === activeSubject.id)
-                  .map((tut) => (
-                    <details key={tut.id} className="learn-item">
-                      <summary>
-                        {tut.title} · {tut.minutes} min
-                      </summary>
-                      <div className="learn-body">{renderProse(tut.body)}</div>
-                    </details>
-                  ))}
+                <div className="tutorial-links">
+                  {tutorials
+                    .filter((tut) => tut.subjectId === activeSubject.id)
+                    .map((tut) => (
+                      <button
+                        key={tut.id}
+                        type="button"
+                        className="tutorial-link"
+                        onClick={() => openProblemById(tut.id)}
+                      >
+                        <span>{tut.title}</span>
+                        <small>{tut.minutes} min →</small>
+                      </button>
+                    ))}
+                </div>
               </section>
             )}
     </>
@@ -1698,11 +1705,14 @@ function App() {
           )}
 
           {activePage === 'prove' && recallPrompts.length > 0 && (
-            <details className="recall-checks optional-section" aria-label="Quick write practice">
-              <summary>
-                <h4>Optional: Quick Write</h4>
-                <p>Say it in your own words. Great interview prep, never required.</p>
-              </summary>
+            <>
+              <button type="button" className="deep-open" onClick={() => setOpenModal('quickwrite')}>
+                <span>Quick Write</span>
+                <small>Optional · say it in your own words →</small>
+              </button>
+              {openModal === 'quickwrite' && (
+                <Modal title="Quick Write" onClose={() => setOpenModal(null)}>
+
               <div className="recall-grid">
                 {recallPrompts.map((item, index) => {
                   const value = progress.recallAnswer[`${activeProblem.id}:${index}`] ?? ''
@@ -1739,7 +1749,10 @@ function App() {
                   )
                 })}
               </div>
-            </details>
+            
+                </Modal>
+              )}
+              </>
           )}
 
           {activePage === 'predict' && tutorialChecks.length > 0 && (
@@ -1812,11 +1825,14 @@ function App() {
           )}
 
           {activePage === 'prove' && activeInterviewAnswers.length > 0 && (
-            <details className="interview-panel optional-section" aria-label="Explain it in an interview">
-              <summary>
-                <h3>Optional: Explain It In An Interview</h3>
-                <p>Practice the same concept at junior, senior, and system-design depth.</p>
-              </summary>
+            <>
+              <button type="button" className="deep-open" onClick={() => setOpenModal('interview')}>
+                <span>Explain It In An Interview</span>
+                <small>Optional · junior, senior, system-design depth →</small>
+              </button>
+              {openModal === 'interview' && (
+                <Modal title="Explain It In An Interview" onClose={() => setOpenModal(null)}>
+
               <div className="interview-answer-list">
                 {activeInterviewAnswers.map((answer) => (
                   <details key={answer.key} className="interview-answer-card">
@@ -1859,17 +1875,26 @@ function App() {
                   {progress.defended[activeProblem.id] ? 'Can defend' : 'Mark defended'}
                 </button>
               </div>
-            </details>
+            
+                </Modal>
+              )}
+              </>
           )}
 
           {activePage === 'learn' && interactive && (
-            <details className="optional-section deep-notes">
-              <summary>
-                <h3>Go Deeper: Full Notes</h3>
-                <p>The complete write-up, production notes, and subject tutorials.</p>
-              </summary>
+            <>
+              <button type="button" className="deep-open" onClick={() => setOpenModal('fullnotes')}>
+                <span>Full Notes</span>
+                <small>The complete write-up, production notes, and subject tutorials →</small>
+              </button>
+              {openModal === 'fullnotes' && (
+                <Modal title="Full Notes" onClose={() => setOpenModal(null)}>
+
               {learnDeepBlocks}
-            </details>
+            
+                </Modal>
+              )}
+              </>
           )}
 
           {activePage === 'learn' && !interactive && learnDeepBlocks}
@@ -2063,11 +2088,14 @@ function App() {
           )}
 
           {activePage === 'prove' && activeProblem.questions && (
-            <details className="review-block optional-section">
-              <summary>
-                <h3>Optional: Review Questions</h3>
-                <p>Test yourself before moving on.</p>
-              </summary>
+            <>
+              <button type="button" className="deep-open" onClick={() => setOpenModal('review')}>
+                <span>Review Questions</span>
+                <small>Optional · test yourself →</small>
+              </button>
+              {openModal === 'review' && (
+                <Modal title="Review Questions" onClose={() => setOpenModal(null)}>
+
               <div className="review-card-grid">
                 {activeProblem.questions.map((question, index) => (
                   <details key={question} className="review-card">
@@ -2094,7 +2122,10 @@ function App() {
                   </details>
                 ))}
               </div>
-            </details>
+            
+                </Modal>
+              )}
+              </>
           )}
 
           {activePage === 'prove' && (

@@ -33,19 +33,8 @@ export const systemDesignPractice: Problem[] = [
       'Add abuse limits (size caps, rate limits) on creation.',
     ],
   ),
-  design(
-    'design-rate-limiter',
-    'Rate Limiter',
-    'Core',
-    45,
-    'Design a distributed rate limiter that caps requests per client across many servers. Compare fixed-window, sliding-window, and token-bucket, and pick where it lives.',
-    [
-      'Choose an algorithm (token bucket for bursts) and justify it.',
-      'Keep counters in a shared store (Redis) so the limit is global, not per-instance.',
-      'Return 429 with Retry-After; decide per-key (API key, IP, user).',
-      'Handle the store being slow or down (fail open vs fail closed).',
-    ],
-  ),
+  // (A "Distributed Rate Limiter" design prompt already exists in the
+  // system-design subject, so it is not duplicated here.)
 
   // ----- Real-time -----
   design(

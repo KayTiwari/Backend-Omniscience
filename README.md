@@ -1,23 +1,38 @@
 # Backend Omniscience
 
+**0 → 1 Backend.** From your first line of code to production systems.
+
 https://backend-omniscience.vercel.app/
 
 ![Backend Omniscience](./screenshot.png)
 
-A repo-based backend training app for building backend omniscience through repeated drills, debugging prompts, design exercises, and capstone builds.
+A free, interactive backend curriculum. Every lesson runs the same loop: see
+real code or traffic run (outputs verified against the real runtime), predict
+what it does, change one thing and watch what breaks, write it yourself in an
+embedded editor with real tests graded in your browser, then lock in the
+takeaways. No account, no signup; progress lives in `localStorage`.
 
-The course is inspired by roadmap-style backend progression and organized into subjects:
+## What's inside
 
-- Internet & HTTP
-- Backend language core
-- SQL & PostgreSQL
-- API design
-- Auth & security
-- Architecture
-- DevOps for backend
-- Performance & scale
-- System design
-- Capstone gauntlet
+The catalog is two tracks plus an encyclopedia.
+
+**Backend Concepts** — Internet & HTTP, API design, SQL & PostgreSQL, Auth &
+security, Caching, Queues & background jobs, Testing & quality, Architecture,
+Performance & scale, Files & object storage, DevOps, Observability, Distributed
+systems, **System Design** (a 10-module concept ladder plus 23 design-interview
+problems), **AWS** (an 8-module foundation course plus a 32-service flashcard
+deck), and the Capstone gauntlet. Several open with a foundational, hands-on
+module ladder so a true beginner starts at zero.
+
+**Languages & Frameworks** — JavaScript, TypeScript, Node, Python, Flask,
+Django, and C#/.NET, each with a from-zero interactive ladder.
+
+**Encyclopedia** — ~140 backend terms, each its own page with a full
+explanation, worked examples, and SVG diagrams, browsable by search or A-Z and
+grouped into HTTP, APIs, Databases, Security, Caching & Async, Scale &
+Reliability, Operations, Technologies, and Patterns.
+
+Plus ~500 in-browser graded coding drills (Python on Pyodide, JS, TypeScript).
 
 ## Run Locally
 
