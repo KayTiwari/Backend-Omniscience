@@ -30,6 +30,9 @@ import {
 import { validateCourse } from './courseValidation'
 import { applyEditorKey } from './editorKeys'
 import { appendixTargetByGlossaryId } from './course.appendix'
+import { glossaryEntries, glossaryEntryById } from './glossaryEntries'
+import { glossaryId } from './glossary'
+import { Diagram } from './Diagram'
 import { renderGlossaryText } from './GlossaryText'
 import type { GradeResult, GradeSpec } from './grader/types'
 import { highlight } from './highlight'
@@ -164,6 +167,8 @@ function App() {
   const [activeProblemId, setActiveProblemId] = useState(initialLocation.problem.id)
   const [query, setQuery] = useState('')
   const [homeQuery, setHomeQuery] = useState('')
+  const [encQuery, setEncQuery] = useState('')
+  const [encLetter, setEncLetter] = useState('')
   const [progress, setProgress] = useState<ProgressState>(() => loadProgress())
   const [gradeResults, setGradeResults] = useState<Record<string, GradeResult>>({})
   const [specsByProblemId, setSpecsByProblemId] = useState<Map<string, GradeSpec>>(
@@ -1210,42 +1215,162 @@ function App() {
 
 
           </article>
-        ) : activeProblem.id.startsWith('appendix-') ? (
-        <article className="problem-panel reference-view">
-          <p className="eyebrow">Encyclopedia</p>
-          <h2>{activeProblem.title.replace(/^Appendix: /, '')}</h2>
-          {renderProse(activeProblem.explanation)}
-          <section className="reference-facts" aria-label="Need to know">
-            <h3>Need To Know</h3>
-            <ul>
-              {activeProblem.checklist.map((fact) => (
-                <li key={fact}>{renderGlossaryText(fact)}</li>
-              ))}
-            </ul>
-          </section>
-          <section className="learning-path" aria-label="Encyclopedia pages">
-            <button
-              type="button"
-              onClick={() => previousProblem && openProblemById(previousProblem.id)}
-              disabled={!previousProblem}
-            >
-              <span>Previous</span>
-              <strong>{previousProblem?.title.replace(/^Appendix: /, '') ?? 'Start'}</strong>
-            </button>
-            <div>
-              <span>Reference</span>
-              <strong>Glossary & Maps</strong>
-            </div>
-            <button
-              type="button"
-              onClick={() => nextProblem && openProblemById(nextProblem.id)}
-              disabled={!nextProblem}
-            >
-              <span>Next</span>
-              <strong>{nextProblem?.title.replace(/^Appendix: /, '') ?? 'End'}</strong>
-            </button>
-          </section>
-        </article>
+        ) : activeProblem.id === 'appendix-index' ? (
+          (() => {
+            const q = encQuery.trim().toLowerCase()
+            const filtered = glossaryEntries.filter((entry) => {
+              if (q) {
+                return (
+                  entry.term.toLowerCase().includes(q) ||
+                  entry.short.toLowerCase().includes(q) ||
+                  (entry.aka ?? []).some((a) => a.toLowerCase().includes(q))
+                )
+              }
+              if (encLetter) return entry.term[0].toUpperCase() === encLetter
+              return true
+            })
+            const letters = [...new Set(glossaryEntries.map((e) => e.term[0].toUpperCase()))].sort()
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
+            return (
+              <article className="problem-panel encyclopedia-index">
+                <p className="eyebrow">Encyclopedia</p>
+                <h2>Every backend term, explained.</h2>
+                <p className="enc-lede">
+                  {glossaryEntries.length} terms, each with a full explanation, diagrams, and worked examples.
+                </p>
+                <label className="enc-search">
+                  <Search size={18} />
+                  <input
+                    value={encQuery}
+                    onChange={(event) => {
+                      setEncQuery(event.target.value)
+                      setEncLetter('')
+                    }}
+                    placeholder="Search terms..."
+                  />
+                </label>
+                <div className="enc-alphabet" role="tablist" aria-label="Jump to letter">
+                  <button
+                    type="button"
+                    className={!encLetter && !q ? 'active' : ''}
+                    onClick={() => {
+                      setEncLetter('')
+                      setEncQuery('')
+                    }}
+                  >
+                    All
+                  </button>
+                  {alphabet.map((letter) => (
+                    <button
+                      key={letter}
+                      type="button"
+                      className={encLetter === letter ? 'active' : ''}
+                      disabled={!letters.includes(letter)}
+                      onClick={() => {
+                        setEncLetter(encLetter === letter ? '' : letter)
+                        setEncQuery('')
+                      }}
+                    >
+                      {letter}
+                    </button>
+                  ))}
+                </div>
+                <div className="enc-list">
+                  {filtered.map((entry) => (
+                    <button
+                      key={entry.id}
+                      type="button"
+                      className="enc-list-item"
+                      onClick={() => openProblemById(entry.id)}
+                    >
+                      <span className="enc-list-term">{entry.term}</span>
+                      <span className="enc-list-cat">{entry.category}</span>
+                      <span className="enc-list-short">{entry.short}</span>
+                    </button>
+                  ))}
+                  {filtered.length === 0 && <p className="enc-empty">No terms match "{encQuery}".</p>}
+                </div>
+              </article>
+            )
+          })()
+        ) : glossaryEntryById.has(activeProblem.id) ? (
+          (() => {
+            const entry = glossaryEntryById.get(activeProblem.id)!
+            return (
+              <article className="problem-panel encyclopedia-entry">
+                <button type="button" className="enc-back" onClick={() => openProblemById('appendix-index')}>
+                  ← Encyclopedia
+                </button>
+                <span className="enc-category">{entry.category}</span>
+                <h2>{entry.term}</h2>
+                {entry.aka && entry.aka.length > 0 && (
+                  <p className="enc-aka">Also called: {entry.aka.join(', ')}</p>
+                )}
+                <p className="enc-short">{renderGlossaryText(entry.short)}</p>
+                {entry.body && <div className="enc-body">{renderProse(entry.body.join('\n\n'))}</div>}
+                {entry.diagrams && entry.diagrams.length > 0 && (
+                  <div className="enc-diagrams">
+                    {entry.diagrams.map((spec, i) => (
+                      <Diagram key={i} spec={spec} />
+                    ))}
+                  </div>
+                )}
+                {entry.examples && entry.examples.length > 0 && (
+                  <section className="enc-examples">
+                    <h3>Examples</h3>
+                    <ul>
+                      {entry.examples.map((ex) => (
+                        <li key={ex}>{renderGlossaryText(ex)}</li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+                {!entry.body && (
+                  <p className="enc-stub">
+                    A fuller write-up with diagrams and examples is on the way for this term.
+                  </p>
+                )}
+                {entry.related && entry.related.length > 0 && (
+                  <section className="enc-related">
+                    <h3>Related</h3>
+                    <div className="enc-related-tags">
+                      {entry.related.map((name) => {
+                        const targetId = glossaryId(name)
+                        if (!glossaryEntryById.has(targetId)) return null
+                        return (
+                          <button key={name} type="button" onClick={() => openProblemById(targetId)}>
+                            {name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </section>
+                )}
+                <section className="learning-path" aria-label="Encyclopedia pages">
+                  <button
+                    type="button"
+                    onClick={() => previousProblem && openProblemById(previousProblem.id)}
+                    disabled={!previousProblem || previousProblem.id === 'appendix-index'}
+                  >
+                    <span>Previous</span>
+                    <strong>{previousProblem && previousProblem.id !== 'appendix-index' ? previousProblem.title : 'Index'}</strong>
+                  </button>
+                  <button type="button" className="enc-index-link" onClick={() => openProblemById('appendix-index')}>
+                    <span>Browse</span>
+                    <strong>All terms</strong>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => nextProblem && openProblemById(nextProblem.id)}
+                    disabled={!nextProblem}
+                  >
+                    <span>Next</span>
+                    <strong>{nextProblem?.title ?? 'End'}</strong>
+                  </button>
+                </section>
+              </article>
+            )
+          })()
         ) : (
         <article className="problem-panel">
           <div className="problem-heading">

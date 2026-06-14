@@ -402,6 +402,34 @@ export const glossaryTerms: GlossaryTerm[] = [
     term: 'while loop',
     definition: 'A loop that repeats while a condition remains true.',
   },
+  {
+    term: 'webhook',
+    definition:
+      'A user-defined HTTP callback: instead of you polling another service for changes, it POSTs to your URL the moment an event happens.',
+    synonyms: ['HTTP callback', 'webhooks'],
+  },
+  {
+    term: 'load balancer',
+    definition:
+      'A server that spreads incoming requests across a pool of backend machines and stops routing to ones that fail their health check.',
+    synonyms: ['load balancing'],
+  },
+  {
+    term: 'consistent hashing',
+    definition:
+      'A way to map keys to servers on a ring so that adding or removing a server moves only a small fraction of keys instead of nearly all of them.',
+  },
+  {
+    term: 'API gateway',
+    definition:
+      'A single front door in front of many services that routes each request and centralizes auth, rate limiting, and logging.',
+  },
+  {
+    term: 'microservices',
+    definition:
+      'An architecture that splits a system into small, independently deployable services that each own their data.',
+    synonyms: ['microservice'],
+  },
 ]
 
 export type GlossaryMatch = {
