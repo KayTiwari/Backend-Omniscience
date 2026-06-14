@@ -15,6 +15,7 @@ export type GlossaryCategory =
   | 'Scale & Reliability'
   | 'Operations'
   | 'Technologies'
+  | 'Patterns'
   | 'Language & Runtime'
 
 export type GlossaryEntry = {
@@ -40,6 +41,7 @@ const CATEGORY_TERMS: Record<GlossaryCategory, string[]> = {
   'Scale & Reliability': ['horizontal scaling', 'sharding', 'replication', 'load balancer', 'consistent hashing', 'microservices', 'CAP theorem', 'eventual consistency', 'strong consistency', 'heartbeat', 'quorum', 'leader election', 'distributed lock', 'service discovery'],
   Operations: ['deployment', 'CI/CD', 'container', 'observability', 'log', 'metric', 'trace', 'latency', 'SLO', 'graceful shutdown'],
   Technologies: ['MySQL', 'MongoDB', 'Redis', 'Memcached', 'DynamoDB', 'Cassandra', 'Elasticsearch', 'Kafka', 'RabbitMQ', 'Amazon SQS', 'Amazon S3', 'AWS Lambda', 'Nginx', 'ZooKeeper', 'Docker', 'Kubernetes', 'Prometheus', 'Apache Spark', 'Apache Flink'],
+  Patterns: ['fanout', 'hot key', 'unique ID generation', 'distributed counting', 'long polling', 'server-sent events', 'geohash', 'single point of failure', 'multi-region', 'distributed transaction', 'saga', 'circuit breaker', 'load shedding', 'chunked upload', 'multi-tenancy'],
   'Language & Runtime': ['function', 'class', 'object', 'array', 'dictionary', 'for loop', 'while loop', 'runtime', 'concurrency model', 'side effect', 'memory usage', 'dependency management', 'runtime profiling'],
 }
 
@@ -1188,6 +1190,358 @@ const RICH: Record<string, Rich> = {
       'Flagging fraudulent transactions within seconds as events flow in.',
     ],
     related: ['Kafka', 'Apache Spark', 'eventual consistency', 'queue'],
+  },
+
+  fanout: {
+    body: [
+      '**Fanout is delivering one event to many recipients,** the core of feeds, notifications, and chat groups. There are two strategies with opposite trade-offs.',
+      '**Fanout-on-write (push).** When a user posts, immediately write a copy into each follower\'s feed. Reads are then instant (the feed is precomputed), but a celebrity with 50M followers triggers 50M writes per post: the hot-key problem.',
+      '**Fanout-on-read (pull).** Store the post once; build each follower\'s feed on demand by pulling from everyone they follow. Cheap writes, but reads are expensive and slow. Real systems go hybrid: push for normal users, pull for celebrities.',
+    ],
+    examples: [
+      'Twitter-style feed: push posts into follower timelines, except for celebrities whose posts are pulled at read time.',
+      'A group chat fans one message out to every member\'s connection.',
+    ],
+    diagrams: [
+      {
+        caption: 'Fanout-on-write: one post is copied into every follower\'s feed at write time.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'post', label: 'New post', accent: 'compute' },
+          { id: 'f1', label: 'Follower feed 1', accent: 'storage' },
+          { id: 'f2', label: 'Follower feed 2', accent: 'storage' },
+          { id: 'f3', label: 'Follower feed 3', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['hot key', 'queue', 'cache', 'eventual consistency'],
+  },
+
+  'hot key': {
+    body: [
+      '**A hot key is one key that takes a wildly disproportionate share of traffic:** a celebrity account, a viral product, a giant tenant, the current-day partition. It overloads whichever shard or cache node owns it while the others sit idle.',
+      '**Why it hurts.** Sharding assumes traffic spreads across keys. One hot key breaks that assumption, recreating a single bottleneck on top of a distributed system.',
+      '**Fixes.** Cache the hot key aggressively so most reads never reach the shard; split it into sub-keys (a counter into N shards summed on read); give the whale its own dedicated infrastructure; or add a small per-node local cache in front of the shared cache.',
+    ],
+    examples: [
+      'A flash sale\'s single product is one hot inventory key every buyer hits at once.',
+      'A chat channel with 10M members saturates its shard while small channels idle.',
+    ],
+    diagrams: [
+      {
+        caption: 'One hot key concentrates load on its shard while the others stay cold.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'traffic', label: 'Traffic', accent: 'compute' },
+          { id: 's0', label: 'Shard 0', sub: 'HOT', accent: 'danger' },
+          { id: 's1', label: 'Shard 1', sub: 'idle', accent: 'default' },
+          { id: 's2', label: 'Shard 2', sub: 'idle', accent: 'default' },
+        ],
+        edges: [
+          { from: 'traffic', to: 's0', label: '90%' },
+          { from: 'traffic', to: 's1', dashed: true },
+          { from: 'traffic', to: 's2', dashed: true },
+        ],
+      },
+    ],
+    related: ['sharding', 'consistent hashing', 'cache', 'distributed counting', 'fanout'],
+  },
+
+  'unique ID generation': {
+    body: [
+      '**Generating globally unique ids at scale is harder than it looks,** because a single auto-increment column is a bottleneck and a single point of failure once many machines need ids at once.',
+      '**The options.** UUIDs are random and need no coordination, but are large and not sortable. Snowflake-style ids pack a timestamp, a machine id, and a per-millisecond sequence into a 64-bit number that is unique, compact, and roughly time-sortable. A ticket server hands out ranges of ids to each machine to amortize coordination.',
+      '**Time-sortable matters** because ids that sort by creation time make database indexes and pagination far more efficient than random UUIDs.',
+    ],
+    examples: [
+      'Snowflake id: [timestamp | machine id | sequence] = a unique, sortable 64-bit number with no central coordinator.',
+      'A ticket server gives machine A ids 1-1000 and machine B 1001-2000, so neither coordinates per id.',
+    ],
+    diagrams: [
+      {
+        caption: 'A Snowflake id packs time, machine, and a sequence number, so each node mints ids alone.',
+        layout: 'row',
+        nodes: [
+          { id: 'ts', label: 'Timestamp', sub: '41 bits', accent: 'primary' },
+          { id: 'm', label: 'Machine id', sub: '10 bits', accent: 'edge' },
+          { id: 'seq', label: 'Sequence', sub: '12 bits', accent: 'compute' },
+        ],
+        edges: [],
+      },
+    ],
+    related: ['sharding', 'primary key', 'database', 'index'],
+  },
+
+  'distributed counting': {
+    body: [
+      '**Counting at massive scale (likes, views, votes) cannot use a single row,** because every increment contending on one row creates a hot key that serializes all the writes.',
+      '**Sharded counters.** Split the count into N sub-counters on different shards; each increment hits a random one; reads sum all N. The contention drops by a factor of N, at the cost of a sum on read.',
+      '**Approximate counting.** When exactness does not matter (a view count of "2.3M"), structures like HyperLogLog count unique items in tiny memory, and batching or sampling cut write volume further.',
+    ],
+    examples: [
+      'A viral video\'s view counter split into 100 sub-counters so 100x fewer writes contend on each.',
+      'HyperLogLog estimates unique visitors from billions of events using kilobytes of memory.',
+    ],
+    diagrams: [
+      {
+        caption: 'Spread increments across N sub-counters; sum them on read.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'inc', label: 'Increments', accent: 'compute' },
+          { id: 'c0', label: 'Counter 0', accent: 'cache' },
+          { id: 'c1', label: 'Counter 1', accent: 'cache' },
+          { id: 'c2', label: 'Counter 2', accent: 'cache' },
+        ],
+      },
+    ],
+    related: ['hot key', 'sharding', 'cache', 'eventual consistency'],
+  },
+
+  'long polling': {
+    body: [
+      '**Real-time updates sit on a spectrum,** from cheap-and-laggy to instant-and-costly. Long polling is the middle.',
+      '**The four rungs.** Plain polling asks "anything new?" on a timer (wasteful, laggy). Long polling holds the request open until the server has data, then returns and the client reconnects (near real-time over plain HTTP). Server-sent events keep one connection open for a one-way server-to-client stream. WebSockets keep a persistent two-way connection for true bidirectional real-time.',
+      '**Choosing.** Polling for rarely-changing data, long polling or SSE for server-to-client updates (notifications, live feeds), WebSockets for two-way realtime (chat, multiplayer, collaborative editing).',
+    ],
+    examples: [
+      'A notifications badge can use SSE; a chat app needs WebSockets; a status page can poll every 30s.',
+      'Long polling powered live updates before WebSockets were widespread and still works through old proxies.',
+    ],
+    diagrams: [
+      {
+        caption: 'From wasteful polling to instant two-way WebSockets.',
+        layout: 'row',
+        nodes: [
+          { id: 'poll', label: 'Polling', sub: 'laggy', accent: 'default' },
+          { id: 'long', label: 'Long polling', accent: 'compute' },
+          { id: 'sse', label: 'SSE', sub: 'one-way push', accent: 'edge' },
+          { id: 'ws', label: 'WebSockets', sub: 'two-way', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['server-sent events', 'webhook', 'HTTP', 'fanout'],
+  },
+
+  'server-sent events': {
+    body: [
+      '**Server-sent events (SSE) keep one HTTP connection open for a one-way stream** from server to client. The server pushes updates as they happen; the client just listens. It is simpler than WebSockets when you only need server-to-client.',
+      '**When to use it:** live notifications, activity feeds, progress updates, and dashboards, anything where the client only consumes. For two-way (the client also sends frequently), use WebSockets.',
+    ],
+    examples: [
+      'A build dashboard streams log lines to the browser via SSE as they are produced.',
+      'A notification feed pushes new items over a single SSE connection.',
+    ],
+    related: ['long polling', 'webhook', 'HTTP'],
+  },
+
+  geohash: {
+    body: [
+      '**A geohash encodes a latitude/longitude into a short string** where nearby places share a common prefix. This turns "find things near me" (a hard 2D range query) into a fast prefix lookup.',
+      '**Why it matters for location systems.** Ride-hailing, food delivery, and "nearby" features need to find points close to a location among millions. Indexing by geohash (or a quadtree) lets you query a small set of cells around the user instead of scanning everything.',
+      '**The edge case:** two points can be close but fall in different cells (across a boundary), so queries check neighboring cells too.',
+    ],
+    examples: [
+      'Uber finds nearby drivers by looking up the rider\'s geohash cell and its neighbors.',
+      'A "restaurants near me" query reads a few geohash cells instead of every restaurant.',
+    ],
+    diagrams: [
+      {
+        caption: 'Nearby points share a geohash prefix, so proximity becomes a prefix lookup.',
+        layout: 'row',
+        nodes: [
+          { id: 'loc', label: 'Lat / lng', accent: 'compute' },
+          { id: 'gh', label: 'Geohash', sub: 'shared prefix = near', accent: 'edge' },
+          { id: 'near', label: 'Nearby cells', sub: 'small lookup', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['index', 'sharding', 'cache'],
+  },
+
+  'single point of failure': {
+    body: [
+      '**A single point of failure (SPOF) is any component with no backup whose death takes the whole system down.** The single database primary, the one load balancer, the one cache, the one DNS provider.',
+      '**Removing SPOFs means redundancy everywhere.** Replicate the database with failover; run load balancers in redundant pairs; spread across availability zones and regions; use multiple providers for critical dependencies. The goal is that any one component can die without an outage.',
+      '**Find them by asking, for each box in your diagram, "what happens if this dies right now?"** If the answer is "everything stops," that box needs a backup.',
+    ],
+    examples: [
+      'One primary database is a SPOF until you add a replica that can be promoted on failure.',
+      'A single load balancer is a SPOF; production runs an active-passive or active-active pair.',
+    ],
+    diagrams: [
+      {
+        caption: 'A lone component is a SPOF; redundancy removes it.',
+        layout: 'row',
+        nodes: [
+          { id: 'one', label: 'One primary', sub: 'SPOF', accent: 'danger' },
+          { id: 'pair', label: 'Primary + standby', sub: 'failover', accent: 'success' },
+        ],
+        edges: [{ from: 'one', to: 'pair', label: 'add redundancy', dashed: true }],
+      },
+    ],
+    related: ['replication', 'load balancer', 'multi-region', 'heartbeat'],
+  },
+
+  'multi-region': {
+    body: [
+      '**Multi-region means running in several geographic regions at once,** for two reasons: lower latency (serve users from a region near them) and disaster tolerance (a whole region can fail without an outage).',
+      '**The hard part is data.** Active-passive keeps one region live and a standby ready to promote (simple, some downtime on failover). Active-active runs all regions live (no downtime, but now writes happen in multiple places and you face cross-region replication lag and conflicts).',
+      '**Routing.** Geo-DNS or anycast sends each user to the nearest healthy region. Most systems keep strongly-consistent data (payments) in one region and replicate read-heavy data widely.',
+    ],
+    examples: [
+      'Serve EU users from Frankfurt and US users from Virginia, each with a local replica.',
+      'A region outage fails over to another with minimal disruption.',
+    ],
+    diagrams: [
+      {
+        caption: 'Users route to the nearest region; regions replicate across the world.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'dns', label: 'Geo-routing', sub: 'nearest region', accent: 'edge' },
+          { id: 'us', label: 'US region', accent: 'compute' },
+          { id: 'eu', label: 'EU region', accent: 'compute' },
+          { id: 'ap', label: 'APAC region', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['replication', 'CDN', 'single point of failure', 'eventual consistency', 'CAP theorem'],
+  },
+
+  'distributed transaction': {
+    body: [
+      '**A distributed transaction spans multiple services or databases** that must all succeed or all fail together, even though they do not share one database\'s transaction. Doing this correctly is genuinely hard.',
+      '**Two-phase commit (2PC)** has a coordinator ask everyone to "prepare," then "commit" only if all agreed. It is strongly consistent but slow and fragile: if the coordinator dies mid-commit, participants are stuck holding locks.',
+      '**Sagas are the common alternative.** Instead of one atomic transaction, run a sequence of local transactions, each with a compensating action that undoes it. If step 3 fails, run the compensations for steps 2 and 1. Eventually consistent, but resilient and lock-free, which is why microservices favor it.',
+    ],
+    examples: [
+      'An order spans inventory, payment, and shipping services; a saga reserves stock, charges, and ships, compensating backward on any failure.',
+      '2PC across two databases guarantees both commit or neither, at the cost of holding locks until everyone agrees.',
+    ],
+    diagrams: [
+      {
+        caption: 'A saga runs local steps forward, and compensating actions backward on failure.',
+        layout: 'row',
+        nodes: [
+          { id: 's1', label: 'Reserve stock', accent: 'compute' },
+          { id: 's2', label: 'Charge card', accent: 'compute' },
+          { id: 's3', label: 'Ship', sub: 'fails -> compensate', accent: 'danger' },
+        ],
+      },
+    ],
+    related: ['saga', 'transaction', 'idempotency', 'eventual consistency', 'microservices'],
+  },
+
+  saga: {
+    body: [
+      '**A saga is how microservices do a transaction without a distributed lock-step commit.** It is a sequence of local transactions, one per service, where each step has a compensating action that semantically undoes it.',
+      '**Forward and backward.** Steps run in order; if one fails, the saga runs the compensations for the steps that already succeeded, in reverse. There is no global rollback, just deliberate undo steps (refund the charge, release the reservation).',
+      '**Orchestration vs choreography.** An orchestrator service can drive the steps centrally, or services can react to each other\'s events (choreography). Either way, each step must be idempotent, since retries happen.',
+    ],
+    examples: [
+      'Trip booking: reserve flight, reserve hotel, charge card; if the charge fails, cancel the hotel and flight reservations.',
+      'Compensation is not a database rollback: it is a new action that reverses the effect (issue a refund).',
+    ],
+    related: ['distributed transaction', 'idempotency', 'queue', 'microservices', 'eventual consistency'],
+  },
+
+  'circuit breaker': {
+    body: [
+      '**A circuit breaker stops your service from hammering a failing dependency.** After a threshold of consecutive errors, it "opens": further calls fail fast for a cooldown instead of waiting on a timeout, giving the struggling dependency room to recover.',
+      '**The states.** Closed (calls pass through normally). Open (calls fail immediately, no request sent). Half-open (after the cooldown, let a trial request through; success closes the breaker, failure re-opens it).',
+      '**Why it matters.** Without it, a slow dependency ties up every caller\'s threads waiting on timeouts, and the failure cascades upstream until the whole system stalls. The breaker contains the blast radius.',
+    ],
+    examples: [
+      'The payments service starts timing out; the breaker opens, so checkout fails fast with a clear error instead of hanging.',
+      'After 30 seconds the breaker half-opens, tests one call, and closes again once payments recover.',
+    ],
+    diagrams: [
+      {
+        caption: 'Closed passes calls; open fails fast; half-open tests recovery.',
+        layout: 'row',
+        nodes: [
+          { id: 'closed', label: 'Closed', sub: 'calls pass', accent: 'success' },
+          { id: 'open', label: 'Open', sub: 'fail fast', accent: 'danger' },
+          { id: 'half', label: 'Half-open', sub: 'test one', accent: 'compute' },
+        ],
+        edges: [
+          { from: 'closed', to: 'open', label: 'errors' },
+          { from: 'open', to: 'half', label: 'cooldown' },
+        ],
+      },
+    ],
+    related: ['retry', 'load shedding', 'single point of failure', 'graceful shutdown'],
+  },
+
+  'load shedding': {
+    body: [
+      '**Load shedding keeps a system alive under overload by deliberately dropping work** it cannot handle, instead of trying to serve everything and collapsing. Better to reject 10% than to fail 100%.',
+      '**How it is done.** Reject low-priority requests first (background jobs before user-facing ones), return 429/503 early, put a bounded queue with a waiting room in front of a spike, or degrade gracefully (serve cached or partial results). Autoscaling helps, but it is not instant, so shedding covers the gap.',
+      '**Related: backpressure** is the upstream signal that says "slow down," and a circuit breaker sheds load toward a failing dependency.',
+    ],
+    examples: [
+      'Under a traffic spike, the API returns 503 for non-critical endpoints to protect checkout.',
+      'A flash sale puts buyers through a waiting room, admitting them at a rate the system can serve.',
+    ],
+    diagrams: [
+      {
+        caption: 'Under overload, drop low-priority work so the critical path survives.',
+        layout: 'row',
+        nodes: [
+          { id: 'flood', label: 'Overload', accent: 'danger' },
+          { id: 'shed', label: 'Shed low-priority', sub: '429 / 503', accent: 'compute' },
+          { id: 'core', label: 'Critical path up', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['backpressure', 'rate limit', 'circuit breaker', 'queue'],
+  },
+
+  'chunked upload': {
+    body: [
+      '**Large files are not uploaded in one giant request;** they are split into chunks uploaded independently. A failed chunk retries on its own, the upload resumes after a dropped connection, and chunks upload in parallel for speed.',
+      '**The flow.** The client asks the server to start a multipart upload, uploads each part (often directly to object storage via a presigned URL, bypassing your app server), then tells the server to assemble them. Your app handles small control calls; the heavy bytes go straight to storage.',
+      '**Why direct-to-storage.** Routing gigabytes through your application servers wastes their capacity. Presigned URLs let the client upload to S3 directly while your server only authorizes and tracks it.',
+    ],
+    examples: [
+      'A 4 GB video uploads as hundreds of parts directly to S3; a dropped connection resumes from the last completed part.',
+      'The app server issues a presigned URL; the client PUTs the bytes to storage without touching the app tier.',
+    ],
+    diagrams: [
+      {
+        caption: 'Split into parts, upload directly to storage, then assemble.',
+        layout: 'row',
+        nodes: [
+          { id: 'file', label: 'Large file', accent: 'compute' },
+          { id: 'parts', label: 'Chunks', sub: 'parallel, resumable', accent: 'queue' },
+          { id: 's3', label: 'Object storage', sub: 'presigned URLs', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['Amazon S3', 'backpressure', 'retry', 'CDN'],
+  },
+
+  'multi-tenancy': {
+    body: [
+      '**Multi-tenancy is serving many customers (tenants) from shared infrastructure** while keeping their data isolated. It is the default for SaaS, because running a separate stack per customer does not scale economically.',
+      '**The isolation spectrum.** Shared tables with a tenant_id column on every row (cheapest, most efficient, but a missing tenant_id filter leaks data across customers). Schema-per-tenant (more isolation, more overhead). Database-per-tenant (strong isolation, highest cost). Most SaaS starts shared and isolates the biggest or most-regulated tenants.',
+      '**The constant risk: tenant data leakage.** Every query must scope to the tenant. This is enforced with mandatory filters, row-level security, or a data-access layer that injects the tenant id, never trusting individual queries to remember.',
+    ],
+    examples: [
+      'A SaaS app keeps all customers in shared tables with a tenant_id, enforced by row-level security so no query can see another tenant.',
+      'A large enterprise customer gets its own dedicated database for compliance, while everyone else shares.',
+    ],
+    diagrams: [
+      {
+        caption: 'From shared tables to dedicated databases: more isolation, more cost.',
+        layout: 'row',
+        nodes: [
+          { id: 'shared', label: 'Shared tables', sub: 'tenant_id', accent: 'compute' },
+          { id: 'schema', label: 'Schema per tenant', accent: 'edge' },
+          { id: 'db', label: 'DB per tenant', sub: 'most isolated', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['authorization', 'sharding', 'database', 'security'],
   },
 }
 

@@ -608,6 +608,85 @@ export const glossaryTerms: GlossaryTerm[] = [
     definition: 'A distributed engine for stateful stream processing: real-time analytics over event streams.',
     synonyms: ['Flink'],
   },
+  {
+    term: 'fanout',
+    definition:
+      'Delivering one event to many recipients. Fanout-on-write pushes to all followers at write time; fanout-on-read assembles on demand.',
+    synonyms: ['fan-out'],
+  },
+  {
+    term: 'hot key',
+    definition:
+      'A single key (one celebrity, one viral item, one giant tenant) that takes a hugely disproportionate share of traffic and overloads its shard.',
+    synonyms: ['hot partition'],
+  },
+  {
+    term: 'unique ID generation',
+    definition:
+      'Producing globally unique ids at scale without a single bottleneck: UUIDs, Snowflake-style time+machine ids, or a ticket server.',
+  },
+  {
+    term: 'distributed counting',
+    definition:
+      'Counting at massive scale (likes, views) without a single hot row, using sharded counters or approximate structures.',
+  },
+  {
+    term: 'long polling',
+    definition:
+      'A near-real-time technique where the client holds a request open until the server has data, between plain polling and WebSockets.',
+  },
+  {
+    term: 'server-sent events',
+    definition:
+      'A one-way stream over HTTP where the server pushes updates to the client on a single long-lived connection.',
+    synonyms: ['SSE'],
+  },
+  {
+    term: 'geohash',
+    definition:
+      'An encoding of latitude and longitude into a short string so nearby places share a prefix, used to index location data.',
+  },
+  {
+    term: 'single point of failure',
+    definition:
+      'Any component with no backup whose failure takes the whole system down. Removing SPOFs means adding redundancy everywhere.',
+    synonyms: ['SPOF'],
+  },
+  {
+    term: 'multi-region',
+    definition:
+      'Running a system in several geographic regions for lower latency and disaster tolerance, with the consistency and routing costs that brings.',
+  },
+  {
+    term: 'distributed transaction',
+    definition:
+      'A transaction spanning multiple services or databases, coordinated with two-phase commit or, more commonly, a saga.',
+  },
+  {
+    term: 'saga',
+    definition:
+      'A sequence of local transactions across services, each with a compensating action to undo it, used instead of a distributed lock-step transaction.',
+  },
+  {
+    term: 'circuit breaker',
+    definition:
+      'A guard that stops calling a failing dependency after repeated errors, failing fast for a cooldown so the dependency can recover.',
+  },
+  {
+    term: 'load shedding',
+    definition:
+      'Deliberately dropping or rejecting low-priority work under overload so the system stays up for the rest, instead of collapsing.',
+  },
+  {
+    term: 'chunked upload',
+    definition:
+      'Splitting a large file into parts uploaded independently (and resumably) to object storage, then assembled, instead of one giant request.',
+  },
+  {
+    term: 'multi-tenancy',
+    definition:
+      'Serving many customers (tenants) from shared infrastructure while isolating their data, on a spectrum from shared tables to dedicated stacks.',
+  },
 ]
 
 export type GlossaryMatch = {
