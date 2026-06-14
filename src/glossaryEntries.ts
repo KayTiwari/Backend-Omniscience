@@ -1920,6 +1920,1658 @@ const RICH: Record<string, Rich> = {
     ],
     related: ['authorization', 'sharding', 'database', 'security'],
   },
+  URL: {
+    body: [
+      "**A URL is a structured address** with four parts that each decide one thing: how to talk, to whom, about what, and with which options. scheme://host/path?query.",
+      "**The parts.** The scheme (https) sets the protocol and encryption. The host (api.example.com) names the machine via DNS. The path (/users/42) names the resource the server routes to. The query string (?limit=10) carries options as key=value pairs.",
+      "**Every request starts here:** the browser splits the URL, resolves the host to an IP, opens a connection, and sends a request for the path.",
+    ],
+    examples: [
+      'https://api.example.com/users/42?fields=name -> scheme https, host api.example.com, path /users/42, query fields=name.',
+      'A bare https://example.com requests the root path /.',
+    ],
+    diagrams: [
+      {
+        caption: 'Four parts, four jobs: protocol, machine, resource, options.',
+        layout: 'row',
+        nodes: [
+          { id: 's', label: 'scheme', sub: 'https', accent: 'edge' },
+          { id: 'h', label: 'host', sub: 'which machine', accent: 'compute' },
+          { id: 'p', label: 'path', sub: 'which resource', accent: 'primary' },
+          { id: 'q', label: 'query', sub: 'options', accent: 'default' },
+        ],
+        edges: [],
+      },
+    ],
+    related: ['DNS', 'HTTP', 'query string', 'request path'],
+  },
+
+  TCP: {
+    body: [
+      "**TCP (Transmission Control Protocol) creates a reliable, ordered byte stream** between two machines. It guarantees that bytes arrive, in order, with no duplicates, retransmitting anything lost. HTTP runs on top of it.",
+      "**The handshake.** Before any data flows, the two sides establish a connection with a three-step handshake (SYN, SYN-ACK, ACK). This round trip is why opening a new connection has a latency cost, and why connection reuse matters.",
+      "**Reliable, not fast.** TCP trades a little speed for correctness. When loss-tolerant speed matters more (video, games), UDP is used instead.",
+    ],
+    examples: [
+      'Loading a web page opens a TCP connection to port 443, then HTTP messages flow over it.',
+      'A lost packet is detected and retransmitted by TCP; the application never sees the gap.',
+    ],
+    diagrams: [
+      {
+        caption: 'The three-way handshake establishes the connection before data flows.',
+        layout: 'sequence',
+        actors: [
+          { label: 'Client', accent: 'client' },
+          { label: 'Server', accent: 'compute' },
+        ],
+        messages: [
+          { from: 0, to: 1, label: 'SYN' },
+          { from: 1, to: 0, label: 'SYN-ACK', dashed: true },
+          { from: 0, to: 1, label: 'ACK' },
+          { from: 0, to: 1, label: 'data flows' },
+        ],
+      },
+    ],
+    related: ['UDP', 'HTTP', 'TLS', 'packet'],
+  },
+
+  TLS: {
+    body: [
+      "**TLS (Transport Layer Security) encrypts a connection and proves the server is who it claims to be.** HTTPS is HTTP over TLS. It gives three guarantees: confidentiality (nobody reads the traffic), integrity (nobody alters it), and authentication (you reached the real server, via a certificate).",
+      "**The handshake.** After the TCP connection, TLS negotiates: the server presents a certificate, the two sides agree on keys, and from then on the bytes are encrypted. This adds a round trip on top of TCP.",
+      "**Why it matters.** Without TLS, anyone on the network path (the coffee-shop wifi, the ISP) can read or tamper with the traffic, including session cookies.",
+    ],
+    examples: [
+      'The padlock in the browser means TLS verified the certificate and encrypted the connection.',
+      'An expired certificate fails the handshake and the browser warns the user.',
+    ],
+    diagrams: [
+      {
+        caption: 'TLS negotiates a certificate and keys, then encrypts everything after.',
+        layout: 'sequence',
+        actors: [
+          { label: 'Client', accent: 'client' },
+          { label: 'Server', accent: 'compute' },
+        ],
+        messages: [
+          { from: 0, to: 1, label: 'hello' },
+          { from: 1, to: 0, label: 'certificate', dashed: true },
+          { from: 0, to: 1, label: 'agree on keys' },
+          { from: 0, to: 1, label: 'encrypted data' },
+        ],
+      },
+    ],
+    related: ['TCP', 'HTTP', 'authentication', 'header'],
+  },
+
+  HTTP: {
+    body: [
+      "**HTTP is the request-response protocol of the web.** A client sends a request (a method, a path, headers, and maybe a body) and the server returns a response (a status code, headers, and a body). That exchange is the whole of it.",
+      "**Stateless by design.** Each request stands alone; the server does not remember the last one. State is carried explicitly, in cookies, tokens, or the request itself, which is what lets any server handle any request and makes horizontal scaling possible.",
+      "**Versions.** HTTP/1.1 is text and one request at a time per connection; HTTP/2 multiplexes many over one connection; HTTP/3 runs over UDP for lower latency. The message shape stays the same.",
+    ],
+    examples: [
+      'GET /users/42 returns 200 with a JSON body; POST /users creates and returns 201.',
+      'Because HTTP is stateless, a login is carried as a cookie or token on every later request.',
+    ],
+    diagrams: [
+      {
+        caption: 'One request in, one response out: the whole protocol.',
+        layout: 'sequence',
+        actors: [
+          { label: 'Client', accent: 'client' },
+          { label: 'Server', accent: 'compute' },
+        ],
+        messages: [
+          { from: 0, to: 1, label: 'GET /users/42' },
+          { from: 1, to: 0, label: '200 + JSON', dashed: true },
+        ],
+      },
+    ],
+    related: ['request', 'response', 'status code', 'TCP'],
+  },
+
+  request: {
+    body: [
+      "**An HTTP request is the client's message to the server,** with a strict three-part shape: a request line (method, path, version), headers (labeled metadata), a blank line, then an optional body.",
+      "**The request line is the verb and noun:** GET /users/42 HTTP/2. The method says the kind of action; the path says which resource.",
+      "**Headers carry metadata:** Host (which site), Authorization (credentials), Content-Type (the body format), Accept (formats the client wants back). The body, on POST and PUT, carries the data.",
+    ],
+    examples: [
+      'POST /users with Content-Type: application/json and a JSON body creates a user.',
+      'curl -v shows the raw request lines (marked with >).',
+    ],
+    diagrams: [
+      {
+        caption: 'Request line, headers, blank line, then optional body.',
+        layout: 'stack',
+        nodes: [
+          { id: 'line', label: 'Request line', sub: 'GET /users/42', accent: 'primary' },
+          { id: 'headers', label: 'Headers', sub: 'Host, Auth, Accept', accent: 'edge' },
+          { id: 'body', label: 'Body', sub: 'POST/PUT data', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['response', 'HTTP', 'header', 'body'],
+  },
+
+  response: {
+    body: [
+      "**An HTTP response is the server's reply,** mirroring the request shape: a status line (version + three-digit code), headers, a blank line, then the body.",
+      "**The status line is the verdict:** HTTP/2 200. The code is the one-glance result the client reads before anything else.",
+      "**Response headers describe the payload and the response:** Content-Type tells the client how to read the body (text/html renders, application/json parses), plus cache and date headers. Your backend code sets all of it.",
+    ],
+    examples: [
+      '200 OK with Content-Type: application/json and a JSON body for an API read.',
+      'A 404 carries an error body; a 201 carries the created resource.',
+    ],
+    diagrams: [
+      {
+        caption: 'Status line, headers, blank line, then the body your code built.',
+        layout: 'stack',
+        nodes: [
+          { id: 'status', label: 'Status line', sub: 'HTTP/2 200', accent: 'success' },
+          { id: 'headers', label: 'Headers', sub: 'Content-Type', accent: 'edge' },
+          { id: 'body', label: 'Body', sub: 'HTML or JSON', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['request', 'status code', 'header', 'body'],
+  },
+
+  header: {
+    body: [
+      "**A header is a labeled metadata line on an HTTP message,** written Name: value. Headers describe the request or response without being the actual content: who is asking, what format the body is, what the client accepts, how to cache.",
+      "**Common ones.** On requests: Host, Authorization, Content-Type, Accept, User-Agent, Cookie. On responses: Content-Type, Cache-Control, Set-Cookie, Location. Header names are case-insensitive.",
+      "**They are the control plane of HTTP:** auth, caching, content negotiation, and CORS are all decided by headers, separate from the body that carries the data.",
+    ],
+    examples: [
+      'Authorization: Bearer eyJ... carries a token; Content-Type: application/json declares the body format.',
+      'Cache-Control: max-age=300 tells caches to reuse the response for five minutes.',
+    ],
+    diagrams: [
+      {
+        caption: 'Headers are labeled metadata around the body.',
+        layout: 'row',
+        nodes: [
+          { id: 'name', label: 'Name', sub: 'Content-Type', accent: 'edge' },
+          { id: 'val', label: 'Value', sub: 'application/json', accent: 'compute' },
+        ],
+        edges: [],
+      },
+    ],
+    related: ['request', 'response', 'CORS', 'status code'],
+  },
+
+  body: {
+    body: [
+      "**The body is the payload of an HTTP message,** the actual data, separated from the headers by a blank line. A request body carries what you are sending (a JSON object on POST); a response body carries what you get back (HTML for a page, JSON for an API, bytes for an image).",
+      "**The Content-Type header tells the receiver how to read it.** A body of JSON with Content-Type: application/json gets parsed as data; the same bytes labeled text/html would be rendered. Mismatches are a common integration bug.",
+      "**Not every message has one.** GET requests rarely carry a body; a 204 response has none. The body is for when there is data to move.",
+    ],
+    examples: [
+      'A POST /users body: {"name": "Kay", "role": "admin"}.',
+      'A response body is HTML for a browser, JSON for an API client.',
+    ],
+    diagrams: [
+      {
+        caption: 'Headers describe; the body carries the data.',
+        layout: 'row',
+        nodes: [
+          { id: 'headers', label: 'Headers', sub: 'Content-Type', accent: 'edge' },
+          { id: 'blank', label: 'Blank line', accent: 'default' },
+          { id: 'body', label: 'Body', sub: 'JSON / HTML', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['header', 'request', 'response', 'JSON'],
+  },
+
+  'query string': {
+    body: [
+      "**The query string is everything after the ? in a URL,** a set of key=value pairs joined by &. It carries options: filters, pagination, search terms, sort order.",
+      "**Order does not matter, and every value arrives as text.** ?limit=10 gives the server the string \"10\", which it must parse and validate before using as a number. This is the same coercion trap as form input.",
+      "**It tweaks how a resource is returned, not which resource.** The path names the resource; the query shapes the response (which fields, which page, what filter).",
+    ],
+    examples: [
+      '/products?category=books&page=2&sort=price filters, paginates, and sorts.',
+      'A value of 10 arrives as the string "10"; the backend converts and bounds-checks it.',
+    ],
+    diagrams: [
+      {
+        caption: 'Key=value pairs after the ?, joined by &.',
+        layout: 'row',
+        nodes: [
+          { id: 'path', label: '/products', sub: 'the resource', accent: 'primary' },
+          { id: 'q1', label: 'category=books', accent: 'compute' },
+          { id: 'q2', label: 'page=2', accent: 'compute' },
+        ],
+        edges: [],
+      },
+    ],
+    related: ['URL', 'request path', 'validation', 'API'],
+  },
+
+  'status code': {
+    body: [
+      "**A status code is the three-digit verdict on the status line of every HTTP response,** and the first digit tells the story. 2xx worked, 3xx look elsewhere, 4xx the client erred, 5xx the server erred.",
+      "**The codes you meet daily.** 200 OK, 201 Created, 204 No Content; 301/302 redirects, 304 Not Modified; 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 429 Too Many Requests; 500 Internal Server Error, 502/503 infrastructure.",
+      "**The load-bearing split is 4xx vs 5xx: whose fault.** A 4xx says fix the request; a 5xx says the server failed. Monitoring alarms on 5xx because those are your bugs.",
+    ],
+    examples: [
+      '401 means who are you (no valid credentials); 403 means you may not (known but forbidden).',
+      'Returning 500 for bad user input pollutes error dashboards; use 400.',
+    ],
+    diagrams: [
+      {
+        caption: 'The first digit is the family: success, redirect, client error, server error.',
+        layout: 'row',
+        nodes: [
+          { id: 'c2', label: '2xx', sub: 'worked', accent: 'success' },
+          { id: 'c3', label: '3xx', sub: 'moved', accent: 'edge' },
+          { id: 'c4', label: '4xx', sub: 'client erred', accent: 'cache' },
+          { id: 'c5', label: '5xx', sub: 'server erred', accent: 'danger' },
+        ],
+        edges: [],
+      },
+    ],
+    related: ['response', 'HTTP', 'request'],
+  },
+
+  CORS: {
+    body: [
+      "**CORS (Cross-Origin Resource Sharing) is the browser rule that controls which sites may call your API from JavaScript.** By default a page on site A cannot read responses from site B; CORS headers from the server opt specific origins back in.",
+      "**How it works.** For certain requests the browser first sends a preflight OPTIONS asking \"may site A call this?\" The server answers with Access-Control-Allow-Origin and friends. If the headers permit it, the real request proceeds; otherwise the browser blocks the response.",
+      "**It is enforced by the browser, not the server.** curl and server-to-server calls ignore CORS entirely. It protects users in browsers, not the API itself, which still needs its own auth.",
+    ],
+    examples: [
+      'A frontend on app.com calling api.com needs api.com to return Access-Control-Allow-Origin: https://app.com.',
+      'A blocked CORS request shows a console error even though the server received and answered it.',
+    ],
+    diagrams: [
+      {
+        caption: 'The browser preflights a cross-origin call; the server allows or denies the origin.',
+        layout: 'sequence',
+        actors: [
+          { label: 'Browser', accent: 'client' },
+          { label: 'API server', accent: 'compute' },
+        ],
+        messages: [
+          { from: 0, to: 1, label: 'OPTIONS preflight' },
+          { from: 1, to: 0, label: 'Allow-Origin: app.com', dashed: true },
+          { from: 0, to: 1, label: 'real request' },
+        ],
+      },
+    ],
+    related: ['header', 'request', 'authentication', 'API'],
+  },
+
+  'request path': {
+    body: [
+      "**The request path is the part of the URL after the host:** /users/42. The server's router reads it to decide which code handles the request.",
+      "**Paths are the nouns of an API.** /users is a collection; /users/42 is one item; /users/42/orders is a nested relationship. The HTTP method (the verb) plus the path (the noun) together pick the handler.",
+      "**Routing matches the path to a handler,** often with parameters: /users/:id captures 42 into id. Most 404s and routing bugs are a path not matching the route the developer expected.",
+    ],
+    examples: [
+      'GET /users/42 routes to the get-user handler with id 42.',
+      'A trailing-slash or case mismatch between the request path and the route causes a 404.',
+    ],
+    diagrams: [
+      {
+        caption: 'The router matches the path to a handler.',
+        layout: 'row',
+        nodes: [
+          { id: 'path', label: '/users/42', accent: 'primary' },
+          { id: 'router', label: 'Router', sub: 'match route', accent: 'edge' },
+          { id: 'handler', label: 'Handler', sub: 'get user 42', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['URL', 'endpoint', 'API', 'status code'],
+  },
+
+  API: {
+    body: [
+      "**An API (Application Programming Interface) is a contract one program exposes so another can ask it to do work or return data.** It is the documented set of requests a server accepts and the responses it returns, so clients build against it without ever seeing the server's code.",
+      "**Why it matters.** The contract is the boundary that lets teams work in parallel: the mobile, web, and partner teams all integrate against the same surface while the backend rewrites its internals freely.",
+      "**Most backend APIs are HTTP + JSON** (REST or GraphQL at the edge, gRPC between services). Designing one well is choosing routes, error shapes, validation, and pagination that stay pleasant after years.",
+    ],
+    examples: [
+      'GET /users/42 returns {"id": 42, "name": "Kay"}; the client never sees the database behind it.',
+      'Changing a response field is a breaking contract change that affects every client.',
+    ],
+    diagrams: [
+      {
+        caption: 'The API is the documented contract between client and server.',
+        layout: 'row',
+        nodes: [
+          { id: 'client', label: 'Client', accent: 'client' },
+          { id: 'api', label: 'API', sub: 'the contract', accent: 'edge' },
+          { id: 'server', label: 'Server', sub: 'hidden internals', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['endpoint', 'JSON', 'HTTP', 'API gateway'],
+  },
+
+  endpoint: {
+    body: [
+      "**An endpoint is one callable operation of an API:** a method plus a path, like GET /users/:id. It is the specific door a client knocks on to do one thing.",
+      "**Method plus path picks the handler.** The same path with different methods is different endpoints: GET /users (list), POST /users (create), GET /users/42 (read one), DELETE /users/42 (remove).",
+      "**A well-named endpoint reads as a sentence:** the verb is the method, the noun is the path. Verbs in the path (/getUsers) are a smell, because the method already says the action.",
+    ],
+    examples: [
+      'POST /orders creates an order; GET /orders/7 reads order 7.',
+      'GET /users and POST /users are two endpoints sharing one path.',
+    ],
+    diagrams: [
+      {
+        caption: 'Method + path resolves to one handler.',
+        layout: 'row',
+        nodes: [
+          { id: 'm', label: 'GET', sub: 'method', accent: 'edge' },
+          { id: 'p', label: '/users/42', sub: 'path', accent: 'primary' },
+          { id: 'h', label: 'Handler', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['API', 'request path', 'controller', 'middleware'],
+  },
+
+  JSON: {
+    body: [
+      "**JSON (JavaScript Object Notation) is how APIs write data as text.** Objects in braces with quoted keys, arrays in brackets, plus strings, numbers, true/false, and null. Six types, and every language can read and write it.",
+      "**The strict rules trip people:** keys must be double-quoted, no trailing commas, no comments, double quotes only. These are stricter than JavaScript itself, so hand-written JSON breaks on exactly those.",
+      "**Parse and serialize.** Languages convert between text and live data (JSON.parse / JSON.stringify and equivalents). APIs serialize on the way out and parse on the way in.",
+    ],
+    examples: [
+      '{"name": "Kay", "active": true, "orders": [{"id": 101}]} is a valid nested object.',
+      "{'name': 'Kay'} is invalid JSON: single quotes are a JavaScript habit, not JSON.",
+    ],
+    diagrams: [
+      {
+        caption: 'Six value types make up the whole grammar.',
+        layout: 'row',
+        nodes: [
+          { id: 'obj', label: 'Object {}', accent: 'compute' },
+          { id: 'arr', label: 'Array []', accent: 'edge' },
+          { id: 'prim', label: 'string/number', sub: 'bool/null', accent: 'default' },
+        ],
+        edges: [],
+      },
+    ],
+    related: ['API', 'body', 'dictionary', 'validation'],
+  },
+
+  middleware: {
+    body: [
+      "**Middleware is code that runs in a chain around your request handler,** each piece doing one cross-cutting job before (or after) the handler: parsing the body, checking auth, logging, rate limiting, handling errors.",
+      "**The chain shape.** A request passes through each middleware in order, and each can pass it along, modify it, or stop it short (rejecting an unauthenticated request before it reaches the handler). The response passes back out through them.",
+      "**Why it exists:** to keep cross-cutting concerns out of every handler. Auth, logging, and CORS live in one place in the chain instead of being copy-pasted into each route.",
+    ],
+    examples: [
+      'app.use(authMiddleware) checks the token on every route before the handler runs.',
+      'An error-handling middleware at the end turns any thrown error into a clean JSON response.',
+    ],
+    diagrams: [
+      {
+        caption: 'The request passes through each middleware before reaching the handler.',
+        layout: 'row',
+        nodes: [
+          { id: 'req', label: 'Request', accent: 'client' },
+          { id: 'auth', label: 'Auth', accent: 'edge' },
+          { id: 'log', label: 'Logging', accent: 'edge' },
+          { id: 'h', label: 'Handler', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['controller', 'endpoint', 'authentication', 'rate limit'],
+  },
+
+  service: {
+    body: [
+      "**A service is the layer that holds business logic,** sitting between the thin controller (which speaks HTTP) and the repository (which speaks to the database). It is where the rules of the domain live.",
+      "**Why separate it.** A controller that mixes HTTP parsing, business rules, and SQL is hard to test and reuse. Pulling the logic into a service lets you unit-test it without HTTP or a database, and call it from a queue worker or a CLI too.",
+      "**A pure service core** takes plain inputs, returns plain outputs, and keeps side effects (database, network) at the edges, which is the most testable shape of backend code.",
+    ],
+    examples: [
+      'createOrder(input) validates, applies pricing rules, and calls the repository, with no HTTP knowledge.',
+      'The same order service is called by the HTTP controller and by a background job.',
+    ],
+    diagrams: [
+      {
+        caption: 'The service holds business logic between the controller and the data layer.',
+        layout: 'row',
+        nodes: [
+          { id: 'ctrl', label: 'Controller', sub: 'HTTP', accent: 'edge' },
+          { id: 'svc', label: 'Service', sub: 'business logic', accent: 'compute' },
+          { id: 'repo', label: 'Repository', sub: 'data', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['controller', 'repository', 'business rule', 'service shape'],
+  },
+
+  'service shape': {
+    body: [
+      "**A service method has a recognizable shape:** read the input, validate it, apply the business rule, perform the effect (write to the database, call another service), and return a result. The same pipeline appears in every well-structured handler.",
+      "**The order matters.** Validate before doing anything; keep the pure decision (the business rule) separate from the side effect, so the decision is testable and the effect is at the edge.",
+      "**Recognizing the shape** lets you read unfamiliar handler code quickly and write new ones without reinventing the structure each time.",
+    ],
+    examples: [
+      'transfer(input): validate amounts -> check balance (rule) -> write the two ledger rows (effect) -> return the result.',
+      'Validation up front means the effect never runs on bad input.',
+    ],
+    diagrams: [
+      {
+        caption: 'Read, validate, decide, effect, return: the universal handler pipeline.',
+        layout: 'row',
+        nodes: [
+          { id: 'in', label: 'Read input', accent: 'client' },
+          { id: 'val', label: 'Validate', accent: 'edge' },
+          { id: 'rule', label: 'Business rule', accent: 'compute' },
+          { id: 'eff', label: 'Effect + return', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['service', 'validation', 'business rule', 'side effect'],
+  },
+
+  'business rule': {
+    body: [
+      "**A business rule is a decision the domain requires,** independent of HTTP or the database: a transfer cannot overdraw an account, a discount applies only above $50, an order cannot ship before payment clears.",
+      "**Keep rules pure and central.** A rule expressed as a pure function (inputs in, decision out) is trivially testable and lives in one place, rather than being scattered and duplicated across controllers and queries.",
+      "**Rules versus mechanics.** Parsing JSON and writing SQL are mechanics; deciding whether the transfer is allowed is the rule. Mixing them is what makes code hard to change when the business changes.",
+    ],
+    examples: [
+      'canWithdraw(balance, amount) returns whether the withdrawal is allowed, with no database call.',
+      'A pricing rule lives in one function, so changing the discount threshold is a one-line edit.',
+    ],
+    diagrams: [
+      {
+        caption: 'The pure rule decides; the effect acts on the decision.',
+        layout: 'row',
+        nodes: [
+          { id: 'in', label: 'Inputs', accent: 'client' },
+          { id: 'rule', label: 'Business rule', sub: 'pure decision', accent: 'compute' },
+          { id: 'out', label: 'Allow / deny', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['service', 'service shape', 'side effect', 'validation'],
+  },
+
+  validation: {
+    body: [
+      "**Validation checks that incoming data is acceptable before any logic runs.** Every request body is text composed by software you do not control, so validation is the bouncer at the door.",
+      "**The four checks, in order:** presence (required fields exist), type (the quantity is a number), format (the email matches a pattern), and bounds (1 <= quantity <= 100). Also allowlist fields, so a request cannot set role: admin just because the field landed in the write.",
+      "**Fail fast with one clear error.** Collect all field errors and return them together as a 400, so the client fixes everything in one round trip. Validation is also the first security layer: most injection and corrupt-data incidents enter through an unvalidated field.",
+    ],
+    examples: [
+      'A signup with email "kay@" and quantity "-3" fails format and bounds, returning a 400 with per-field details.',
+      'Allowlisting drops an uninvited "role": "admin" field instead of honoring it.',
+    ],
+    diagrams: [
+      {
+        caption: 'Presence, type, format, bounds, then trust the data.',
+        layout: 'row',
+        nodes: [
+          { id: 'p', label: 'Presence', accent: 'edge' },
+          { id: 't', label: 'Type', accent: 'edge' },
+          { id: 'f', label: 'Format', accent: 'edge' },
+          { id: 'b', label: 'Bounds', accent: 'success' },
+        ],
+        edges: [],
+      },
+    ],
+    related: ['business rule', 'service shape', 'status code', 'XSS'],
+  },
+
+  controller: {
+    body: [
+      "**A controller is the thin layer that speaks HTTP,** translating a request into a service call and the result back into a response. It parses input, calls the service, and formats the output, and holds no business logic itself.",
+      "**Keep it thin (a controller diet).** When business rules leak into the controller, they become untestable without HTTP and impossible to reuse from a worker or CLI. The controller's job is plumbing, not decisions.",
+      "**The pipeline:** parse and validate the request, call the service, map the result (or a thrown error) to a status code and body.",
+    ],
+    examples: [
+      'createUserController reads the body, calls userService.create, and returns 201 with the new user.',
+      'A controller that contains SQL and pricing math is doing too much; move that into a service.',
+    ],
+    diagrams: [
+      {
+        caption: 'Thin controller: parse, call the service, format the response.',
+        layout: 'row',
+        nodes: [
+          { id: 'req', label: 'Request', accent: 'client' },
+          { id: 'ctrl', label: 'Controller', sub: 'thin', accent: 'edge' },
+          { id: 'svc', label: 'Service', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['service', 'middleware', 'endpoint', 'repository'],
+  },
+
+  repository: {
+    body: [
+      "**A repository is the layer that talks to the database,** hiding the storage details (SQL, the ORM, the query) behind methods like findUser(id) and saveOrder(order). The rest of the app asks for data without knowing how it is stored.",
+      "**Why the boundary.** It keeps SQL out of the business logic, makes the service testable with a fake repository, and lets you change the storage (swap databases, add a cache) without touching the rules.",
+      "**It is the data edge of the service shape:** the service decides, the repository performs the read or write.",
+    ],
+    examples: [
+      'orderRepository.findById(7) returns an order; the service never writes SQL.',
+      'Tests pass an in-memory fake repository so the service runs without a database.',
+    ],
+    diagrams: [
+      {
+        caption: 'The repository hides storage details behind simple methods.',
+        layout: 'row',
+        nodes: [
+          { id: 'svc', label: 'Service', accent: 'compute' },
+          { id: 'repo', label: 'Repository', sub: 'findById, save', accent: 'edge' },
+          { id: 'db', label: 'Database', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['service', 'database', 'controller', 'N+1 query'],
+  },
+
+  config: {
+    body: [
+      "**Config is the set of values that change per environment** without changing code: the database URL, API keys, feature flags, the port. Dev, staging, and production run the same code with different config.",
+      "**It comes from the environment, not the source.** Reading config from environment variables (or a config service) keeps secrets out of git and lets the same build run anywhere. Required config should be validated at startup, failing loudly if missing.",
+      "**Config vs code:** if a value differs between environments or must stay secret, it is config. Baking it into the code forces a rebuild to change it and risks leaking secrets.",
+    ],
+    examples: [
+      'process.env.DATABASE_URL differs per environment; the code reads the name, never the value.',
+      'A missing required env var should crash at startup, not silently mid-request.',
+    ],
+    diagrams: [
+      {
+        caption: 'Config flows from the environment into the same code per deployment.',
+        layout: 'row',
+        nodes: [
+          { id: 'env', label: 'Environment', sub: 'env vars', accent: 'edge' },
+          { id: 'app', label: 'App', sub: 'reads config', accent: 'compute' },
+        ],
+        edges: [],
+      },
+    ],
+    related: ['deployment', 'framework', 'dependency management', 'authentication'],
+  },
+
+  framework: {
+    body: [
+      "**A framework provides the structure and plumbing for an app** so you write the parts that are unique to it. A web framework (Express, Flask, Django, ASP.NET) handles parsing HTTP, routing, and the response, calling your handler functions at the right time.",
+      "**Framework vs library.** You call a library; a framework calls you. The framework owns the main loop and the flow; you fill in the handlers, models, and config it asks for.",
+      "**It is a trade.** A framework saves you from reinventing routing, validation, and serialization, at the cost of learning its conventions and living within its structure.",
+    ],
+    examples: [
+      'Express routes GET /users to your handler; you never write the HTTP parsing.',
+      'Django gives you an ORM, admin, and auth out of the box; you write the app on top.',
+    ],
+    diagrams: [
+      {
+        caption: 'The framework owns the flow and calls your handlers.',
+        layout: 'row',
+        nodes: [
+          { id: 'fw', label: 'Framework', sub: 'routing, HTTP', accent: 'edge' },
+          { id: 'h', label: 'Your handlers', accent: 'compute' },
+        ],
+        edges: [{ from: 'fw', to: 'h', label: 'calls' }],
+      },
+    ],
+    related: ['middleware', 'controller', 'runtime', 'dependency management'],
+  },
+
+  database: {
+    body: [
+      "**A database is a separate program whose job is keeping data safe and queryable.** Unlike your app's variables, it survives restarts, accepts many connections at once, and answers questions over millions of rows in milliseconds.",
+      "**Relational databases (PostgreSQL, MySQL)** store data in tables of typed columns with relationships between them, and guarantee ACID transactions. NoSQL databases trade some of that for specific scale or flexibility (key-value, document, wide-column, graph).",
+      "**It is usually the hardest thing to scale,** because it holds the state. Stateless app servers scale trivially; the database is scaled with indexes, replicas, caching, and eventually sharding.",
+    ],
+    examples: [
+      'Users, orders, and payments live in a relational database with foreign keys linking them.',
+      'When an app is slow, the database is the first suspect.',
+    ],
+    diagrams: [
+      {
+        caption: 'Tables of rows and columns, queried by the app.',
+        layout: 'row',
+        nodes: [
+          { id: 'app', label: 'App', accent: 'compute' },
+          { id: 'db', label: 'Database', sub: 'tables, rows', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['SQL', 'table', 'index', 'transaction'],
+  },
+
+  SQL: {
+    body: [
+      "**SQL (Structured Query Language) is how you ask a relational database for data.** You describe what you want and the database figures out how to get it. SELECT reads, INSERT/UPDATE/DELETE write.",
+      "**Every query is a pipeline:** FROM picks the table, WHERE filters rows, GROUP BY buckets them, ORDER BY sorts, LIMIT cuts. Each clause reshapes the table flowing through it.",
+      "**It is the most transferable backend skill,** because the same language (with small dialect differences) runs PostgreSQL, MySQL, SQLite, and more.",
+    ],
+    examples: [
+      "SELECT name FROM users WHERE role = 'admin' ORDER BY name LIMIT 10.",
+      'A JOIN combines rows from two tables on a matching key.',
+    ],
+    diagrams: [
+      {
+        caption: 'A query is a pipeline that reshapes the table at each clause.',
+        layout: 'row',
+        nodes: [
+          { id: 'from', label: 'FROM', sub: 'table', accent: 'storage' },
+          { id: 'where', label: 'WHERE', sub: 'filter', accent: 'edge' },
+          { id: 'order', label: 'ORDER + LIMIT', sub: 'sort + cut', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['database', 'table', 'index', 'PostgreSQL'],
+  },
+
+  PostgreSQL: {
+    body: [
+      "**PostgreSQL is a powerful open-source relational database,** a common default for new backends. It gives you ACID transactions, joins, strict SQL, rich types (JSON, arrays, geospatial), and extensions.",
+      "**Why teams pick it.** It is free, reliable, feature-rich, and handles a wide range of workloads, from transactional apps to analytical queries, far longer than people expect before any specialized store is needed.",
+      "**Scales the usual way:** indexes and query tuning, then read replicas, then partitioning and sharding. Managed versions (Amazon RDS, Aurora) remove most of the operational work.",
+    ],
+    examples: [
+      'A typical web app runs entirely on PostgreSQL for years before needing anything else.',
+      'Its JSONB columns let you store flexible documents inside a relational database.',
+    ],
+    diagrams: [
+      {
+        caption: 'A relational core: tables, transactions, and joins.',
+        layout: 'row',
+        nodes: [
+          { id: 'app', label: 'App', accent: 'compute' },
+          { id: 'pg', label: 'PostgreSQL', sub: 'ACID, joins', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['database', 'SQL', 'MySQL', 'transaction'],
+  },
+
+  table: {
+    body: [
+      "**A table holds one kind of thing,** laid out like a spreadsheet: a users table, an orders table. Each row is one record; each column is a typed field every row has.",
+      "**Columns have types** the database enforces (text, integer, timestamp, boolean), so data that does not fit is rejected at the door, a type system for storage.",
+      "**Tables relate to each other** through keys: a primary key uniquely identifies each row, and a foreign key in one table points at the primary key of another, which is what makes the data relational.",
+    ],
+    examples: [
+      'A users table with columns id, name, role, email; one row per user.',
+      'An orders table with a user_id column referencing the users table.',
+    ],
+    diagrams: [
+      {
+        caption: 'Rows are records; columns are typed fields.',
+        layout: 'row',
+        nodes: [
+          { id: 'rows', label: 'Rows', sub: 'records', accent: 'compute' },
+          { id: 'cols', label: 'Columns', sub: 'typed fields', accent: 'edge' },
+        ],
+        edges: [],
+      },
+    ],
+    related: ['database', 'primary key', 'foreign key', 'SQL'],
+  },
+
+  'primary key': {
+    body: [
+      "**A primary key is the column that uniquely identifies each row,** usually an id. The database enforces that it is unique and never null, so a second row with the same id is rejected.",
+      "**It is the anchor other tables point at.** Because a primary key is guaranteed unique, foreign keys in other tables can reference it to link records reliably.",
+      "**It is indexed automatically,** so lookups by primary key are fast. Ids that sort by creation time (auto-increment, or Snowflake-style) also make pagination and indexes more efficient than random ones.",
+    ],
+    examples: [
+      'users.id is the primary key; orders.user_id references it.',
+      'Inserting a duplicate id is rejected with a uniqueness violation, never a silent overwrite.',
+    ],
+    diagrams: [
+      {
+        caption: 'A unique, never-null id that other tables can safely reference.',
+        layout: 'row',
+        nodes: [
+          { id: 'pk', label: 'Primary key', sub: 'unique id', accent: 'primary' },
+          { id: 'fk', label: 'Foreign key', sub: 'points here', accent: 'edge' },
+        ],
+        edges: [{ from: 'fk', to: 'pk', label: 'references' }],
+      },
+    ],
+    related: ['foreign key', 'table', 'index', 'database'],
+  },
+
+  'foreign key': {
+    body: [
+      "**A foreign key is a column that points at another table's primary key,** linking records: orders.user_id references users.id, so each order knows its owner.",
+      "**The database can enforce it,** refusing an order whose user_id has no matching user (referential integrity). That guarantees the link is always valid.",
+      "**It is what JOINs follow.** A query that needs a user's name with their orders joins the two tables on the foreign key. Indexing the foreign key keeps those joins fast.",
+    ],
+    examples: [
+      'orders.user_id (foreign key) -> users.id (primary key).',
+      'A JOIN ON orders.user_id = users.id pairs each order with its user.',
+    ],
+    diagrams: [
+      {
+        caption: 'A foreign key links rows across tables.',
+        layout: 'row',
+        nodes: [
+          { id: 'o', label: 'orders', sub: 'user_id (FK)', accent: 'compute' },
+          { id: 'u', label: 'users', sub: 'id (PK)', accent: 'primary' },
+        ],
+        edges: [{ from: 'o', to: 'u', label: 'references' }],
+      },
+    ],
+    related: ['primary key', 'table', 'index', 'N+1 query'],
+  },
+
+  migration: {
+    body: [
+      "**A migration is a versioned, repeatable change to the database schema:** add a column, create a table, change a type. Each migration is a script, applied in order, so every environment ends up with the same structure.",
+      "**Why versioned.** Code changes alongside the schema it needs. Migrations live in source control and run as part of deployment, so dev, staging, and production stay in sync, and a new teammate's database is built by replaying them.",
+      "**The careful part is production.** A migration on a huge table can lock it or take a long time; safe migrations are written to be backward-compatible and applied without downtime.",
+    ],
+    examples: [
+      'A migration adds an email_verified column with a default, then a later one backfills it.',
+      'Running pending migrations is a deploy step, so the schema matches the new code.',
+    ],
+    diagrams: [
+      {
+        caption: 'Ordered schema changes replay to bring any database up to date.',
+        layout: 'row',
+        nodes: [
+          { id: 'm1', label: 'Migration 1', accent: 'edge' },
+          { id: 'm2', label: 'Migration 2', accent: 'edge' },
+          { id: 'm3', label: 'Migration 3', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['database', 'table', 'deployment', 'CI/CD'],
+  },
+
+  'N+1 query': {
+    body: [
+      "**The N+1 query is a classic performance bug:** one query to fetch a list, then one more query per item in a loop, so a list of 100 becomes 101 queries instead of one or two.",
+      "**Where it hides.** It is easy to write accidentally with an ORM: you load 100 orders, then access each order's user inside a loop, and the ORM silently fires a query per access.",
+      "**The fix is a single JOIN or a batched load** (fetch all the needed users in one query, often called eager loading). Watching the query count in development is how you catch it before it reaches production.",
+    ],
+    examples: [
+      'Loading 100 posts then accessing each post.author fires 1 + 100 = 101 queries.',
+      'A JOIN, or loading all authors in one IN (...) query, replaces the 100 with one.',
+    ],
+    diagrams: [
+      {
+        caption: 'One list query plus one per item, where a single JOIN would do.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'list', label: '1 list query', accent: 'compute' },
+          { id: 'q1', label: '+ query per row', accent: 'danger' },
+          { id: 'q2', label: '+ query per row', accent: 'danger' },
+          { id: 'q3', label: '+ query per row', accent: 'danger' },
+        ],
+      },
+    ],
+    related: ['index', 'database', 'repository', 'latency'],
+  },
+
+  authentication: {
+    body: [
+      "**Authentication answers who are you.** It proves the identity of whoever is making a request, with passwords, sessions, tokens (JWT), API keys, or OAuth. It happens before your handler logic, usually in middleware.",
+      "**It is distinct from authorization** (what you may do). You can know exactly who someone is and still refuse the action. A missing or invalid credential returns 401 (who are you?); a known-but-forbidden one returns 403.",
+      "**Passwords are never stored in the clear,** only as slow salted hashes. Sessions and tokens are the two common ways to stay logged in after the initial check.",
+    ],
+    examples: [
+      'A login verifies the password hash, then issues a session cookie or JWT.',
+      'A request with no valid credential is rejected with 401 before reaching the handler.',
+    ],
+    diagrams: [
+      {
+        caption: 'Login proves identity; later requests carry the proof.',
+        layout: 'sequence',
+        actors: [
+          { label: 'Client', accent: 'client' },
+          { label: 'Server', accent: 'compute' },
+        ],
+        messages: [
+          { from: 0, to: 1, label: 'login (credentials)' },
+          { from: 1, to: 0, label: 'session / token', dashed: true },
+          { from: 0, to: 1, label: 'request + credential' },
+        ],
+      },
+    ],
+    related: ['authorization', 'JWT', 'OAuth', 'JWT'],
+  },
+
+  authorization: {
+    body: [
+      "**Authorization answers what may you do.** After authentication establishes who you are, authorization decides whether you may perform this action on this resource: may this user delete that post, read that account, access that admin page.",
+      "**It runs after authn, before the effect.** A failed authorization returns 403 Forbidden (I know who you are, but no), versus 401 for unauthenticated. The check must be on the specific resource, not just the type.",
+      "**The classic bug** is checking permission on the resource type but not the specific record, so any logged-in user can read another user's data by changing an id. Always scope the check to the actual object.",
+    ],
+    examples: [
+      'A user may edit their own profile (allow) but not another user\'s (403).',
+      'An admin-only route checks the role after authentication confirms the identity.',
+    ],
+    diagrams: [
+      {
+        caption: 'First who are you (authn), then may you do this (authz).',
+        layout: 'row',
+        nodes: [
+          { id: 'authn', label: 'Authenticate', sub: 'who', accent: 'edge' },
+          { id: 'authz', label: 'Authorize', sub: 'may you', accent: 'compute' },
+          { id: 'act', label: 'Action', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['authentication', 'JWT', 'multi-tenancy', 'security'],
+  },
+
+  OAuth: {
+    body: [
+      "**OAuth is a protocol for delegated access:** it lets a user grant one app limited access to their data in another, without sharing their password. It is what powers Sign in with Google and connect your account flows.",
+      "**The authorization-code flow.** The app sends the user to the provider (Google) to log in and consent; the provider redirects back with a short code; the app exchanges that code for an access token it uses to call the provider's API on the user's behalf.",
+      "**It separates authentication from authorization of access.** The user never gives the app their provider password; the app gets a scoped, revocable token instead.",
+    ],
+    examples: [
+      'Sign in with Google: you log in at Google, which hands your app a token, never your Google password.',
+      'A scoped token lets an app read your calendar but not your email.',
+    ],
+    diagrams: [
+      {
+        caption: 'The user authorizes at the provider, which returns a token to the app.',
+        layout: 'sequence',
+        actors: [
+          { label: 'App', accent: 'compute' },
+          { label: 'User', accent: 'client' },
+          { label: 'Provider', accent: 'edge' },
+        ],
+        messages: [
+          { from: 0, to: 1, label: 'redirect to provider' },
+          { from: 1, to: 2, label: 'log in + consent' },
+          { from: 2, to: 0, label: 'code -> token', dashed: true },
+        ],
+      },
+    ],
+    related: ['authentication', 'authorization', 'JWT'],
+  },
+
+  CSRF: {
+    body: [
+      "**CSRF (Cross-Site Request Forgery) tricks a logged-in user's browser into making an unwanted request to a site they are authenticated with.** Because the browser auto-sends cookies, a hidden form on a malicious page can act as the victim.",
+      "**The attack.** You are logged into your bank; you visit a malicious page that auto-submits a transfer form to the bank; the browser attaches your bank session cookie, and the transfer looks legitimate.",
+      "**The defenses.** A CSRF token (a secret the server checks that an attacker cannot know), the SameSite cookie attribute (which stops cookies on cross-site requests), and checking the Origin header.",
+    ],
+    examples: [
+      'A hidden form on evil.com POSTs to bank.com/transfer using your logged-in cookie.',
+      'SameSite=Lax cookies are not sent on the cross-site POST, blocking the attack.',
+    ],
+    diagrams: [
+      {
+        caption: 'A malicious page rides the victim\'s session cookie to a trusted site.',
+        layout: 'sequence',
+        actors: [
+          { label: 'Evil page', accent: 'danger' },
+          { label: 'Browser', accent: 'client' },
+          { label: 'Bank', accent: 'compute' },
+        ],
+        messages: [
+          { from: 0, to: 1, label: 'auto-submit form' },
+          { from: 1, to: 2, label: 'POST + your cookie' },
+        ],
+      },
+    ],
+    related: ['XSS', 'authentication', 'header', 'security'],
+  },
+
+  XSS: {
+    body: [
+      "**XSS (Cross-Site Scripting) is injecting code into a page so it runs in other users' browsers.** A comment containing a script tag, stored and rendered raw, executes for everyone who views it, able to steal cookies or act as them.",
+      "**It is the same disease as SQL injection, in HTML:** user data treated as code. The cure is output escaping, rendering user text as text (the script tag shows as harmless characters) rather than as live HTML.",
+      "**Modern frameworks escape by default** (React, for example) unless you explicitly opt out with a dangerously-named API. The dangerous spots are raw HTML insertion and unescaped templates.",
+    ],
+    examples: [
+      'A comment of <script>steal(document.cookie)</script> rendered raw runs for every viewer.',
+      'Escaping renders it as visible text instead of executing it.',
+    ],
+    diagrams: [
+      {
+        caption: 'User data rendered as code runs in the victim\'s browser; escaping neutralizes it.',
+        layout: 'row',
+        nodes: [
+          { id: 'inj', label: 'Injected script', accent: 'danger' },
+          { id: 'render', label: 'Rendered raw', sub: 'runs', accent: 'danger' },
+          { id: 'esc', label: 'Escaped', sub: 'shown as text', accent: 'success' },
+        ],
+        edges: [{ from: 'inj', to: 'render' }, { from: 'inj', to: 'esc' }],
+      },
+    ],
+    related: ['CSRF', 'validation', 'authentication', 'security'],
+  },
+
+  'cache invalidation': {
+    body: [
+      "**Cache invalidation is removing or refreshing a cached copy when the underlying truth changes.** It is the famously hard part of caching, because copies of old data keep getting served after the source was updated.",
+      "**Three strategies.** TTL: entries expire on a clock (simple, always the default). Invalidate-on-write: when code updates the database, it also deletes the relevant cache keys (near-zero staleness, but every write must know every dependent key). Write-through: writes update cache and database together.",
+      "**TTL backs up everything.** Even with explicit invalidation, a short TTL is the safety net for the key someone forgot, so a missed invalidation heals in minutes instead of forever.",
+    ],
+    examples: [
+      'A price update deletes cache:product:42 and the cached search page; a 300s TTL covers any key that was missed.',
+      'A deleted post that keeps appearing is an invalidation bug: a derived cache was never cleared.',
+    ],
+    diagrams: [
+      {
+        caption: 'On write, delete the dependent keys; TTL is the backstop.',
+        layout: 'row',
+        nodes: [
+          { id: 'write', label: 'Write', accent: 'primary' },
+          { id: 'del', label: 'Delete keys', sub: 'on write', accent: 'edge' },
+          { id: 'ttl', label: 'TTL backstop', sub: 'heals misses', accent: 'cache' },
+        ],
+      },
+    ],
+    related: ['cache', 'CDN', 'eventual consistency', 'hot key'],
+  },
+
+  worker: {
+    body: [
+      "**A worker is a process that pulls jobs from a queue and does the slow work,** outside the request path. While the web tier answers users fast, workers drain the backlog: sending emails, transcoding video, generating reports.",
+      "**It scales independently** of the web tier. If the queue backs up, you add workers; the user-facing servers are unaffected. Workers are usually idempotent, since queues deliver at least once and a job can be redelivered.",
+      "**It is the consumer half of a queue.** The producer (a request) enqueues; the worker dequeues and processes, acknowledging when done so the message is removed.",
+    ],
+    examples: [
+      'A web request enqueues send-receipt; a pool of workers sends the emails seconds later.',
+      'Queue depth climbing triggers autoscaling to add more workers.',
+    ],
+    diagrams: [
+      {
+        caption: 'Workers drain the queue outside the request path.',
+        layout: 'row',
+        nodes: [
+          { id: 'q', label: 'Queue', accent: 'queue' },
+          { id: 'w', label: 'Workers', sub: 'process jobs', accent: 'compute' },
+        ],
+        edges: [{ from: 'q', to: 'w', label: 'pull + ack' }],
+      },
+    ],
+    related: ['queue', 'dead-letter queue', 'idempotency', 'backpressure'],
+  },
+
+  'dead-letter queue': {
+    body: [
+      "**A dead-letter queue (DLQ) is where messages go after they fail every retry.** Instead of dropping them (silent data loss) or retrying forever (a poison message that wedges the queue), the system moves them aside with their error history.",
+      "**A DLQ is an inbox, not a trash can.** Its value comes from three things: an alert when messages land, enough context to diagnose (payload, attempt count, errors), and a replay path so that after the bug is fixed an operator can push them back through.",
+      "**DLQ depth should be zero.** Anything above is a pile of failures with names and payloads, which is exactly what makes it actionable. A DLQ with no alert is silent data loss with extra steps.",
+    ],
+    examples: [
+      'After 5 failed attempts, a message moves to the DLQ and pages on-call.',
+      'A malformed message that crashes the consumer goes to the DLQ instead of looping forever.',
+    ],
+    diagrams: [
+      {
+        caption: 'Exhausted messages move aside with their error history.',
+        layout: 'row',
+        nodes: [
+          { id: 'q', label: 'Queue', accent: 'queue' },
+          { id: 'w', label: 'Worker', accent: 'compute' },
+          { id: 'dlq', label: 'Dead-letter', sub: 'alert + replay', accent: 'danger' },
+        ],
+        edges: [
+          { from: 'q', to: 'w' },
+          { from: 'w', to: 'dlq', label: 'give up', dashed: true },
+        ],
+      },
+    ],
+    related: ['queue', 'worker', 'retry', 'idempotency'],
+  },
+
+  retry: {
+    body: [
+      "**A retry is attempting a failed operation again,** because the failure might be temporary: a network timeout, a 503, a brief outage. The skill is retrying the right failures the right way.",
+      "**Classify first.** Transient failures (timeouts, 5xx) deserve a retry; permanent ones (a malformed payload, a 400) do not, because they will fail identically every time. Retrying a permanent failure just wastes capacity.",
+      "**Backoff plus jitter.** Wait longer after each attempt (1s, 2s, 4s, capped), and add randomness so a thousand clients that failed together do not retry in synchronized waves and pile onto a recovering service.",
+    ],
+    examples: [
+      'A timeout calling a payment provider is retried with exponential backoff; a 400 is not.',
+      'Jitter spreads a thousand simultaneous retries into a smooth trickle.',
+    ],
+    diagrams: [
+      {
+        caption: 'Retry transient failures with growing, jittered delays.',
+        layout: 'row',
+        nodes: [
+          { id: 'fail', label: 'Transient fail', accent: 'danger' },
+          { id: 'wait', label: 'Backoff + jitter', accent: 'edge' },
+          { id: 'retry', label: 'Retry', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['idempotency', 'circuit breaker', 'queue', 'dead-letter queue'],
+  },
+
+  backpressure: {
+    body: [
+      "**Backpressure is the signal that says slow down** when a consumer cannot keep up with a producer. Without it, a fast producer overwhelms a slow consumer, filling memory or queues until something crashes.",
+      "**How it shows up.** A bounded queue that blocks or rejects when full, a TCP window that throttles the sender, a streaming API that pauses reading. The slow stage pushes back on the fast one instead of silently drowning.",
+      "**It is the healthy alternative to load shedding and OOM.** Either the system propagates backpressure to the source (the user waits, the upstream slows), or it sheds load deliberately. Ignoring it means an unbounded queue and a crash.",
+    ],
+    examples: [
+      'A bounded queue rejects new work when full, forcing the producer to slow or shed.',
+      'A streaming consumer pauses reading so the producer stops sending faster than it can process.',
+    ],
+    diagrams: [
+      {
+        caption: 'The slow consumer signals upstream to slow down.',
+        layout: 'row',
+        nodes: [
+          { id: 'prod', label: 'Producer', sub: 'fast', accent: 'compute' },
+          { id: 'q', label: 'Bounded queue', sub: 'full -> push back', accent: 'queue' },
+          { id: 'cons', label: 'Consumer', sub: 'slow', accent: 'edge' },
+        ],
+        edges: [
+          { from: 'prod', to: 'q' },
+          { from: 'cons', to: 'q', label: 'slow down', dashed: true },
+        ],
+      },
+    ],
+    related: ['queue', 'load shedding', 'rate limit', 'worker'],
+  },
+
+  microservices: {
+    body: [
+      "**Microservices split a system into small, independently deployable services that each own their data.** A users service, an orders service, a payments service, each shipped and scaled on its own.",
+      "**The benefit and the cost.** Teams ship independently and scale hot services alone; the price is network calls that can fail, distributed data, and operational overhead. The honest guidance: start with a monolith and split only when team size or scaling pain demands it.",
+      "**They need a gateway and discovery.** An API gateway is the single front door; service discovery tracks where each service currently lives. Without them, clients hardcode addresses and every deploy risks breakage.",
+    ],
+    examples: [
+      'An order spanning inventory, payment, and shipping is now four network calls instead of one in-process function.',
+      'A small team ships far faster on a monolith and splits later for concrete reasons.',
+    ],
+    diagrams: [
+      {
+        caption: 'Independent services behind one gateway, each owning its data.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'gw', label: 'API gateway', accent: 'edge' },
+          { id: 'u', label: 'Users service', accent: 'compute' },
+          { id: 'o', label: 'Orders service', accent: 'compute' },
+          { id: 'p', label: 'Payments service', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['API gateway', 'service discovery', 'distributed transaction', 'horizontal scaling'],
+  },
+
+  deployment: {
+    body: [
+      "**A deployment is the act of getting new code running in production.** Modern deployments are automated and frequent: build an artifact, run tests, ship it, and roll it out without taking the system down.",
+      "**Strategies that avoid downtime.** Rolling (replace instances a few at a time), blue-green (run the new version alongside the old, then switch traffic), and canary (send a small percentage to the new version first, watch, then ramp).",
+      "**Safety comes from reversibility.** Health checks gate the rollout, and a fast rollback (or a feature flag) means a bad deploy is a blip, not an outage. Frequent small deploys are safer than rare big ones.",
+    ],
+    examples: [
+      'A rolling deploy replaces pods gradually; failing health checks halt it and roll back.',
+      'A canary sends 5% of traffic to the new version, watches error rates, then ramps to 100%.',
+    ],
+    diagrams: [
+      {
+        caption: 'Build, test, then roll out gradually with a fast rollback.',
+        layout: 'row',
+        nodes: [
+          { id: 'build', label: 'Build', accent: 'edge' },
+          { id: 'test', label: 'Test', accent: 'compute' },
+          { id: 'rollout', label: 'Roll out', sub: 'canary / rolling', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['CI/CD', 'container', 'graceful shutdown', 'config'],
+  },
+
+  'CI/CD': {
+    body: [
+      "**CI/CD automates the path from a commit to production.** Continuous Integration (CI) runs the build and tests on every change, catching breakage early. Continuous Delivery/Deployment (CD) takes passing changes and ships them, automatically or at the push of a button.",
+      "**The pipeline.** Commit triggers: install dependencies, run tests and linters, build an artifact (often a container image), and deploy. A red step blocks the merge, so broken code does not reach the main branch.",
+      "**Why it matters.** It makes shipping calm and frequent. Without CI/CD, releases are rare, manual, and scary; with it, they are routine and reversible, and the test suite is the safety net that makes merging safe.",
+    ],
+    examples: [
+      'A pull request runs the full test suite; the merge is blocked until it is green.',
+      'Merging to main builds the image and deploys it through a rolling rollout automatically.',
+    ],
+    diagrams: [
+      {
+        caption: 'Commit, test, build, deploy: automated on every change.',
+        layout: 'row',
+        nodes: [
+          { id: 'commit', label: 'Commit', accent: 'client' },
+          { id: 'test', label: 'Test', accent: 'edge' },
+          { id: 'build', label: 'Build', accent: 'compute' },
+          { id: 'deploy', label: 'Deploy', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['deployment', 'container', 'migration', 'testing'],
+  },
+
+  container: {
+    body: [
+      "**A container packages an app with its dependencies into an image that runs identically everywhere:** laptop, CI, production. It ends works-on-my-machine by shipping the environment with the code.",
+      "**Lighter than a virtual machine.** A container shares the host OS kernel and isolates just the app, so it starts in milliseconds and uses far less than a VM, which bundles a whole operating system. You build an image once and run many identical containers from it.",
+      "**It is the unit of deployment** for most modern backends, and what orchestrators like Kubernetes schedule, scale, and heal.",
+    ],
+    examples: [
+      'A Dockerfile builds an image; the same bytes run in dev and prod.',
+      'Ten identical containers from one image run behind a load balancer.',
+    ],
+    diagrams: [
+      {
+        caption: 'Build one image; run many identical containers anywhere.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'img', label: 'Image', sub: 'built once', accent: 'edge' },
+          { id: 'c1', label: 'Container', sub: 'dev', accent: 'compute' },
+          { id: 'c2', label: 'Container', sub: 'prod', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['Docker', 'Kubernetes', 'deployment', 'CI/CD'],
+  },
+
+  observability: {
+    body: [
+      "**Observability is being able to understand what a system is doing from the outside,** through three pillars: logs (what happened), metrics (how much/how fast), and traces (where the time went across services).",
+      "**Why it matters.** During an incident, observability is the difference between reasoning from evidence and guessing. A system you cannot observe is one you debug by restarting and hoping.",
+      "**The three complement each other.** A metric alarm tells you something is wrong, a trace shows which service is slow, and logs show the specific error. Tie them together with a request id that threads through all three.",
+    ],
+    examples: [
+      'A latency metric spikes, a trace points at the payments service, and its logs show the timeout.',
+      'A request id ties a user\'s support ticket to the exact logs and trace.',
+    ],
+    diagrams: [
+      {
+        caption: 'Logs, metrics, and traces answer different questions.',
+        layout: 'row',
+        nodes: [
+          { id: 'log', label: 'Logs', sub: 'what happened', accent: 'compute' },
+          { id: 'metric', label: 'Metrics', sub: 'how much', accent: 'edge' },
+          { id: 'trace', label: 'Traces', sub: 'where the time went', accent: 'primary' },
+        ],
+        edges: [],
+      },
+    ],
+    related: ['log', 'metric', 'trace', 'SLO'],
+  },
+
+  log: {
+    body: [
+      "**A log is a timestamped record of something that happened:** a request served, an error thrown, a job processed. Logs are the narrative of a system, read line by line during debugging.",
+      "**Structured beats free-text.** A log line as structured data (JSON with fields like level, request_id, user_id, message) can be searched, filtered, and aggregated; a plain sentence cannot. Include a request id so you can follow one request across services.",
+      "**Log the right things.** Errors with context, key decisions, and security-relevant events, but never secrets (passwords, tokens) or floods of noise. Logs are shipped to a central system (the ELK stack, a cloud service) for search.",
+    ],
+    examples: [
+      '{"level":"error","request_id":"req_8f3a","msg":"payment timeout"} is searchable; "payment failed" is not.',
+      'Never log a password or token; redact sensitive fields.',
+    ],
+    diagrams: [
+      {
+        caption: 'Structured log lines ship to a central, searchable store.',
+        layout: 'row',
+        nodes: [
+          { id: 'app', label: 'App', accent: 'compute' },
+          { id: 'log', label: 'Structured logs', sub: 'JSON + request id', accent: 'edge' },
+          { id: 'store', label: 'Log search', sub: 'ELK / cloud', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['observability', 'metric', 'trace', 'Elasticsearch'],
+  },
+
+  metric: {
+    body: [
+      "**A metric is a number measured over time:** requests per second, error rate, p99 latency, queue depth, memory used. Metrics answer how much and how fast, and they power dashboards and alerts.",
+      "**Percentiles beat averages.** An average latency hides the tail; p99 (the latency your unluckiest 1% of users feel) is what reveals real problems. Watch p50, p95, and p99 together.",
+      "**Alerts fire on metrics crossing thresholds:** error rate above 1%, queue depth climbing, latency past the budget. Good alerts are actionable and tied to user impact, not noise.",
+    ],
+    examples: [
+      'A dashboard of request rate, error rate, and p99 latency (a service\'s golden signals).',
+      'An alert when the 5xx rate exceeds 1% for five minutes.',
+    ],
+    diagrams: [
+      {
+        caption: 'Numbers over time drive dashboards and alerts; watch the tail.',
+        layout: 'row',
+        nodes: [
+          { id: 'm', label: 'Metric', sub: 'p99 latency', accent: 'edge' },
+          { id: 'dash', label: 'Dashboard', accent: 'compute' },
+          { id: 'alert', label: 'Alert', sub: 'threshold', accent: 'danger' },
+        ],
+      },
+    ],
+    related: ['observability', 'latency', 'SLO', 'Prometheus'],
+  },
+
+  trace: {
+    body: [
+      "**A trace follows one request across every service it touches,** showing where the time went. Each hop is a span with a start and duration, and the spans nest to form the full picture of a single request's journey.",
+      "**Why it matters in distributed systems.** When a request crosses a gateway, three services, a cache, and a database, a metric tells you it was slow but not where. A trace shows the database query took 400ms while everything else was fast.",
+      "**It works via a shared trace id** propagated through every call, so the spans from different services can be stitched back together (OpenTelemetry, Jaeger, AWS X-Ray).",
+    ],
+    examples: [
+      'A trace reveals the payments service spent 90% of the request time waiting on a slow query.',
+      'A trace id threads through the gateway, services, and database for one request.',
+    ],
+    diagrams: [
+      {
+        caption: 'One request, spans across services, showing where time went.',
+        layout: 'row',
+        nodes: [
+          { id: 'gw', label: 'Gateway', sub: '5ms', accent: 'edge' },
+          { id: 'svc', label: 'Service', sub: '20ms', accent: 'compute' },
+          { id: 'db', label: 'Database', sub: '400ms', accent: 'danger' },
+        ],
+      },
+    ],
+    related: ['observability', 'log', 'metric', 'latency'],
+  },
+
+  latency: {
+    body: [
+      "**Latency is the delay for one operation:** how long a single request takes to come back. It is distinct from throughput (how many per second) and bandwidth (max capacity).",
+      "**Measure it in percentiles.** p50 is the median, p99 is what your unluckiest 1% feel. Tail latency (p99, p99.9) matters because a request that touches ten services is only as fast as its slowest hop, so slow tails compound.",
+      "**The latency ladder** is worth knowing: memory ~100ns, Redis ~1ms, a SQL query ~10ms, a cross-continent round trip ~100ms. Architecture choices (caching, regions, replicas) are about moving work to a cheaper rung.",
+    ],
+    examples: [
+      'A p99 latency of 800ms means 1% of users wait nearly a second, even if the median is 50ms.',
+      'Caching turns a 50ms query into a sub-millisecond memory read for cache hits.',
+    ],
+    diagrams: [
+      {
+        caption: 'Watch the tail: p99 is what unlucky users feel.',
+        layout: 'row',
+        nodes: [
+          { id: 'p50', label: 'p50', sub: 'median', accent: 'success' },
+          { id: 'p95', label: 'p95', accent: 'edge' },
+          { id: 'p99', label: 'p99', sub: 'the tail', accent: 'danger' },
+        ],
+        edges: [],
+      },
+    ],
+    related: ['throughput', 'metric', 'cache', 'SLO'],
+  },
+
+  SLO: {
+    body: [
+      "**An SLO (Service Level Objective) is a target for reliability:** 99.9% of requests succeed, or p99 latency stays under 300ms, measured over a window. It turns vague goals into a number you hold the service to.",
+      "**The error budget.** 99.9% available means 0.1% is allowed to fail, which is your error budget. As long as you are within budget, you can ship fast; burning through it means slowing down to stabilize. It makes reliability a deliberate trade, not an absolute.",
+      "**SLO vs SLA.** An SLO is your internal target; an SLA is the contractual promise to customers (often looser, with penalties). Alerts are tuned to the SLO so you act before customers notice.",
+    ],
+    examples: [
+      'SLO: 99.9% of API requests return under 300ms over 30 days.',
+      'Spending the error budget means freezing risky deploys to recover reliability.',
+    ],
+    diagrams: [
+      {
+        caption: 'A reliability target with an error budget you spend deliberately.',
+        layout: 'row',
+        nodes: [
+          { id: 'target', label: 'SLO', sub: '99.9%', accent: 'primary' },
+          { id: 'budget', label: 'Error budget', sub: '0.1%', accent: 'cache' },
+          { id: 'act', label: 'Burned -> slow down', accent: 'danger' },
+        ],
+      },
+    ],
+    related: ['metric', 'latency', 'observability', 'deployment'],
+  },
+
+  'graceful shutdown': {
+    body: [
+      "**Graceful shutdown is finishing in-flight work before a process exits,** instead of dropping it. When a deploy or a scale-down sends a stop signal (SIGTERM), the process stops taking new requests, finishes the ones in progress, closes connections cleanly, then exits.",
+      "**Why it matters.** Without it, every deploy drops the requests that were mid-flight, returning errors to users for no reason. Containers and orchestrators send SIGTERM and wait a grace period before force-killing (SIGKILL).",
+      "**The steps:** stop accepting new work, drain (let active requests complete), flush buffers and close the database and queue connections, then exit. Workers stop pulling new jobs and finish the current one before quitting.",
+    ],
+    examples: [
+      'On SIGTERM the server stops accepting connections, finishes active requests, then exits within the grace period.',
+      'A worker stops claiming new jobs and finishes its current one before shutting down.',
+    ],
+    diagrams: [
+      {
+        caption: 'Stop accepting, drain in-flight work, close cleanly, then exit.',
+        layout: 'sequence',
+        actors: [
+          { label: 'Orchestrator', accent: 'edge' },
+          { label: 'Process', accent: 'compute' },
+        ],
+        messages: [
+          { from: 0, to: 1, label: 'SIGTERM' },
+          { from: 1, to: 1, label: 'stop new + drain' },
+          { from: 1, to: 0, label: 'exit cleanly', dashed: true },
+        ],
+      },
+    ],
+    related: ['deployment', 'container', 'worker', 'Kubernetes'],
+  },
+
+  function: {
+    body: [
+      "**A function is a named, reusable block of code that takes inputs (arguments) and returns an output.** It is the smallest unit of organized behavior: name a piece of work once, then call it from many places instead of repeating it.",
+      "**Functions are the vocabulary of a program.** Good ones do one thing, have a clear name, and are easy to test in isolation because the same inputs give the same output. Pure functions (no side effects) are the easiest to reason about.",
+      "**They compose.** A request handler calls a validation function, which calls a parsing function; small functions stacked into bigger behavior is how readable code is built.",
+    ],
+    examples: [
+      'function total(items) returns the sum; called from checkout, cart, and the receipt.',
+      'A pure formatPrice(cents) always returns the same string for the same input.',
+    ],
+    diagrams: [
+      {
+        caption: 'Inputs in, one job, an output back.',
+        layout: 'row',
+        nodes: [
+          { id: 'in', label: 'Arguments', accent: 'client' },
+          { id: 'fn', label: 'Function', sub: 'one job', accent: 'compute' },
+          { id: 'out', label: 'Return value', accent: 'success' },
+        ],
+        edges: [
+          { from: 'in', to: 'fn' },
+          { from: 'fn', to: 'out' },
+        ],
+      },
+    ],
+    related: ['side effect', 'class', 'object', 'controller'],
+  },
+
+  class: {
+    body: [
+      "**A class is a blueprint for objects, bundling data (fields) and the behavior that operates on it (methods).** From one class you create many objects, each with its own data but the same methods.",
+      "**It models a thing in your domain:** a User class with an email field and a verify() method, an Order with items and a total() method. Encapsulation means the object guards its own data, exposing methods rather than letting outside code poke at fields directly.",
+      "**Not everything needs a class.** In backends, classes shine for stateful domain models and services; plain functions and data often serve better for simple transformations. Use the one that makes the code clearest.",
+    ],
+    examples: [
+      'class Order { items; total() {...} } creates many order objects from one blueprint.',
+      'A User object hides its password hash, exposing only a checkPassword() method.',
+    ],
+    diagrams: [
+      {
+        caption: 'One blueprint, many objects with their own data.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'cls', label: 'class User', sub: 'blueprint', accent: 'primary' },
+          { id: 'o1', label: 'object', sub: 'ana@...', accent: 'compute' },
+          { id: 'o2', label: 'object', sub: 'ben@...', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['object', 'function', 'service', 'business rule'],
+  },
+
+  object: {
+    body: [
+      "**An object is a concrete bundle of related data, often with behavior attached.** It is an instance: where a class is the blueprint, the object is the actual thing in memory with real values.",
+      "**Two senses, both common.** In object-oriented code, an object is an instance of a class (a specific User). In data terms, an object is a key-value structure (a JSON object), which is how most backend data travels and is stored.",
+      "**Objects are how you pass structured data around:** a request body parsed into an object, a database row mapped to an object, a function returning an object with several named fields.",
+    ],
+    examples: [
+      '{ id: 7, email: "ana@x.com" } is a data object with named fields.',
+      'new User("ana@x.com") is an object: one instance of the User class.',
+    ],
+    diagrams: [
+      {
+        caption: 'A bundle of named fields, sometimes with methods.',
+        layout: 'stack',
+        nodes: [
+          { id: 'o', label: 'object', accent: 'compute' },
+          { id: 'id', label: 'id: 7', accent: 'edge' },
+          { id: 'email', label: 'email: ana@x.com', accent: 'edge' },
+        ],
+      },
+    ],
+    related: ['class', 'JSON', 'dictionary', 'array'],
+  },
+
+  array: {
+    body: [
+      "**An array is an ordered list of values, accessed by index.** It is the workhorse collection: a list of items in a cart, rows from a query, messages in a queue. Position matters and is preserved.",
+      "**Indexing is O(1); searching is O(n).** Jumping to the 5th element is instant; finding whether a value exists means scanning unless you switch to a dictionary or set. Knowing that trade-off is the difference between a fast loop and an accidentally quadratic one.",
+      "**Arrays are everywhere in backends:** the JSON array a list endpoint returns, the batch a worker processes, the page of results you slice with limit and offset.",
+    ],
+    examples: [
+      'items[0] is instant; checking if a value is in a 10,000-item array scans all 10,000.',
+      'A list endpoint returns a JSON array of order objects.',
+    ],
+    diagrams: [
+      {
+        caption: 'Ordered values by index: jump fast, search slow.',
+        layout: 'row',
+        nodes: [
+          { id: 'a', label: '[0]', accent: 'compute' },
+          { id: 'b', label: '[1]', accent: 'compute' },
+          { id: 'c', label: '[2]', accent: 'compute' },
+          { id: 'd', label: '[3]', accent: 'compute' },
+        ],
+        edges: [],
+      },
+    ],
+    related: ['dictionary', 'object', 'for loop', 'JSON'],
+  },
+
+  dictionary: {
+    body: [
+      "**A dictionary (hash map, object, dict) stores key-value pairs with fast lookup by key.** Where an array finds things by position, a dictionary finds them by name, in roughly O(1) regardless of size.",
+      "**It is the right tool for lookups.** Caching by id, counting occurrences, de-duplicating, joining two lists by a shared key: all are dictionary jobs. Reaching for an array scan where a dictionary fits is the most common accidental slowdown in everyday code.",
+      "**Keys are unique and unordered** (in the classic sense). The value can be anything: a number, an object, another dictionary. JSON objects are dictionaries on the wire.",
+    ],
+    examples: [
+      'userById["u_7"] returns the user instantly, no scan.',
+      'Counting word frequencies: counts[word] = (counts[word] or 0) + 1.',
+    ],
+    diagrams: [
+      {
+        caption: 'Find by key in roughly constant time.',
+        layout: 'row',
+        nodes: [
+          { id: 'k', label: 'key "u_7"', accent: 'client' },
+          { id: 'map', label: 'dictionary', sub: 'hash', accent: 'compute' },
+          { id: 'v', label: 'value', sub: 'user object', accent: 'success' },
+        ],
+        edges: [
+          { from: 'k', to: 'map' },
+          { from: 'map', to: 'v' },
+        ],
+      },
+    ],
+    related: ['array', 'object', 'cache', 'JSON'],
+  },
+
+  'for loop': {
+    body: [
+      "**A for loop repeats a block once for each item in a collection, or a fixed number of times.** It is how you process every row, sum every price, or transform every element of a list.",
+      "**Watch what is inside the loop.** A database query or network call inside a loop is the classic N+1 trap: a thousand items become a thousand round trips. Batch the work outside the loop instead.",
+      "**Modern languages favor expressive forms** (map, filter, for-each) over manual index counters, but the idea is the same: do something for each item. The cost is the body times the count, so keep the body cheap.",
+    ],
+    examples: [
+      'for item in cart: total += item.price sums a cart in one pass.',
+      'A query inside a for loop over 1,000 users is 1,000 round trips: the N+1 trap.',
+    ],
+    diagrams: [
+      {
+        caption: 'Run the body once per item; keep the body cheap.',
+        layout: 'ring',
+        nodes: [
+          { id: 'next', label: 'Next item', accent: 'edge' },
+          { id: 'body', label: 'Run body', accent: 'compute' },
+          { id: 'done', label: 'Done?', accent: 'primary' },
+        ],
+      },
+    ],
+    related: ['while loop', 'array', 'N+1 query', 'function'],
+  },
+
+  'while loop': {
+    body: [
+      "**A while loop repeats as long as a condition stays true.** Use it when you do not know the count up front: keep reading until the stream ends, keep retrying until success, keep polling until a job finishes.",
+      "**The condition must eventually become false,** or you have an infinite loop that pins a CPU. Every while loop needs a guaranteed way out: a counter, a timeout, a break on a terminal condition.",
+      "**Common backend uses:** draining a queue while messages remain, paginating while a next cursor exists, retrying with backoff while attempts are left and the error is transient.",
+    ],
+    examples: [
+      'while queue.has_messages(): process(queue.pop()) drains until empty.',
+      'while attempts < 5 and failed: retry with backoff, then give up.',
+    ],
+    diagrams: [
+      {
+        caption: 'Repeat while the condition holds; guarantee an exit.',
+        layout: 'ring',
+        nodes: [
+          { id: 'check', label: 'Condition?', accent: 'primary' },
+          { id: 'body', label: 'Run body', accent: 'compute' },
+          { id: 'exit', label: 'Exit when false', accent: 'edge' },
+        ],
+      },
+    ],
+    related: ['for loop', 'retry', 'backpressure', 'worker'],
+  },
+
+  runtime: {
+    body: [
+      "**The runtime is the system that actually executes your code:** Node for JavaScript, CPython for Python, the JVM for Java, the .NET CLR for C#. It manages memory, schedules work, and provides the standard library your code calls into.",
+      "**It shapes how your backend behaves.** Node's single-threaded event loop favors many concurrent I/O-bound requests; a thread-per-request model handles CPU-bound work differently. Knowing your runtime's concurrency model explains why some code scales and some blocks everything.",
+      "**Runtime also means when the program is running** (as opposed to compile time). A runtime error happens during execution, with real data, where a type error would have been caught earlier.",
+    ],
+    examples: [
+      'Node runs your JS on one thread with an event loop; a CPU-heavy task blocks it.',
+      'A null value crashing the program is a runtime error, not a compile-time one.',
+    ],
+    diagrams: [
+      {
+        caption: 'The runtime executes your code and manages its resources.',
+        layout: 'stack',
+        nodes: [
+          { id: 'code', label: 'Your code', accent: 'client' },
+          { id: 'rt', label: 'Runtime', sub: 'Node / CPython / JVM', accent: 'compute' },
+          { id: 'os', label: 'OS + hardware', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['concurrency model', 'memory usage', 'framework', 'runtime profiling'],
+  },
+
+  'concurrency model': {
+    body: [
+      "**A concurrency model is how a runtime does many things at once.** The big families: an event loop (Node, single thread, async I/O), threads (multiple OS threads sharing memory), processes (isolated, multiple cores), and coroutines / green threads (lightweight, cooperatively scheduled).",
+      "**It dictates what scales.** An event loop handles thousands of idle-waiting connections cheaply but stalls on CPU-bound work, because one slow computation blocks everything. Threads use multiple cores but bring locks and race conditions.",
+      "**Match the model to the workload.** I/O-bound (waiting on databases and APIs) loves async / event loops; CPU-bound (crunching numbers) wants real parallelism across cores or processes.",
+    ],
+    examples: [
+      'Node serves 10,000 idle WebSocket connections on one thread, but a tight CPU loop freezes them all.',
+      'A CPU-heavy report runs in a worker process so it does not block the event loop.',
+    ],
+    diagrams: [
+      {
+        caption: 'One loop for I/O waiting; processes for CPU parallelism.',
+        layout: 'row',
+        nodes: [
+          { id: 'loop', label: 'Event loop', sub: 'I/O-bound', accent: 'compute' },
+          { id: 'threads', label: 'Threads', sub: 'shared memory', accent: 'edge' },
+          { id: 'proc', label: 'Processes', sub: 'CPU-bound', accent: 'primary' },
+        ],
+        edges: [],
+      },
+    ],
+    related: ['runtime', 'worker', 'backpressure', 'thread'],
+  },
+
+  'side effect': {
+    body: [
+      "**A side effect is anything a function does beyond returning a value:** writing to a database, sending an email, mutating shared state, logging, calling an API. Side effects are how a program touches the outside world.",
+      "**They are necessary but worth isolating.** Pure functions (input to output, no side effects) are trivial to test and reason about; effectful code needs mocks, ordering care, and idempotency. Keeping the pure core separate from the effectful edges makes a codebase testable.",
+      "**Effects are where bugs and retries get tricky.** Sending an email twice on a retry, double-charging a card, a stale cache: all are side effects that happened when they should not have, which is why idempotency matters.",
+    ],
+    examples: [
+      'calculateTotal(cart) is pure; chargeCard(cart) has a side effect (money moves).',
+      'A retried request with a side effect can send two emails unless it is idempotent.',
+    ],
+    diagrams: [
+      {
+        caption: 'Beyond the return value, the function touches the world.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'fn', label: 'Function', accent: 'compute' },
+          { id: 'ret', label: 'Return value', accent: 'success' },
+          { id: 'db', label: 'Write DB', accent: 'storage' },
+          { id: 'email', label: 'Send email', accent: 'edge' },
+        ],
+      },
+    ],
+    related: ['function', 'idempotency', 'testing', 'retry'],
+  },
+
+  'memory usage': {
+    body: [
+      "**Memory usage is how much RAM your process holds while running.** It matters because memory is finite: exceed the limit and the process is killed (OOM) or the machine swaps to disk and crawls.",
+      "**Common culprits.** Loading a huge result set fully into memory instead of streaming it, an unbounded cache or queue that grows forever, or a memory leak where references are kept and never freed. Watch resident memory over time; a steady climb is a leak.",
+      "**The fix is usually bounding and streaming.** Process large data in chunks, cap caches with an eviction policy, and apply backpressure so a fast producer cannot pile work up in memory.",
+    ],
+    examples: [
+      'Loading a million rows at once OOMs; streaming them in batches stays flat.',
+      'An unbounded in-memory cache grows until the process is killed.',
+    ],
+    diagrams: [
+      {
+        caption: 'A steady climb in resident memory signals a leak.',
+        layout: 'row',
+        nodes: [
+          { id: 'load', label: 'Load all at once', sub: 'spikes', accent: 'danger' },
+          { id: 'stream', label: 'Stream in chunks', sub: 'flat', accent: 'success' },
+        ],
+        edges: [],
+      },
+    ],
+    related: ['runtime', 'backpressure', 'cache', 'runtime profiling'],
+  },
+
+  'dependency management': {
+    body: [
+      "**Dependency management is how a project declares, installs, and pins the third-party libraries it relies on.** A manifest lists what you need (package.json, requirements.txt, go.mod); a lockfile pins the exact resolved versions so every install is identical.",
+      "**The lockfile is what makes builds reproducible.** Without it, two installs days apart can pull different versions and behave differently, which is the classic works-on-my-machine bug. Commit the lockfile.",
+      "**Dependencies are also a risk surface.** Each one is code you run and trust: it can have bugs, vulnerabilities, or a supply-chain compromise. Keep them updated, audited, and as few as you can justify.",
+    ],
+    examples: [
+      'package.json lists ranges; package-lock.json pins exact versions for reproducible installs.',
+      'A security advisory on a transitive dependency means bumping and re-locking.',
+    ],
+    diagrams: [
+      {
+        caption: 'Manifest declares; lockfile pins; install is reproducible.',
+        layout: 'row',
+        nodes: [
+          { id: 'man', label: 'Manifest', sub: 'package.json', accent: 'client' },
+          { id: 'lock', label: 'Lockfile', sub: 'exact versions', accent: 'compute' },
+          { id: 'install', label: 'Install', sub: 'reproducible', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['framework', 'CI/CD', 'container', 'deployment'],
+  },
+
+  'runtime profiling': {
+    body: [
+      "**Runtime profiling measures where a running program actually spends time and memory,** so you optimize the real bottleneck instead of a guessed one. A profiler samples the call stack or instruments functions to show the hot paths.",
+      "**Measure before you optimize.** Intuition about what is slow is wrong more often than not; the profiler points at the one function eating 80% of the time, which is usually not where you expected. Optimizing anything else is wasted effort.",
+      "**Two flavors.** A CPU profile shows which functions burn cycles (a flame graph); a memory profile shows what is holding RAM and what is leaking. Pair profiling with the metric that flagged the problem (a latency or memory alarm).",
+    ],
+    examples: [
+      'A flame graph shows 80% of request time is in one JSON serialization call.',
+      'A heap profile reveals a cache that never evicts, explaining the slow memory climb.',
+    ],
+    diagrams: [
+      {
+        caption: 'Measure the running program, then fix the real hot path.',
+        layout: 'row',
+        nodes: [
+          { id: 'run', label: 'Profile', sub: 'sample stacks', accent: 'edge' },
+          { id: 'hot', label: 'Hot path', sub: '80% of time', accent: 'danger' },
+          { id: 'fix', label: 'Optimize that', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['latency', 'memory usage', 'metric', 'observability'],
+  },
+
 }
 
 export const glossaryEntries: GlossaryEntry[] = glossaryTerms

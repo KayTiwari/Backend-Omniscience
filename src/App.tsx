@@ -17,6 +17,7 @@ import {
   SkipForward,
   Sun,
   Trophy,
+  X,
 } from 'lucide-react'
 import './App.css'
 import {
@@ -857,6 +858,11 @@ function App() {
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search subjects"
           />
+          {query && (
+            <button type="button" className="enc-search-clear" onClick={() => setQuery('')} aria-label="Clear search">
+              <X size={15} />
+            </button>
+          )}
         </label>
 
 
@@ -1114,6 +1120,11 @@ function App() {
                   onChange={(event) => setHomeQuery(event.target.value)}
                   placeholder="Search problems, subjects, drills, concepts..."
                 />
+                {homeQuery && (
+                  <button type="button" className="enc-search-clear" onClick={() => setHomeQuery('')} aria-label="Clear search">
+                    <X size={16} />
+                  </button>
+                )}
               </label>
 
               {homeQuery.trim() && (
@@ -1272,6 +1283,16 @@ function App() {
                     }}
                     placeholder="Search terms..."
                   />
+                  {encQuery && (
+                    <button
+                      type="button"
+                      className="enc-search-clear"
+                      onClick={() => setEncQuery('')}
+                      aria-label="Clear search"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
                 </label>
                 <div className="enc-alphabet" role="tablist" aria-label="Jump to letter">
                   <button
