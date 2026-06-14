@@ -524,6 +524,90 @@ export const glossaryTerms: GlossaryTerm[] = [
     definition:
       'The actual rate of useful work a system delivers (requests/sec, bytes/sec), distinct from latency (delay per request) and bandwidth (max capacity).',
   },
+  {
+    term: 'MySQL',
+    definition: 'A widely used open-source relational database, the classic LAMP-stack SQL database.',
+  },
+  {
+    term: 'MongoDB',
+    definition: 'A document database that stores flexible JSON-like documents and queries inside them.',
+  },
+  {
+    term: 'Redis',
+    definition: 'An in-memory key-value store used as a cache, session store, rate-limit counter, queue, and leaderboard.',
+  },
+  {
+    term: 'Memcached',
+    definition: 'A simple, fast in-memory cache for key-value data, older and more minimal than Redis.',
+  },
+  {
+    term: 'DynamoDB',
+    definition: "Amazon's managed key-value and document store: serverless, single-digit-millisecond latency, scales to any size.",
+  },
+  {
+    term: 'Cassandra',
+    definition: 'A wide-column store built for massive write throughput across many nodes, with tunable consistency.',
+  },
+  {
+    term: 'Elasticsearch',
+    definition: 'A search and analytics engine built on an inverted index, for full-text search, logs, and aggregations.',
+  },
+  {
+    term: 'Kafka',
+    definition: 'A distributed, durable, partitioned event log for high-throughput streaming and pub/sub between systems.',
+    synonyms: ['Apache Kafka'],
+  },
+  {
+    term: 'RabbitMQ',
+    definition: 'A traditional message broker with flexible routing, used as a task and message queue between services.',
+  },
+  {
+    term: 'Amazon SQS',
+    definition: "AWS's fully managed message queue: simple, durable, at-least-once delivery, with a built-in dead-letter queue.",
+    synonyms: ['SQS'],
+  },
+  {
+    term: 'Amazon S3',
+    definition: "AWS's object storage: store and serve files/blobs by key with very high durability, the standard for static assets and backups.",
+    synonyms: ['S3'],
+  },
+  {
+    term: 'AWS Lambda',
+    definition: 'Serverless functions: run code on demand with no servers to manage, billed per request and millisecond.',
+    synonyms: ['Lambda'],
+  },
+  {
+    term: 'Nginx',
+    definition: 'A high-performance web server, reverse proxy, and load balancer, often the front door to an app.',
+  },
+  {
+    term: 'ZooKeeper',
+    definition: 'A coordination service for distributed systems: leader election, configuration, and locks.',
+    synonyms: ['Apache ZooKeeper'],
+  },
+  {
+    term: 'Docker',
+    definition: 'A tool that packages an app and its dependencies into a container image that runs the same everywhere.',
+  },
+  {
+    term: 'Kubernetes',
+    definition: 'A container orchestrator that schedules, scales, heals, and networks containers across a cluster.',
+    synonyms: ['k8s'],
+  },
+  {
+    term: 'Prometheus',
+    definition: 'A metrics and monitoring system that scrapes time-series data and powers alerting and dashboards.',
+  },
+  {
+    term: 'Apache Spark',
+    definition: 'A distributed engine for large-scale batch and analytics processing across a cluster.',
+    synonyms: ['Spark'],
+  },
+  {
+    term: 'Apache Flink',
+    definition: 'A distributed engine for stateful stream processing: real-time analytics over event streams.',
+    synonyms: ['Flink'],
+  },
 ]
 
 export type GlossaryMatch = {

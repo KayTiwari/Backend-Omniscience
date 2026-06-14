@@ -14,6 +14,7 @@ export type GlossaryCategory =
   | 'Caching & Async'
   | 'Scale & Reliability'
   | 'Operations'
+  | 'Technologies'
   | 'Language & Runtime'
 
 export type GlossaryEntry = {
@@ -38,6 +39,7 @@ const CATEGORY_TERMS: Record<GlossaryCategory, string[]> = {
   'Caching & Async': ['cache', 'CDN', 'cache invalidation', 'queue', 'worker', 'dead-letter queue', 'idempotency', 'retry', 'backpressure', 'rate limit', 'bloom filter'],
   'Scale & Reliability': ['horizontal scaling', 'sharding', 'replication', 'load balancer', 'consistent hashing', 'microservices', 'CAP theorem', 'eventual consistency', 'strong consistency', 'heartbeat', 'quorum', 'leader election', 'distributed lock', 'service discovery'],
   Operations: ['deployment', 'CI/CD', 'container', 'observability', 'log', 'metric', 'trace', 'latency', 'SLO', 'graceful shutdown'],
+  Technologies: ['MySQL', 'MongoDB', 'Redis', 'Memcached', 'DynamoDB', 'Cassandra', 'Elasticsearch', 'Kafka', 'RabbitMQ', 'Amazon SQS', 'Amazon S3', 'AWS Lambda', 'Nginx', 'ZooKeeper', 'Docker', 'Kubernetes', 'Prometheus', 'Apache Spark', 'Apache Flink'],
   'Language & Runtime': ['function', 'class', 'object', 'array', 'dictionary', 'for loop', 'while loop', 'runtime', 'concurrency model', 'side effect', 'memory usage', 'dependency management', 'runtime profiling'],
 }
 
@@ -897,6 +899,295 @@ const RICH: Record<string, Rich> = {
       'Adding read replicas raises read throughput without changing any single request\'s latency.',
     ],
     related: ['latency', 'horizontal scaling', 'load balancer', 'cache'],
+  },
+
+  MySQL: {
+    body: [
+      '**MySQL is a classic open-source relational database,** the SQL in the old LAMP stack and still one of the most deployed databases. Like PostgreSQL it gives you tables, joins, transactions, and ACID guarantees.',
+      '**MySQL vs PostgreSQL.** Both are excellent default choices. PostgreSQL is generally richer (stricter SQL, advanced types, JSON, extensions); MySQL is famously fast for simple read-heavy workloads and has huge operational tooling. For most new projects either is fine; pick the one your team knows.',
+      '**Scales the usual way:** indexes, read replicas, then sharding. Managed versions (Amazon RDS, Aurora, PlanetScale) remove most of the operational burden.',
+    ],
+    examples: [
+      'A typical web app: users, orders, and payments in MySQL with read replicas for the read-heavy pages.',
+      'WordPress, the most-installed CMS, runs on MySQL.',
+    ],
+    related: ['SQL', 'PostgreSQL', 'database', 'replication', 'index'],
+  },
+
+  MongoDB: {
+    body: [
+      '**MongoDB is the popular document database.** Instead of rows in fixed tables, it stores flexible JSON-like documents and lets you query inside them. Good when records are self-contained and their shape varies.',
+      '**When to reach for it.** Content, catalogs, user profiles, and event payloads where each document holds everything it needs and a rigid schema would fight you. It scales out with built-in sharding and replica sets.',
+      '**The trade.** You give up easy multi-table joins and (historically) strong multi-document transactions, though modern MongoDB supports transactions. For join-heavy, strongly-transactional data (commerce, ledgers), relational is usually simpler.',
+    ],
+    examples: [
+      'A CMS where each article document holds its title, body, tags, and author inline, no joins needed.',
+      'Storing varied event payloads whose fields differ by event type.',
+    ],
+    related: ['database', 'SQL', 'sharding', 'eventual consistency'],
+  },
+
+  Redis: {
+    body: [
+      '**Redis is an in-memory key-value store, the Swiss Army knife of fast shared state.** Because it lives in RAM, reads and writes take well under a millisecond, and it does far more than plain caching.',
+      '**What teams use it for:** a cache in front of the database, session storage, rate-limit counters, real-time leaderboards (sorted sets), distributed locks, pub/sub, and lightweight queues. Its rich data types (strings, hashes, lists, sets, sorted sets) are why it covers so many jobs.',
+      '**The trade.** It is memory-bound and primarily a fast, mostly-ephemeral layer; it offers persistence and replication but is usually paired with a durable database as the source of truth.',
+    ],
+    examples: [
+      'Cache hot query results with a TTL; store sessions; keep a sliding-window rate-limit counter.',
+      'A game leaderboard as a Redis sorted set: O(log n) updates and instant top-N reads.',
+    ],
+    diagrams: [
+      {
+        caption: 'Redis sits between the app and the database as a fast shared layer.',
+        layout: 'row',
+        nodes: [
+          { id: 'app', label: 'App servers', accent: 'compute' },
+          { id: 'redis', label: 'Redis', sub: 'in-memory', accent: 'cache' },
+          { id: 'db', label: 'Database', sub: 'source of truth', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['cache', 'Memcached', 'rate limit', 'distributed lock'],
+  },
+
+  Memcached: {
+    body: [
+      '**Memcached is a bare-bones, very fast in-memory cache.** It stores simple key-value pairs and does one thing well: caching. It predates Redis and is deliberately minimal.',
+      '**Memcached vs Redis.** Memcached is simpler and slightly faster for plain string caching and multi-threaded. Redis offers rich data types, persistence, pub/sub, and more, which is why most new systems pick Redis unless they specifically want the simplest possible cache.',
+    ],
+    examples: [
+      'Cache rendered HTML fragments or database query results as opaque strings.',
+    ],
+    related: ['cache', 'Redis', 'CDN'],
+  },
+
+  DynamoDB: {
+    body: [
+      "**DynamoDB is Amazon's managed key-value and document store.** It is serverless (no nodes to run), delivers single-digit-millisecond latency, and scales to virtually any size automatically. You provision or auto-scale capacity and AWS handles the rest.",
+      '**Design around access patterns.** DynamoDB rewards designing your keys for the exact queries you need (often single-table design). It is superb for high-scale key lookups; it is not the tool for ad-hoc queries and rich joins.',
+      '**Consistency knob.** Reads are eventually consistent by default for speed, with an option for strongly consistent reads. It uses partitioning and replication under the hood, so a bad partition key creates a hot partition.',
+    ],
+    examples: [
+      'Session store, shopping carts, user profiles, and IoT data at massive scale with predictable latency.',
+      'A bad partition key (low cardinality) concentrates traffic on one partition: the hot-key problem.',
+    ],
+    related: ['Cassandra', 'sharding', 'consistent hashing', 'eventual consistency', 'Amazon S3'],
+  },
+
+  Cassandra: {
+    body: [
+      '**Cassandra is a wide-column store built for enormous write throughput.** It spreads data across many nodes with no single primary, so writes scale linearly and there is no single point of failure.',
+      '**Where it wins:** write-heavy, always-on workloads like time-series, event logs, sensor data, messaging, and feeds. It offers tunable consistency via read/write quorums, sliding between fast-eventual and strong.',
+      '**The trade.** You model tables around specific queries up front (query-first design), and ad-hoc queries and joins are not its strength. It chooses availability and partition tolerance (AP) by default.',
+    ],
+    examples: [
+      'Storing billions of time-series sensor readings written continuously across a cluster.',
+      'A messaging app keeping per-user message timelines that take constant heavy writes.',
+    ],
+    related: ['DynamoDB', 'sharding', 'quorum', 'eventual consistency', 'consistent hashing'],
+  },
+
+  Elasticsearch: {
+    body: [
+      '**Elasticsearch is a search and analytics engine.** It builds an inverted index (term to the documents containing it) so full-text search over huge corpora returns in milliseconds, with relevance ranking, fuzzy matching, and aggregations.',
+      '**Common uses:** product and site search, log search and analytics (the ELK stack: Elasticsearch, Logstash, Kibana), and dashboards over large datasets.',
+      '**The trade.** It is a search layer, not a primary database: you typically keep the source of truth elsewhere and index into Elasticsearch. Keeping that index in sync is the operational work.',
+    ],
+    examples: [
+      'Full-text product search with typo tolerance and faceted filters.',
+      'Centralized log search across thousands of servers via the ELK stack.',
+    ],
+    related: ['index', 'database', 'observability', 'log'],
+  },
+
+  Kafka: {
+    body: [
+      '**Kafka is a distributed, durable event log.** Producers append events to topics; consumers read them at their own pace. Unlike a traditional queue that deletes a message once consumed, Kafka retains the log, so many independent consumers can each read the whole stream and replay it.',
+      '**Partitions give ordering and scale.** Each topic is split into partitions; events with the same key go to the same partition and stay ordered, while partitions spread load across the cluster. This is the partition-key idea applied to streaming.',
+      '**Where it shines:** high-throughput pipelines, event-driven architectures, decoupling services, and feeding analytics (often with Spark or Flink). It is heavier to operate than a simple queue, so reach for it when you need durable, replayable, high-volume streams.',
+    ],
+    examples: [
+      'Every user action published to Kafka, then consumed independently by analytics, search indexing, and notifications.',
+      'A payments event stream replayed to rebuild a downstream database after a bug fix.',
+    ],
+    diagrams: [
+      {
+        caption: 'One topic, many partitions; multiple consumer groups each read the whole log independently.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'topic', label: 'Kafka topic', sub: 'partitioned log', accent: 'queue' },
+          { id: 'analytics', label: 'Analytics', accent: 'compute' },
+          { id: 'search', label: 'Search indexer', accent: 'compute' },
+          { id: 'notify', label: 'Notifications', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['queue', 'RabbitMQ', 'Amazon SQS', 'Apache Flink', 'backpressure'],
+  },
+
+  RabbitMQ: {
+    body: [
+      '**RabbitMQ is a traditional message broker.** Producers send messages to exchanges, which route them to queues by rules, and consumers process and acknowledge them. A message is typically delivered to one consumer and then removed.',
+      '**Versus Kafka.** RabbitMQ excels at flexible routing and per-message work distribution (task queues), with lower setup overhead for classic queueing. Kafka is for high-throughput, retained, replayable event streams. Use RabbitMQ for "do this task once"; use Kafka for "stream these events to everyone."',
+    ],
+    examples: [
+      'A task queue: enqueue send-email jobs, and a pool of workers each pull and process one.',
+      'Routing orders to different queues by region via an exchange.',
+    ],
+    related: ['queue', 'Kafka', 'Amazon SQS', 'worker', 'dead-letter queue'],
+  },
+
+  'Amazon SQS': {
+    body: [
+      "**Amazon SQS is AWS's fully managed message queue.** No brokers to run: you create a queue and send and receive messages. It gives durable, at-least-once delivery, automatic scaling, and a built-in dead-letter queue for messages that keep failing.",
+      '**Standard vs FIFO.** Standard queues are highest-throughput with best-effort ordering and possible duplicates (so make consumers idempotent). FIFO queues guarantee order and exactly-once processing within a message group, at lower throughput.',
+      '**The easy default on AWS** for decoupling services and smoothing spikes, often paired with Lambda or worker fleets.',
+    ],
+    examples: [
+      'A web tier drops "process order" messages on SQS; a Lambda or worker pool drains them.',
+      'A FIFO queue keyed by order id keeps each order\'s events in sequence.',
+    ],
+    related: ['queue', 'dead-letter queue', 'idempotency', 'AWS Lambda', 'Kafka'],
+  },
+
+  'Amazon S3': {
+    body: [
+      "**Amazon S3 is AWS's object storage:** store and retrieve files (objects) by key in buckets, with extremely high durability (designed for eleven nines) and effectively unlimited scale. It is the default place to put anything that is a file rather than a row.",
+      '**What goes in S3:** user uploads, images and video, backups, logs, data-lake files, and static website assets. You serve it directly or put a CDN (CloudFront) in front for low-latency global delivery.',
+      '**Why not the database.** Storing large blobs in a relational database bloats it and slows everything; S3 is cheaper, more durable, and built for it. The database keeps only the metadata and the S3 key.',
+    ],
+    examples: [
+      'A photo app stores originals in S3, serves resized variants via CloudFront, and keeps only the keys in its database.',
+      'Nightly database backups and application logs archived to S3.',
+    ],
+    diagrams: [
+      {
+        caption: 'Files live in S3; the database stores only metadata and the object key; a CDN fronts delivery.',
+        layout: 'row',
+        nodes: [
+          { id: 'app', label: 'App', accent: 'compute' },
+          { id: 's3', label: 'Amazon S3', sub: 'objects by key', accent: 'storage' },
+          { id: 'cdn', label: 'CloudFront', sub: 'CDN', accent: 'edge' },
+        ],
+        edges: [
+          { from: 'app', to: 's3', label: 'store / fetch' },
+          { from: 's3', to: 'cdn', label: 'serve' },
+        ],
+      },
+    ],
+    related: ['CDN', 'database', 'AWS Lambda', 'DynamoDB'],
+  },
+
+  'AWS Lambda': {
+    body: [
+      '**AWS Lambda runs your code without servers.** You upload a function; AWS runs it on demand in response to events (an HTTP call via API Gateway, a file landing in S3, a message on SQS), scales it automatically from zero to thousands of concurrent runs, and bills per request and millisecond.',
+      '**When it fits:** event-driven glue, APIs with spiky or low traffic, scheduled jobs, and processing pipelines. You stop thinking about servers, capacity, and patching.',
+      '**The trades:** cold starts (the first call after idle is slower), execution time limits, and statelessness (no local state between runs). For steady high-volume workloads, containers can be cheaper.',
+    ],
+    examples: [
+      'A thumbnail generator: an S3 upload event triggers a Lambda that resizes the image.',
+      'A low-traffic API where paying per request beats running an always-on server.',
+    ],
+    related: ['container', 'Amazon S3', 'Amazon SQS', 'API gateway', 'horizontal scaling'],
+  },
+
+  Nginx: {
+    body: [
+      '**Nginx is a high-performance web server and reverse proxy.** It is frequently the front door of a system: terminating TLS, serving static files, compressing responses, and forwarding dynamic requests to app servers. It also works as a load balancer.',
+      '**Why it is everywhere:** it handles many thousands of concurrent connections efficiently with a small footprint, which is why it fronts a huge share of the web.',
+    ],
+    examples: [
+      'Nginx terminates HTTPS, serves /static directly, and proxies /api to the application servers.',
+      'Used as an L7 load balancer spreading traffic across a backend pool.',
+    ],
+    related: ['reverse proxy', 'load balancer', 'TLS', 'CDN'],
+  },
+
+  ZooKeeper: {
+    body: [
+      '**ZooKeeper is a coordination service for distributed systems.** It provides the hard primitives clusters need: leader election, distributed locks, configuration storage, and membership, all with strong consistency.',
+      '**You rarely use it directly;** it sits under other systems (older Kafka, HBase, and many clusters) to keep their nodes in agreement. etcd plays a similar role for Kubernetes.',
+    ],
+    examples: [
+      'A cluster uses ZooKeeper to elect one leader node and fail over to a new one when it dies.',
+      'Storing configuration that all nodes watch for changes.',
+    ],
+    related: ['leader election', 'distributed lock', 'quorum', 'service discovery'],
+  },
+
+  Docker: {
+    body: [
+      '**Docker packages an app and its dependencies into a container image** that runs identically on a laptop, a CI runner, and production. It ends "works on my machine" by shipping the environment with the code.',
+      '**Containers vs virtual machines.** A container shares the host OS kernel and isolates just the app, so it is far lighter and faster to start than a VM, which bundles a whole operating system. You build an image once and run many identical containers from it.',
+      '**It is the unit of deployment** for most modern backends, and what orchestrators like Kubernetes schedule.',
+    ],
+    examples: [
+      'A Dockerfile builds an image with your app, runtime, and libraries; the same image runs in dev and prod.',
+      'CI builds the image, tests it, and ships the exact bytes that were tested.',
+    ],
+    related: ['container', 'Kubernetes', 'deployment', 'CI/CD'],
+  },
+
+  Kubernetes: {
+    body: [
+      '**Kubernetes orchestrates containers across a cluster of machines.** You declare the desired state (run 5 copies of this container, expose it on this port) and Kubernetes makes it so: scheduling containers onto nodes, restarting crashed ones, scaling on load, rolling out updates, and networking them together.',
+      '**What it gives you:** self-healing (a dead container is replaced), horizontal autoscaling, rolling deploys with rollback, service discovery, and load balancing, all declaratively.',
+      '**The trade: complexity.** Kubernetes is powerful and operationally heavy. Small teams often start with a managed platform (or serverless) and adopt it when scale and many services justify it.',
+    ],
+    examples: [
+      'Declare "5 replicas of the API"; a node dies, and Kubernetes reschedules its containers elsewhere automatically.',
+      'A rolling deploy replaces pods gradually and rolls back if health checks fail.',
+    ],
+    diagrams: [
+      {
+        caption: 'Declare desired state; the orchestrator schedules and heals containers across nodes.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'cp', label: 'Control plane', sub: 'desired state', accent: 'edge' },
+          { id: 'n1', label: 'Node 1', sub: 'pods', accent: 'compute' },
+          { id: 'n2', label: 'Node 2', sub: 'pods', accent: 'compute' },
+          { id: 'n3', label: 'Node 3', sub: 'pods', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['Docker', 'container', 'horizontal scaling', 'service discovery', 'load balancer'],
+  },
+
+  Prometheus: {
+    body: [
+      '**Prometheus is a metrics and monitoring system.** It scrapes numeric time-series from your services (request rate, error rate, latency, queue depth, memory) on an interval, stores them, and lets you query and alert on them.',
+      '**The metrics pillar of observability.** Paired with Grafana for dashboards and Alertmanager for alerting, it answers "how much, how fast, how many" over time, complementing logs (what happened) and traces (where the time went).',
+    ],
+    examples: [
+      'Alert when the 5xx error rate exceeds 1% for 5 minutes, or when queue depth keeps climbing.',
+      'A Grafana dashboard of p99 latency and request rate, both scraped by Prometheus.',
+    ],
+    related: ['metric', 'observability', 'SLO', 'log', 'trace'],
+  },
+
+  'Apache Spark': {
+    body: [
+      '**Apache Spark is a distributed engine for large-scale data processing.** It spreads a big batch job (terabytes of data) across a cluster and processes it in parallel in memory, far faster than older disk-based approaches.',
+      '**Used for:** ETL pipelines, analytics, and machine-learning feature processing over huge datasets. It is a batch and micro-batch engine; for true low-latency streaming, Flink is the specialist.',
+    ],
+    examples: [
+      'A nightly job aggregating a day of event logs into reporting tables across a cluster.',
+      'Processing a data-lake of files in S3 into cleaned, joined datasets.',
+    ],
+    related: ['Apache Flink', 'Kafka', 'Amazon S3', 'sharding'],
+  },
+
+  'Apache Flink': {
+    body: [
+      '**Apache Flink is a distributed engine for stateful stream processing.** It processes events continuously as they arrive (not in nightly batches), maintaining state across them, which makes it the tool for real-time analytics.',
+      '**Used for:** live dashboards, fraud detection, real-time aggregations and counting, and alerting on event streams, usually reading from Kafka. Spark does big batch jobs; Flink does low-latency streaming.',
+    ],
+    examples: [
+      'Computing a real-time leaderboard or per-minute click counts from a Kafka stream.',
+      'Flagging fraudulent transactions within seconds as events flow in.',
+    ],
+    related: ['Kafka', 'Apache Spark', 'eventual consistency', 'queue'],
   },
 }
 
