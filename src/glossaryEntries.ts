@@ -272,12 +272,21 @@ const RICH: Record<string, Rich> = {
     ],
     diagrams: [
       {
-        caption: 'Adding a node only moves the keys in one arc of the ring, not everything.',
-        layout: 'row',
+        caption: 'Servers and keys sit on a ring; each key belongs to the next server clockwise.',
+        layout: 'ring',
         nodes: [
-          { id: 'k', label: 'Key', sub: 'hash to a point', accent: 'compute' },
-          { id: 'ring', label: 'Hash ring', sub: 'servers placed on it', accent: 'edge' },
-          { id: 's', label: 'Next server', sub: 'clockwise', accent: 'storage' },
+          { id: 's0', label: 'Server 0', accent: 'storage' },
+          { id: 'k1', label: 'Key A', accent: 'compute' },
+          { id: 's1', label: 'Server 1', accent: 'storage' },
+          { id: 'k2', label: 'Key B', accent: 'compute' },
+          { id: 's2', label: 'Server 2', accent: 'storage' },
+          { id: 'k3', label: 'Key C', accent: 'compute' },
+          { id: 's3', label: 'Server 3', accent: 'storage' },
+        ],
+        edges: [
+          { from: 'k1', to: 's1', label: 'clockwise' },
+          { from: 'k2', to: 's2' },
+          { from: 'k3', to: 's3' },
         ],
       },
     ],
@@ -353,6 +362,23 @@ const RICH: Record<string, Rich> = {
       'A retried POST /charge with the same idempotency key returns the original charge rather than billing the card twice.',
       'A webhook handler reads event.id, finds it in the processed table, and returns early.',
     ],
+    diagrams: [
+      {
+        caption: 'Check the id first; a duplicate skips the work entirely.',
+        layout: 'row',
+        nodes: [
+          { id: 'msg', label: 'Message + id', accent: 'compute' },
+          { id: 'seen', label: 'Seen this id?', accent: 'edge' },
+          { id: 'skip', label: 'Yes -> skip', accent: 'success' },
+          { id: 'do', label: 'No -> do + record', accent: 'primary' },
+        ],
+        edges: [
+          { from: 'msg', to: 'seen' },
+          { from: 'seen', to: 'skip', label: 'duplicate' },
+          { from: 'seen', to: 'do', label: 'first time' },
+        ],
+      },
+    ],
     related: ['queue', 'webhook', 'retry', 'rate limit'],
   },
 
@@ -366,6 +392,23 @@ const RICH: Record<string, Rich> = {
       'Allow 100 requests per minute per API key; the 101st in that minute gets 429 with a Retry-After header.',
       'Token bucket: 10 tokens, refilled 1/second, so a client can burst 10 then settles to 1/second.',
     ],
+    diagrams: [
+      {
+        caption: 'Token bucket: tokens refill steadily; a request takes one, or gets 429.',
+        layout: 'row',
+        nodes: [
+          { id: 'refill', label: 'Refill', sub: '1 token/sec', accent: 'edge' },
+          { id: 'bucket', label: 'Bucket', sub: 'holds 10', accent: 'cache' },
+          { id: 'ok', label: 'Take token -> allow', accent: 'success' },
+          { id: 'deny', label: 'Empty -> 429', accent: 'danger' },
+        ],
+        edges: [
+          { from: 'refill', to: 'bucket' },
+          { from: 'bucket', to: 'ok', label: 'has token' },
+          { from: 'bucket', to: 'deny', label: 'empty' },
+        ],
+      },
+    ],
     related: ['API gateway', 'idempotency', 'backpressure'],
   },
 
@@ -378,6 +421,18 @@ const RICH: Record<string, Rich> = {
     examples: [
       '4 stateless app servers behind a load balancer handle ~4x the traffic of one, and losing one just trims capacity.',
       'Move sessions from local memory to Redis first, or the new servers appear logged-out to half of requests.',
+    ],
+    diagrams: [
+      {
+        caption: 'Stateless servers behind a load balancer; sessions live in a shared store.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'lb', label: 'Load balancer', accent: 'edge' },
+          { id: 'a', label: 'Server A', sub: 'stateless', accent: 'compute' },
+          { id: 'b', label: 'Server B', sub: 'stateless', accent: 'compute' },
+          { id: 'c', label: 'Server C', sub: 'stateless', accent: 'compute' },
+        ],
+      },
     ],
     related: ['load balancer', 'sharding', 'replication', 'microservices'],
   },
@@ -468,6 +523,24 @@ const RICH: Record<string, Rich> = {
       'Header.Payload.Signature, e.g. eyJhbGc... where the payload decodes to { "sub": 42, "exp": 1699999999 }.',
       'A leaked JWT keeps working until expiry, which is why lifetimes are kept short.',
     ],
+    diagrams: [
+      {
+        caption: 'Login mints a signed token; later requests carry it and the server verifies it.',
+        layout: 'sequence',
+        actors: [
+          { label: 'Client', accent: 'client' },
+          { label: 'Server', accent: 'compute' },
+        ],
+        messages: [
+          { from: 0, to: 1, label: 'POST /login (credentials)' },
+          { from: 1, to: 1, label: 'sign JWT' },
+          { from: 1, to: 0, label: 'token', dashed: true },
+          { from: 0, to: 1, label: 'GET /data + Bearer token' },
+          { from: 1, to: 1, label: 'verify signature' },
+          { from: 1, to: 0, label: '200 data', dashed: true },
+        ],
+      },
+    ],
     related: ['authentication', 'authorization', 'OAuth'],
   },
 
@@ -480,6 +553,22 @@ const RICH: Record<string, Rich> = {
     examples: [
       'BEGIN; UPDATE accounts SET balance = balance - 100 WHERE id = 1; UPDATE accounts SET balance = balance + 100 WHERE id = 2; COMMIT;',
       'If the second UPDATE fails, the ROLLBACK undoes the first, so account 1 is not debited without account 2 being credited.',
+    ],
+    diagrams: [
+      {
+        caption: 'All steps commit together, or a failure rolls every step back.',
+        layout: 'sequence',
+        actors: [
+          { label: 'App', accent: 'compute' },
+          { label: 'Database', accent: 'storage' },
+        ],
+        messages: [
+          { from: 0, to: 1, label: 'BEGIN' },
+          { from: 0, to: 1, label: 'debit account 1' },
+          { from: 0, to: 1, label: 'credit account 2' },
+          { from: 0, to: 1, label: 'COMMIT (all or nothing)' },
+        ],
+      },
     ],
     related: ['database', 'SQL', 'eventual consistency'],
   },
@@ -494,6 +583,18 @@ const RICH: Record<string, Rich> = {
       'A query filtering orders by user_id is slow on 50M rows until you add an index on user_id, then it is instant.',
       'Primary keys are indexed automatically; foreign keys you join on usually earn an explicit index.',
     ],
+    diagrams: [
+      {
+        caption: 'Without an index you scan every row; with one you jump straight to it.',
+        layout: 'row',
+        nodes: [
+          { id: 'scan', label: 'No index', sub: 'scan every row', accent: 'danger' },
+          { id: 'idx', label: 'Index', sub: 'sorted lookup', accent: 'edge' },
+          { id: 'row', label: 'Jump to row', accent: 'success' },
+        ],
+        edges: [{ from: 'idx', to: 'row', label: 'direct' }],
+      },
+    ],
     related: ['database', 'SQL', 'primary key', 'N+1 query'],
   },
 
@@ -505,6 +606,18 @@ const RICH: Record<string, Rich> = {
     examples: [
       'You like a post; the count updates instantly for you but takes a moment to reflect for users reading a different replica.',
       'A newly posted tweet appears for some followers a beat before others as it propagates.',
+    ],
+    diagrams: [
+      {
+        caption: 'A write reaches replicas over time; reads briefly differ, then converge.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'w', label: 'Write', accent: 'primary' },
+          { id: 'r1', label: 'Replica 1', sub: 'updated', accent: 'success' },
+          { id: 'r2', label: 'Replica 2', sub: 'catching up', accent: 'cache' },
+          { id: 'r3', label: 'Replica 3', sub: 'stale briefly', accent: 'default' },
+        ],
+      },
     ],
     related: ['CAP theorem', 'strong consistency', 'replication', 'cache invalidation'],
   },
@@ -747,6 +860,21 @@ const RICH: Record<string, Rich> = {
       'Public IPv4: 93.184.216.34. Private: 192.168.1.10 (only meaningful inside your home network).',
       'localhost is 127.0.0.1, the machine talking to itself.',
     ],
+    diagrams: [
+      {
+        caption: 'A name resolves to an IP, which addresses the actual machine.',
+        layout: 'row',
+        nodes: [
+          { id: 'name', label: 'api.example.com', accent: 'client' },
+          { id: 'ip', label: '93.184.216.34', sub: 'IPv4', accent: 'edge' },
+          { id: 'm', label: 'Machine', accent: 'compute' },
+        ],
+        edges: [
+          { from: 'name', to: 'ip', label: 'DNS' },
+          { from: 'ip', to: 'm', label: 'routes to' },
+        ],
+      },
+    ],
     related: ['DNS', 'port', 'packet', 'CIDR', 'NAT'],
   },
 
@@ -759,6 +887,18 @@ const RICH: Record<string, Rich> = {
     examples: [
       'A web server listens on 443; a database on 5432; both on the same machine, told apart by port.',
       'curl http://localhost:3000 connects to whatever is listening on port 3000.',
+    ],
+    diagrams: [
+      {
+        caption: 'One IP, many ports, each routing to a different service.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'ip', label: 'One IP', accent: 'edge' },
+          { id: 'web', label: ':443 web', accent: 'compute' },
+          { id: 'db', label: ':5432 database', accent: 'storage' },
+          { id: 'redis', label: ':6379 Redis', accent: 'cache' },
+        ],
+      },
     ],
     related: ['IP address', 'TCP', 'HTTP'],
   },
@@ -796,6 +936,17 @@ const RICH: Record<string, Rich> = {
     examples: [
       'A 1 MB file becomes hundreds of packets that may take different routes and arrive scrambled, then TCP reorders them.',
       'A router reads each packet\'s destination IP and forwards it one hop closer.',
+    ],
+    diagrams: [
+      {
+        caption: 'A message is split into packets, routed independently, and reassembled.',
+        layout: 'row',
+        nodes: [
+          { id: 'msg', label: 'Message', accent: 'compute' },
+          { id: 'pkts', label: 'Packets', sub: 'routed alone', accent: 'queue' },
+          { id: 'rebuild', label: 'Reassembled', sub: 'in order', accent: 'success' },
+        ],
+      },
     ],
     related: ['TCP', 'UDP', 'IP address', 'OSI model'],
   },
@@ -900,6 +1051,18 @@ const RICH: Record<string, Rich> = {
       'A pipe with high bandwidth but high latency can still have low throughput if requests wait on each other (fixed by concurrency).',
       'Adding read replicas raises read throughput without changing any single request\'s latency.',
     ],
+    diagrams: [
+      {
+        caption: 'Latency is the wait; bandwidth the lanes; throughput the cars that actually arrive.',
+        layout: 'row',
+        nodes: [
+          { id: 'lat', label: 'Latency', sub: 'delay/request', accent: 'compute' },
+          { id: 'bw', label: 'Bandwidth', sub: 'max capacity', accent: 'edge' },
+          { id: 'tp', label: 'Throughput', sub: 'real rate', accent: 'success' },
+        ],
+        edges: [],
+      },
+    ],
     related: ['latency', 'horizontal scaling', 'load balancer', 'cache'],
   },
 
@@ -974,6 +1137,19 @@ const RICH: Record<string, Rich> = {
       'Session store, shopping carts, user profiles, and IoT data at massive scale with predictable latency.',
       'A bad partition key (low cardinality) concentrates traffic on one partition: the hot-key problem.',
     ],
+    diagrams: [
+      {
+        caption: 'Keys are partitioned around a ring; a bad key creates a hot partition.',
+        layout: 'ring',
+        nodes: [
+          { id: 'p0', label: 'Partition 0', accent: 'storage' },
+          { id: 'k1', label: 'Key A', accent: 'compute' },
+          { id: 'p1', label: 'Partition 1', accent: 'storage' },
+          { id: 'k2', label: 'Key B', accent: 'compute' },
+          { id: 'p2', label: 'Partition 2', accent: 'storage' },
+        ],
+      },
+    ],
     related: ['Cassandra', 'sharding', 'consistent hashing', 'eventual consistency', 'Amazon S3'],
   },
 
@@ -986,6 +1162,18 @@ const RICH: Record<string, Rich> = {
     examples: [
       'Storing billions of time-series sensor readings written continuously across a cluster.',
       'A messaging app keeping per-user message timelines that take constant heavy writes.',
+    ],
+    diagrams: [
+      {
+        caption: 'No single primary: nodes form a ring and every node takes writes.',
+        layout: 'ring',
+        nodes: [
+          { id: 'n0', label: 'Node 0', accent: 'replica' },
+          { id: 'n1', label: 'Node 1', accent: 'replica' },
+          { id: 'n2', label: 'Node 2', accent: 'replica' },
+          { id: 'n3', label: 'Node 3', accent: 'replica' },
+        ],
+      },
     ],
     related: ['DynamoDB', 'sharding', 'quorum', 'eventual consistency', 'consistent hashing'],
   },
@@ -1037,6 +1225,17 @@ const RICH: Record<string, Rich> = {
       'A task queue: enqueue send-email jobs, and a pool of workers each pull and process one.',
       'Routing orders to different queues by region via an exchange.',
     ],
+    diagrams: [
+      {
+        caption: 'An exchange routes messages into queues; workers each take one.',
+        layout: 'row',
+        nodes: [
+          { id: 'ex', label: 'Exchange', sub: 'routes', accent: 'edge' },
+          { id: 'q', label: 'Queue', accent: 'queue' },
+          { id: 'w', label: 'Workers', sub: 'one each', accent: 'compute' },
+        ],
+      },
+    ],
     related: ['queue', 'Kafka', 'Amazon SQS', 'worker', 'dead-letter queue'],
   },
 
@@ -1049,6 +1248,23 @@ const RICH: Record<string, Rich> = {
     examples: [
       'A web tier drops "process order" messages on SQS; a Lambda or worker pool drains them.',
       'A FIFO queue keyed by order id keeps each order\'s events in sequence.',
+    ],
+    diagrams: [
+      {
+        caption: 'Managed queue: producers send, consumers drain, failures go to a DLQ.',
+        layout: 'row',
+        nodes: [
+          { id: 'p', label: 'Producer', accent: 'compute' },
+          { id: 'q', label: 'SQS queue', accent: 'queue' },
+          { id: 'c', label: 'Consumer', sub: 'Lambda/worker', accent: 'compute' },
+          { id: 'dlq', label: 'Dead-letter', accent: 'danger' },
+        ],
+        edges: [
+          { from: 'p', to: 'q', label: 'send' },
+          { from: 'q', to: 'c', label: 'receive' },
+          { from: 'c', to: 'dlq', label: 'fails', dashed: true },
+        ],
+      },
     ],
     related: ['queue', 'dead-letter queue', 'idempotency', 'AWS Lambda', 'Kafka'],
   },
@@ -1091,6 +1307,17 @@ const RICH: Record<string, Rich> = {
       'A thumbnail generator: an S3 upload event triggers a Lambda that resizes the image.',
       'A low-traffic API where paying per request beats running an always-on server.',
     ],
+    diagrams: [
+      {
+        caption: 'An event triggers a function that scales from zero automatically.',
+        layout: 'row',
+        nodes: [
+          { id: 'ev', label: 'Event', sub: 'S3, SQS, HTTP', accent: 'edge' },
+          { id: 'fn', label: 'Lambda', sub: 'your code', accent: 'compute' },
+          { id: 'out', label: 'Result', accent: 'success' },
+        ],
+      },
+    ],
     related: ['container', 'Amazon S3', 'Amazon SQS', 'API gateway', 'horizontal scaling'],
   },
 
@@ -1127,6 +1354,18 @@ const RICH: Record<string, Rich> = {
     examples: [
       'A Dockerfile builds an image with your app, runtime, and libraries; the same image runs in dev and prod.',
       'CI builds the image, tests it, and ships the exact bytes that were tested.',
+    ],
+    diagrams: [
+      {
+        caption: 'Build one image; run many identical containers from it anywhere.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'img', label: 'Image', sub: 'built once', accent: 'edge' },
+          { id: 'c1', label: 'Container', sub: 'dev', accent: 'compute' },
+          { id: 'c2', label: 'Container', sub: 'prod', accent: 'compute' },
+          { id: 'c3', label: 'Container', sub: 'CI', accent: 'compute' },
+        ],
+      },
     ],
     related: ['container', 'Kubernetes', 'deployment', 'CI/CD'],
   },

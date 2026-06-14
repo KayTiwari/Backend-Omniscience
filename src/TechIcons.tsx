@@ -338,3 +338,15 @@ export function BookIcon({ size = 16, className }: P) {
     </svg>
   )
 }
+
+export function AwsIcon({ size = 16, className }: P) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <rect x="2" y="4" width="28" height="24" rx="5" fill="#232f3e" />
+      <text x="16" y="17.5" textAnchor="middle" fontSize="8.5" fontWeight="700"
+        fontFamily="system-ui, sans-serif" fill="#ffffff">aws</text>
+      <path d="M9 21c4.5 2.4 9.5 2.4 14 0" fill="none" stroke="#ff9900" strokeWidth="2" strokeLinecap="round" />
+      <path d="M21 19.6l2.4 1.2-1 2.4" fill="none" stroke="#ff9900" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
