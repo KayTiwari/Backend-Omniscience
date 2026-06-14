@@ -961,6 +961,17 @@ const RICH: Record<string, Rich> = {
       '10.0.0.0/24 covers 10.0.0.0 through 10.0.0.255 (256 addresses).',
       'A security group rule "allow 0.0.0.0/0" means allow every IP on the internet (use with care).',
     ],
+    diagrams: [
+      {
+        caption: '/24 fixes the first 24 bits (the network); the rest address hosts.',
+        layout: 'row',
+        nodes: [
+          { id: 'net', label: 'Network bits', sub: '/24 fixed', accent: 'primary' },
+          { id: 'host', label: 'Host bits', sub: '256 addresses', accent: 'compute' },
+        ],
+        edges: [],
+      },
+    ],
     related: ['IP address', 'NAT', 'firewall'],
   },
 
@@ -1076,6 +1087,17 @@ const RICH: Record<string, Rich> = {
       'A typical web app: users, orders, and payments in MySQL with read replicas for the read-heavy pages.',
       'WordPress, the most-installed CMS, runs on MySQL.',
     ],
+    diagrams: [
+      {
+        caption: 'Writes to the primary; reads fan out to replicas, the usual scaling path.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'p', label: 'Primary', sub: 'writes', accent: 'primary' },
+          { id: 'r1', label: 'Replica', accent: 'replica' },
+          { id: 'r2', label: 'Replica', accent: 'replica' },
+        ],
+      },
+    ],
     related: ['SQL', 'PostgreSQL', 'database', 'replication', 'index'],
   },
 
@@ -1088,6 +1110,16 @@ const RICH: Record<string, Rich> = {
     examples: [
       'A CMS where each article document holds its title, body, tags, and author inline, no joins needed.',
       'Storing varied event payloads whose fields differ by event type.',
+    ],
+    diagrams: [
+      {
+        caption: 'A collection of self-contained documents you query inside.',
+        layout: 'row',
+        nodes: [
+          { id: 'q', label: 'Query', accent: 'compute' },
+          { id: 'coll', label: 'Collection', sub: 'JSON documents', accent: 'storage' },
+        ],
+      },
     ],
     related: ['database', 'SQL', 'sharding', 'eventual consistency'],
   },
@@ -1123,6 +1155,17 @@ const RICH: Record<string, Rich> = {
     ],
     examples: [
       'Cache rendered HTML fragments or database query results as opaque strings.',
+    ],
+    diagrams: [
+      {
+        caption: 'A plain key-value cache in front of the database.',
+        layout: 'row',
+        nodes: [
+          { id: 'app', label: 'App', accent: 'compute' },
+          { id: 'mc', label: 'Memcached', sub: 'key -> value', accent: 'cache' },
+          { id: 'db', label: 'Database', accent: 'storage' },
+        ],
+      },
     ],
     related: ['cache', 'Redis', 'CDN'],
   },
@@ -1187,6 +1230,17 @@ const RICH: Record<string, Rich> = {
     examples: [
       'Full-text product search with typo tolerance and faceted filters.',
       'Centralized log search across thousands of servers via the ELK stack.',
+    ],
+    diagrams: [
+      {
+        caption: 'An inverted index maps each term to the documents that contain it.',
+        layout: 'row',
+        nodes: [
+          { id: 'q', label: 'Search query', accent: 'compute' },
+          { id: 'idx', label: 'Inverted index', sub: 'term -> docs', accent: 'edge' },
+          { id: 'res', label: 'Ranked results', accent: 'success' },
+        ],
+      },
     ],
     related: ['index', 'database', 'observability', 'log'],
   },
@@ -1330,6 +1384,17 @@ const RICH: Record<string, Rich> = {
       'Nginx terminates HTTPS, serves /static directly, and proxies /api to the application servers.',
       'Used as an L7 load balancer spreading traffic across a backend pool.',
     ],
+    diagrams: [
+      {
+        caption: 'The front door: TLS, static files, and proxying to the app.',
+        layout: 'row',
+        nodes: [
+          { id: 'c', label: 'Client', accent: 'client' },
+          { id: 'nx', label: 'Nginx', sub: 'TLS, static, proxy', accent: 'edge' },
+          { id: 'app', label: 'App servers', accent: 'compute' },
+        ],
+      },
+    ],
     related: ['reverse proxy', 'load balancer', 'TLS', 'CDN'],
   },
 
@@ -1341,6 +1406,18 @@ const RICH: Record<string, Rich> = {
     examples: [
       'A cluster uses ZooKeeper to elect one leader node and fail over to a new one when it dies.',
       'Storing configuration that all nodes watch for changes.',
+    ],
+    diagrams: [
+      {
+        caption: 'Cluster nodes coordinate through ZooKeeper: leader, locks, config.',
+        layout: 'gather',
+        nodes: [
+          { id: 'n1', label: 'Node', accent: 'compute' },
+          { id: 'n2', label: 'Node', accent: 'compute' },
+          { id: 'n3', label: 'Node', accent: 'compute' },
+          { id: 'zk', label: 'ZooKeeper', sub: 'coordination', accent: 'edge' },
+        ],
+      },
     ],
     related: ['leader election', 'distributed lock', 'quorum', 'service discovery'],
   },
@@ -1404,6 +1481,17 @@ const RICH: Record<string, Rich> = {
       'Alert when the 5xx error rate exceeds 1% for 5 minutes, or when queue depth keeps climbing.',
       'A Grafana dashboard of p99 latency and request rate, both scraped by Prometheus.',
     ],
+    diagrams: [
+      {
+        caption: 'Prometheus scrapes metrics from services, then powers alerts and dashboards.',
+        layout: 'row',
+        nodes: [
+          { id: 'svc', label: 'Services', sub: 'expose metrics', accent: 'compute' },
+          { id: 'prom', label: 'Prometheus', sub: 'scrape + store', accent: 'edge' },
+          { id: 'out', label: 'Alerts + Grafana', accent: 'success' },
+        ],
+      },
+    ],
     related: ['metric', 'observability', 'SLO', 'log', 'trace'],
   },
 
@@ -1416,6 +1504,18 @@ const RICH: Record<string, Rich> = {
       'A nightly job aggregating a day of event logs into reporting tables across a cluster.',
       'Processing a data-lake of files in S3 into cleaned, joined datasets.',
     ],
+    diagrams: [
+      {
+        caption: 'A big batch job is split across a cluster and processed in parallel.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'job', label: 'Batch job', sub: 'TBs of data', accent: 'compute' },
+          { id: 'w1', label: 'Worker', accent: 'storage' },
+          { id: 'w2', label: 'Worker', accent: 'storage' },
+          { id: 'w3', label: 'Worker', accent: 'storage' },
+        ],
+      },
+    ],
     related: ['Apache Flink', 'Kafka', 'Amazon S3', 'sharding'],
   },
 
@@ -1427,6 +1527,17 @@ const RICH: Record<string, Rich> = {
     examples: [
       'Computing a real-time leaderboard or per-minute click counts from a Kafka stream.',
       'Flagging fraudulent transactions within seconds as events flow in.',
+    ],
+    diagrams: [
+      {
+        caption: 'Events stream in continuously; Flink processes them in real time.',
+        layout: 'row',
+        nodes: [
+          { id: 'stream', label: 'Event stream', sub: 'Kafka', accent: 'queue' },
+          { id: 'flink', label: 'Flink', sub: 'stateful, live', accent: 'compute' },
+          { id: 'out', label: 'Real-time output', accent: 'success' },
+        ],
+      },
     ],
     related: ['Kafka', 'Apache Spark', 'eventual consistency', 'queue'],
   },
@@ -1570,6 +1681,22 @@ const RICH: Record<string, Rich> = {
       'A build dashboard streams log lines to the browser via SSE as they are produced.',
       'A notification feed pushes new items over a single SSE connection.',
     ],
+    diagrams: [
+      {
+        caption: 'One connection stays open; the server pushes events as they happen.',
+        layout: 'sequence',
+        actors: [
+          { label: 'Client', accent: 'client' },
+          { label: 'Server', accent: 'compute' },
+        ],
+        messages: [
+          { from: 0, to: 1, label: 'open connection' },
+          { from: 1, to: 0, label: 'event 1', dashed: true },
+          { from: 1, to: 0, label: 'event 2', dashed: true },
+          { from: 1, to: 0, label: 'event 3', dashed: true },
+        ],
+      },
+    ],
     related: ['long polling', 'webhook', 'HTTP'],
   },
 
@@ -1679,6 +1806,17 @@ const RICH: Record<string, Rich> = {
     examples: [
       'Trip booking: reserve flight, reserve hotel, charge card; if the charge fails, cancel the hotel and flight reservations.',
       'Compensation is not a database rollback: it is a new action that reverses the effect (issue a refund).',
+    ],
+    diagrams: [
+      {
+        caption: 'Steps run forward; a failure runs compensating actions in reverse.',
+        layout: 'row',
+        nodes: [
+          { id: 's1', label: 'Reserve', accent: 'compute' },
+          { id: 's2', label: 'Charge', accent: 'compute' },
+          { id: 's3', label: 'Ship', sub: 'fail -> undo', accent: 'danger' },
+        ],
+      },
     ],
     related: ['distributed transaction', 'idempotency', 'queue', 'microservices', 'eventual consistency'],
   },
