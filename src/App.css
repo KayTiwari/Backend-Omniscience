@@ -5374,3 +5374,63 @@ input:focus-visible {
   color: var(--muted);
   line-height: 1.5;
 }
+
+/* ============================================================
+   Mobile: the sidebar becomes a slide-in drawer.
+   Hidden controls on desktop; a hamburger + backdrop on small screens.
+   ============================================================ */
+.mobile-nav-toggle { display: none; }
+.sidebar-backdrop { display: none; }
+
+@media (max-width: 768px) {
+  /* Single column: the workspace is full width and the sidebar overlays it. */
+  .app-shell,
+  .app-shell.sidebar-collapsed {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 60;
+    width: min(86vw, 330px);
+    height: 100svh;
+    transform: translateX(-100%);
+    transition: transform 240ms var(--ease-out);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+  }
+  .app-shell.mobile-nav-open .sidebar {
+    transform: translateX(0);
+  }
+  /* The desktop collapse state must not blank the drawer on mobile. */
+  .app-shell.sidebar-collapsed .sidebar {
+    padding: 20px 14px;
+    overflow-y: auto;
+    border-right: 1px solid var(--line);
+  }
+  .app-shell.sidebar-collapsed .sidebar > * {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Desktop edge tab is replaced by the hamburger. */
+  .nav-collapse-tab { display: none; }
+  .mobile-nav-toggle { display: inline-flex; order: -2; }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+  }
+  .app-shell.mobile-nav-open .sidebar-backdrop { display: block; }
+
+  /* Tighter chrome on small screens. */
+  .workspace { padding: 12px; }
+  .topbar { flex-wrap: wrap; padding: 8px 10px; }
+}

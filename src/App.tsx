@@ -11,6 +11,7 @@ import {
   Flame,
   Home,
   ListChecks,
+  Menu,
   Moon,
   Play,
   RotateCcw,
@@ -202,6 +203,8 @@ function App() {
   const [runningProblemId, setRunningProblemId] = useState('')
   const [theme, setTheme] = useState<Theme>(() => loadTheme())
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  // On mobile the sidebar is a slide-in drawer, hidden until this is true.
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [celebrating, setCelebrating] = useState(false)
   // Lesson page navigation, keyed to the problem so switching problems lands
   // back on the first page without an effect.
@@ -446,6 +449,7 @@ function App() {
     setActiveSubjectId(subject.id)
     setExpandedSubjectId(subject.id)
     setActiveProblemId(problem.id)
+    setMobileNavOpen(false)
     window.history.replaceState(null, '', `#${problem.id}`)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -458,6 +462,7 @@ function App() {
 
   function openHome() {
     setIsHome(true)
+    setMobileNavOpen(false)
     window.history.replaceState(null, '', window.location.pathname)
   }
 
@@ -956,10 +961,16 @@ function App() {
 
   return (
     <main
-      className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}
+      className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${mobileNavOpen ? 'mobile-nav-open' : ''}`}
       data-theme={theme}
     >
       <ScrollProgress />
+      <button
+        className="sidebar-backdrop"
+        aria-label="Close navigation"
+        type="button"
+        onClick={() => setMobileNavOpen(false)}
+      />
       {celebrating && (
         <div className="celebrate-pop" role="status" aria-live="polite">
           <span className="celebrate-emoji">
@@ -1110,6 +1121,14 @@ function App() {
 
       <section className="workspace">
         <header className="topbar">
+          <button
+            className="icon-button mobile-nav-toggle"
+            onClick={() => setMobileNavOpen(true)}
+            aria-label="Open navigation"
+            type="button"
+          >
+            <Menu size={18} />
+          </button>
           <button
             className="icon-button"
             onClick={() => moveProblem(-1)}
