@@ -893,7 +893,7 @@ export const extraSubjects: Subject[] = [
     title: 'API Drills',
     subtitle: 'Auto-graded practice writing real API code: routing, handlers, validation, responses.',
     icon: ApiIcon,
-    color: '#e84a5f',
+    color: '#2f80ed',
     problems: [
       drill('apidrill-route-match', 'API: Match A Route', 'Warmup'),
       drill('apidrill-parse-params', 'API: Parse Query Params With Defaults', 'Warmup'),
@@ -1039,7 +1039,7 @@ export const extraSubjects: Subject[] = [
     title: 'HTTP & Networking Drills',
     subtitle: 'Auto-graded HTTP and networking: queries, cache-control, CIDR, ranges.',
     icon: HttpIcon,
-    color: '#e84a5f',
+    color: '#4263eb',
     problems: [
       drill('net-cidr-contains', "CIDR Contains IP"),
       drill('parse-range-header', "Parse A Range Header"),
@@ -1189,7 +1189,7 @@ export const extraSubjects: Subject[] = [
     title: 'Security Drills',
     subtitle: 'Auto-graded security helpers: PII masking, path safety, CSRF.',
     icon: PadlockIcon,
-    color: '#b42338',
+    color: '#7c3aed',
     problems: [
       drill('security-mask-email', "Mask PII (Email)"),
       drill('security-safe-join', "Path Traversal Defense"),

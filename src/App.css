@@ -663,28 +663,9 @@ h1 {
   text-overflow: ellipsis;
 }
 
-/* Long titles + lesson names scroll to reveal themselves on hover instead of
-   ending in an ellipsis. Linear timing + long duration = a steady, even crawl
-   (not the accelerating jerk of an eased animation), with a pause at each end. */
-.subject-button:hover strong,
-.problem-link:hover span {
-  text-overflow: clip;
-  animation: sidebar-title-scroll 11s linear 0.5s infinite;
-}
-
-@keyframes sidebar-title-scroll {
-  0%, 9% { text-indent: 0; }
-  50%, 59% { text-indent: -55%; }
-  100% { text-indent: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .subject-button:hover strong,
-  .problem-link:hover span {
-    animation: none;
-    text-overflow: ellipsis;
-  }
-}
+/* Long titles + lesson names stay cleanly truncated. (A CSS-only hover scroll
+   was removed: without measuring overflow it janked on titles that already
+   fit. A measured component is the right way to add this back.) */
 
 /* The Encyclopedia is a reference, not a course to complete: no count, no bar.
    It is the last subject group in the list (the Appendix track). */

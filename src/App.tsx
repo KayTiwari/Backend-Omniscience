@@ -970,7 +970,11 @@ function App() {
                   className={`subject-button ${
                     subject.id === expandedSubjectId ? 'active' : ''
                   }`}
-                  onClick={() => toggleSubject(subject)}
+                  onClick={() =>
+                    subject.id === 'appendix-glossary'
+                      ? openProblemById('appendix-index')
+                      : toggleSubject(subject)
+                  }
                   aria-expanded={subject.id === expandedSubjectId}
                   type="button"
                   style={subject.id === expandedSubjectId
