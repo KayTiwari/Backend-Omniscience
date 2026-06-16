@@ -27,6 +27,8 @@
   --shadow-hover: 0 16px 36px rgba(47, 128, 237, 0.16);
   --button-hover: #efe9dc;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --theme-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --theme-duration: 260ms;
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
@@ -69,6 +71,12 @@ html, body {
 html { background: #f7f5f0; }
 html[data-theme='dark'] { background: #0e1116; }
 
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 360ms;
+  animation-timing-function: var(--theme-ease);
+}
+
 .app-shell {
   min-height: 100svh;
   display: grid;
@@ -76,6 +84,9 @@ html[data-theme='dark'] { background: #0e1116; }
   background: var(--app-bg);
   color: var(--ink);
   font-family: var(--font-sans);
+  transition:
+    background-color var(--theme-duration) var(--theme-ease),
+    color var(--theme-duration) var(--theme-ease);
 }
 
 .app-shell.sidebar-collapsed {
@@ -86,10 +97,10 @@ html[data-theme='dark'] { background: #0e1116; }
 .app-shell *::before,
 .app-shell *::after {
   transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    color 160ms ease,
+    background-color var(--theme-duration) var(--theme-ease),
+    border-color var(--theme-duration) var(--theme-ease),
+    box-shadow var(--theme-duration) var(--theme-ease),
+    color var(--theme-duration) var(--theme-ease),
     opacity 160ms ease,
     transform 160ms var(--ease-out);
 }
@@ -257,6 +268,11 @@ html[data-theme='dark'] { background: #0e1116; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 1ms;
+  }
+
   .app-shell,
   .brand-mark,
   .progress-track div,

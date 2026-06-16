@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type UIEvent } from 'react'
+import { flushSync } from 'react-dom'
 import {
   ArrowRight,
   BookOpen,
@@ -76,6 +77,9 @@ const themeKey = 'backend-omniscience-theme'
 type Theme = 'light' | 'dark'
 type ConfidenceLevel = 'Not started' | 'Learned' | 'Can explain' | 'Can build' | 'Can defend'
 type GraderModule = typeof import('./grader')
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (callback: () => void) => void
+}
 const confidenceLevels: ConfidenceLevel[] = [
   'Not started',
   'Learned',
@@ -212,6 +216,21 @@ function App() {
       .querySelector<HTMLLinkElement>('link[rel="icon"]')
       ?.setAttribute('href', flameFavicon())
   }, [theme])
+
+  function toggleTheme() {
+    const nextTheme = theme === 'light' ? 'dark' : 'light'
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const viewTransition = (document as ViewTransitionDocument).startViewTransition
+
+    if (!viewTransition || prefersReducedMotion) {
+      setTheme(nextTheme)
+      return
+    }
+
+    viewTransition.call(document, () => {
+      flushSync(() => setTheme(nextTheme))
+    })
+  }
 
   useEffect(() => {
     const syncFromHash = () => {
@@ -1048,7 +1067,7 @@ function App() {
           <div className="topbar-actions">
             <button
               className="icon-button"
-              onClick={() => setTheme((current) => (current === 'light' ? 'dark' : 'light'))}
+              onClick={toggleTheme}
               type="button"
               aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             >
