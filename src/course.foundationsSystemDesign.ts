@@ -44,6 +44,8 @@ export const systemDesignFoundations: Problem[] = [
       'Identify a single point of failure in a simple architecture.',
     ],
     interactive: {
+      coldOpen:
+        'Your app is slow under load, so you add a second server behind a load balancer. Half your users instantly appear logged out. You added capacity and created a bug. One property of your servers decides whether scaling out works at all. Which one, and why does session storage break it?',
       mental:
         'Vertical scaling is a taller ladder: quick, but there is a top rung. Horizontal scaling is more ladders side by side: set them up once (everyone climbs any ladder) and you can always add another.',
       diagram: {
@@ -85,10 +87,38 @@ export const systemDesignFoundations: Problem[] = [
           why: 'Scaling up needs no rewrite, but you eventually hit the biggest box money can rent, and that box dying takes everything with it.',
         },
       ],
+      build: {
+        simple: 'When one server is not enough, add more.',
+        actually:
+          'Scale up first (a bigger box, no rewrite) until you hit the ceiling of the largest single machine, which is also a single point of failure. Then scale out: make servers stateless (sessions in Redis or a token) so any server serves any request, and add boxes behind a load balancer.',
+        breaks:
+          'Anything stored on one server (sessions, local caches, uploaded files) breaks the moment a second server exists, because requests routed elsewhere cannot see it. Statelessness is the precondition, not an afterthought.',
+      },
+      doThisNow: [
+        {
+          task: 'Do the capacity math: one server handles ~1,000 rps and is maxed. You need ~4,500 rps with headroom. How many stateless servers, and what must change first?',
+          reveal:
+            'Five servers (5,000 rps leaves headroom), but only after moving sessions to a shared store. Without that, the extra boxes sit idle while traffic pins to the original. The unlock is statelessness, not the hardware.',
+        },
+        {
+          task: 'Audit a design for scale-out blockers: an app stores sessions in memory, caches dashboards locally, and writes uploads to local disk. List what must move before adding a second server.',
+          reveal:
+            'All three: sessions to Redis/a token, the dashboard cache to a shared Redis, uploads to object storage (S3). Each is per-server state that becomes inconsistent the instant a second box appears.',
+        },
+      ],
+      warStory:
+        'A team scaled out before going stateless. Users got randomly logged out as the load balancer bounced them between servers with different in-memory sessions. Support called it "the ghost logout bug" for a week before someone moved sessions to Redis and it vanished.',
       tweak: {
         instruction: 'Your app caches computed dashboards in each server\'s local memory. Decide what changes before you can scale out.',
         reveal:
           'Move the cache to a shared layer like Redis. Per-server local caches are a milder version of the session problem: each box has different data, hit rates collapse, and behavior becomes inconsistent across servers.',
+      },
+      receipt: {
+        explain: [
+          'When to scale up vs scale out, and the ceiling of each.',
+          'Why statelessness is the precondition for horizontal scaling.',
+        ],
+        question: 'You have many servers now. What decides which one handles each request?',
       },
       recap: [
         'Scale up first (no rewrite), scale out for the real ceiling and fault tolerance.',
@@ -135,6 +165,8 @@ export const systemDesignFoundations: Problem[] = [
       'Explain why the balancer needs its own redundancy.',
     ],
     interactive: {
+      coldOpen:
+        'A server crashes at 3am. Nobody gets paged, no user notices, and you read about it in a graph the next morning. The thing that turned a dead server into a non-event is one humble feature of the load balancer, and it is most of the reason the load balancer exists. What is it?',
       mental:
         'A load balancer is the host at a busy restaurant: every guest checks in at one desk, the host seats them at whichever table is free, and quietly stops seating anyone at a table that just had a spill.',
       diagram: {
@@ -182,10 +214,40 @@ export const systemDesignFoundations: Problem[] = [
           why: 'Everything funnels through it, so its death is total. Production runs balancers redundantly with failover.',
         },
       ],
+      build: {
+        simple: 'A load balancer spreads requests across servers.',
+        actually:
+          'It is the stable front door: clients know only its address, while the pool behind it grows and shrinks invisibly. L7 routes on path/headers (L4 only on IP/port), algorithms like round-robin or least-connections decide the target, and health checks pull dead servers from rotation automatically.',
+        breaks:
+          'A single load balancer is the new single point of failure: everything funnels through it. Production runs balancers in redundant pairs with failover, or the front door becomes the outage.',
+      },
+      doThisNow: [
+        {
+          task: 'Pick the algorithm: your backends have wildly different request costs (one runs slow reports). Round-robin or least-connections, and why?',
+          reveal:
+            'Least-connections. It favors whichever server is least busy right now, so a box stuck on slow reports stops receiving new work. Round-robin would keep piling requests onto the overloaded one regardless.',
+        },
+        {
+          task: 'Watch a real round-robin in action against a public service that rotates IPs. Run the lookup a few times and note the order changing.',
+          command: 'for i in 1 2 3; do dig +short google.com | head -1; done',
+          reveal:
+            'The first IP often rotates between runs: DNS-level load balancing spreading you across machines. The same idea, one layer down from the application load balancer.',
+        },
+      ],
+      warStory:
+        'A company ran one beefy load balancer "because it never fails." It failed during a routine kernel update and took down every service behind it at once, even though all the app servers were healthy. The postmortem action item was a single line: run the balancer in a redundant pair.',
       tweak: {
         instruction: 'Your backends have very different request costs (some hit a slow report generator). Pick a better algorithm than round-robin.',
         reveal:
           'Least-connections: it favors whichever server is least busy right now, so a box stuck on slow reports stops receiving new work. Round-robin would keep piling requests on it regardless.',
+      },
+      receipt: {
+        explain: [
+          'L4 vs L7 routing and when each fits.',
+          'Why health checks are most of a balancer\'s value, and why it needs its own redundancy.',
+        ],
+        command: 'for i in 1 2 3; do dig +short google.com | head -1; done',
+        question: 'Traffic is spread across servers. How do you stop them from doing the same expensive work over and over?',
       },
       writeDrillId: 'msg-round-robin',
       recap: [
@@ -231,6 +293,8 @@ export const systemDesignFoundations: Problem[] = [
       'State the staleness trade every cache makes.',
     ],
     interactive: {
+      coldOpen:
+        'Your database is melting under 10,000 reads a second. You could shard it, hire a DBA, and lose a month. Or you could stop asking it the same question 9,500 times. A read-heavy system is usually not a database problem at all. What turns it into a cheap memory problem instead?',
       mental:
         'A CDN is a chain of neighborhood warehouses: instead of everyone ordering from the distant factory (your origin), each region keeps copies of the popular items next door.',
       diagram: {
@@ -268,10 +332,38 @@ export const systemDesignFoundations: Problem[] = [
           why: 'Misses fall from 50% to 5%, so the database handles about a tenth of the reads it did before. Hit rate is the lever.',
         },
       ],
+      build: {
+        simple: 'Cache things so you do not recompute them.',
+        actually:
+          'Caches sit at every layer (browser, CDN edge, reverse proxy, Redis, database), and each hit spares every layer behind it. A high hit rate turns a read-heavy database problem into a cheap memory problem. A CDN serves content from edges near users; pull CDNs fetch-on-first-request and are the default.',
+        breaks:
+          'Every cache is a copy that can fall behind the source, so each cached thing needs a TTL or explicit invalidation. The recurring incident is serving deleted or stale content because the staleness budget was wrong (or global).',
+      },
+      doThisNow: [
+        {
+          task: 'Do the hit-rate math: 10,000 reads/sec at a 95% cache hit rate. How many reach the database, and what is the reduction?',
+          reveal:
+            '500 reads/sec hit the database (5% of 10,000): a 20x reduction. The database did not get faster; the system stopped asking it the same question. Hit rate is the single biggest lever in a read-heavy system.',
+        },
+        {
+          task: 'Set a staleness budget per data type: a product description, an account balance, and a public blog post. Which can you cache for an hour, and which not at all?',
+          reveal:
+            'Product description: an hour is fine. Blog post: minutes to hours, with invalidation on edit. Account balance: do not cache, or invalidate on every write, because it is visible money that must reflect writes immediately. Staleness is per-data-type, never one global setting.',
+        },
+      ],
+      warStory:
+        'A store cached product pages aggressively with a long TTL and forgot to invalidate on price change. A flash sale ended, prices went back up, but the CDN kept serving the sale price for an hour. The company honored every order placed at the stale price. The fix was invalidation on write, backed by a TTL.',
       tweak: {
         instruction: 'You cache a user\'s account balance with a 1-hour TTL. Decide whether that is safe.',
         reveal:
           'Not safe: a balance is visible money and must reflect writes immediately, so invalidate on write or do not cache it. A product description, by contrast, tolerates an hour stale. The staleness budget is per-data-type, never one global setting.',
+      },
+      receipt: {
+        explain: [
+          'How a high cache hit rate collapses database load.',
+          'Why every cached thing needs a per-type staleness budget.',
+        ],
+        question: 'Caching handles reads. What do you do when the database itself cannot keep up with writes?',
       },
       writeDrillId: 'caching-lru',
       recap: [
@@ -321,6 +413,8 @@ export const systemDesignFoundations: Problem[] = [
       'Order the database scaling moves from cheapest to most invasive.',
     ],
     interactive: {
+      coldOpen:
+        'A user changes their email, hits reload, and sees the old one. The write succeeded. Nothing is broken. This is the quiet tax of scaling a database, and it is also why teams dread the one scaling move that complicates every query they will ever write. Which move, and what is the lag bug?',
       mental:
         'Replication is photocopying the whole ledger so many clerks can read at once. Sharding is splitting the ledger by last name across clerks so each holds less. Denormalization is writing the customer\'s name on every invoice so you never flip back to look it up.',
       diagram: {
@@ -368,10 +462,38 @@ export const systemDesignFoundations: Problem[] = [
           why: 'It duplicates data to skip a read-time join: denormalization. The trade is keeping the copies in sync on writes, worth it for a hot read path.',
         },
       ],
+      build: {
+        simple: 'When the database is too big, split it up.',
+        actually:
+          'There is a ladder, cheapest first: index and tune, then read replicas (scale reads, add failover, accept lag), then caching, then federation (split by feature), and finally sharding (split one table\'s rows by a shard key). Denormalize hot read paths to skip joins.',
+        breaks:
+          'Replication lag means a just-written value may not appear on a lagging replica yet. And a bad shard key creates a hot shard that takes all the traffic while others idle. The shard key is the whole game.',
+      },
+      doThisNow: [
+        {
+          task: 'Choose a shard key for a chat app: hash(message_id), channel_id, or signup_year? Pick one and say what each does to load.',
+          reveal:
+            'hash(message_id) spreads writes evenly (high cardinality). channel_id risks a hot shard if one channel is huge. signup_year is the worst: the current year takes nearly all new writes while old years idle. Spread requires a high-cardinality, evenly-distributed key.',
+        },
+        {
+          task: 'Diagnose the lag bug: a user updates their profile and the reload shows the old value. Name the cause and one fix.',
+          reveal:
+            'The reload hit a read replica that has not caught up with the primary (replication lag). Fix with read-your-writes routing (send that user\'s reads to the primary briefly) or read from the primary for just-written data.',
+        },
+      ],
+      warStory:
+        'A chat app sharded by hash(channel_id). It worked until a celebrity AMA channel hit 10 million members and saturated its single shard while the others idled. The fix was sharding by message id within the channel and giving the whale channels dedicated infrastructure. Hot keys are the standard sharding failure.',
       tweak: {
         instruction: 'You shard a chat app by hash(channel_id), but one channel has 10 million members and saturates its shard. What broke, and what is one fix?',
         reveal:
           'A hot key: one channel\'s traffic all lands on one shard. Fixes include a finer key (shard by message id within that channel), giving the whale channel its own dedicated infrastructure, or caching its reads aggressively. Hot keys are the standard sharding failure.',
+      },
+      receipt: {
+        explain: [
+          'The database scaling ladder from cheapest to most invasive.',
+          'Why the shard key makes or breaks sharding, and what replication lag is.',
+        ],
+        question: 'You can scale reads and writes. Should you even be using a relational database for this data?',
       },
       writeDrillId: 'msg-partition',
       recap: [
@@ -419,6 +541,8 @@ export const systemDesignFoundations: Problem[] = [
       'Explain why relational is the default.',
     ],
     interactive: {
+      coldOpen:
+        'Two teams fail in opposite directions. One forces a social graph into SQL tables and writes nightmare recursive joins. The other reaches for a trendy NoSQL store for plain orders and payments, then misses transactions for a year. The right call is never the hype; it is the access pattern. How do you read the pattern?',
       mental:
         'Relational is a Swiss Army knife: flexible, the right grab by default. The NoSQL families are specialized tools: pick one up only when its specific job is the whole job.',
       diagram: {
@@ -462,10 +586,38 @@ export const systemDesignFoundations: Problem[] = [
           why: 'Transactional, join-heavy CRUD is the relational sweet spot, and most products stay there far longer than expected. Leave it only for a concrete access-pattern reason.',
         },
       ],
+      build: {
+        simple: 'There are SQL databases and NoSQL databases.',
+        actually:
+          'Relational is the default: ACID, joins, mature tooling. The four NoSQL families each serve one pattern: key-value (fast lookups by key), document (self-contained JSON records), wide-column (massive write volume), graph (relationship traversal). Choose by access pattern, and real systems mix several.',
+        breaks:
+          'The mistake runs both ways: forcing graph or write-firehose workloads into relational tables, or grabbing trendy NoSQL for ordinary transactional CRUD that PostgreSQL would serve for years. Hype is not an access pattern.',
+      },
+      doThisNow: [
+        {
+          task: 'Match four workloads to a store: 1ms session lookups by id; 50M sensor writes/min; "friends of friends who liked X"; orders + payments with transactions.',
+          reveal:
+            'Key-value (Redis) for sessions, wide-column (Cassandra) for the sensor firehose, graph (Neo4j) for relationship traversal, relational (PostgreSQL) for transactional commerce. Four patterns, four best-fit stores, often in one product.',
+        },
+        {
+          task: 'Defend the default: a new app does CRUD over orders, users, and payments. Argue for relational in one sentence.',
+          reveal:
+            'Transactional, join-heavy CRUD is the relational sweet spot, and most products stay there far longer than expected. Leaving it needs a concrete access-pattern reason, not novelty.',
+        },
+      ],
+      warStory:
+        'A startup built its orders system on a document store "to be web-scale." When they needed to debit inventory and record payment atomically, they discovered they had traded away the exact transactions and joins relational gives for free. They migrated to PostgreSQL the next year. The access pattern was relational all along.',
       tweak: {
         instruction: 'You picked MongoDB for an orders system and now need a transaction that debits inventory and records payment atomically. What did the choice cost?',
         reveal:
           'Multi-document transactions and joins are the relational sweet spot you gave up. Document stores can do transactions now, but for join-heavy, strongly-transactional commerce data, relational was the simpler fit. Choosing by hype instead of access pattern is the classic error.',
+      },
+      receipt: {
+        explain: [
+          'The four NoSQL families and the pattern each serves.',
+          'Why relational is the default and when to leave it.',
+        ],
+        question: 'You spread data across machines. When those machines disagree, which do you sacrifice: consistency or availability?',
       },
       recap: [
         'Relational is the default: ACID, joins, mature tooling.',
@@ -512,6 +664,8 @@ export const systemDesignFoundations: Problem[] = [
       'Distinguish strong, eventual, and weak consistency.',
     ],
     interactive: {
+      coldOpen:
+        'The network between your servers splits in two. Right now, for this request, you must choose: refuse to answer and stay correct, or answer and risk being wrong. There is no third option, and the "right" choice is opposite for a bank transfer and a likes counter. This is the deepest trade in distributed systems.',
       mental:
         'A partition is two clerks who lose their phone line. CP clerks stop taking orders until the line is back (never disagree). AP clerks keep taking orders and reconcile their notebooks later (always open, briefly out of sync).',
       diagram: {
@@ -559,10 +713,38 @@ export const systemDesignFoundations: Problem[] = [
           why: 'You cannot wish away network failures between machines, so P is a given. That is what reduces the live choice to consistency vs availability.',
         },
       ],
+      build: {
+        simple: 'A distributed system picks two of consistency, availability, partition tolerance.',
+        actually:
+          'Networks partition, so P is mandatory; the live choice during a split is C or A. CP systems refuse rather than serve stale data (banking, inventory). AP systems keep answering and reconcile later (feeds, catalogs). Consistency comes in strong, eventual, and weak flavors matched to how fresh data must be.',
+        breaks:
+          'CAP is not one company-wide decision; it is per-feature. Treating it as a single architecture choice means either payments that go stale or feeds that go down. The same system runs CP for money and AP for likes.',
+      },
+      doThisNow: [
+        {
+          task: 'Classify three features as CP or AP: a bank transfer, a likes counter, and a checkout inventory reservation. Justify each in a phrase.',
+          reveal:
+            'Transfer: CP (a wrong balance is a disaster, refuse instead). Likes: AP (a few seconds stale is invisible). Checkout reservation: CP at the reserve step to avoid overselling the last unit, even if browsing stays AP. Same system, different choices.',
+        },
+        {
+          task: 'Resolve the oversell risk: an AP catalog lets two buyers both see "1 left" during a partition. Where do you add a CP step?',
+          reveal:
+            'Keep browsing AP for availability, but make the reserve/checkout step CP so the system refuses to confirm stock it cannot verify. Splitting the decision by sub-feature is the real-world pattern.',
+        },
+      ],
+      warStory:
+        'A flash-sale site ran fully AP for speed. During a brief partition, the "1 left" item sold to dozens of buyers who all saw stock. Refunding and apologizing cost more than the sale. They moved the reserve step to a CP path; browsing stayed AP. CAP is chosen per feature.',
       tweak: {
         instruction: 'An e-commerce site shows product inventory counts. Argue for CP vs AP, and note the risk of each.',
         reveal:
           'AP keeps the catalog browsable during partitions but can oversell (two buyers see the last unit). CP refuses to confirm stock it cannot verify, avoiding oversell but sometimes blocking purchases. Many shops choose AP for browsing and CP at the checkout/reserve step, splitting the decision by sub-feature.',
+      },
+      receipt: {
+        explain: [
+          'Why partition tolerance is mandatory, leaving C-vs-A as the live choice.',
+          'How CP and AP fit different features in the same system.',
+        ],
+        question: 'When you add or remove a server from a distributed cache, how do you avoid reshuffling every key?',
       },
       writeDrillId: 'dist-quorum',
       recap: [
@@ -608,6 +790,8 @@ export const systemDesignFoundations: Problem[] = [
       'Explain why virtual nodes smooth the load.',
     ],
     interactive: {
+      coldOpen:
+        'Traffic spikes, so you add a fifth cache node to help. The instant it joins, almost every cached key remaps to a different node, every read misses, and the stampede onto your database takes the whole site down. The capacity you added caused the outage. One hashing trick makes adding a node move only 1/5 of keys instead of all of them.',
       mental:
         'Consistent hashing is a clock face with servers pinned at some hours and keys at others: each key belongs to the next server clockwise. Move one server and only the keys in its slice change hands; the rest never notice.',
       diagram: {
@@ -655,10 +839,38 @@ export const systemDesignFoundations: Problem[] = [
           why: 'A few single points land unevenly and dump a whole departing node\'s load on one neighbor. Many virtual points per server smooth both problems.',
         },
       ],
+      build: {
+        simple: 'Spread keys across servers with a hash.',
+        actually:
+          'Naive hash(key) % N breaks when N changes: switching the divisor remaps nearly every key. Consistent hashing places servers and keys on a ring; a key belongs to the next server clockwise, so adding a node moves only its arc. Virtual nodes place each server at many points to smooth the load.',
+        breaks:
+          'The mod-N stampede: add a cache node during a spike, every key remaps, every read misses, and the database falls over from the change meant to help. Without virtual nodes, a departing node dumps all its load on one neighbor.',
+      },
+      doThisNow: [
+        {
+          task: 'Compute the blast radius: going from 4 to 5 nodes, what fraction of keys move under mod-N versus a hash ring?',
+          reveal:
+            'mod-N: ~80% (almost everything, since the divisor changed). Hash ring: ~20% (only the arc the new node owns). Same operation, wildly different disruption. The ring is what makes adding capacity survivable.',
+        },
+        {
+          task: 'Reason about removal: a node leaves the ring with no virtual nodes. Where does its load go, and why is that dangerous?',
+          reveal:
+            'All of it lands on the single next server clockwise, which can overload and cascade. Virtual nodes scatter the departing load across every remaining server, turning a spike into a gentle, even rise.',
+        },
+      ],
+      warStory:
+        'A team added a Memcached node during a traffic surge, using a client that did plain mod-N hashing. Every key remapped, the cache went cold instantly, and the read stampede took down the database for 20 minutes, during the surge. Switching the client to consistent hashing made future node additions a non-event.',
       tweak: {
         instruction: 'A node leaves the ring. Without virtual nodes, where does its load go, and why is that bad?',
         reveal:
           'All of it lands on the single next server clockwise, which can overload and cascade. Virtual nodes scatter the departing load across every remaining server, turning a dangerous spike into a gentle, even rise.',
+      },
+      receipt: {
+        explain: [
+          'Why mod-N remaps almost everything when N changes.',
+          'How the ring and virtual nodes localize and smooth disruption.',
+        ],
+        question: 'You can scale the data tier. How do you split the application itself into independent pieces?',
       },
       writeDrillId: 'dist-consistent-hash',
       recap: [
@@ -702,6 +914,8 @@ export const systemDesignFoundations: Problem[] = [
       'Explain what service discovery resolves.',
     ],
     interactive: {
+      coldOpen:
+        'A four-person startup splits its app into twelve microservices "to be ready for scale." Six months later they are drowning in network failures, distributed bugs, and twelve deploy pipelines, serving a thousand users a monolith would have handled on one box. When does splitting help, and what two pieces keep a real mesh from becoming chaos?',
       mental:
         'The API gateway is the front desk of an office building: visitors check in at one lobby, get directed to the right floor, and security/sign-in happen once at the door. Service discovery is the building directory that updates as tenants move floors.',
       diagram: {
@@ -753,10 +967,38 @@ export const systemDesignFoundations: Problem[] = [
           why: 'Instances come and go in dynamic deployments. Discovery is the live registry that lets callers find the current address instead of hardcoding one that goes stale.',
         },
       ],
+      build: {
+        simple: 'Split a big app into smaller services.',
+        actually:
+          'A monolith is one deployable, simple and the right start. Microservices split into independently deployable, data-owning services so teams ship and scale separately. An API gateway is the single front door (auth, rate limits, routing in one place), and service discovery is the live registry that resolves services by name as their addresses change.',
+        breaks:
+          'Splitting too early pays the full distributed-systems tax (network failures, eventual consistency, cross-service tracing) before the team or scale justifies it. A feature that was one function call becomes several fallible network hops.',
+      },
+      doThisNow: [
+        {
+          task: 'Decide: a 4-person team building a new product. Monolith or microservices, and what one signal would later justify splitting?',
+          reveal:
+            'Monolith. Split only when a concrete signal appears: teams blocking each other on one deploy pipeline, or one component needing to scale very differently from the rest. Scale-readiness is not a reason; actual pain is.',
+        },
+        {
+          task: 'Place the policy: you have 12 services that all need auth and rate limiting. Where does that logic live, and why not in each service?',
+          reveal:
+            'At the API gateway, the single front door. Duplicating auth across 12 services invites drift and gaps where one service forgets a check. One home for cross-cutting policy keeps it consistent.',
+        },
+      ],
+      warStory:
+        'A team split a working monolith into 8 services for a resume-driven rewrite. A simple "place order" feature then spanned 4 services, so every order was 4 network hops that could each fail or partially succeed. Debugging needed distributed tracing they had not built. They re-merged three services within the year. Split for a reason, not by default.',
       tweak: {
         instruction: 'A team splits a working monolith into 8 microservices and a simple feature now spans 4 services. What tax did they take on?',
         reveal:
           'A call that was an in-process function is now 4 network hops that can each fail, lag, or partially succeed, plus distributed tracing to debug it and eventual consistency across service databases. That tax is worth paying at scale and crushing before it. Split for a reason, not by default.',
+      },
+      receipt: {
+        explain: [
+          'The monolith-vs-microservices trade and when to split.',
+          'What an API gateway and service discovery each handle.',
+        ],
+        question: 'Services need to talk to each other. Should that be a direct request, or a message on a queue?',
       },
       recap: [
         'Start monolith; split into services only when team or scale demands it.',
@@ -805,6 +1047,8 @@ export const systemDesignFoundations: Problem[] = [
       'Name the webhook receiver\'s obligations (verify, handle retries/duplicates).',
     ],
     interactive: {
+      coldOpen:
+        'A mobile screen needs a user and their last three orders. With one API style that is two round trips and a pile of fields you throw away; with another it is a single request for exactly what you want. And when Stripe needs to tell you a payment cleared, it does not wait for you to ask. Five communication styles, each built for a different shape of conversation.',
       mental:
         'REST is mailing a labeled form and getting one back. RPC is a quick phone call to a colleague. GraphQL is a precise order ("just these fields, please"). WebSockets is leaving the line open to talk both ways. Webhooks is "do not call us, we will call you."',
       diagram: {
@@ -848,10 +1092,38 @@ export const systemDesignFoundations: Problem[] = [
           why: 'Anyone can POST to a public URL, and delivery is at-least-once, so you verify the signature and make processing idempotent. Skipping either is a classic webhook bug.',
         },
       ],
+      build: {
+        simple: 'Services send requests to each other.',
+        actually:
+          'Five styles, each for a shape of conversation: REST (cacheable resource APIs, the default), gRPC (fast binary internal calls), GraphQL (client asks for exact fields in one request), WebSockets (persistent two-way for realtime push), webhooks (a provider calls your URL on an event instead of you polling).',
+        breaks:
+          'Webhook receivers must verify the signature (anyone can POST to a public URL) and tolerate duplicates (delivery is at-least-once). Skipping either is the classic webhook bug: a forged event or a double-processed payment.',
+      },
+      doThisNow: [
+        {
+          task: 'Pick the style for three needs: millions of internal service-to-service calls; a screen needing varied nested fields in one request; getting notified when a Stripe payment clears.',
+          reveal:
+            'gRPC for the high-volume internal calls (compact binary), GraphQL for the exact-fields-in-one-request screen, a webhook for the Stripe event (no polling). Each removes a specific pain the others cannot.',
+        },
+        {
+          task: 'Fix a mismatch: a live collaborative editor polls REST every second and feels laggy. What style fits, and why?',
+          reveal:
+            'WebSockets. Edits must propagate the instant they happen, both directions. One held-open connection pushing changes beats wasteful, laggy per-second polling. This is the realtime-chat design territory.',
+        },
+      ],
+      warStory:
+        'A startup processed Stripe webhooks without verifying signatures. An attacker POSTed a fake "payment succeeded" event and got a paid subscription for free. They also double-shipped orders whenever Stripe retried a delivery. Two fixes (signature verification and idempotency) closed both holes; both are mandatory, never optional.',
       tweak: {
         instruction: 'You build a live collaborative document editor on plain REST polling every second. What style fits better, and why?',
         reveal:
           'WebSockets: edits must propagate the instant they happen, in both directions. Polling every second is wasteful and laggy, holding open one connection and pushing changes as they occur is what realtime collaboration needs. This is exactly the Realtime Chat design prompt\'s territory.',
+      },
+      receipt: {
+        explain: [
+          'What REST, gRPC, GraphQL, WebSockets, and webhooks each fit.',
+          'Why webhook receivers must verify signatures and dedupe.',
+        ],
+        question: 'You can design the pieces. How do you size a system on the back of a napkin before you build it?',
       },
       recap: [
         'REST is the default; gRPC is fast internal calls; GraphQL gives clients exact fields in one request.',
@@ -894,6 +1166,8 @@ export const systemDesignFoundations: Problem[] = [
       'Map a bottleneck to the module that solves it.',
     ],
     interactive: {
+      coldOpen:
+        '"Design Twitter." The blank page is where most people freeze. The engineers who do not freeze are not smarter; they run the same seven-step checklist every time and ground it with napkin math. "100M users at 10 requests a day" is about 12,000 requests a second, and that one number decides half your architecture. Let us make the freeze impossible.',
       mental:
         'The framework is a pre-flight checklist: pilots do not improvise the order, they run the same list every time so nothing is missed under pressure. A design interview is the same calm list.',
       diagram: {
@@ -942,10 +1216,38 @@ export const systemDesignFoundations: Problem[] = [
           why: 'Designs fail at the start, not the middle. Clarifying requirements and estimating scale is what makes every later choice defensible instead of arbitrary.',
         },
       ],
+      build: {
+        simple: 'There is a process for designing any system.',
+        actually:
+          'Run seven steps every time: clarify requirements, estimate scale, define the API, design the data model and pick stores, sketch the architecture, scale it and find the bottleneck, name the trade-offs. Ground it with napkin math (a day is ~10^5 seconds; memory ~100ns, datacenter round trip ~0.5ms, cross-continent ~100ms).',
+        breaks:
+          'Designs fail at the start, not the middle: skipping requirements and scale estimation and jumping to a solution. Without the numbers, every later choice is a guess instead of a consequence.',
+      },
+      doThisNow: [
+        {
+          task: 'Do the napkin math: 100M users make ~10 requests/day each. Derive average requests/sec, then a peak estimate.',
+          reveal:
+            '1B requests/day / ~86,400 sec ≈ ~12,000 rps average; plan ~3-5x for peak, so ~40,000-60,000 rps. That single number says: load balancer + many app servers + heavy caching + read replicas. A single box is nowhere close.',
+        },
+        {
+          task: 'Run the first two framework steps on the URL Shortener prompt below: requirements (functional + non-functional) and a scale estimate.',
+          reveal:
+            'Functional: create short link, redirect, basic analytics. Non-functional: redirects must be fast (read-heavy) and highly available. Scale: ~10x more reads than writes means read-dominated, which points at caching and replicas first. You just turned a blank prompt into a plan.',
+        },
+      ],
+      warStory:
+        'In interviews, the candidates who freeze are the ones who jump straight to drawing boxes. The ones who pass open with "let me clarify requirements and estimate scale," derive ~12k rps out loud, and let that number justify every later choice. Same knowledge, opposite outcome, decided by running the checklist.',
       tweak: {
         instruction: 'Open the URL Shortener prompt below and run just the first two framework steps: requirements and a scale estimate.',
         reveal:
           'Functional: create short link, redirect, basic analytics. Non-functional: redirects must be fast (read-heavy) and highly available. Scale: if 100M new links/month and reads are 10x writes, you are read-dominated, which immediately points at caching and replicas before anything else. You just turned a blank prompt into a plan.',
+      },
+      receipt: {
+        explain: [
+          'The seven-step design framework, in order.',
+          'How napkin math turns a vague prompt into concrete architecture needs.',
+        ],
+        question: 'Which design prompt below will you run the full framework on first?',
       },
       recap: [
         'Run the same seven steps every time: requirements, scale, API, data, architecture, bottleneck, trade-offs.',
