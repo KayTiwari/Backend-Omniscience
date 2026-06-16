@@ -52,6 +52,8 @@ export const csharpSubject: Subject = {
         'Know one way to run C# code right now (dotnetfiddle.net or dotnet run).',
       ],
       interactive: {
+        coldOpen:
+          'People say ".NET" and "C#" and "ASP.NET" as if they are one thing. They are three, and knowing which is which is the difference between sounding lost and sounding fluent in your first interview. One is the language you type, one is the platform it runs on, one is the web framework. Which is which?',
         intro:
           'This is a complete .NET program. Since .NET 6, a console app can be a single file of plain statements. No ceremony required to start.',
         example: {
@@ -84,10 +86,38 @@ export const csharpSubject: Subject = {
             why: 'C# compiles to IL, and the runtime turns IL into native machine code on whatever OS and CPU it runs on.',
           },
         ],
+        build: {
+          simple: 'C# is a language you write to make programs.',
+          actually:
+            'C# is the language, .NET is the cross-platform runtime and libraries it runs on, and ASP.NET Core is the web framework inside .NET. C# compiles to intermediate language (IL), which the runtime turns into native code on whatever OS it runs on, so the same build runs on Windows, Linux, and Mac.',
+          breaks:
+            'Conflating the three trips people up: you cannot "install C#" without .NET, and ASP.NET is not a separate language. The IL-then-native model is also why startup has a brief warm-up the first time code runs.',
+        },
+        doThisNow: [
+          {
+            task: 'Open dotnetfiddle.net, paste the two lines above, change the text to your own name, and run it.',
+            reveal:
+              'Console.WriteLine prints exactly what is between the quotes. The semicolon ends the statement, and forgetting it is the first compiler error almost everyone meets.',
+          },
+          {
+            task: 'Name which is the language, which is the platform, and which is the web framework: C#, .NET, ASP.NET Core.',
+            reveal:
+              'C# = language you type. .NET = platform/runtime it runs on. ASP.NET Core = web framework inside .NET. Saying these correctly is an instant fluency signal.',
+          },
+        ],
+        warStory:
+          'A new hire spent an afternoon trying to "download the C# runtime" and got nowhere, because there is no such thing: you install the .NET SDK, which includes the C# compiler. Five minutes of understanding the three-part naming would have saved the afternoon.',
         tweak: {
           instruction: 'On dotnetfiddle.net, change the text to your own name and run it.',
           reveal:
             'Console.WriteLine prints exactly what is between the quotes. The semicolon marks the end of the statement, and forgetting it is the first compiler error most people meet.',
+        },
+        receipt: {
+          explain: [
+            'The difference between C#, .NET, and ASP.NET Core.',
+            'Why one compiled .NET build runs on any OS.',
+          ],
+          question: 'You can print a line. What is the actual file-and-project structure a C# program runs from?',
         },
       },
     },
@@ -127,6 +157,8 @@ export const csharpSubject: Subject = {
         'Read one compiler error and find the line it points to.',
       ],
       interactive: {
+        coldOpen:
+          'Type console.writeline with a lowercase c and the program will not even build. C# is case sensitive, compiled, and brace-delimited, and each of those facts produces a specific first-day error. Better to meet them on purpose now than at 2am later. What does the compiler actually check before anything runs?',
         example: {
           code: '// This is a comment. The compiler skips it.\nConsole.WriteLine("First");\nConsole.WriteLine("Second");\n\n// Spacing is for people; semicolons end statements:\nConsole.Write("Same ");\nConsole.WriteLine("line");',
           output: 'First\nSecond\nSame line',
@@ -155,10 +187,38 @@ export const csharpSubject: Subject = {
             why: 'Write stays on the same output line. WriteLine adds a line break after printing.',
           },
         ],
+        build: {
+          simple: 'A C# program is statements in a file.',
+          actually:
+            'A project is a .csproj (version, packages) plus .cs files; dotnet run compiles them all and runs the entry point top to bottom. Semicolons end statements, braces group blocks (not indentation), // starts a comment, and the language is case sensitive with PascalCase types/methods and camelCase variables.',
+          breaks:
+            'Because C# is compiled, syntax errors stop the build before anything runs and name the file and line, unlike interpreted languages that fail mid-execution. A missing semicolon or a lowercase Console is a build failure, not a runtime surprise.',
+        },
+        doThisNow: [
+          {
+            task: 'On dotnetfiddle.net, run the example, then break it on purpose: change Console to console and run again. Read the exact error.',
+            reveal:
+              "The build fails: \"The name 'console' does not exist in the current context.\" C# is case sensitive and the class is Console. The error names the line, which is how you will fix most build failures.",
+          },
+          {
+            task: 'Predict the difference: what does Console.Write do that Console.WriteLine does not?',
+            reveal:
+              'Write prints and stays on the same line; WriteLine adds a line break after. That is why "Same " and "line" join into one output line in the example.',
+          },
+        ],
+        warStory:
+          'A team\'s production deploy failed at startup with a cryptic stack trace. The root cause was a single uninitialized line in Program.cs, the very first file that runs. Knowing the entry point executes top to bottom turned a 40-minute hunt into a 2-minute fix.',
         tweak: {
           instruction: 'Change Console.WriteLine to console.writeline and try to run it.',
           reveal:
             "The build fails with an error like \"The name 'console' does not exist in the current context\". C# is case sensitive, and the class is named Console.",
+        },
+        receipt: {
+          explain: [
+            'What semicolons, braces, and case sensitivity mean to the compiler.',
+            'Why compiled languages catch errors before running.',
+          ],
+          question: 'You can write statements. Why does C# make you declare the type of every value?',
         },
       },
     },
@@ -201,6 +261,8 @@ export const csharpSubject: Subject = {
         'Explain why var is still static typing.',
       ],
       interactive: {
+        coldOpen:
+          'In a dynamic language, int count = "hello" blows up at 2am in production. In C# it never ships: the compiler refuses to build it. Static types are a test suite that runs on every line before your code ever executes. So why does var count = 42 not throw that safety away?',
         mental:
           'A type declaration is a signed contract with the compiler: it reads every line of your code before anything runs and rejects the build over any broken promise.',
         diagram: {
@@ -242,10 +304,38 @@ export const csharpSubject: Subject = {
             why: '.NET formats booleans with a capital letter: True and False.',
           },
         ],
+        build: {
+          simple: 'Every variable has a fixed type.',
+          actually:
+            'C# is statically typed: int, double, string, bool are declared and checked at compile time, so the runtime never re-checks. var infers the type from the right-hand side (var count = 42 makes count an int forever); it is shorthand, not dynamic typing. decimal beats double when exact money math matters.',
+          breaks:
+            'A type mismatch (int count = "hello") fails the build, not the runtime, so the whole class of type bugs that plague dynamic code cannot ship. Surprise: .NET prints bool as True/False with a capital letter.',
+        },
+        doThisNow: [
+          {
+            task: 'On dotnetfiddle.net, declare an int, then add count = "many"; and rebuild. Read the exact compiler error.',
+            reveal:
+              'CS0029: cannot implicitly convert type string to int. The build fails before running. The compiler is your first test suite, catching the mismatch at the line it happens.',
+          },
+          {
+            task: 'Predict then verify: after var count = 42; is count allowed to hold a string later? Try it.',
+            reveal:
+              'No. var inferred int from 42 at compile time, so count is an int like any other and a later string assignment fails to build. var changes how it reads, not how it is typed.',
+          },
+        ],
+        warStory:
+          'A team migrated a dynamically-typed service to C#. During the port, the compiler flagged dozens of places where an id was sometimes a string and sometimes a number, latent bugs that had been silently shipping for years in the old codebase. Static types surfaced them all before a single request was served.',
         tweak: {
           instruction: 'Add: count = count + 1; then print count. Then try: count = "many"; and rebuild.',
           reveal:
             'The first change prints 43. The second refuses to compile with CS0029: cannot implicitly convert type string to int. The compiler is your first test suite.',
+        },
+        receipt: {
+          explain: [
+            'What static typing checks and when.',
+            'Why var is still fully static typing.',
+          ],
+          question: 'You can store text in a string. How do you build and manipulate that text?',
         },
       },
     },
@@ -285,6 +375,8 @@ export const csharpSubject: Subject = {
         'Explain why methods return new strings.',
       ],
       interactive: {
+        coldOpen:
+          'You call email.Trim() to clean a signup, save the user, and the spaces are still there. The method ran and you threw away its answer, because C# strings never change in place. The same trap that bites JavaScript developers bites here. What is the rule, and what is the C# way to build text cleanly?',
         example: {
           code: 'string first = "ada";\nConsole.WriteLine(first.ToUpper());\nConsole.WriteLine($"Hello, {first}!");\nConsole.WriteLine(first.Length);\nConsole.WriteLine(first.Contains("da"));\nConsole.WriteLine(first[0]);',
           output: 'ADA\nHello, ada!\n3\nTrue\na',
@@ -311,10 +403,38 @@ export const csharpSubject: Subject = {
             why: 'Length counts the characters a, d, a.',
           },
         ],
+        build: {
+          simple: 'C# has lots of string methods.',
+          actually:
+            'Build text with interpolation ($"Hello, {name}!", the f-string equivalent). Strings are immutable, so ToUpper/Trim/Replace return a NEW string and leave the original alone. Length is a property (no parens); methods like ToUpper() use parens. Indexing [0] returns a char (single quotes), not a string.',
+          breaks:
+            'Calling a string method and discarding the result does nothing: email.Trim() alone leaves the spaces; you need email = email.Trim(). This immutability trap is one of the most common review comments.',
+        },
+        doThisNow: [
+          {
+            task: 'On dotnetfiddle.net, compute inside an interpolation: print $"Hello, {first.ToUpper()}!" and confirm braces accept full expressions.',
+            reveal:
+              'Prints Hello, ADA!. Interpolation braces run any expression, including method calls. This is everywhere in real C#.',
+          },
+          {
+            task: 'Prove immutability: ToUpper() a string without assigning, then print the original. Did it change?',
+            reveal:
+              'No. ToUpper returned a new uppercase string that you ignored; the original is untouched. Assign the result (s = s.ToUpper()) to keep it.',
+          },
+        ],
+        warStory:
+          'A signup normalized emails with email.ToLower() but never assigned it back. Kay@Site.com and kay@site.com became two accounts, and the "already registered" check missed the duplicate. One missing assignment, weeks of confused support tickets, in C# exactly as in JavaScript.',
         tweak: {
           instruction: 'Change the interpolation to $"Hello, {first.ToUpper()}!" and predict the output.',
           reveal:
             'Interpolation braces accept any expression, so it prints Hello, ADA!. This trick of computing inside the braces is everywhere in real code.',
+        },
+        receipt: {
+          explain: [
+            'How interpolation builds text and why strings are immutable.',
+            'Why Length has no parens but ToUpper() does.',
+          ],
+          question: 'Text is handled. Why does 7 / 2 give you 3 in C# instead of 3.5?',
         },
       },
     },
@@ -354,6 +474,8 @@ export const csharpSubject: Subject = {
         'Use % for an even/odd check.',
       ],
       interactive: {
+        coldOpen:
+          'An average computed as sum / count returns 0 when count is bigger than sum, and nobody notices until a dashboard shows zeroes. Both values were ints, so C# threw away the fraction. This exact bug ships in real billing and analytics code. Why does 7 / 2 equal 3, and what one character fixes it?',
         example: {
           code: 'Console.WriteLine(7 + 3);\nConsole.WriteLine(7 / 2);\nConsole.WriteLine(7.0 / 2);\nConsole.WriteLine(7 % 2);\nConsole.WriteLine((double)7 / 2);',
           output: '10\n3\n3.5\n1\n3.5',
@@ -374,10 +496,38 @@ export const csharpSubject: Subject = {
             why: 'Casting one operand to double makes the whole division floating point: 4.5.',
           },
         ],
+        build: {
+          simple: 'C# does arithmetic like a calculator.',
+          actually:
+            'The operand types decide the result type. int / int gives an int with the fraction truncated (7 / 2 is 3, no rounding). Force real division by making one side a double (7.0 / 2 or (double)a / b). % is the remainder, and long (64-bit) holds values past int\'s ~2.1 billion limit.',
+          breaks:
+            'Integer division silently truncates: averages, percentages, and money splits computed with two ints quietly drop the fraction. The fix is one cast, but only if you know to look. And an int counting bytes or rows can overflow past 2.1 billion.',
+        },
+        doThisNow: [
+          {
+            task: 'On dotnetfiddle.net, compute an average wrong then right: int sum=7, count=2; print sum/count, then (double)sum/count.',
+            reveal:
+              'First prints 3 (both ints, truncated), second prints 3.5. This is the integer-division bug that hides in real dashboards and billing code, fixed by one cast.',
+          },
+          {
+            task: 'Predict before running: which of 9/2, (double)9/2, (int)(9.0/2) gives 4.5?',
+            reveal:
+              '(double)9/2 gives 4.5. 9/2 truncates to 4; (int)(9.0/2) computes 4.5 then casts back to 4. Casting an operand before the division is what keeps the fraction.',
+          },
+        ],
+        warStory:
+          'A billing feature split a total across users with total / userCount, both ints. For a $7 charge across 2 users it billed $3 each and quietly lost a dollar every time. The numbers looked plausible, so it ran for months. One (decimal) cast fixed it and a regression test pinned it.',
         tweak: {
           instruction: 'Compute an average: int sum = 7; int count = 2; print sum / count, then fix it.',
           reveal:
             'sum / count prints 3 because both are ints. (double)sum / count prints 3.5. This exact bug appears in real dashboards and billing code.',
+        },
+        receipt: {
+          explain: [
+            'Why int / int truncates and how a cast fixes it.',
+            'What % does and when to reach for long.',
+          ],
+          question: 'Numbers are safe. How does C# combine true/false conditions, and why is there no truthiness?',
         },
       },
     },
@@ -417,6 +567,8 @@ export const csharpSubject: Subject = {
         'Explain why C# has no truthiness.',
       ],
       interactive: {
+        coldOpen:
+          'In a dynamic language, if (count) silently treats 0 as false and a typo as a bug. C# refuses to compile it: conditions must be real booleans. And user != null && user.Active never crashes on a null user, because && stops early. These two rules quietly delete a class of bugs. How do they work?',
         example: {
           code: 'bool active = true;\nstring role = "admin";\n\nConsole.WriteLine(active && role == "admin");\nConsole.WriteLine(!active);\nConsole.WriteLine(role == "user" || active);\nConsole.WriteLine(10 > 3 && 2 != 2);',
           output: 'True\nFalse\nTrue\nFalse',
@@ -445,10 +597,38 @@ export const csharpSubject: Subject = {
             why: 'C# has no truthiness. Conditions must be bools, so you write if (count > 0).',
           },
         ],
+        build: {
+          simple: 'Combine conditions with and, or, not.',
+          actually:
+            '== and != test equality, < <= > >= compare order, each yielding a bool. && (and), || (or), ! (not) combine them. && short-circuits when the left is false and || when the left is true, so user != null && user.Active is null-safe. C# has no truthiness: conditions must be actual bools.',
+          breaks:
+            'Getting parentheses wrong in a permission check (active && isOwner || isAdmin vs active && (isOwner || isAdmin)) is a security bug. And relying on truthiness from another language fails to compile here, which is the point: if (count) must be if (count > 0).',
+        },
+        doThisNow: [
+          {
+            task: 'On dotnetfiddle.net, prove short-circuiting is null-safe: evaluate user != null && user.Active with user set to null. Does it crash?',
+            reveal:
+              'No crash, it returns false. && stops at the first false, so user.Active never runs when user is null. This is the everyday guard against null reference exceptions.',
+          },
+          {
+            task: 'Re-evaluate the four example lines after changing role to "user". Predict each before running.',
+            reveal:
+              'Line 1 becomes False (the right side fails), line 3 stays True only because active is true. Re-reading boolean lines carefully is where permission bugs are caught.',
+          },
+        ],
+        warStory:
+          'An authorization check read active && isOwner || isAdmin without parentheses. Operator precedence made it (active && isOwner) || isAdmin, so any admin flag bypassed the active check entirely, including deactivated admins. One pair of parentheses was the difference between a gate and a hole.',
         tweak: {
           instruction: 'Change role to "user" and re-evaluate all four lines before running.',
           reveal:
             'Line 1 becomes False (right side fails), line 3 stays True only because active is true. Logic bugs hide in exactly this kind of re-reading.',
+        },
+        receipt: {
+          explain: [
+            'How && and || short-circuit and why that is null-safe.',
+            'Why C# requires real booleans in conditions.',
+          ],
+          question: 'You can evaluate a condition. How do you take different paths based on it?',
         },
       },
     },
@@ -486,6 +666,8 @@ export const csharpSubject: Subject = {
         'Use a ternary for a two-way choice.',
       ],
       interactive: {
+        coldOpen:
+          'A login check tests if (subscribed) before if (banned), and a banned subscriber walks right in. Both conditions were correct; the order was the bug. In an if chain the first match wins and the rest never run, so the sequence is the logic. There is also a C# twist: a variable born inside braces dies at the closing brace.',
         example: {
           code: 'int score = 72;\nstring grade;\n\nif (score >= 90)\n{\n    grade = "A";\n}\nelse if (score >= 70)\n{\n    grade = "B";\n}\nelse\n{\n    grade = "C";\n}\n\nConsole.WriteLine(grade);\nConsole.WriteLine(score >= 70 ? "pass" : "fail");',
           output: 'B\npass',
@@ -510,10 +692,38 @@ export const csharpSubject: Subject = {
             why: 'Chains evaluate top to bottom. A broader condition placed first swallows inputs meant for the narrower one below it.',
           },
         ],
+        build: {
+          simple: 'if / else if / else picks a path.',
+          actually:
+            'The chain runs top to bottom; the first true branch wins and the rest are skipped, so order from most specific to least. Braces define scope: a variable declared inside a block does not exist outside it, so declare before the chain and assign inside. A ternary (cond ? a : b) handles simple two-way picks.',
+          breaks:
+            'A broad condition placed before a narrow one swallows its inputs, which in authorization is a security hole. And declaring a variable inside an if and using it after the chain fails to compile, because scope follows braces exactly.',
+        },
+        doThisNow: [
+          {
+            task: 'On dotnetfiddle.net, reorder the chain so >= 70 comes before >= 90, set score = 95, and run. What grade does a 95 get?',
+            reveal:
+              'B. The broad >= 70 matched first, so the A branch became unreachable. Order in an if chain is logic, not formatting.',
+          },
+          {
+            task: 'Trigger a scope error: move string grade inside the first if block and rebuild. What fails and why?',
+            reveal:
+              'The build fails at Console.WriteLine(grade): grade only exists inside those braces. Declare it before the chain so it outlives each block.',
+          },
+        ],
+        warStory:
+          'A subscription gate checked the cheapest-tier condition first, and since every paying user also satisfied it, everyone was served the cheapest tier. Revenue leaked for a month. The conditions were all correct; reordering them most-specific-first fixed it in one commit.',
         tweak: {
           instruction: 'Move the string grade declaration inside the first if block and rebuild.',
           reveal:
             'The build fails at Console.WriteLine(grade) because grade only exists inside those braces. Scope follows braces exactly.',
+        },
+        receipt: {
+          explain: [
+            'Why the first matching branch wins and order matters.',
+            'How brace scope governs where a variable lives.',
+          ],
+          question: 'You can branch on one value. How do you store and process many values at once?',
         },
       },
     },
@@ -553,6 +763,8 @@ export const csharpSubject: Subject = {
         'Explain what the compiler enforces about element types.',
       ],
       interactive: {
+        coldOpen:
+          'List<int> nums; nums.Add("hello"); will not even build, and that is the feature. Those angle brackets are your first meeting with generics, the thing that lets one List type hold ints, strings, or anything, with the compiler guaranteeing what is inside. So when do you reach for an array versus a List, and what does the T actually buy you?',
         example: {
           code: 'int[] scores = { 10, 20, 30 };\nConsole.WriteLine(scores[0]);\nConsole.WriteLine(scores.Length);\n\nList<int> nums = new List<int> { 10, 20, 30 };\nnums.Add(40);\nConsole.WriteLine(nums[3]);\nConsole.WriteLine(nums.Count);\nConsole.WriteLine(nums[^1]);',
           output: '10\n3\n40\n4\n40',
@@ -583,10 +795,38 @@ export const csharpSubject: Subject = {
             why: 'Arrays are fixed size and have no Add method. Growable collections are what List<T> is for.',
           },
         ],
+        build: {
+          simple: 'Arrays and lists hold many values.',
+          actually:
+            'An array (int[]) is fixed-size; its count is Length. List<T> grows: Add appends, Remove deletes, Count tracks size, and it is what backend code uses to build results. The <T> is a generic type parameter the compiler enforces, so a List<int> can never hold a string. Last item: nums[nums.Count - 1] or nums[^1].',
+          breaks:
+            'Reading past the end throws IndexOutOfRangeException at runtime, because the compiler cannot know sizes in advance, unlike a type mismatch which fails the build. Arrays have no Add; reach for List when the size changes.',
+        },
+        doThisNow: [
+          {
+            task: 'On dotnetfiddle.net, try nums.Add("hello") on a List<int> and read the build error. Then try scores.Add(40) on an array.',
+            reveal:
+              'The List rejects the string at build time (generic type enforced). The array has no Add at all (fixed size). The compiler caught both before running, which is generics earning their keep.',
+          },
+          {
+            task: 'See a runtime vs build-time error: print nums[10] on a 4-item list and run it.',
+            reveal:
+              'It builds fine but crashes at runtime with an out-of-range exception. Index validity depends on data the compiler cannot see, so it is a runtime error, not a build one.',
+          },
+        ],
+        warStory:
+          'A handler returned List<object> instead of List<Order>, so every caller had to cast and guess at the element type. A migration to the typed List<Order> let the compiler catch a dozen places that had been quietly mishandling the wrong shape. Generics turned runtime guesswork into build-time guarantees.',
         tweak: {
           instruction: 'Print nums[10] and run it.',
           reveal:
             'The build succeeds but the run crashes with ArgumentOutOfRangeException. Index errors are runtime errors because the compiler cannot know list sizes in advance.',
+        },
+        receipt: {
+          explain: [
+            'Array vs List<T> and what the generic parameter enforces.',
+            'Why an out-of-range read is a runtime error, not a build error.',
+          ],
+          question: 'You can hold a list. How do you visit every item in it?',
         },
       },
     },
@@ -626,6 +866,8 @@ export const csharpSubject: Subject = {
         'Explain when while is the right loop.',
       ],
       interactive: {
+        coldOpen:
+          'Change i < 3 to i <= 3 and your loop runs one extra time. That single character is the home of the off-by-one bug, the most famous mistake in programming. C# gives you three loop shapes, and picking the right one makes the boundary obvious instead of dangerous. Which should be your default?',
         example: {
           code: 'var nums = new List<int> { 1, 2, 3, 4 };\nint total = 0;\nforeach (int n in nums)\n{\n    total += n;\n}\nConsole.WriteLine(total);\n\nfor (int i = 0; i < 3; i++)\n{\n    Console.WriteLine(i);\n}',
           output: '10\n0\n1\n2',
@@ -650,9 +892,37 @@ export const csharpSubject: Subject = {
             why: 'The body never decrements count, so the condition stays true forever. Every while body must move toward ending.',
           },
         ],
+        build: {
+          simple: 'Loops repeat work.',
+          actually:
+            'foreach visits each item with no index (reach for it first); for gives you a counter when you need the index or a numeric range; while runs until a condition flips. The accumulator pattern (declare a total before, add inside, use after) powers summing, counting, and joining.',
+          breaks:
+            'The < vs <= boundary in a for loop is where off-by-one bugs cluster. A while whose body never changes its condition variable loops forever. foreach avoids both by having no manual boundary, which is why it is the default.',
+        },
+        doThisNow: [
+          {
+            task: 'On dotnetfiddle.net, run the for loop with i < 3, then i <= 3, and count the lines each prints.',
+            reveal:
+              '0 1 2, then 0 1 2 3. One character (< vs <=) changes the count by one. That is the entire off-by-one story, made concrete.',
+          },
+          {
+            task: 'Write the accumulator yourself: sum a List<int> of {1,2,3,4} with foreach and print the total.',
+            reveal:
+              '10. Declare total before, add each item inside, read it after. Every sum, count, and join you ever write follows this shape.',
+          },
+        ],
+        warStory:
+          'A nightly batch used for (int i = 0; i <= items.Count; i++) and read items[i] one past the end on every run, throwing mid-batch and leaving jobs half-finished. One character, < instead of <=, ended weeks of 3am pages. foreach would have made the boundary impossible to get wrong.',
         tweak: {
           instruction: 'Change the for loop to start at int i = 1 and predict the printed numbers.',
           reveal: 'It prints 1 and 2. The start, the condition, and the step each independently shape the range.',
+        },
+        receipt: {
+          explain: [
+            'When to use foreach, for, and while.',
+            'The accumulator pattern and where off-by-one lives.',
+          ],
+          question: 'Lists are ordered by position. How do you look things up by a key instead?',
         },
       },
     },
@@ -692,6 +962,8 @@ export const csharpSubject: Subject = {
         'Map the concept onto a JSON object.',
       ],
       interactive: {
+        coldOpen:
+          'Reading user["email"] for a key that is not there does not return null in C#. It throws KeyNotFoundException and crashes the request. This is a top crash for new C# developers, usually from assuming an optional field always arrives. A dictionary is basically a JSON object, so this is the same skill as handling an optional API field. What is the safe way to read?',
         example: {
           code: 'var user = new Dictionary<string, string>\n{\n    ["name"] = "Kay",\n    ["role"] = "admin",\n};\n\nConsole.WriteLine(user["name"]);\nConsole.WriteLine(user.GetValueOrDefault("email", "none"));\nuser["active"] = "yes";\nConsole.WriteLine(user.Count);',
           output: 'Kay\nnone\n3',
@@ -716,10 +988,39 @@ export const csharpSubject: Subject = {
             why: 'Keys are unique. Assigning to an existing key replaces its value in place.',
           },
         ],
+        build: {
+          simple: 'A dictionary maps keys to values.',
+          actually:
+            'Dictionary<TKey, TValue> gives fast lookup with both types enforced. Read a present key with []. For maybe-missing keys use the safe forms: TryGetValue(key, out var v) returns a bool, or GetValueOrDefault(key, fallback). Assigning adds or overwrites; ContainsKey asks without reading. A JSON object is conceptually this.',
+          breaks:
+            'A [] read on a missing key throws KeyNotFoundException at runtime, a top crash from assuming an optional field is always present. TryGetValue in handlers is the habit that prevents it.',
+        },
+        doThisNow: [
+          {
+            task: 'On dotnetfiddle.net, read a missing key two ways: user["email"] (crashes) and the safe TryGetValue form. Compare.',
+            command: 'if (user.TryGetValue("email", out var email)) Console.WriteLine(email); else Console.WriteLine("no email");',
+            reveal:
+              'The [] read throws KeyNotFoundException; TryGetValue returns false and prints "no email" without crashing. That is why TryGetValue dominates real handler code.',
+          },
+          {
+            task: 'Predict: assigning user["role"] = "viewer" when role already exists. Does it add a second key or overwrite?',
+            reveal:
+              'Overwrites. Keys are unique, so assigning to an existing key replaces its value in place. Assigning a new key adds it.',
+          },
+        ],
+        warStory:
+          'A handler read request headers with headers["Authorization"], assuming it was always sent. Unauthenticated requests had no such key, so instead of a clean 401 the service threw KeyNotFoundException and returned a 500, polluting error dashboards. Switching to TryGetValue turned a crash into a correct rejection.',
         tweak: {
           instruction: 'Replace the GetValueOrDefault line with: if (user.TryGetValue("email", out var email)) Console.WriteLine(email); else Console.WriteLine("no email");',
           reveal:
             'It prints no email. TryGetValue returns false for missing keys and never throws, which is why it dominates production code.',
+        },
+        receipt: {
+          explain: [
+            'Why a [] read on a missing key crashes and what the safe forms do.',
+            'Why a dictionary is the right model for a JSON object.',
+          ],
+          question: 'You can store and look up data. How do you package reusable behavior that acts on it?',
         },
       },
     },
@@ -761,6 +1062,8 @@ export const csharpSubject: Subject = {
         'Use the => expression body form.',
       ],
       interactive: {
+        coldOpen:
+          'A C# method tells you everything in one line before you read its body: decimal CalculateTax(Order order) promises an Order in, a decimal out, and the compiler enforces both. Forget to return on some path and the build fails. That signature is the contract whole teams coordinate through. What exactly does it guarantee?',
         example: {
           code: 'string Greet(string name, string greeting = "Hello")\n{\n    return $"{greeting}, {name}!";\n}\n\nint Square(int x) => x * x;\n\nConsole.WriteLine(Greet("Kay"));\nConsole.WriteLine(Greet("Sam", "Hi"));\nConsole.WriteLine(Square(6));',
           output: 'Hello, Kay!\nHi, Sam!\n36',
@@ -789,10 +1092,38 @@ export const csharpSubject: Subject = {
             why: 'The return type is a promise. Any path that fails to return an int stops the build.',
           },
         ],
+        build: {
+          simple: 'A method takes inputs and returns a result.',
+          actually:
+            'The signature (return type, name, typed parameters) is the whole contract, enforced both ways: callers cannot pass the wrong type, and the body must return the declared type on every path. void returns nothing. Parameters can have defaults and be named at the call site. One-expression methods use the => arrow form.',
+          breaks:
+            'Forget to return on some path and the build fails with "not all code paths return a value": the static-typing payoff in one message. A method that prints instead of returning cannot be tested or composed; logic returns, edges print.',
+        },
+        doThisNow: [
+          {
+            task: 'On dotnetfiddle.net, call Greet(42) (an int where a string is declared) and read the error.',
+            reveal:
+              'A compile-time type error: the parameter is string, so an int argument is rejected before running. The signature enforces the input type for every caller.',
+          },
+          {
+            task: 'Delete the return statement from Greet and rebuild. What does the compiler say?',
+            reveal:
+              '"Not all code paths return a value." The return type makes forgetting to return impossible. That guarantee is what lets callers trust the output type without reading the body.',
+          },
+        ],
+        warStory:
+          'A team needed to change a tax method from returning double to decimal for exact money. Because the return type is part of the signature, the change broke the build at every one of the 30 call sites, forcing each to be reviewed. A dynamic language would have let the wrong type flow silently into invoices.',
         tweak: {
           instruction: 'Remove the return statement from Greet and rebuild.',
           reveal:
             "The compiler reports \"not all code paths return a value\". The return type makes forgetting impossible, which is the static-typing payoff in one error message.",
+        },
+        receipt: {
+          explain: [
+            'What a method signature guarantees to callers and the body.',
+            'Why returning beats printing inside a method.',
+          ],
+          question: 'Methods are loose behavior. How do you bundle data and behavior together into a type of your own?',
         },
       },
     },
@@ -834,6 +1165,8 @@ export const csharpSubject: Subject = {
         'Explain what private set enforces.',
       ],
       interactive: {
+        coldOpen:
+          'A teammate writes order.Total = 9999 directly and skips the method that also records the audit log and recalculates tax. Now your books are wrong. C# lets you make that line refuse to compile, so the only way to change Total is through the code you control. That is encapsulation, and it is enforced by one keyword. Which?',
         mental:
           'A class is a blueprint and instances are houses built from it: each house has its own rooms, and private set means only the house keys change the furniture.',
         diagram: {
@@ -879,10 +1212,38 @@ export const csharpSubject: Subject = {
             why: 'new creates independent objects. Calls on a never touch the data inside b.',
           },
         ],
+        build: {
+          simple: 'A class bundles data and behavior into a type.',
+          actually:
+            'A class is a blueprint; new makes independent instances, each with its own state. Auto-properties (public int Value { get; private set; }) declare data with controlled access. Constructors run at new time to require initial data. Encapsulation means exposing what callers need and protecting what keeps the object valid.',
+          breaks:
+            'Without private set, any code can corrupt an object\'s state directly, bypassing the methods that keep it consistent (and that write the audit log, recompute totals, etc.). Access modifiers are what make that line refuse to compile.',
+        },
+        doThisNow: [
+          {
+            task: 'On dotnetfiddle.net, run the Counter example, then add a.Value = 100; outside the class. What happens?',
+            reveal:
+              'It fails to compile: private set means only code inside Counter can write Value. That compile error IS the encapsulation working, stopping outside code from corrupting state.',
+          },
+          {
+            task: 'Add a constructor public Counter(int start) => Value = start; then create new Counter(10), increment it, and predict the value.',
+            reveal:
+              '11. The constructor supplied the starting state. Adding it removes the default empty constructor, so new Counter() now requires an argument: the class enforces valid creation.',
+          },
+        ],
+        warStory:
+          'An order class exposed a public setter on Total. A new feature set it directly to apply a discount, skipping the method that also adjusted tax and logged the change. Reports drifted out of sync for weeks. Making the setter private and forcing all changes through ApplyDiscount() ended a whole category of "the numbers do not add up" bugs.',
         tweak: {
           instruction: 'Add a constructor: public Counter(int start) => Value = start; then create new Counter(10) and increment it.',
           reveal:
             'It prints 11. Constructors let the creator supply required starting state, and adding one removes the default empty constructor, so new Counter() now needs an argument.',
+        },
+        receipt: {
+          explain: [
+            'The difference between a class and an instance, and what a constructor does.',
+            'What private set protects and why encapsulation matters.',
+          ],
+          question: 'You can model data as objects. How do you filter and transform collections of them in one readable line?',
         },
       },
     },
@@ -924,6 +1285,8 @@ export const csharpSubject: Subject = {
         'Explain the difference between the two.',
       ],
       interactive: {
+        coldOpen:
+          'You already learned filter, map, and reduce in JavaScript. C# calls them Where, Select, and Aggregate, and here is the wild part: the exact same chain, pointed at a database, compiles to SQL. Learn LINQ and you are writing queries against lists and against Postgres with one syntax. What does each station do?',
         mental:
           'LINQ is the conveyor belt with named stations: Where inspects and discards, Select reshapes, ToList boxes up the result.',
         diagram: {
@@ -965,10 +1328,38 @@ export const csharpSubject: Subject = {
             why: 'First throws when nothing matches. FirstOrDefault is the safe variant that returns the type default, 0 for int.',
           },
         ],
+        build: {
+          simple: 'LINQ queries a collection.',
+          actually:
+            'Where filters (keep items where the lambda is true), Select transforms each item, Count/Any/First answer questions, and ToList runs the chain into a real list. They compose left to right: filter, then reshape. Pointed at a database via Entity Framework, the same chain translates to SQL.',
+          breaks:
+            'First throws InvalidOperationException when nothing matches; FirstOrDefault returns the type default (0, null) instead. And forgetting ToList leaves a lazy query that re-runs every time you enumerate it.',
+        },
+        doThisNow: [
+          {
+            task: 'On dotnetfiddle.net, chain filter-then-transform in one line: nums.Where(n => n % 2 == 0).Select(n => n * 10).ToList() and print it.',
+            reveal:
+              '20, 40, 60. Chains read left to right: Where filters, Select reshapes the survivors. This exact shape is most of what backend data code looks like.',
+          },
+          {
+            task: 'Predict the crash: what does nums.First(n => n > 100) do on a list maxing at 6, and what is the safe alternative?',
+            reveal:
+              'It throws InvalidOperationException because nothing matches. FirstOrDefault returns the type default (0 for int) instead. Reach for the OrDefault variants when "no match" is a normal case.',
+          },
+        ],
+        warStory:
+          'A report used orders.First(o => o.Status == "refunded") assuming there was always one. On a quiet day with no refunds it threw and 500ed the dashboard. Switching to FirstOrDefault and handling the null turned a crash into an empty-state message. The same LINQ later ran unchanged against the database via Entity Framework.',
         tweak: {
           instruction: 'Chain it all in one line: nums.Where(n => n % 2 == 0).Select(n => n * 10).ToList() and print it.',
           reveal:
             'It prints 20, 40, 60. Chains read left to right: filter first, then transform the survivors. This shape is most of what backend data code looks like.',
+        },
+        receipt: {
+          explain: [
+            'What Where, Select, and the OrDefault variants do.',
+            'Why the same LINQ chain works on lists and databases.',
+          ],
+          question: 'Code can fail mid-operation. How does C# signal and handle errors?',
         },
       },
     },
@@ -1008,6 +1399,8 @@ export const csharpSubject: Subject = {
         'Explain when catching is the wrong move.',
       ],
       interactive: {
+        coldOpen:
+          'The most tempting line in error handling is catch (Exception) { }: it makes the red go away. It also swallows every real bug, throws away the stack trace, and ships silently wrong behavior that someone debugs for days. Catching errors well is a discipline. When should you catch, and when should you let it fly?',
         example: {
           code: 'int SafeDivide(int a, int b)\n{\n    try\n    {\n        return a / b;\n    }\n    catch (DivideByZeroException)\n    {\n        return 0;\n    }\n}\n\nConsole.WriteLine(SafeDivide(10, 2));\nConsole.WriteLine(SafeDivide(10, 0));',
           output: '5\n0',
@@ -1036,10 +1429,38 @@ export const csharpSubject: Subject = {
             why: 'Catching everything and doing nothing hides bugs. You lose the stack trace and ship silently wrong behavior.',
           },
         ],
+        build: {
+          simple: 'try/catch handles errors.',
+          actually:
+            'Code that fails throws an exception; try runs the risky code, catch handles a specific type and can recover with a fallback. The exception object carries a message and a stack trace your logs depend on. Catch narrowly (the exception you expect) and let everything else propagate.',
+          breaks:
+            'catch (Exception) { } swallows every failure, including real bugs, and discards the stack trace, so wrong behavior ships silently. Catch the specific type you can handle; an unexpected exception should crash loudly where you can see it.',
+        },
+        doThisNow: [
+          {
+            task: 'On dotnetfiddle.net, run SafeDivide(10, 0), then delete the try/catch and run again. Compare the two outcomes.',
+            reveal:
+              'With the catch it returns the fallback 0; without it, 10/0 throws DivideByZeroException and terminates with a stack trace. The catch turned a crash into a handled, recoverable case.',
+          },
+          {
+            task: 'Make the error visible: change the catch to catch (DivideByZeroException ex) and print ex.Message before returning.',
+            reveal:
+              'It prints "Attempted to divide by zero." before the fallback. The exception object carries the message and stack trace, which is exactly what you log instead of swallowing.',
+          },
+        ],
+        warStory:
+          'A service wrapped its whole request handler in catch (Exception) { return Ok(); }. Every failure (database down, null bug, bad input) returned 200 OK with empty data. Monitoring saw all green while customers saw blank pages for two days. Removing the blanket catch surfaced the real errors immediately.',
         tweak: {
           instruction: 'Change the catch to catch (DivideByZeroException ex) and print ex.Message before returning.',
           reveal:
             'It prints "Attempted to divide by zero." before the fallback. The exception object carries the message and the stack trace your logs depend on.',
+        },
+        receipt: {
+          explain: [
+            'How try/catch recovers from a specific exception.',
+            'Why catching everything silently is dangerous.',
+          ],
+          question: 'You know every C# building block. Can you combine them into one real program that turns records into a summary?',
         },
       },
     },
@@ -1081,6 +1502,8 @@ If you can read and modify this program confidently, you have crossed from 0 to 
         'Explain how this mirrors a real endpoint.',
       ],
       interactive: {
+        coldOpen:
+          'Here is a real .NET list endpoint: model typed records, keep the relevant ones, shape a response. It uses every module you just finished, and one extra superpower: record User(string Name, bool Active) declares an entire immutable data type in a single line. Swap the list for a database table and this is production code. When you can edit it confidently, you are at 1 in C#.',
         mental:
           'Records in, pipeline through, summary out: the assembly line, now with the compiler guarding every station.',
         diagram: {
@@ -1127,9 +1550,37 @@ If you can read and modify this program confidently, you have crossed from 0 to 
             why: 'Where(u => !u.Active) flips the filter and Select(u => u.Email) changes the projection, assuming the record gains an Email field. The pipeline shape stays identical.',
           },
         ],
+        build: {
+          simple: 'Combine records and LINQ into a real program.',
+          actually:
+            'A positional record (record User(string Name, bool Active)) declares an immutable data type with constructor, properties, value equality, and ToString for free, the shape of production DTOs. A List<User> stands in for database rows; Where filters by the business rule, Select projects the response shape, all type-checked end to end.',
+          breaks:
+            'The business rule lives in the Where lambda; one ! flips it. Confusing the filter (which records) with the projection (which fields) is where these pipelines go wrong. Swap the list for a table and Entity Framework runs the same LINQ as SQL.',
+        },
+        doThisNow: [
+          {
+            task: 'On dotnetfiddle.net, run the full endpoint, then flip the filter to !u.Active and rerun. Predict both lines first.',
+            reveal:
+              'Active: 1, then Sam. One character rewrote the entire business rule, and the types kept everything else intact. That is the power of separating the rule (Where) from the shape (Select).',
+          },
+          {
+            task: 'Name what the one-line record gives you that a hand-written class would need many lines for.',
+            reveal:
+              'Constructor, get-only properties, value equality, and a readable ToString, all generated. Records are why C# DTOs are one line instead of twenty of boilerplate.',
+          },
+        ],
+        warStory:
+          'A new .NET hire shipped their first endpoint on day two: a record DTO, a Where filter on the active flag, a Select to public fields, returned as JSON. Code review had nothing to add, because it was the exact skeleton from this lesson. Recognizing that pattern is what "0 to 1" actually means.',
         tweak: {
           instruction: 'Flip the filter to !u.Active and predict both printed lines.',
           reveal: 'Active: 1 and then Sam. One character changed the business rule, and the types kept everything else intact.',
+        },
+        receipt: {
+          explain: [
+            'What a positional record generates for free.',
+            'How records plus LINQ compose into a list endpoint.',
+          ],
+          question: 'You can write C#. What framework turns this into an actual web API, and what else is in the .NET ecosystem?',
         },
       },
     },
@@ -1170,6 +1621,8 @@ If you can read and modify this program confidently, you have crossed from 0 to 
         'Describe the request path from URL to JSON response.',
       ],
       interactive: {
+        coldOpen:
+          'Five lines of C# is a complete, production-grade web server: route a URL, return an object, and the framework turns it into JSON and serves it on Kestrel. Every line uses something you already learned (lambdas, types, records). This is the bridge from console exercises to the actual day job. What does each line do?',
         intro:
           'This is a complete, production-grade web server. The output shows what an HTTP client sees when it calls the route.',
         example: {
@@ -1210,10 +1663,40 @@ If you can read and modify this program confidently, you have crossed from 0 to 
             why: 'Routes are added one MapGet (or MapPost, MapPut, MapDelete) line at a time, each binding a path to a handler.',
           },
         ],
+        build: {
+          simple: 'ASP.NET Core turns your C# into a web API.',
+          actually:
+            'WebApplication.CreateBuilder configures the app, MapGet("/path", lambda) binds a URL to a handler (the same lambda syntax as LINQ), the framework serializes the returned object to JSON automatically, and app.Run() starts Kestrel, the production web server. Per request it parses HTTP, matches the route, binds typed parameters, runs your handler, and writes the response.',
+          breaks:
+            'The platform owns the plumbing, so handlers stay small; routes are added one MapGet/MapPost line at a time. The ecosystem: NuGet (packages), Entity Framework Core (database via LINQ), xUnit (tests), usually deployed in Linux Docker containers.',
+        },
+        doThisNow: [
+          {
+            task: 'When you have .NET locally: dotnet new web, paste the health route, dotnet run, then open http://localhost:5000/health.',
+            command: 'dotnet new web && dotnet run',
+            reveal:
+              'The browser shows {"ok":true,"service":"api"}. You returned a plain object; the framework serialized it to JSON and served it over HTTP. That is a real web service in five lines.',
+          },
+          {
+            task: 'Add a second route with a typed path parameter: app.MapGet("/greet/{name}", (string name) => $"Hello, {name}!"); then call /greet/Kay.',
+            reveal:
+              'Returns Hello, Kay!. The {name} segment binds into the typed string parameter automatically. Typed parameter binding is modules 3 and 11 doing web work.',
+          },
+        ],
+        warStory:
+          'A team coming from heavyweight frameworks expected hundreds of lines of config to stand up an API. Their first ASP.NET Core service was a 20-line Program.cs with three routes, deployed in a Linux container the same afternoon. The minimal API model is why "C# is enterprise-only and slow to start" is a decade out of date.',
         tweak: {
           instruction: 'Add: app.MapGet("/greet/{name}", (string name) => $"Hello, {name}!"); and call /greet/Kay.',
           reveal:
             'It returns Hello, Kay!. The {name} route segment binds into the typed string parameter automatically. Typed parameter binding is modules 3 and 11 doing web work.',
+        },
+        receipt: {
+          explain: [
+            'What each line of a minimal API does and who serializes the JSON.',
+            'The roles of NuGet, EF Core, and Kestrel in the .NET ecosystem.',
+          ],
+          command: 'dotnet new web && dotnet run',
+          question: 'You can build a .NET API. Which cloud will you deploy it to, and what services will it use?',
         },
       },
     },
