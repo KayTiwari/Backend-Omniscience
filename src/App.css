@@ -1,70 +1,79 @@
 .app-shell {
-  --ink: #121826;
-  --muted: #657184;
-  --line: #dce3ee;
-  --paper: #fbfcff;
-  --paper-strong: #f3f6fb;
-  --field: #ffffff;
-  --surface-hover: #eef4ff;
-  --surface-soft: #f6f8fc;
-  --app-bg:
-    radial-gradient(circle at 14% 0%, rgba(47, 128, 237, 0.11), transparent 30%),
-    radial-gradient(circle at 88% 8%, rgba(15, 139, 141, 0.07), transparent 28%),
-    linear-gradient(180deg, #f8fbff 0%, #eef3f8 100%);
-  --brand-a: #263238;
-  --brand-b: #2f80ed;
-  --brand-c: #19c6ff;
-  --brand-gradient: linear-gradient(135deg, var(--brand-a), var(--brand-b), var(--brand-c), var(--brand-a));
-  --flame: #ff5a5f;
-  --flame-dark: #b42338;
-  --ember: #f59300;
-  --ember-soft: #fef3d8;
-  --mint: #00a878;
-  --mint-soft: #e3f9f0;
-  --teal: #0f8b8d;
-  --teal-soft: #dff4f4;
-  --shadow: 0 18px 44px rgba(15, 23, 42, 0.07);
-  --shadow-hover: 0 18px 34px rgba(47, 128, 237, 0.13);
-  --button-hover: #f2f6ff;
+  /* Editorial light identity: warm off-white paper, near-black ink, one
+     saturated green accent. Typography does the heavy lifting. */
+  --ink: #14130f;
+  --muted: #6f6a60;
+  --line: #e4ded2;
+  --paper: #fffdf8;
+  --paper-strong: #f1ece1;
+  --field: #fffdf8;
+  --surface-hover: #efe9dc;
+  --surface-soft: #f3eee3;
+  --app-bg: #f7f5f0;
+  --brand-a: #14130f;
+  --brand-b: #1f7a3d;
+  --brand-c: #2f9e54;
+  --brand-gradient: linear-gradient(135deg, #1f7a3d, #2f9e54);
+  --flame: #d6443a;
+  --flame-dark: #a3271f;
+  --ember: #c2641a;
+  --ember-soft: #f5e6d3;
+  --mint: #1f7a3d;
+  --mint-soft: #e2efe5;
+  --teal: #0f7d6f;
+  --teal-soft: #ddefe9;
+  --shadow: 0 1px 0 rgba(20, 19, 15, 0.04), 0 14px 32px rgba(20, 19, 15, 0.06);
+  --shadow-hover: 0 16px 36px rgba(31, 122, 61, 0.14);
+  --button-hover: #efe9dc;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 }
 
 .app-shell[data-theme='dark'] {
-  --ink: #edf7f1;
-  --muted: #aab9b5;
-  --line: #33413f;
-  --paper: #121818;
-  --paper-strong: #192221;
-  --field: #182120;
-  --surface-hover: #202c2a;
-  --surface-soft: #182120;
-  --app-bg: linear-gradient(135deg, rgba(47, 128, 237, 0.14), transparent 28%),
-    linear-gradient(315deg, rgba(38, 50, 56, 0.26), transparent 34%),
-    #0d1211;
-  --brand-a: #263238;
-  --brand-b: #2f80ed;
-  --brand-c: #19c6ff;
-  --brand-gradient: linear-gradient(135deg, var(--brand-a), var(--brand-b), var(--brand-c), var(--brand-a));
-  --ember-soft: #352715;
-  --mint-soft: #112a21;
-  --teal-soft: #102d2d;
-  --shadow: 0 18px 50px rgba(0, 0, 0, 0.32);
-  --shadow-hover: 0 20px 48px rgba(47, 128, 237, 0.22);
-  --button-hover: #182a2d;
+  /* Terminal / IDE dark identity: slate background, syntax-green accent. */
+  --ink: #c9d1d9;
+  --muted: #8b949e;
+  --line: #232b34;
+  --paper: #161b22;
+  --paper-strong: #1b222b;
+  --field: #0f141a;
+  --surface-hover: #1d2530;
+  --surface-soft: #161b22;
+  --app-bg: #0e1116;
+  --brand-a: #c9d1d9;
+  --brand-b: #3fb950;
+  --brand-c: #56d364;
+  --brand-gradient: linear-gradient(135deg, #3fb950, #2ea043);
+  --flame: #f0883e;
+  --flame-dark: #db6d28;
+  --ember: #d29922;
+  --ember-soft: #2b2415;
+  --mint: #3fb950;
+  --mint-soft: #12241a;
+  --teal: #39c5cf;
+  --teal-soft: #102a2c;
+  --shadow: 0 1px 0 rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.5);
+  --shadow-hover: 0 18px 44px rgba(63, 185, 80, 0.2);
+  --button-hover: #1d2530;
 }
 
 html, body {
   overscroll-behavior: none;
 }
 
+/* Match the shell background pre-React so there is no flash of white. */
+html { background: #f7f5f0; }
+html[data-theme='dark'] { background: #0e1116; }
+
 .app-shell {
   min-height: 100svh;
   display: grid;
   grid-template-columns: 360px minmax(0, 1fr);
   background: var(--app-bg);
-  background-size: 140% 140%;
   color: var(--ink);
-  animation: ambient-canvas 18s var(--ease-out) infinite alternate;
+  font-family: var(--font-sans);
 }
 
 .app-shell.sidebar-collapsed {
@@ -260,10 +269,11 @@ html, body {
 
 .eyebrow {
   margin: 0 0 2px;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0;
+  color: var(--brand-b);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
@@ -639,21 +649,30 @@ h1 {
 }
 
 .subject-button small {
-  color: #6b7775;
-  font-weight: 800;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .subject-progress {
   height: 4px;
   overflow: hidden;
-  margin: -4px 10px 2px;
+  margin: -2px 10px 4px;
   border-radius: 999px;
-  background: #e7ebe4;
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
+}
+
+.subject-progress {
+  height: 6px;
 }
 
 .subject-progress div {
   height: 100%;
+  min-width: 6px;
   border-radius: inherit;
+  background: var(--brand-b);
 }
 
 .subject-icon {
@@ -724,18 +743,23 @@ h1 {
   position: sticky;
   top: 0;
   z-index: 1;
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   max-width: 980px;
   margin: 0 auto 18px;
-  padding: 10px;
+  padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: color-mix(in srgb, var(--field) 86%, transparent);
-  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow);
   backdrop-filter: blur(18px) saturate(1.14);
+}
+
+/* Breadcrumb hard-left; the prev button + actions cluster on the far right. */
+.topbar-title {
+  order: -1;
+  margin-right: auto;
 }
 
 .topbar-actions {
@@ -788,15 +812,27 @@ h1 {
   min-width: 0;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 8px 14px;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 4px 12px;
   color: var(--muted);
   font-size: 14px;
 }
 
+.topbar-title > span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand-b);
+}
+
 .topbar-title strong {
   color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .problem-panel {
@@ -826,28 +862,30 @@ h1 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 18px;
+  gap: 24px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 30px;
-  background:
-    radial-gradient(circle at 92% 12%, color-mix(in srgb, var(--brand-c) 12%, transparent), transparent 32%),
-    var(--paper);
+  border-radius: 10px;
+  padding: 44px 40px;
+  background: var(--paper);
   box-shadow: var(--shadow);
 }
 
 .home-hero h2 {
-  margin-bottom: 8px;
+  margin-bottom: 14px;
   color: var(--ink);
-  font-size: 38px;
-  line-height: 1.05;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 48px;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
 }
 
 .home-hero p:last-child {
   margin: 0;
   color: var(--muted);
-  font-size: 18px;
-  line-height: 1.5;
+  font-size: 17px;
+  line-height: 1.6;
+  max-width: 52ch;
 }
 
 .continue-button,
@@ -917,17 +955,15 @@ h1 {
 }
 
 .home-stats div {
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
   border-radius: 8px;
-  padding: 16px;
-  background: var(--field);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.035);
+  padding: 14px 16px;
+  background: transparent;
 }
 
 .home-stats div:hover {
-  border-color: color-mix(in srgb, var(--brand-b) 35%, var(--line));
+  border-color: color-mix(in srgb, var(--brand-b) 28%, var(--line));
   transform: none;
-  box-shadow: var(--shadow-hover);
 }
 
 .home-stats span,
@@ -938,13 +974,18 @@ h1 {
 .home-stats span {
   margin-bottom: 4px;
   color: var(--ink);
-  font-size: 28px;
-  font-weight: 900;
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .home-stats strong {
   color: var(--muted);
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -1404,9 +1445,12 @@ h1 {
   height: 42px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
-  background: var(--surface-soft);
+  border-radius: 9px;
+  color: #fff;
+  background: var(--card-color, var(--brand-b));
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--card-color, var(--brand-b)) 32%, transparent);
 }
+.subject-card-icon svg { color: #fff; }
 
 .subject-card-copy {
   min-width: 0;
@@ -1417,7 +1461,10 @@ h1 {
 .subject-card-copy strong {
   overflow: hidden;
   color: var(--ink);
-  font-size: 16px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.01em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3553,7 +3600,7 @@ input:focus-visible {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--brand-b);
-  background: rgba(47, 128, 237, 0.1);
+  background: color-mix(in srgb, var(--brand-b) 12%, transparent);
   border-radius: 999px;
   padding: 3px 10px;
 }
@@ -3778,7 +3825,7 @@ input:focus-visible {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: rgba(47, 128, 237, 0.12);
+  background: color-mix(in srgb, var(--brand-b) 14%, transparent);
   color: var(--brand-b);
   font-size: 11px;
   font-weight: 700;
@@ -4305,6 +4352,10 @@ input:focus-visible {
 
 .home-track-heading h3 {
   margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.01em;
 }
 
 .home-track-heading span {
@@ -4446,6 +4497,29 @@ input:focus-visible {
   color: var(--brand-b);
   padding: 4px 0;
   margin-bottom: 10px;
+}
+
+.enc-back-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* The primary return path after a lesson -> term detour: a pill so it reads as
+   the obvious way back, distinct from the plain "Encyclopedia" index link. */
+.enc-back-lesson {
+  margin-bottom: 10px;
+  padding: 5px 12px;
+  border: 1px solid var(--brand-b);
+  border-radius: 999px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.enc-back-lesson:hover {
+  background: color-mix(in srgb, var(--brand-b) 14%, transparent);
 }
 
 .enc-category {
@@ -4825,3 +4899,301 @@ input:focus-visible {
 }
 .enc-search-clear:hover { color: var(--ink); background: var(--rule-soft, var(--line)); }
 .search-box, .home-search-box, .enc-search { position: relative; }
+
+/* ----- SQL Workbench (PGlite-backed drills) -------------------------------- */
+.sql-drill .coding-instructions p { margin: 0.35rem 0 0; }
+.sql-schema { margin: 0.75rem 0; }
+.sql-schema > summary {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  opacity: 0.8;
+}
+.sql-schema pre {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  overflow-x: auto;
+}
+.sql-editor-shell { min-height: 7.5rem; }
+.sql-checks { margin-top: 0.75rem; }
+.sql-error {
+  white-space: pre-wrap;
+  font-family: var(--mono, monospace);
+  font-size: 0.8rem;
+  color: #ff6b6b;
+  margin: 0.4rem 0;
+}
+.sql-result-tables {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.6rem;
+}
+.sql-result { min-width: 12rem; flex: 1 1 16rem; }
+.sql-result-title {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  margin-bottom: 0.3rem;
+}
+.sql-table-scroll { overflow-x: auto; border: 1px solid var(--border, #2a2f3a); border-radius: 8px; }
+.sql-result table { border-collapse: collapse; width: 100%; font-size: 0.82rem; }
+.sql-result th, .sql-result td {
+  text-align: left;
+  padding: 0.3rem 0.6rem;
+  border-bottom: 1px solid var(--border, #2a2f3a);
+  white-space: nowrap;
+}
+.sql-result th { font-weight: 600; opacity: 0.85; background: rgba(255, 255, 255, 0.03); }
+.sql-result tr:last-child td { border-bottom: none; }
+.sql-empty { opacity: 0.6; font-style: italic; padding: 0.4rem 0.6rem; }
+
+/* ----- Runnable SQL lesson example ---------------------------------------- */
+.sql-example-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+.sql-example .sql-schema { margin: 0.5rem 0; }
+.sql-example-explain { margin-top: 0.6rem; opacity: 0.9; }
+
+/* ============================================================
+   DOING-first lesson template
+   Cold open, terminal callouts, build-then-break, do-this-now,
+   war story, receipt, and the station-path indicator.
+   ============================================================ */
+
+/* Cold open: a concrete, slightly unsettling hook at the very top, framed as
+   a terminal line rather than a generic blue info box. */
+.cold-open {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  margin: 0 0 1.4rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--brand-b) 38%, var(--line));
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--brand-b) 7%, transparent), transparent 60%),
+    var(--surface-soft);
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--brand-b) 70%, transparent);
+}
+.cold-open .term-callout-prompt {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--brand-b);
+  line-height: 1.5;
+}
+.cold-open p {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+/* Terminal-style callout: copyable command shown as a real terminal line. */
+.term-callout {
+  position: relative;
+  margin: 0.6rem 0;
+  padding: 0.7rem 0.9rem 0.7rem 1.7rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  color: var(--ink);
+  overflow-x: auto;
+}
+.term-callout::before {
+  content: '$';
+  position: absolute;
+  left: 0.7rem;
+  color: var(--brand-b);
+  font-weight: 700;
+}
+.term-callout code { background: none; padding: 0; }
+
+/* Build a mental model, then break it: three cards, escalating reality. */
+.build-break {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+  margin: 1.2rem 0;
+}
+.build-break-card {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+.build-break-card p { margin: 0.4rem 0 0; line-height: 1.5; }
+.build-break-simple { box-shadow: inset 3px 0 0 color-mix(in srgb, var(--muted) 60%, transparent); }
+.build-break-actually { box-shadow: inset 3px 0 0 color-mix(in srgb, var(--teal) 70%, transparent); }
+.build-break-breaks {
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--flame) 75%, transparent);
+  background: color-mix(in srgb, var(--flame) 6%, var(--surface-soft));
+}
+
+/* Do this now: the loud block. Interleaved hands-on tasks the learner DOES. */
+.do-now-block {
+  margin: 1.4rem 0;
+  padding: 1rem 1.1rem 1.1rem;
+  border: 2px solid color-mix(in srgb, var(--brand-b) 46%, var(--line));
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--brand-b) 8%, transparent), transparent 40%),
+    var(--paper);
+}
+.do-now-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+.do-now-heading h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+.do-now-count {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--brand-b);
+  font-weight: 700;
+}
+.do-now-card {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--line);
+}
+.do-now-card:first-of-type { border-top: none; }
+.do-now-check {
+  flex: none;
+  display: inline-flex;
+  margin-top: 0.1rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s var(--ease-out);
+}
+.do-now-card.done .do-now-check { color: var(--brand-b); }
+.do-now-body { flex: 1; min-width: 0; }
+.do-now-task { margin: 0; line-height: 1.55; font-weight: 600; }
+.do-now-card.done .do-now-task { color: var(--muted); }
+
+/* War story: a two-line field note. Why this matters in a real job. */
+.war-story {
+  margin: 1.4rem 0 0;
+  padding: 0.9rem 1.1rem;
+  border-left: 3px solid var(--ember);
+  border-radius: 0 10px 10px 0;
+  background: var(--ember-soft);
+}
+.war-story-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 0.3rem;
+}
+.war-story p { margin: 0; font-style: italic; line-height: 1.55; }
+
+/* Receipt: the bottom-of-lesson takeaway. Explain / command / question. */
+.lesson-receipt {
+  margin: 1.4rem 0;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid color-mix(in srgb, var(--brand-b) 30%, var(--line));
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+.receipt-head {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand-b);
+  margin-bottom: 0.8rem;
+}
+.receipt-row {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  padding: 0.6rem 0;
+  border-top: 1px dashed var(--line);
+}
+.receipt-row:first-of-type { border-top: none; }
+.receipt-icon { flex: none; font-size: 1.1rem; line-height: 1.4; }
+.receipt-row strong { display: block; margin-bottom: 0.25rem; }
+.receipt-row ul { margin: 0; padding-left: 1.1rem; }
+.receipt-row p { margin: 0; line-height: 1.5; }
+.receipt-row .term-callout { margin: 0.3rem 0 0; }
+
+/* Station-path indicator: the journey across a module. */
+.lesson-stations {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0 0 1.2rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(6px);
+}
+.lesson-station {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s var(--ease-out);
+}
+.lesson-station:hover { color: var(--ink); }
+.lesson-station.done { color: var(--brand-b); }
+.lesson-station.current {
+  border-color: color-mix(in srgb, var(--brand-b) 46%, var(--line));
+  background: color-mix(in srgb, var(--brand-b) 12%, transparent);
+  color: var(--ink);
+  font-weight: 700;
+}
+.lesson-station-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.65;
+}
+.lesson-station.current .lesson-station-dot { opacity: 1; }
+.lesson-station-arrow { color: var(--line); font-size: 0.7rem; }
+
+/* Per-section time estimate tag. */
+.section-time {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 600;
+}
