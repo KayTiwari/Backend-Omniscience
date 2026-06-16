@@ -98,14 +98,24 @@ html[data-theme='dark'] { background: #0e1116; }
   position: sticky;
   top: 0;
   height: 100svh;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   border-right: 1px solid var(--line);
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--paper) 92%, transparent), color-mix(in srgb, var(--paper-strong) 84%, transparent)),
     var(--paper);
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.76);
   padding: 24px;
   backdrop-filter: blur(18px);
+}
+
+/* Nothing in the sidebar may push past its width; long titles truncate. */
+.subject-list,
+.subject-group,
+.subject-button,
+.problem-list,
+.problem-link {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .app-shell.sidebar-collapsed .sidebar {
@@ -402,7 +412,9 @@ h1 {
 .progress-track div {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--brand-b), var(--brand-c), var(--mint), var(--teal));
+  /* Seamless blue loop: ends on the same color it starts, so the sliding
+     animation never shows a hard color seam. */
+  background: linear-gradient(90deg, var(--brand-b), var(--brand-c), var(--brand-b));
   background-size: 180% 100%;
   animation: progress-flow 6s linear infinite;
   transition: width 360ms var(--ease-out);
@@ -1608,7 +1620,7 @@ h1 {
 .mastery-meter div {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--brand-b), var(--brand-c), var(--mint));
+  background: linear-gradient(90deg, var(--brand-b), var(--brand-c), var(--brand-b));
   background-size: 180% 100%;
   animation: progress-flow 6s linear infinite;
   transition: width 360ms var(--ease-out);
@@ -4192,17 +4204,17 @@ input:focus-visible {
 .mental-model-card {
   display: grid;
   gap: 8px;
-  border: 1px solid color-mix(in srgb, #2f80ed 32%, var(--line));
-  border-left: 3px solid #2f80ed;
+  border: 1px solid color-mix(in srgb, var(--brand-b) 32%, var(--line));
+  border-left: 3px solid var(--brand-b);
   border-radius: 4px;
-  background: color-mix(in srgb, #2f80ed 6%, var(--field));
+  background: color-mix(in srgb, var(--brand-b) 6%, var(--field));
   padding: 14px 16px;
 }
 
 .mental-model-card .interactive-badge {
-  color: #2f80ed;
-  background: color-mix(in srgb, #2f80ed 10%, transparent);
-  border-color: color-mix(in srgb, #2f80ed 28%, transparent);
+  color: var(--brand-b);
+  background: color-mix(in srgb, var(--brand-b) 10%, transparent);
+  border-color: color-mix(in srgb, var(--brand-b) 28%, transparent);
 }
 
 .mental-model-card p {
@@ -5067,7 +5079,7 @@ input:focus-visible {
 }
 .build-break-card p { margin: 0.4rem 0 0; line-height: 1.5; }
 .build-break-simple { box-shadow: inset 3px 0 0 color-mix(in srgb, var(--muted) 60%, transparent); }
-.build-break-actually { box-shadow: inset 3px 0 0 color-mix(in srgb, var(--teal) 70%, transparent); }
+.build-break-actually { box-shadow: inset 3px 0 0 color-mix(in srgb, var(--brand-b) 70%, transparent); }
 .build-break-breaks {
   box-shadow: inset 3px 0 0 color-mix(in srgb, var(--flame) 75%, transparent);
   background: color-mix(in srgb, var(--flame) 6%, var(--surface-soft));
