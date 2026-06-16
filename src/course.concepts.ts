@@ -50,6 +50,8 @@ export const cachingSubject: Subject = {
         'Explain staleness as the core trade.',
       ],
       interactive: {
+        coldOpen:
+          'Reading from memory takes about 100 nanoseconds. Calling a third-party API takes about 100 milliseconds: a million times slower. Most "make it faster" work is really one move: stop paying the slow price for answers you already computed. A cache that helps only half the time still removes enormous cost. Why?',
         mental:
           'A cache is the chef’s counter: a tiny copy of the pantry kept within arm’s reach, refilled when something runs out, and occasionally holding ingredients that went off.',
         diagram: {
@@ -87,11 +89,39 @@ export const cachingSubject: Subject = {
             why: 'A cache is a second copy. The source can change while the copy sits there, and serving the old copy is the staleness problem.',
           },
         ],
+        build: {
+          simple: 'A cache makes things faster by keeping a copy.',
+          actually:
+            'Each storage rung costs 10-100x more than the one above (memory ~100ns, Redis ~1ms, SQL ~10-50ms, third-party API ~100-500ms). A hit serves the copy in microseconds; a miss pays full price and stores the result so the next read hits. Even a 50% hit rate removes huge cost because the slow path is thousands of times pricier.',
+          breaks:
+            'A cache is a second copy, so it can fall behind the source: serving the old value is the staleness problem. The whole craft is choosing where stale answers are harmless and where they are not.',
+        },
+        doThisNow: [
+          {
+            task: 'Do the latency math: a 90% hit rate sits in front of a 50ms query. Roughly what does the average request cost now?',
+            reveal:
+              'About 5ms average: 9 of 10 requests read the copy at sub-millisecond speed, only the 1 miss pays 50ms (0.9×~0 + 0.1×50 ≈ 5ms). The hit rate, not the query, now dominates.',
+          },
+          {
+            task: 'Sort two values by caching safety: a user\'s account balance vs the list of countries in a dropdown. Which caches freely, which barely?',
+            reveal:
+              'Countries: barely change, a day stale is harmless, cache aggressively. Balance: changes constantly and staleness is visible money, so cache with very short lifetimes or not at all. Safety is per-data-type.',
+          },
+        ],
+        warStory:
+          'A page made the same expensive recommendations API call on every load, 300ms each, for data that changed daily. Wrapping it in a one-hour cache cut page load from 800ms to under 100ms and dropped the API bill by 95%, all without touching the recommendation logic.',
         tweak: {
           instruction:
             'Decide which is a better caching candidate: a user’s account balance, or the list of countries in a dropdown.',
           reveal:
             'The country list barely changes and being a day stale is harmless: perfect candidate. The balance changes constantly and staleness is visible money: cache it carefully with short lifetimes, or never.',
+        },
+        receipt: {
+          explain: [
+            'Why each storage rung is 10-100x slower than the one above.',
+            'Why even a moderate hit rate removes most of the cost.',
+          ],
+          question: 'Before writing any caching code, what cache already ships free with every HTTP response?',
         },
         recap: [
           'Each storage rung costs 10 to 100 times more than the one above.',
@@ -136,6 +166,8 @@ export const cachingSubject: Subject = {
         'Choose between public, private, and no-store for three response types.',
       ],
       interactive: {
+        coldOpen:
+          'You can make repeat requests cost your server literally nothing, without writing a line of caching code. Every browser and CDN already has a cache; your response headers program it. Get one header wrong, though, and a CDN serves one user another user\'s account page. Which header, and which mistake?',
         mental:
           'Cache-Control headers are instructions taped to a parcel: every courier between you and the recipient reads them and decides whether to keep a copy in their depot.',
         diagram: {
@@ -179,10 +211,40 @@ export const cachingSubject: Subject = {
             why: 'public lets CDNs store one copy and share it. Personalized responses must be private or no-store.',
           },
         ],
+        build: {
+          simple: 'Cache-Control headers tell browsers to reuse responses.',
+          actually:
+            'max-age=N lets every browser and CDN reuse the response for N seconds with no request to you. public allows shared caches (CDNs) to serve one copy to many; private restricts to one browser. An ETag fingerprints the body so an expired copy can be revalidated with a cheap 304 (no body resent).',
+          breaks:
+            'public on a personalized response lets a CDN serve one user another user\'s data. no-store forbids caching; no-cache stores but revalidates every time. The names are backwards, so memorize them once.',
+        },
+        doThisNow: [
+          {
+            task: 'Read a real site\'s caching policy. Fetch headers and look at Cache-Control and ETag.',
+            command: 'curl -sI https://example.com | grep -i "cache-control\\|etag"',
+            reveal:
+              'You see the policy in the wild: static sites declare long max-age, APIs vary, and a missing Cache-Control means every request pays full price. The header is the entire program.',
+          },
+          {
+            task: 'Classify three responses as public, private, or no-store: a logo image, GET /api/me (logged-in profile), and a password-reset page.',
+            reveal:
+              'Logo: public with a long max-age (shareable, rarely changes). /api/me: private (personalized, never share across users). Password-reset: no-store (sensitive, never cache anywhere).',
+          },
+        ],
+        warStory:
+          'An engineer added Cache-Control: public, max-age=600 to speed up the account page, not noticing it was personalized. A CDN cached one user\'s page and served it to everyone for ten minutes. People saw strangers\' names and balances. The fix was one word: private.',
         tweak: {
           instruction: 'Run: curl -si https://example.com | grep -i "cache-control\\|etag" and read what a real site declares.',
           reveal:
             'You will see real caching policy in the wild. Most static sites declare long max-age values; APIs vary widely, and missing headers mean every request pays full price.',
+        },
+        receipt: {
+          explain: [
+            'How max-age, ETags, and 304 revalidation save work.',
+            'Why public on a personalized response is a data leak.',
+          ],
+          command: 'curl -sI https://example.com | grep -i cache-control',
+          question: 'HTTP caching handles responses. How do you cache an expensive computation inside your own app?',
         },
         writeDrillId: 'http-parse-cache-control',
         recap: [
@@ -228,6 +290,8 @@ export const cachingSubject: Subject = {
         'Explain when a TTL is required.',
       ],
       interactive: {
+        coldOpen:
+          'Memoizing a function is four lines and feels like free speed. Then someone memoizes getPrice(productId), and every customer sees the price in whoever-asked-first\'s currency, forever. The cache was right; the key was wrong. What belongs in a cache key, and what makes a function unsafe to memoize at all?',
         mental:
           'Memoization is writing the answer in the margin of the textbook: the second time the question comes up, you read the margin instead of redoing the math.',
         diagram: {
@@ -264,9 +328,39 @@ export const cachingSubject: Subject = {
             why: 'The key is missing an input. The first caller’s answer is stored under the id and served to every currency. Keys must include everything that changes the output.',
           },
         ],
+        build: {
+          simple: 'Remember a function\'s result so you do not recompute it.',
+          actually:
+            'Check a Map by a key built from the arguments; on a hit return the stored value, on a miss compute once and store. Pure functions cache forever; anything whose underlying data changes needs a TTL. The key must include every input that affects the output.',
+          breaks:
+            'An incomplete key serves one caller\'s answer to everyone (getPrice keyed only on id ignores currency). And memoizing an impure function (one reading the clock or a global) freezes its first answer forever.',
+        },
+        doThisNow: [
+          {
+            task: 'Prove memoization skips the work: run a memoized function twice and count how many times the expensive body executes.',
+            command: 'node -e \'const c=new Map(); const f=n=>{console.log("computing",n); return n*n}; const m=n=>c.has(n)?c.get(n):(c.set(n,f(n)),c.get(n)); m(4); m(4); m(4)\'',
+            reveal:
+              '"computing 4" prints once; the next two calls are Map lookups. One computation, three calls. That is the entire idea.',
+          },
+          {
+            task: 'Spot the broken key: getPrice(productId) is memoized on productId, but price also depends on currency. What is the bug and the fix?',
+            reveal:
+              'The first caller\'s currency price is stored under the id and served to everyone. Fix: key on productId + currency (every input that changes the answer). Incomplete keys are the classic memoization bug.',
+          },
+        ],
+        warStory:
+          'A team memoized a getConfig() that secretly read the current time to pick a daily theme. It cached the first call and served yesterday\'s theme indefinitely. Memoizing an impure function froze its one accidental answer. The rule: only memoize functions whose output depends solely on their inputs.',
         tweak: {
           instruction: 'Call memoSquare(5) after the existing calls and predict every printed line.',
           reveal: 'computing 5, then 25, and cache.size becomes 2. New keys pay once; old keys stay free.',
+        },
+        receipt: {
+          explain: [
+            'Why the cache key must contain every input that changes the output.',
+            'Why only pure functions are safe to memoize without a TTL.',
+          ],
+          command: 'node -e \'const c=new Map(); /* check, compute, store */\'',
+          question: 'Your in-memory cache grows forever. What stops it from eating all the RAM?',
         },
         writeDrillId: 'caching-memoize',
         recap: [
@@ -312,6 +406,8 @@ export const cachingSubject: Subject = {
         'Name one alternative policy and when it wins.',
       ],
       interactive: {
+        coldOpen:
+          'A cache that never forgets is a memory leak with good intentions: it grows until the process dies. So every real cache is full most of the time and must choose what to throw away. Pick wrong and the cache "thrashes", evicting entries moments before they would have been hits, while memory looks perfectly fine. What policy picks the right victim?',
         mental:
           'LRU is a crowded coat rack by the door: every coat you wear goes back on the nearest hook, and when a new coat needs space, the dusty one at the far end is donated.',
         diagram: {
@@ -347,9 +443,37 @@ export const cachingSubject: Subject = {
             why: 'The hot set is ten times the capacity. Entries rotate out before their next use, so the hit rate collapses despite the cache being "full and working".',
           },
         ],
+        build: {
+          simple: 'When the cache is full, remove something.',
+          actually:
+            'Bound every cache, then pick a victim policy. LRU evicts the least recently used entry, betting that recent use predicts future use (temporal locality). A Map trick implements it: on each read, delete and re-insert the key so the front is always the oldest. LFU, FIFO, and TTL expiry are the alternatives.',
+          breaks:
+            'A cache much smaller than its hot set thrashes: entries rotate out just before their next hit, so the hit rate collapses while the cache looks full and healthy. Rising evictions plus falling hits is the signature.',
+        },
+        doThisNow: [
+          {
+            task: 'Trace an eviction by hand: set a, set b, set c, read b, then evict one. Who gets evicted, and why?',
+            reveal:
+              'a. Reading b refreshed it to the back, leaving a as the entry untouched the longest. LRU evicts a. Walk the access order and the victim is always the front.',
+          },
+          {
+            task: 'Diagnose sizing: a 1,000-entry cache serves a workload that constantly touches 10,000 distinct keys. What happens to the hit rate?',
+            reveal:
+              'It collapses (thrashing). The hot set is 10x the capacity, so entries get evicted before their next use. The fix is a bigger cache or a smaller hot set, not a different policy.',
+          },
+        ],
+        warStory:
+          'A Redis cache had no maxmemory set. It grew quietly for weeks until it consumed all the box\'s RAM, the OS killed it, and every request fell through to the database at once. The fix was two lines: maxmemory plus allkeys-lru. Every cache must be bounded.',
         tweak: {
           instruction: 'Add touch("c") before the eviction line and predict the new survivor list.',
           reveal: "The order becomes a, c after b... walk it: after touch('a') order is b,c,a; touch('c') makes it b,a,c; evicting the front removes b, leaving [ 'a', 'c' ]. Tracing by hand once makes the policy stick.",
+        },
+        receipt: {
+          explain: [
+            'The LRU bet and how the Map re-insertion trick implements it.',
+            'Why a too-small cache thrashes instead of just being slower.',
+          ],
+          question: 'Eviction handles a full cache. What handles a cache entry that has gone stale because the source changed?',
         },
         writeDrillId: 'caching-lru',
         recap: [
@@ -395,6 +519,8 @@ export const cachingSubject: Subject = {
         'Describe stampede protection.',
       ],
       interactive: {
+        coldOpen:
+          'A user deletes a post. It vanishes from the database instantly. And it keeps showing on the homepage for ten more minutes, because a cached copy nobody remembered to delete is still being served. "Cache invalidation" is half of the famous hardest-things-in-CS joke for a reason. How do you keep copies honest without going mad?',
         mental:
           'A cache entry is a sticky note copied from a whiteboard. TTL throws notes away on a schedule; invalidation chases down every note when the board changes; the stampede is everyone rushing to the board the moment a popular note expires.',
         diagram: {
@@ -436,10 +562,38 @@ export const cachingSubject: Subject = {
             why: 'Every concurrent reader misses at the same moment. The stampede guard exists to collapse that burst into one fetch.',
           },
         ],
+        build: {
+          simple: 'When data changes, update or drop the cached copy.',
+          actually:
+            'Three strategies: TTL (expire on a clock, your default), invalidate-on-write (delete derived keys when the source changes), and write-through (update cache and DB together). TTL backs up the others, so a missed invalidation heals in minutes instead of forever. Guard hot keys against stampedes.',
+          breaks:
+            'Invalidate-on-write is fragile: every write path must know every derived key, and the forgotten one is the bug (the deleted post that lingers). A hot key expiring sends thousands of simultaneous misses at the database: a stampede.',
+        },
+        doThisNow: [
+          {
+            task: 'Assign a staleness budget and pick a strategy for three data types: product description, account balance, country dropdown.',
+            reveal:
+              'Description: minutes, TTL-only. Balance: effectively zero, invalidate-on-write or do not cache. Country list: hours/days, long TTL. The budget decides the strategy, never the reverse.',
+          },
+          {
+            task: 'Diagnose: a deleted post keeps appearing on the homepage. Name the cause and the two-part fix.',
+            reveal:
+              'A derived cache key (the rendered homepage fragment) was not on the write path\'s delete list. Fix: add it to the invalidation, and keep a short TTL as a backstop so the next forgotten key heals on its own.',
+          },
+        ],
+        warStory:
+          'A pricing change invalidated the product page cache but not the search-results cache, which nobody remembered derived from the same data. Customers saw the old price in search for an hour and ordered at it. A short TTL on every cached key would have capped the damage to minutes; the team added one everywhere.',
         tweak: {
           instruction: 'Assign staleness budgets: product description, account balance, country dropdown.',
           reveal:
             'Description: minutes, TTL-only is fine. Balance: effectively zero, invalidate on write or do not cache. Country list: hours or days. The budget decides the strategy, never the other way around.',
+        },
+        receipt: {
+          explain: [
+            'The three invalidation strategies and why TTL backstops them all.',
+            'What causes a cache stampede and how to guard against it.',
+          ],
+          question: 'You have mastered single caches. How do the browser, CDN, and Redis caches stack into one system?',
         },
         recap: [
           'TTL is the default and the backstop under everything else.',
@@ -486,6 +640,8 @@ export const cachingSubject: Subject = {
         'Walk the staleness debugging order.',
       ],
       interactive: {
+        coldOpen:
+          'A user reports stale data. There are four caches between them and your database, and the bug could be in any one. The engineers who know the map check layers in order and find it in minutes; the ones who do not restart servers and pray. What are the four layers, and which one do you check first?',
         mental:
           'The cache map is a supply chain: pantry in the kitchen (browser), neighborhood depot (CDN), regional warehouse (Redis), factory (database). Stock what each tier can hold, and trace shortages tier by tier.',
         diagram: {
@@ -527,10 +683,38 @@ export const cachingSubject: Subject = {
             why: 'A cold shared cache converts the entire hit rate into misses simultaneously: a stampede against the database. Warm-up and single-flight guards exist for this moment.',
           },
         ],
+        build: {
+          simple: 'There are several caches between the user and the database.',
+          actually:
+            'Four layers, each a distance and a sharing scope: browser (free, header-controlled), CDN (shared edge, header-controlled), Redis (shared app cache, ~1ms, all instances), in-process Map (nanoseconds, per instance). Cache as close to the user as the freshness budget allows.',
+          breaks:
+            'Per-instance in-process caches disagree until each TTL expires, so a role change applies unevenly across servers. And a cold Redis after a restart turns the whole hit rate into simultaneous database misses: a stampede on deploy day.',
+        },
+        doThisNow: [
+          {
+            task: 'Place four things on the right layer: a rate-limit counter, the marketing homepage, a user avatar image, and the /api/me response.',
+            reveal:
+              'Counter: Redis (shared, atomic). Homepage: CDN with public max-age. Avatar: CDN, long max-age, hashed URL. /api/me: private, short or no cache. Personal data never goes in a shared layer.',
+          },
+          {
+            task: 'Walk a staleness bug: a user sees old data. List the layers you would check, in order, from closest to the user.',
+            reveal:
+              'Browser cache, then CDN, then Redis, then the database itself. Check in order rather than restarting servers blindly; the stale copy lives in exactly one layer, and order finds it fastest.',
+          },
+        ],
+        warStory:
+          'After a deploy that flushed Redis, a high-traffic site fell over: every cached read became a database query at the same instant, a self-inflicted stampede. They added cache warm-up on deploy and a single-flight guard, so a cold cache refills gently instead of all at once.',
         tweak: {
           instruction: 'Place these on the map: rate-limit counter, marketing homepage, user avatar image, /api/me response.',
           reveal:
             'Counter: Redis (shared, atomic). Homepage: CDN with public max-age. Avatar: CDN with a long max-age and hashed URL. /api/me: private, short or no cache; personal data never goes in shared layers.',
+        },
+        receipt: {
+          explain: [
+            'The four cache layers and what belongs in each.',
+            'How to debug staleness by walking the layers in order.',
+          ],
+          question: 'Caching speeds up reads. What lets a slow task happen without making the user wait at all?',
         },
         recap: [
           'Four layers: browser, CDN, Redis, in-process, each with a distance and a sharing scope.',
@@ -586,6 +770,8 @@ export const queuesSubject: Subject = {
         'Explain the latency and resilience wins.',
       ],
       interactive: {
+        coldOpen:
+          'Checkout takes 2.8 seconds because it waits for the email service to send a receipt. Worse, when the email provider goes down, customers cannot buy anything. The fix is not a faster email service. It is refusing to make the user wait for work that does not have to happen now. What carries that work into the future?',
         mental:
           'A queue is the ticket rail in a restaurant kitchen: waiters clip orders and immediately go back to tables, cooks pull tickets at their own pace, and a rush becomes a long rail instead of chaos.',
         diagram: {
@@ -627,10 +813,38 @@ export const queuesSubject: Subject = {
             why: 'The user immediately sees their order, so it must exist before the response. Deferred work is everything the user does not need in the next second.',
           },
         ],
+        build: {
+          simple: 'A queue lets work happen later.',
+          actually:
+            'A producer appends a message to durable storage; a consumer (worker) reads and does the work at its own pace. The request returns in milliseconds instead of waiting, spikes become a backlog workers drain steadily, and a failing downstream just delays messages instead of breaking checkout. Consumer lag is the health metric.',
+          breaks:
+            'The work is now eventual, not immediate, so "did it happen yet?" becomes a real question. Everything else in queueing (delivery guarantees, idempotency, retries) is the craft of answering that honestly.',
+        },
+        doThisNow: [
+          {
+            task: 'Split "user uploads a video" into must-happen-now vs can-go-on-a-queue. List both.',
+            reveal:
+              'Now: store the raw file, create the row, return an id. Queue: transcode, generate thumbnails, run moderation, notify subscribers. The page feels instant because everything heavy is deferred.',
+          },
+          {
+            task: 'Reason about resilience: the email provider is down for an hour. With the receipt email behind a queue, what does the customer experience at checkout?',
+            reveal:
+              'Nothing wrong: checkout succeeds in milliseconds, the receipt message waits in the queue, and it sends once the provider recovers. The dependency moved from the request to the worker, where failure means waiting, not breaking.',
+          },
+        ],
+        warStory:
+          'A site sent welcome emails inline during signup. When the email vendor had a slow morning, signups took 30 seconds and many timed out, so the company lost users it had already convinced. Moving the email to a queue made signup instant and immune to the vendor\'s bad days.',
         tweak: {
           instruction: 'Split "user uploads a video" into now versus queue.',
           reveal:
             'Now: store the raw file, create the database row, return an id. Queue: transcode, generate thumbnails, run moderation, notify subscribers. Upload pages feel instant precisely because everything heavy is deferred.',
+        },
+        receipt: {
+          explain: [
+            'What belongs in the request vs on a queue.',
+            'How queues turn spikes and outages into backlog instead of failures.',
+          ],
+          question: 'The worker might read the same message twice. Is that a bug, or something to expect?',
         },
         recap: [
           'Requests do the minimum; queues carry the rest to workers.',
@@ -675,6 +889,8 @@ export const queuesSubject: Subject = {
         'State the at-least-once contract.',
       ],
       interactive: {
+        coldOpen:
+          'A payment worker charges a card, then crashes a millisecond before telling the queue "done." The queue, seeing no acknowledgment, assumes the work never happened and sends the message again. The card gets charged twice. This is not a bug in the queue; it is the contract working as designed. Why is the duplicate unavoidable?',
         mental:
           'A delivery driver needs a signature. If the customer takes the parcel and the signature pad dies, the depot sends the parcel again, because an unsigned delivery never happened as far as the depot knows.',
         diagram: {
@@ -715,10 +931,38 @@ export const queuesSubject: Subject = {
             why: 'The message is already deleted when the crash hits, so the work never happens and nothing ever retries it. Lost work is invisible; duplicates at least leave evidence.',
           },
         ],
+        build: {
+          simple: 'A queue delivers each message to a worker.',
+          actually:
+            'A worker receives a message, does the work, then acks it so the queue deletes it. If it crashes before acking, the queue redelivers (the safety net against losing work). But it cannot tell "crashed before working" from "crashed after working, before acking," so it redelivers either way. That is at-least-once delivery.',
+          breaks:
+            'Every message is processed one OR MORE times, so duplicates are normal input, not a rare bug. "Exactly-once" is just at-least-once plus your own deduplication. At-most-once avoids duplicates but silently loses work on a crash, which is usually worse.',
+        },
+        doThisNow: [
+          {
+            task: 'Trace both crash timings: worker crashes (a) before doing the work, (b) after the work but before the ack. What does the queue do in each, and which causes a duplicate?',
+            reveal:
+              '(a) No work happened, queue redelivers, correct. (b) Work happened but no ack, queue redelivers anyway, so the work runs twice: a duplicate. The queue has no proof either way, so it always redelivers.',
+          },
+          {
+            task: 'Rank the failure: which is worse, a duplicate receipt email or a lost password-reset email? Use it to justify at-least-once.',
+            reveal:
+              'Duplicate receipt: mildly annoying. Lost reset: a locked-out user and a support ticket. Loss is usually worse, which is why at-least-once (redeliver, risk duplicates) beats at-most-once (ack first, risk loss).',
+          },
+        ],
+        warStory:
+          'A subscription billing worker charged a card, then the box was killed by an autoscaler a moment before the ack. The queue redelivered and charged again. Dozens of customers were double-billed before anyone noticed. The queue did exactly what it promised; the consumer just was not built for duplicates.',
         tweak: {
           instruction: 'Decide which is worse for a receipt email versus a password reset email: duplicate or loss.',
           reveal:
             'Duplicate receipt: mildly annoying. Lost password reset: a user locked out and a support ticket. Loss is usually the worse failure, which is why at-least-once is the standard contract.',
+        },
+        receipt: {
+          explain: [
+            'Why the ack cycle makes duplicates unavoidable.',
+            'Why at-least-once beats at-most-once for most work.',
+          ],
+          question: 'Duplicates are guaranteed. How do you write a worker that processing twice does no harm?',
         },
         recap: [
           'Ack is the only proof of work the queue accepts.',
@@ -763,6 +1007,8 @@ export const queuesSubject: Subject = {
         'Explain the atomic record requirement.',
       ],
       interactive: {
+        coldOpen:
+          'You cannot stop a queue from delivering twice. So you build a worker where running twice does no harm. "Set status to paid" is safe to repeat; "add $10 to the balance" is a disaster to repeat. The pattern that makes any worker safe is three lines, with one subtle race that ruins it. What is the pattern, and where does it race?',
         mental:
           'An idempotent consumer is a passport stamp: the officer checks the page first, and a second trip through the booth changes nothing because the stamp is already there.',
         diagram: {
@@ -803,10 +1049,39 @@ export const queuesSubject: Subject = {
             why: 'The whole point is remembering across crashes and across workers. Per-process memory forgets exactly when the redelivery arrives.',
           },
         ],
+        build: {
+          simple: 'Make processing a message twice harmless.',
+          actually:
+            'An operation is idempotent when twice equals once. Give each message a unique id; the consumer checks a record of processed ids, skips anything seen, and otherwise does the work and records the id. Better still, make the operation naturally idempotent (set-to-value, upsert) so no bookkeeping is needed.',
+          breaks:
+            'The check-then-record can race: two duplicates arriving at once both pass "seen?" before either records. Fix it with an atomic record (a unique constraint or Redis SET NX); the constraint violation IS the duplicate detection. And the record must be in a database/Redis, not memory, or restarts forget it.',
+        },
+        doThisNow: [
+          {
+            task: 'Classify three operations as naturally idempotent or not: balance = balance + 10, status = \'shipped\', append a row to the audit log.',
+            reveal:
+              'status = \'shipped\' is idempotent (same state however many times). The increment and the append accumulate, so they need the id-guard. Where you can, rewrite to set-to-value instead of tracking ids.',
+          },
+          {
+            task: 'See the guard work: run a check-work-record over the same id twice and confirm the second run skips.',
+            command: 'node -e \'const seen=new Set(); const p=(id,m)=>seen.has(id)?console.log("skip",id):(seen.add(id),console.log("send",m)); p("m1","email:42"); p("m1","email:42")\'',
+            reveal:
+              '"send email:42" then "skip m1". The redelivery is now a no-op. In production the Set is a database table or Redis so the memory survives restarts and is shared across workers.',
+          },
+        ],
+        warStory:
+          'A team fixed double-charges with an in-memory Set of processed ids. It worked in testing and failed in production: each worker had its own Set, and a restart wiped it, so duplicates sailed through exactly when it mattered. Moving the record to a unique DB constraint made the dedup real and atomic.',
         tweak: {
           instruction: 'Call processOnce("m2", "email:43") after the existing lines and predict the output.',
           reveal:
             'sending email:43. New ids do work; repeated ids skip. Two behaviors, one three-line guard.',
+        },
+        receipt: {
+          explain: [
+            'The check-work-record pattern and why the record must be atomic.',
+            'Why naturally idempotent operations beat id bookkeeping.',
+          ],
+          question: 'A worker fails because a downstream service is briefly down. Should it retry immediately, and how often?',
         },
         writeDrillId: 'architecture-idempotency',
         recap: [
@@ -852,6 +1127,8 @@ export const queuesSubject: Subject = {
         'Explain jitter in one sentence.',
       ],
       interactive: {
+        coldOpen:
+          'A downstream service stumbles. A thousand jobs fail, and your retries instantly send a thousand more requests at the service already on the floor, finishing it off. Then it recovers, and all thousand retry in the same instant and knock it down again. Retrying is load. How do you retry without turning a stumble into an outage?',
         mental:
           'Retrying without backoff is redialing a busy number nonstop; backoff is waiting longer between calls; jitter is the whole crowd not redialing in unison the second the line frees up.',
         diagram: {
@@ -892,9 +1169,39 @@ export const queuesSubject: Subject = {
             why: 'The payload will be malformed on every attempt. Retrying burns capacity replaying a guaranteed failure; the DLQ path exists for it.',
           },
         ],
+        build: {
+          simple: 'If a job fails, try it again.',
+          actually:
+            'Classify first: transient failures (timeout, 503) deserve a retry; permanent ones (bad payload, validation) never will and skip straight to the dead-letter path. Retry transient failures with exponential backoff (1s, 2s, 4s, 8s, capped) plus jitter (randomize the delay) so the herd does not retry in synchronized waves.',
+          breaks:
+            'Immediate retries pile load on a struggling service and extend the outage. Backoff without jitter just moves the pile-on to 2s, 4s, 8s marks: synchronized waves. Retrying a permanent failure replays a guaranteed error forever, burning capacity.',
+        },
+        doThisNow: [
+          {
+            task: 'Compute the backoff series for base 1s, cap 60s, attempts 0-5. Then say what the cap protects against.',
+            command: 'node -e \'const b=(a,base=1000,cap=60000)=>Math.min(cap,base*2**a); console.log([0,1,2,3,4,5].map(b))\'',
+            reveal:
+              '[1000, 2000, 4000, 8000, 16000, 32000]. Each attempt doubles the wait. The cap keeps attempt 10 from becoming a multi-hour wait. Production adds jitter: delay = random(0, backoff(attempt)).',
+          },
+          {
+            task: 'Classify three failures and pick retry vs dead-letter: a network timeout, an HTTP 503, and a JSON validation error.',
+            reveal:
+              'Timeout and 503: transient, retry with backoff. Validation error: permanent, it will fail identically every time, so route it to the dead-letter queue instead of retrying.',
+          },
+        ],
+        warStory:
+          'A service recovered from a brief blip, and the instant it came back, every job that had failed retried at the exact same millisecond (backoff with no jitter) and knocked it down again. Three times. Adding jitter spread the retries into a smooth trickle and the recovery finally stuck.',
         tweak: {
           instruction: 'Change the base to 500 and the cap to 8000, and predict the series.',
           reveal: '[ 500, 1000, 2000, 4000, 8000, 8000 ]. The cap flattens the tail so attempt ten is not a 8-minute wait.',
+        },
+        receipt: {
+          explain: [
+            'Why backoff and jitter together prevent retry storms.',
+            'Why permanent failures must not be retried.',
+          ],
+          command: 'node -e \'const b=(a)=>Math.min(60000,1000*2**a); console.log([0,1,2,3].map(b))\'',
+          question: 'A message keeps failing after every retry. Where does it go so it stops clogging the queue?',
         },
         writeDrillId: 'architecture-backoff',
         recap: [
@@ -940,6 +1247,8 @@ export const queuesSubject: Subject = {
         'Describe the operator flow after a bug fix.',
       ],
       interactive: {
+        coldOpen:
+          'A message has now failed every retry. Drop it and you lose work silently; retry it forever and one poison message wedges the whole queue. There is a third door, and the most common postmortem sentence in the world is "the dead letter queue had been filling up silently for three weeks." What makes that door useful instead of a quiet graveyard?',
         mental:
           'The DLQ is the returns desk: failed deliveries wait there with their paperwork attached, someone is paged when the pile grows, and after the address is fixed the parcels go back out for delivery.',
         diagram: {
@@ -981,10 +1290,38 @@ export const queuesSubject: Subject = {
             why: 'Work lands there and nobody knows. The failures are preserved in theory and lost in practice until a customer complaint triggers the archaeology.',
           },
         ],
+        build: {
+          simple: 'Messages that keep failing go to a dead letter queue.',
+          actually:
+            'After max attempts, the queue moves the message to a side queue with its error history, so the main queue flows on and nothing is lost. A DLQ is only useful with three attachments: an alert on depth above zero, enough context to diagnose, and a replay path to push fixed messages back through. Target depth is zero.',
+          breaks:
+            'Without a DLQ, a poison message wedges the queue in a crash loop forever. With a DLQ but no alert, failures pile up silently and become lost work discovered weeks later by a customer complaint. A DLQ without an alert is a trash can with extra steps.',
+        },
+        doThisNow: [
+          {
+            task: 'Decide the operator response for two DLQ situations: a poison payload from a buggy producer, and 400 messages from a 2-hour downstream outage.',
+            reveal:
+              'Poison: fix the producer, then discard or transform the bad message (replaying it unchanged just crashes again). Outage backlog: pure replay, the consumer was never wrong. The error history tells you which case you have.',
+          },
+          {
+            task: 'Name the one thing that turns a DLQ from "silent data loss with a delay" into a safety net. What must you add?',
+            reveal:
+              'An alert on depth > 0. Work lands in an unwatched DLQ and nobody knows until a customer asks. The alert is what makes the preserved failures actually actionable.',
+          },
+        ],
+        warStory:
+          'A team discovered their receipts DLQ had quietly collected 12,000 messages over a month: 12,000 customers who never got a receipt. There was a DLQ, but no alert on it. They wired a page on depth > 0, replayed the backlog, and never let a DLQ go unwatched again.',
         tweak: {
           instruction: 'Decide what the operator does for: a poison payload from a buggy producer, versus 400 messages from a 2-hour outage.',
           reveal:
             'Poison: fix the producer, then discard or transform the bad message; replaying it unchanged just crashes again. Outage backlog: pure replay, the consumer was never wrong. The error history is what tells you which case you have.',
+        },
+        receipt: {
+          explain: [
+            'When a message moves to the DLQ and what travels with it.',
+            'The alert/context/replay trio that makes a DLQ an inbox, not a graveyard.',
+          ],
+          question: 'Some workloads need messages handled in order. How do queues give you ordering and parallelism at once?',
         },
         writeDrillId: 'queue-dlq',
         recap: [
@@ -1030,6 +1367,8 @@ export const queuesSubject: Subject = {
         'Distinguish queue semantics from pub/sub semantics.',
       ],
       interactive: {
+        coldOpen:
+          'You add workers to drain the queue faster, and orders start shipping before they are paid for. Ten workers process in no shared order, so "ship" finishes before "create" and the database is written backwards. But you cannot give up parallelism. How do you get speed AND keep each order\'s events in sequence?',
         mental:
           'Partitions are supermarket checkout lanes with a rule: your whole family must use the same lane, in arrival order. Different families in parallel, each family sequential. Pub/sub is the store loudspeaker: one announcement, every department hears it.',
         diagram: {
@@ -1080,10 +1419,39 @@ export const queuesSubject: Subject = {
             why: 'A queue would give each message to exactly one of the three. A topic broadcasts to all groups independently. The API-call option is the inline coupling queues exist to remove.',
           },
         ],
+        build: {
+          simple: 'Add workers to go faster.',
+          actually:
+            'Total order across everything kills parallelism, but you usually only need order within an entity. Partition the queue into N lanes by hash(entityId) % N: same key always lands in the same lane, one consumer drains each lane sequentially. Per-key order plus N-way parallelism. Pub/sub topics broadcast one event to many subscriber groups.',
+          breaks:
+            'A hot key (one whale tenant) saturates its single lane while others idle, because partitioning balances only as well as the keys do. And resizing partition count reshuffles keys, which is why counts are chosen generously upfront.',
+        },
+        doThisNow: [
+          {
+            task: 'Prove deterministic routing: hash the same key twice and a different key once across 4 partitions. Confirm same key, same lane.',
+            command: 'node -e \'const p=(k,n)=>{let h=0;for(const c of k)h=(h*31+c.charCodeAt(0))|0;return Math.abs(h)%n}; console.log(p("user-42",4),p("user-42",4),p("user-7",4))\'',
+            reveal:
+              'Something like 0, 0, 3: user-42 always lands in the same lane (its events stay ordered), user-7 lands elsewhere and runs in parallel. The math itself is the ordering guarantee.',
+          },
+          {
+            task: 'Pick the shape: email, analytics, and inventory all need the order-placed event. Queue or topic, and why?',
+            reveal:
+              'A topic with three subscriber groups. A queue gives each message to exactly one consumer; a topic broadcasts to all groups independently, each at its own pace. Queues distribute work; topics broadcast facts.',
+          },
+        ],
+        warStory:
+          'A payments team scaled to 12 workers and started seeing refunds processed before the original charge. Same-entity events were spread across workers and ran out of order. Partitioning by account id (same account, same lane) fixed it without giving up the throughput of the other 11 workers.',
         tweak: {
           instruction: 'Run partitionFor("user-42", 8) in your head: does changing N change the lane?',
           reveal:
             'Yes, the modulo changes, so resizing partition counts reshuffles keys. This is why partition counts are chosen generously upfront, and why consistent hashing exists for systems that resize often.',
+        },
+        receipt: {
+          explain: [
+            'How partitioning by key gives per-entity order with parallelism.',
+            'When to use a topic (broadcast) instead of a queue (distribute).',
+          ],
+          question: 'Async work is solid. How do you prove code works before it ever reaches production?',
         },
         writeDrillId: 'msg-partition',
         recap: [
@@ -1138,6 +1506,8 @@ export const testingSubject: Subject = {
         'Connect testability to pure functions.',
       ],
       interactive: {
+        coldOpen:
+          'You refactor a payment function on a Friday. Without tests, you "think" it still works and push it, then spend the weekend on a customer-reported bug. With 2,000 tests passing, you know every behavior they describe still holds. Tests are not about proving you are smart now; they are a gift to the you of six months from now. Where should they concentrate?',
         mental:
           'A test suite is a smoke detector wired through the whole house: silent while things are fine, loud the moment something starts burning, and valuable precisely because it is always on.',
         diagram: {
@@ -1178,9 +1548,39 @@ export const testingSubject: Subject = {
             why: 'An e2e test crosses every network hop and timing window, so it fails for reasons besides bugs. A few on critical paths buy realism; hundreds buy a red suite nobody trusts.',
           },
         ],
+        build: {
+          simple: 'Tests check that your code works.',
+          actually:
+            'A test runs code with known input and complains on wrong output, certifying exactly the behaviors it describes. The pyramid: many fast, precise unit tests at the base; some integration tests (a handler against a real test DB); few end-to-end tests on critical paths. CI runs all of it on every change.',
+          breaks:
+            'Top-heavy suites are slow and flaky: e2e tests cross every network hop and timing window, so they fail for reasons besides bugs. A hundred e2e tests buy a red suite nobody trusts; a handful on critical paths buy realism.',
+        },
+        doThisNow: [
+          {
+            task: 'Classify three tests by layer: slugify("Hello World"), GET /users against a test database, a Playwright signup flow.',
+            reveal:
+              'Unit, integration, e2e, in that order. The isolation level decides the layer, never the tool. Most of your tests should be the first kind: fast and precise.',
+          },
+          {
+            task: 'Run a trivial assertion to feel the loop: assert that 2 + 2 is 4, and see what a failing one looks like.',
+            command: 'node -e \'const a=require("assert"); a.equal(2+2,4); console.log("pass"); a.equal(2+2,5)\'',
+            reveal:
+              'It prints "pass", then throws AssertionError: 4 == 5 on the bad line. A test is exactly this: known input, assert the output, get loud on mismatch.',
+          },
+        ],
+        warStory:
+          'A team with no tests refactored their tax calculation and shipped it confidently. It was subtly wrong for one country, and they found out from an angry customer three weeks later. A single unit test on the tax function would have caught it in milliseconds, before the commit ever landed.',
         tweak: {
           instruction: 'Classify these: a test of slugify("Hello World"), a test of GET /users against a test DB, a Playwright signup flow.',
           reveal: 'Unit, integration, e2e, in that order: isolation level decides the layer, never the tool used.',
+        },
+        receipt: {
+          explain: [
+            'What a passing suite does and does not certify.',
+            'Why the test pyramid is wide at the bottom.',
+          ],
+          command: 'node -e \'require("assert").equal(2+2,4)\'',
+          question: 'You know tests matter. What are the three parts every single test is built from?',
         },
         recap: [
           'A test runs code with known input and complains on wrong output.',
@@ -1225,6 +1625,8 @@ export const testingSubject: Subject = {
         'Name tests after behaviors.',
       ],
       interactive: {
+        coldOpen:
+          'Here is a test that passes forever and protects nothing: it calls the function and never checks the result. Green, toothless, and worse than no test because it radiates false confidence. Every real test has exactly three parts, and skipping the third is how this happens. What are they?',
         mental:
           'A test is a lab experiment with a written hypothesis: prepare the sample (arrange), run the procedure (act), compare against the prediction (assert), and a mismatch means the experiment screams.',
         diagram: {
@@ -1264,10 +1666,40 @@ export const testingSubject: Subject = {
             why: 'Failure messages are read during incidents and late-night debugging. Carrying the actual and expected values saves the first ten minutes of every investigation.',
           },
         ],
+        build: {
+          simple: 'A test sets up data, runs code, and checks the result.',
+          actually:
+            'Arrange (build inputs and state), Act (call the code under test once), Assert (compare actual to expected). The assertion is a conditional throw, and the throw is what makes the test able to go red. Failure messages must carry both values.',
+          breaks:
+            'A test with no assertion passes forever and protects nothing. And "test failed" with no values forces you to add print statements; "expected 5, got 4" starts the debugging with both numbers in hand.',
+        },
+        doThisNow: [
+          {
+            task: 'Run a tiny arrange-act-assert by hand: define add, assert add(2,2) is 4, then watch a wrong expectation fail with both values.',
+            command: 'node -e \'const eq=(a,e)=>{if(a!==e)throw new Error(`expected ${e}, got ${a}`);console.log("ok")}; const add=(a,b)=>a+b; eq(add(2,2),4); try{eq(add(2,2),5)}catch(e){console.log("FAIL:",e.message)}\'',
+            reveal:
+              '"ok" then "FAIL: expected 5, got 4". Passing is silent; failing names both values. Every test framework is this pattern with reporting wrapped around it.',
+          },
+          {
+            task: 'Design a behavior by writing its assertion first: what should assertEqual(slugify("Hello World"), ?) expect?',
+            reveal:
+              '"hello-world" (or whatever your contract says). Writing the expected value first is the test designing the behavior: the core idea behind test-driven development.',
+          },
+        ],
+        warStory:
+          'A reviewer found a test file full of green tests that called functions but never asserted anything; someone had deleted the assertions to "make the build pass" during a crunch. The suite was 100% green and 0% protective. A bug shipped through it the same week. An assertion-free test is a lie that compiles.',
         tweak: {
           instruction: 'Write the assertion for a slugify function: assertEqual(slugify("Hello World"), ?).',
           reveal:
             '"hello-world", or whatever your contract says. Writing the expected value first is the test designing the behavior, which is the entire idea behind test-driven development.',
+        },
+        receipt: {
+          explain: [
+            'The arrange-act-assert structure of every test.',
+            'Why an assertion-free test is worse than no test.',
+          ],
+          command: 'node -e \'require("assert").equal(slugify?.("a"),"a")\'',
+          question: 'Your second test looks just like your first with different numbers. How do you cover many cases without copy-paste?',
         },
         writeDrillId: 'test-assert-same',
         recap: [
@@ -1313,6 +1745,8 @@ export const testingSubject: Subject = {
         'Identify failing rows by their inputs.',
       ],
       interactive: {
+        coldOpen:
+          'Most test suites are five copies of the same happy-path test with different numbers, proving the same thing five times while the real bugs hide at the edges: the empty cart, the 100% discount, the value one past the maximum. There is a shape that makes adding an edge case cost one line, so coverage actually happens. What is it?',
         mental:
           'A table-driven test is a gauntlet: the function walks a corridor of challengers one by one, and the report names exactly which challenger landed the hit.',
         diagram: {
@@ -1352,9 +1786,39 @@ export const testingSubject: Subject = {
             why: 'A regression row makes the specific bug unrepeatable. Suites grow rows the way codebases grow scars, and that is healthy.',
           },
         ],
+        build: {
+          simple: 'Test many inputs with a list and a loop.',
+          actually:
+            'A table of cases (inputs plus expected output) and one loop running each through identical arrange-act-assert. Adding coverage becomes adding a row. Choose rows at the boundaries (zero, negative, empty, maximum, one-past) where bugs cluster, and put the inputs in the failure message so a failing row names itself.',
+          breaks:
+            'A table of five happy-path rows is five copies of one test. The skill is the rows, not the loop. And a failure that says only "row 7 failed" without the inputs sends you back to adding print statements.',
+        },
+        doThisNow: [
+          {
+            task: 'Run a table-driven test: loop over cases for add, including a boundary, and print pass/fail per row with inputs named.',
+            command: 'node -e \'const add=(a,b)=>a+b; for(const [a,b,w] of [[2,2,4],[0,5,5],[-1,1,0]]){const g=add(a,b); console.log(g===w?`pass add(${a},${b})`:`FAIL add(${a},${b}) gave ${g}`)}\'',
+            reveal:
+              'Three passes, each naming its inputs. A fourth behavior costs exactly one more row. That low marginal cost is why table-driven coverage actually happens.',
+          },
+          {
+            task: 'Pick the row most likely to catch a bug in a discount calculator: a normal $50 cart, or a $0 cart plus a 100% discount plus a discount larger than the total?',
+            reveal:
+              'The boundary set. Empty, zero, maximum, and past-maximum are where logic bends. Another normal cart just re-proves the first one. Rows belong at the edges.',
+          },
+        ],
+        warStory:
+          'A money function shipped with add(0.1, 0.2) returning 0.30000000000000004, a classic floating-point bug. After fixing it, the team added that exact case as a permanent table row. It never regressed again. Production bugs become rows the way codebases grow scars: each one makes a specific failure unrepeatable.',
         tweak: {
           instruction: 'Add the row [-5, -5, -10] and predict the output line.',
           reveal: 'pass: add(-5, -5). One row, one new pinned behavior. The marginal cost of coverage is what the table optimizes.',
+        },
+        receipt: {
+          explain: [
+            'How a case table plus one loop removes copy-paste.',
+            'Why rows belong at boundaries and why bugs become permanent rows.',
+          ],
+          command: 'node -e \'for(const c of [[2,2,4]]){/* assert */}\'',
+          question: 'Tests so far check success. How do you test that code fails correctly when it should?',
         },
         writeDrillId: 'test-run-cases',
         recap: [
@@ -1400,6 +1864,8 @@ export const testingSubject: Subject = {
         'Cover at least one failure row per table.',
       ],
       interactive: {
+        coldOpen:
+          'A validation suite is green on every valid input. It has never once been fed an invalid one. Then a malformed payload sails straight through to the database, because "rejects bad input" was a behavior nobody tested. The error path runs during outages and attacks, exactly when you need it correct. How do you test that code fails the right way?',
         mental:
           'Testing failure paths is the fire drill: you trigger the alarm on purpose, in daylight, to make sure it rings, because the alternative is discovering a dead alarm during the fire.',
         diagram: {
@@ -1439,10 +1905,40 @@ export const testingSubject: Subject = {
             why: 'Any-throw tests certify only that something exploded. Pinning the type or message certifies the behavior you actually designed.',
           },
         ],
+        build: {
+          simple: 'Test that bad input produces an error.',
+          actually:
+            'Error behaviors are contracts, tested like return values. For thrown errors, invert the assertion: the test fails if nothing throws AND fails if the wrong error throws. For returned errors ({ok:false} or a 400), feed invalid input and assert the error shape and status. Pin the specific type or message.',
+          breaks:
+            'A suite that only ever feeds valid input never exercises the rejection path, so missing validation ships silently. And "accept any throw" certifies nothing: an unrelated TypeError from a typo would pass as "validation works".',
+        },
+        doThisNow: [
+          {
+            task: 'Write an inverted assertion: confirm withdraw(50, 100) throws "insufficient funds", and watch it fail the right way if it does not.',
+            command: 'node -e \'const w=(b,a)=>{if(a>b)throw new Error("insufficient funds");return b-a}; try{w(50,100);console.log("FAIL: no throw")}catch(e){console.log(e.message==="insufficient funds"?"ok: threw":"FAIL: wrong error")}\'',
+            reveal:
+              '"ok: threw". Now imagine deleting the validation line: w(50,100) returns -50, no throw, and the test prints "FAIL: no throw". That is the regression the inverted assertion guards.',
+          },
+          {
+            task: 'Explain why asserting the message beats accepting any throw. What bug would "any throw passes" hide?',
+            reveal:
+              'A crash from an unrelated bug (a typo causing a TypeError) would pass as "validation works". Pinning the message certifies the behavior you designed, not just that something exploded.',
+          },
+        ],
+        warStory:
+          'A handler\'s tests covered every valid request and passed for a year. A refactor accidentally removed the input validation, but no test fed it invalid input, so the suite stayed green. A malformed request later wrote garbage to the database. One inverted test (invalid input must 400) would have caught it instantly.',
         tweak: {
           instruction: 'Call expectThrows(() => withdraw(100, 50), "insufficient funds") and predict the output.',
           reveal:
             'FAIL: expected a throw, got none. A valid withdrawal should not throw, and the test correctly reports that no error happened. Negative tests need positive controls too.',
+        },
+        receipt: {
+          explain: [
+            'How to invert an assertion so no-throw is the failure.',
+            'Why pinning the error type beats accepting any throw.',
+          ],
+          command: 'node -e \'try{badInput()}catch(e){/* assert e */}\'',
+          question: 'Your code calls a payment API. How do you test it without charging a real card every run?',
         },
         writeDrillId: 'test-expect-throws',
         recap: [
@@ -1488,6 +1984,8 @@ export const testingSubject: Subject = {
         'Assert call arguments with a spy.',
       ],
       interactive: {
+        coldOpen:
+          'Your function charges real cards through Stripe. You cannot charge a real card on every test run, and you absolutely cannot skip testing the payment code. So you hand it a fake Stripe that you control, and ask it afterward: did you charge exactly once, for the right amount? What makes a function acceptable a fake in the first place?',
         mental:
           'A stub is a stunt double who performs the scripted line on cue; a spy is the same double wearing a wire, so afterward you can verify exactly what your hero said to them.',
         diagram: {
@@ -1527,10 +2025,40 @@ export const testingSubject: Subject = {
             why: 'Stubs script the world. One test scripts success, another scripts decline, and together they cover both branches without a network in sight.',
           },
         ],
+        build: {
+          simple: 'Replace real dependencies with fakes in tests.',
+          actually:
+            'A stub returns canned values to steer a branch (charge always succeeds, or always declines). A spy also records every call (arguments, count, order) so you can assert the conversation: charged once, right amount. Both require a seam: the dependency arrives as a parameter, not a hardcoded import. That is dependency injection.',
+          breaks:
+            'A function that imports Stripe and calls it from its guts cannot be handed a fake; no seam, no double. And over-mocking (stubbing things you own) produces suites that stay green while the real wiring is broken. Stub what you do not own; keep your own logic real.',
+        },
+        doThisNow: [
+          {
+            task: 'Build a fake that is stub and spy at once: it returns "ok" and records its calls. Charge through it and inspect the transcript.',
+            command: 'node -e \'const calls=[]; const api={charge:(...a)=>{calls.push(a);return "ok"}}; const charge=(api,u,amt)=>api.charge(u,amt); console.log(charge(api,42,999)); console.log(calls)\'',
+            reveal:
+              '"ok" then [[42,999]]. No network, no Stripe, no real money. The stub steered the success path; the spy proved the charge carried the right arguments. If calls.length were 2, you would have caught a double-charge for free.',
+          },
+          {
+            task: 'Script the decline branch: what should the stub\'s charge return to test how your code handles a declined payment?',
+            reveal:
+              "Return 'declined' (whatever the real API returns), steering the code down the decline branch. One test scripts success, another scripts decline, covering both with no network in sight.",
+          },
+        ],
+        warStory:
+          'A team tested their checkout against the real Stripe sandbox. CI broke every time Stripe had a hiccup, and a flaky test culture set in where red builds got ignored. Switching to a stubbed payment API made the tests fast, deterministic, and trustworthy, and a real double-charge bug surfaced the next week via a spy\'s call count.',
         tweak: {
           instruction: 'Write the fakeApi for testing a timeout: charge throws. What does chargeUser need to make that branch survivable?',
           reveal:
             'charge: () => { throw new Error("timeout") }, and chargeUser needs try/catch handling, which the previous module taught you to assert. The doubles module and the failure module compose.',
+        },
+        receipt: {
+          explain: [
+            'What stubs control vs what spies verify.',
+            'Why the injected seam enables doubles, and the boundary rule for what to fake.',
+          ],
+          command: 'node -e \'const api={charge:(...a)=>"ok"}; /* inject + assert */\'',
+          question: 'Your test passes on Monday and fails on Friday with no code change. What makes a test flaky?',
         },
         drills: ['test-stub-returns', 'test-spy'],
         recap: [
@@ -1576,6 +2104,8 @@ export const testingSubject: Subject = {
         'Explain the quarantine-or-fix policy.',
       ],
       interactive: {
+        coldOpen:
+          'A suite of 1,000 tests, each 99.9% reliable, passes a full run only about 37% of the time (0.999^1000 ≈ 0.37). Tiny per-test flakiness compounds into a suite that fails most runs for no reason. Once it cries wolf, "just re-run it" sets in and the safety net dies. Where does the randomness sneak in, and how do you seal it out?',
         mental:
           'A deterministic test is a chemistry experiment in a sealed lab: same reagents, same temperature, same result, every run. A flaky test left a window open, and the weather participates in the experiment.',
         diagram: {
@@ -1615,10 +2145,40 @@ export const testingSubject: Subject = {
             why: '0.999 to the 1000th power is roughly 0.37. Tiny per-test flake compounds into a suite that fails most runs, which is why flakes are bugs with failure-level priority.',
           },
         ],
+        build: {
+          simple: 'Make tests give the same result every run.',
+          actually:
+            'Flakes come from things the test does not control: real time, randomness, shared state, sleeps racing slow CI, and real network calls. Fix each with a seam: inject a clock the test can advance, seed randomness, give every test a fresh fixture, wait on conditions instead of sleeping. A flake is a bug with failure-level priority.',
+          breaks:
+            'A token-expiry test using real Date.now() can fail at the day boundary and is unfixable without controlling time. And tolerating even 2% flake on a large suite means phantom red on most runs, which trains the team to ignore failures.',
+        },
+        doThisNow: [
+          {
+            task: 'Time-travel a test with a fake clock: check expiry before and after advancing fake time, in zero real seconds.',
+            command: 'node -e \'const c=(s=>({now:()=>s,tick(ms){s+=ms}}))(0); const exp=(t,ttl)=>c.now()-t>ttl; console.log(exp(0,1000)); c.tick(1500); console.log(exp(0,1000))\'',
+            reveal:
+              'false then true. You crossed the expiry boundary by moving fake time, instantly, on any machine, at any hour. With Date.now() hardcoded this test would need a real sleep and luck.',
+          },
+          {
+            task: 'Boundary-test it: change the tick to exactly the TTL (1000) and predict both lines. Why?',
+            reveal:
+              'false then false: the check is strictly greater-than, and 1000 is not > 1000. You just boundary-tested expiry logic by moving fake time, which is the whole technique in one line.',
+          },
+        ],
+        warStory:
+          'A team\'s suite flaked about 3% per run from real-time and network dependencies. Builds went red constantly, so people re-ran until green, then started force-merging past failures. A genuine bug rode through on a red build everyone had learned to ignore. They froze the clock, stubbed the network, and made flakes a stop-the-line bug; trust came back.',
         tweak: {
           instruction: 'Change tick(1500) to tick(1000) and predict both printed lines.',
           reveal:
             'false then false: the check is strictly greater-than, and 1000 is not greater than 1000. You just boundary-tested expiry logic by moving fake time, which is the whole technique in one line.',
+        },
+        receipt: {
+          explain: [
+            'The five common sources of test flakiness.',
+            'How injecting the clock makes time-dependent tests deterministic.',
+          ],
+          command: 'node -e \'const c={now:()=>0,tick(){}}; /* inject clock */\'',
+          question: 'You can test thoroughly. Which language and runtime will you go deep on to write the code under test?',
         },
         writeDrillId: 'test-fake-clock',
         recap: [
