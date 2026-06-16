@@ -2048,9 +2048,9 @@ const RICH: Record<string, Rich> = {
         caption: 'Request line, headers, blank line, then optional body.',
         layout: 'stack',
         nodes: [
-          { id: 'line', label: 'Request line', sub: 'GET /users/42', accent: 'primary' },
-          { id: 'headers', label: 'Headers', sub: 'Host, Auth, Accept', accent: 'edge' },
-          { id: 'body', label: 'Body', sub: 'POST/PUT data', accent: 'compute' },
+          { id: 'line', label: 'Request line', sub: 'GET /users/42', accent: 'primary', glyph: 'route' },
+          { id: 'headers', label: 'Headers', sub: 'Host, Auth, Accept', accent: 'edge', glyph: 'list' },
+          { id: 'body', label: 'Body', sub: 'POST/PUT data', accent: 'compute', glyph: 'braces' },
         ],
       },
     ],
@@ -4213,8 +4213,8 @@ const RICH: Record<string, Rich> = {
         nodes: [
           { id: 'spec', label: 'Specify', sub: 'task, format, length', accent: 'edge' },
           { id: 'ex', label: 'Examples', sub: 'few-shot', accent: 'compute' },
-          { id: 'role', label: 'Role + why', accent: 'primary' },
-          { id: 'reason', label: 'Reason first', sub: 'hard tasks', accent: 'success' },
+          { id: 'role', label: 'Role + why', accent: 'primary', glyph: 'person' },
+          { id: 'reason', label: 'Reason first', sub: 'hard tasks', accent: 'success', glyph: 'sparkle' },
         ],
       },
     ],
@@ -4293,8 +4293,8 @@ const RICH: Record<string, Rich> = {
         caption: 'Training happens once; inference happens on every request.',
         layout: 'row',
         nodes: [
-          { id: 'train', label: 'Training', sub: 'once, offline', accent: 'storage' },
-          { id: 'w', label: 'Frozen weights', accent: 'primary' },
+          { id: 'train', label: 'Training', sub: 'once, offline', accent: 'storage', glyph: 'loop' },
+          { id: 'w', label: 'Frozen weights', accent: 'primary', glyph: 'brain' },
           { id: 'inf', label: 'Inference', sub: 'every call', accent: 'compute' },
         ],
         edges: [
@@ -4322,9 +4322,9 @@ const RICH: Record<string, Rich> = {
         caption: 'Reach for the lighter tools first; fine-tune when they plateau.',
         layout: 'row',
         nodes: [
-          { id: 'prompt', label: 'Prompting', sub: 'cheapest', accent: 'success' },
-          { id: 'rag', label: 'RAG', sub: 'your data', accent: 'compute' },
-          { id: 'ft', label: 'Fine-tuning', sub: 'new weights', accent: 'storage' },
+          { id: 'prompt', label: 'Prompting', sub: 'cheapest', accent: 'success', glyph: 'bubble' },
+          { id: 'rag', label: 'RAG', sub: 'your data', accent: 'compute', glyph: 'funnel' },
+          { id: 'ft', label: 'Fine-tuning', sub: 'new weights', accent: 'storage', glyph: 'brain' },
         ],
       },
     ],
@@ -4376,7 +4376,7 @@ const RICH: Record<string, Rich> = {
         nodes: [
           { id: 'd1', label: 'Doc chunks', accent: 'storage' },
           { id: 'q', label: 'Query vector', accent: 'edge' },
-          { id: 'db', label: 'Vector DB', sub: 'nearest-neighbor index', accent: 'primary' },
+          { id: 'db', label: 'Vector DB', sub: 'nearest-neighbor index', accent: 'primary', glyph: 'database' },
         ],
         edges: [
           { from: 'd1', to: 'db', label: 'store vectors' },
@@ -4579,7 +4579,7 @@ const RICH: Record<string, Rich> = {
         caption: 'Stable prefix is cached; only the volatile suffix is full price.',
         layout: 'row',
         nodes: [
-          { id: 'prefix', label: 'Stable prefix', sub: 'cached ~0.1x', accent: 'cache' },
+          { id: 'prefix', label: 'Stable prefix', sub: 'cached ~0.1x', accent: 'cache', glyph: 'cache' },
           { id: 'bp', label: 'breakpoint', accent: 'edge' },
           { id: 'suffix', label: 'The question', sub: 'changes each call', accent: 'client' },
         ],

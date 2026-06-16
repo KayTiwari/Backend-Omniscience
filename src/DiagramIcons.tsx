@@ -1,64 +1,12 @@
 import type { ReactNode } from 'react'
 import type { DiagramAccent } from './Diagram'
+import { resolveGlyph, type GlyphKind } from './glyphResolver'
 
 // Small conceptual line-art glyphs drawn in a 22x22 box so diagram nodes read as
 // illustrations instead of plain labeled rectangles. These are generic icons
 // (a cylinder for a database, a drum for object storage, a bolt for a cache),
-// not vendor logos. Each glyph is stroked in the node's accent color.
-
-export type GlyphKind =
-  | 'database'
-  | 'bucket'
-  | 'cache'
-  | 'queue'
-  | 'chip'
-  | 'lambda'
-  | 'cloud'
-  | 'globe'
-  | 'shield'
-  | 'gauge'
-  | 'balancer'
-  | 'person'
-  | 'check'
-  | 'warning'
-  | 'doc'
-  | 'box'
-
-const KEYWORDS: [RegExp, GlyphKind][] = [
-  [/lambda|serverless|\bfunction\b|\bfn\b/, 'lambda'],
-  [/\bs3\b|bucket|object stor|blob/, 'bucket'],
-  [/cloudfront|\bcdn\b/, 'cloud'],
-  [/route ?53|\bdns\b|\bregion\b|internet|geo/, 'globe'],
-  [/\biam\b|auth|\brole\b|secret|\bkms\b|security|login|token|cognito|permission/, 'shield'],
-  [/cloudwatch|monitor|metric|observ|\bgauge\b|dashboard/, 'gauge'],
-  [/cloudtrail|audit|\blog\b|trail/, 'doc'],
-  [/load ?balancer|\belb\b|\balb\b|distribute/, 'balancer'],
-  [/cache|redis|elasticache|memcach/, 'cache'],
-  [/queue|\bsqs\b|\bsns\b|topic|kafka|message|stream|fan-?out/, 'queue'],
-  [/\brds\b|aurora|database|postgres|mysql|\bsql\b|\bdb\b|dynamo|replica|primary|standby|writer|reader|storage volume/, 'database'],
-  [/\bec2\b|compute|server|instance|container|\becs\b|\beks\b|fargate|worker|\bvm\b|\bcpu\b|\bpod\b|node|task|your code|app\b/, 'chip'],
-  [/template|config|cloudformation|\bstack\b|document|\bfile\b|\bdoc\b/, 'doc'],
-  [/user|client|browser|customer|person|caller|shopper|buyer/, 'person'],
-]
-
-const ACCENT_FALLBACK: Partial<Record<DiagramAccent, GlyphKind>> = {
-  primary: 'database',
-  replica: 'database',
-  cache: 'cache',
-  queue: 'queue',
-  storage: 'bucket',
-  edge: 'cloud',
-  compute: 'chip',
-  client: 'person',
-  success: 'check',
-  danger: 'warning',
-}
-
-function glyphKind(label: string, accent: DiagramAccent = 'default'): GlyphKind {
-  const text = label.toLowerCase()
-  for (const [re, kind] of KEYWORDS) if (re.test(text)) return kind
-  return ACCENT_FALLBACK[accent] ?? 'box'
-}
+// not vendor logos. Each glyph is stroked in the node's accent color. The logic
+// that picks which glyph (or none) lives in ./glyphResolver.
 
 // Each glyph is drawn within roughly 0..22 on both axes; the caller positions it.
 const GLYPHS: Record<GlyphKind, ReactNode> = {
@@ -142,20 +90,90 @@ const GLYPHS: Record<GlyphKind, ReactNode> = {
     </>
   ),
   box: <rect x="4" y="4" width="14" height="14" rx="2" />,
+  // METHOD path: an arrow advancing along a line.
+  route: (
+    <>
+      <path d="M3 11 H16" />
+      <path d="M12 7 L16 11 L12 15" />
+      <circle cx="3" cy="11" r="1.4" fill="currentColor" stroke="none" />
+    </>
+  ),
+  // Header lines: bulleted key rows.
+  list: (
+    <>
+      <circle cx="3" cy="6" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="3" cy="11" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="3" cy="16" r="1.1" fill="currentColor" stroke="none" />
+      <path d="M7 6 H19 M7 11 H19 M7 16 H14" />
+    </>
+  ),
+  // Body / JSON payload: a pair of braces.
+  braces: (
+    <path d="M9 3 C6.5 3 7.5 9 4.5 11 C7.5 13 6.5 19 9 19 M13 3 C15.5 3 14.5 9 17.5 11 C14.5 13 15.5 19 13 19" />
+  ),
+  // Model: a tiny neural network, inputs converging on an output.
+  brain: (
+    <>
+      <circle cx="4" cy="5" r="1.7" />
+      <circle cx="4" cy="11" r="1.7" />
+      <circle cx="4" cy="17" r="1.7" />
+      <circle cx="17" cy="11" r="2.1" />
+      <path d="M5.7 5 L15 10.3 M5.7 11 H14.9 M5.7 17 L15 11.7" />
+    </>
+  ),
+  // Embedding: a vector arrow in a coordinate frame.
+  vector: (
+    <>
+      <path d="M3 19 V3 M3 19 H19" />
+      <path d="M3 19 L15 8" />
+      <path d="M15 8 L10.3 8.4 M15 8 L14.6 12.7" />
+    </>
+  ),
+  // AI / generate: a four-point sparkle.
+  sparkle: <path d="M11 2 L12.7 9.3 L20 11 L12.7 12.7 L11 20 L9.3 12.7 L2 11 L9.3 9.3 Z" />,
+  // Loop / repeat: a circular arrow.
+  loop: (
+    <>
+      <path d="M18 11 a7 7 0 1 1 -2.2 -5" />
+      <path d="M15.2 2.6 L16.2 6.2 L12.6 6.6" />
+    </>
+  ),
+  // Token: a price-tag.
+  tag: (
+    <>
+      <path d="M11 3 H4 V10 L13 19 L20 12 Z" />
+      <circle cx="7.4" cy="6.4" r="1.3" fill="currentColor" stroke="none" />
+    </>
+  ),
+  // Prompt / message: a speech bubble.
+  bubble: <path d="M4 5 H18 V15 H10 L6 19 V15 H4 Z" />,
+  // Retrieve / filter / rank: a funnel.
+  funnel: <path d="M3 4 H19 L13 11 V18 L9 16 V11 Z" />,
+  // Temperature: a thermometer.
+  thermometer: (
+    <>
+      <path d="M9 4 a2 2 0 0 1 4 0 V13.2 a3.6 3.6 0 1 1 -4 0 Z" />
+      <circle cx="11" cy="16.5" r="1.7" fill="currentColor" stroke="none" />
+    </>
+  ),
 }
 
 // Returns an SVG <g> of the chosen glyph, stroked in `color`, ready to be
-// translated into position by the diagram node renderer.
+// translated into position by the diagram node renderer. Renders nothing when no
+// glyph is appropriate for the node.
 export function DiagramGlyph({
   label,
   accent = 'default',
+  glyph,
   color,
 }: {
   label: string
   accent?: DiagramAccent
+  glyph?: GlyphKind | 'none'
   color: string
 }) {
-  const kind = glyphKind(label, accent)
+  const kind = resolveGlyph(label, accent, glyph)
+  if (!kind) return null
   return (
     <g
       color={color}

@@ -5,6 +5,7 @@
 // illustrations, not bare rectangles. No dependencies.
 
 import { DiagramGlyph } from './DiagramIcons'
+import { resolveGlyph, type GlyphKind } from './glyphResolver'
 
 export type DiagramAccent =
   | 'default'
@@ -24,6 +25,9 @@ export type DiagramNode = {
   label: string
   sub?: string
   accent?: DiagramAccent
+  // Override the auto-picked icon. Use a specific GlyphKind to force one, or
+  // 'none' to suppress it. Left unset, the icon is inferred from the label.
+  glyph?: GlyphKind | 'none'
 }
 
 export type DiagramEdge = {
@@ -148,14 +152,18 @@ const TEXT_X = 46
 
 function NodeBox({ n }: { n: Placed }) {
   const a = ACCENTS[n.accent ?? 'default']
+  const hasGlyph = resolveGlyph(n.label, n.accent, n.glyph) !== null
+  const textX = hasGlyph ? TEXT_X : ICON_X
   return (
     <g transform={`translate(${n.x} ${n.y})`}>
       <rect width={BOX_W} height={BOX_H} rx="10" fill={a.fill} stroke={a.stroke} strokeWidth="1.5" />
-      <g transform={`translate(${ICON_X} ${BOX_H / 2 - 11})`}>
-        <DiagramGlyph label={n.label} accent={n.accent} color={a.stroke} />
-      </g>
+      {hasGlyph && (
+        <g transform={`translate(${ICON_X} ${BOX_H / 2 - 11})`}>
+          <DiagramGlyph label={n.label} accent={n.accent} glyph={n.glyph} color={a.stroke} />
+        </g>
+      )}
       <text
-        x={TEXT_X}
+        x={textX}
         y={n.sub ? BOX_H / 2 - 5 : BOX_H / 2 + 1}
         textAnchor="start"
         dominantBaseline="middle"
@@ -165,7 +173,7 @@ function NodeBox({ n }: { n: Placed }) {
         {n.label}
       </text>
       {n.sub && (
-        <text x={TEXT_X} y={BOX_H / 2 + 11} textAnchor="start" dominantBaseline="middle" className="diagram-node-sub">
+        <text x={textX} y={BOX_H / 2 + 11} textAnchor="start" dominantBaseline="middle" className="diagram-node-sub">
           {n.sub}
         </text>
       )}
