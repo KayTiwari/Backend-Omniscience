@@ -180,7 +180,7 @@ const coreSubjects: Subject[] = [
     title: 'Internet & HTTP',
     subtitle: 'DNS, TCP, HTTP, requests, status codes, and the web stack.',
     icon: HttpIcon,
-    color: '#e84a5f',
+    color: '#4263eb',
     problems: [
       {
         id: 'internet-request-life',

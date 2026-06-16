@@ -663,21 +663,24 @@ h1 {
   text-overflow: ellipsis;
 }
 
-/* Long titles scroll to reveal themselves on hover instead of just ending in
-   an ellipsis. */
-.subject-button:hover strong {
+/* Long titles + lesson names scroll to reveal themselves on hover instead of
+   ending in an ellipsis. Linear timing + long duration = a steady, even crawl
+   (not the accelerating jerk of an eased animation), with a pause at each end. */
+.subject-button:hover strong,
+.problem-link:hover span {
   text-overflow: clip;
-  animation: subject-title-scroll 5s ease-in-out 0.35s infinite;
+  animation: sidebar-title-scroll 11s linear 0.5s infinite;
 }
 
-@keyframes subject-title-scroll {
-  0%, 10% { text-indent: 0; }
-  48%, 58% { text-indent: -60%; }
-  96%, 100% { text-indent: 0; }
+@keyframes sidebar-title-scroll {
+  0%, 9% { text-indent: 0; }
+  50%, 59% { text-indent: -55%; }
+  100% { text-indent: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .subject-button:hover strong {
+  .subject-button:hover strong,
+  .problem-link:hover span {
     animation: none;
     text-overflow: ellipsis;
   }
