@@ -825,6 +825,119 @@ export const glossaryTerms: GlossaryTerm[] = [
       'A managed workflow engine: it coordinates multiple Lambdas and services as a state machine with retries, branching, and error handling, replacing brittle glue code for multi-step processes.',
     synonyms: ['Step Functions'],
   },
+  {
+    term: 'LLM',
+    definition:
+      'Large Language Model: a model that, given text, predicts the next token. Chat, code, and agents are all that one prediction run in a loop. It generates plausible text; it does not look up facts.',
+    synonyms: ['large language model'],
+  },
+  {
+    term: 'token',
+    definition:
+      'The unit an LLM reads and writes: a chunk of text, roughly 3-4 characters of English (~750 words per 1,000 tokens). Cost, context limits, and rate limits are all measured in tokens.',
+    synonyms: ['tokens', 'tokenization'],
+  },
+  {
+    term: 'context window',
+    definition:
+      'The maximum number of tokens a model can consider at once. The system prompt, conversation history, retrieved documents, the question, and the generated reply must all fit inside it.',
+    synonyms: ['context length'],
+  },
+  {
+    term: 'prompt',
+    definition:
+      'The text you send an LLM: the instructions plus the conversation. It is the only lever you have at inference time, so shaping it is how you steer the model.',
+    synonyms: ['prompting'],
+  },
+  {
+    term: 'system prompt',
+    definition:
+      'A top-level instruction that sets persistent behavior and rules for an LLM (its role, format, and constraints), separate from the user turns it applies to.',
+    synonyms: ['system message'],
+  },
+  {
+    term: 'prompt engineering',
+    definition:
+      'Giving a next-token predictor enough context and constraint that the most probable continuation is the answer you want: specificity, examples, role, and structure.',
+  },
+  {
+    term: 'hallucination',
+    definition:
+      'When an LLM states a plausible-sounding but false fact, citation, or API. It is the same next-token mechanism as a correct answer, unguarded by grounding or verification.',
+    synonyms: ['confabulation'],
+  },
+  {
+    term: 'temperature',
+    definition:
+      'A sampling control for how random an LLM\'s next-token choice is: low is focused and repetitive, high is varied and creative. Some newer models manage sampling for you instead of exposing it.',
+  },
+  {
+    term: 'inference',
+    definition:
+      'Running a trained model to get an output: text in, prediction out. Every API call is inference. It is distinct from training, which happened once and is frozen into the weights.',
+  },
+  {
+    term: 'fine-tuning',
+    definition:
+      'Continuing a model\'s training on your own examples to specialize its behavior. Heavier than prompting or retrieval; most teams reach for prompts and RAG first.',
+  },
+  {
+    term: 'embedding',
+    definition:
+      'A vector of numbers representing the meaning of text, positioned so similar meanings land near each other. The basis of semantic search and retrieval.',
+    synonyms: ['embeddings', 'vector embedding'],
+  },
+  {
+    term: 'vector database',
+    definition:
+      'A store that holds embeddings and finds the nearest vectors to a query vector quickly, powering semantic search over millions of documents.',
+    synonyms: ['vector store', 'vector index'],
+  },
+  {
+    term: 'semantic search',
+    definition:
+      'Search by meaning instead of keywords: embed the query, find the nearest document vectors. It matches "I forgot my login" to "reset your password" despite no shared words.',
+  },
+  {
+    term: 'RAG',
+    definition:
+      'Retrieval-Augmented Generation: retrieve relevant documents first, then have the LLM answer using only them. The main defense against hallucination and the way to ground answers in your data.',
+    synonyms: ['retrieval-augmented generation'],
+  },
+  {
+    term: 'tool use',
+    definition:
+      'Letting an LLM call functions you define (look up an order, query a DB, send an email). The model requests a tool with arguments; your code executes it and returns the result.',
+    synonyms: ['function calling'],
+  },
+  {
+    term: 'AI agent',
+    definition:
+      'An LLM running tool use in a loop, choosing each step toward a goal. It differs from a workflow by giving control flow to the model. Worth it only for genuinely open-ended tasks.',
+    synonyms: ['agent', 'agentic loop'],
+  },
+  {
+    term: 'prompt injection',
+    definition:
+      'An attack where hidden instructions in untrusted content (a document, a web page, an email) hijack an LLM into ignoring its rules. The SQL injection of LLM apps; defended with least privilege, not prompts alone.',
+  },
+  {
+    term: 'structured output',
+    definition:
+      'Constraining an LLM\'s response to a JSON schema so it is reliably parseable. Turns "usually valid JSON" into "always this shape," which a backend can consume directly.',
+    synonyms: ['JSON mode', 'structured outputs'],
+  },
+  {
+    term: 'prompt caching',
+    definition:
+      'Reusing a stable prompt prefix (system prompt, tools, knowledge) so repeated tokens are served from cache at a fraction of the cost and latency. A strict prefix match: one byte change invalidates it.',
+  },
+  {
+    term: 'eval',
+    definition:
+      'A graded test set for a non-deterministic LLM feature. Since output varies, you score against examples (deterministically or with an LLM judge) instead of asserting exact equality.',
+    synonyms: ['evals', 'LLM eval'],
+  },
 ]
 
 export type GlossaryMatch = {
