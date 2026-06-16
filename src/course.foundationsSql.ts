@@ -81,6 +81,8 @@ The two tables below appear in every module of this course, so read them once no
       'Explain what SQL is.',
     ],
     interactive: {
+      coldOpen:
+        'Your app restarts and every variable in memory vanishes. Yet the user accounts, the orders, the messages are all still there. Where did they live while the process was dead, and what lets thousands of requests read and write them at once without corrupting each other?',
       mental:
         'A database is a warehouse of spreadsheets with a librarian who never sleeps: tables are the sheets, rows the entries, and SQL is how you ask the librarian.',
       diagram: {
@@ -114,9 +116,37 @@ The two tables below appear in every module of this course, so read them once no
           why: 'Order 103 has user_id 1, and user 1 is Kay. Following ids between tables is the heart of relational data.',
         },
       ],
+      build: {
+        simple: 'A database is where the app keeps its data.',
+        actually:
+          'It is a set of typed tables: each table is one kind of thing, each row one record, each column one enforced field. Foreign keys (user_id on orders) link rows across tables, which is what relational means.',
+        breaks:
+          'Get the relationships wrong and the data lies: an order whose user_id points at a deleted user, two tables that disagree on the same fact. Most data-integrity bugs are a missing or broken link between rows.',
+      },
+      doThisNow: [
+        {
+          task: 'Read the two tables above. Trace order 103 to its owner by following user_id into the users table. Who placed it?',
+          reveal:
+            'Order 103 has user_id 1, and user 1 is Kay. Following ids between tables by hand is exactly what a JOIN automates a few modules from now.',
+        },
+        {
+          task: 'Find every order belonging to Kay by scanning the orders table by eye, then name how many.',
+          reveal:
+            'Orders 101 and 103 both have user_id 1, so Kay has two. Two modules from now, WHERE does this scan for you instantly.',
+        },
+      ],
+      warStory:
+        'A startup stored orders in one giant JSON blob per user instead of a table. It worked until they needed "all orders over $100 this week." With no rows and no columns to query, that one report required loading every user and scanning in code. They migrated to real tables the next quarter.',
       tweak: {
         instruction: 'Find every order belonging to Kay by scanning the orders table by eye.',
         reveal: 'Orders 101 and 103 both have user_id 1. Two modules from now, WHERE will do this scan for you.',
+      },
+      receipt: {
+        explain: [
+          'Why a database outlives a process and serves many requests safely.',
+          'Table vs row vs column, and what a foreign key links.',
+        ],
+        question: 'You can read a table by eye. What is the statement that asks the database for exactly the columns you want?',
       },
       recap: [
         'A database keeps data alive, safe, and queryable across restarts.',
@@ -158,6 +188,8 @@ The mental model that makes SQL click: every query takes tables in and produces 
       'Say why explicit columns beat * in code.',
     ],
     interactive: {
+      coldOpen:
+        'One statement runs more than every other database command combined. You will type it thousands of times in your career. And the single most common review comment about it is two characters long: SELECT *. Why do reviewers keep flagging the star?',
       mental:
         'SELECT is a copy machine with column stencils: you choose which columns it copies, and the original is never touched.',
       diagram: {
@@ -193,9 +225,37 @@ The mental model that makes SQL click: every query takes tables in and produces 
           why: 'Tables in, table out. Every clause you learn next just reshapes that result table.',
         },
       ],
+      build: {
+        simple: 'SELECT reads data from a table.',
+        actually:
+          'You list the columns you want, then the table; the result is itself a table with exactly those columns. Tables in, table out, and every clause you learn next just reshapes that flowing result.',
+        breaks:
+          'SELECT * silently changes the result shape the moment anyone adds a column, and it hauls data the client never needed. That is why it is the start of most over-fetching and a standard review flag in handler code.',
+      },
+      doThisNow: [
+        {
+          task: 'In the Run real SQL box above, change the query to SELECT email, name FROM users; and run it. Watch the column order.',
+          reveal:
+            'Columns come back in the order you list them: email first, then name. The SELECT list is the response shape, which is why APIs control it deliberately.',
+        },
+        {
+          task: 'Now run SELECT * FROM users; and compare. Notice every column comes back, including ones a caller may not want.',
+          reveal:
+            'The star returns all columns. Handy for exploring by hand, risky in code: add a password_hash column later and SELECT * leaks it into every response that forgot to filter.',
+        },
+      ],
+      warStory:
+        'An API used SELECT * to build its user response. A migration added an internal flags column, and overnight that column started appearing in the public JSON. Naming columns explicitly would have made the response shape a deliberate choice instead of a side effect.',
       tweak: {
         instruction: 'Change the column list to email, name and predict the column order.',
         reveal: 'Columns come back in the order you list them: email first, then name. The SELECT list is the response shape.',
+      },
+      receipt: {
+        explain: [
+          'The table-in, table-out model behind every query.',
+          'Why explicit columns beat SELECT * in application code.',
+        ],
+        question: 'You can read every row of a column. How do you ask for only the rows that match a condition?',
       },
       recap: [
         'SELECT columns FROM table; is the read statement.',
@@ -238,6 +298,8 @@ WHERE is also the difference between asking for a cup of water and asking for th
       'Filter on a numeric comparison.',
     ],
     interactive: {
+      coldOpen:
+        'A reviewer reads any query and their eyes go to one clause first, before the columns, before the joins. Get it wrong on a read and you haul a million rows. Get it wrong on a write and you can wipe a table in one keystroke. That clause is WHERE.',
       mental:
         'WHERE is a bouncer checking every row at the door: each row is judged alone, and only true gets in.',
       diagram: {
@@ -270,10 +332,38 @@ WHERE is also the difference between asking for a cup of water and asking for th
           why: 'Amounts are 40, 75, 120, 15. Only 75 and 120 exceed 50, which is orders 102 and 103.',
         },
       ],
+      build: {
+        simple: 'WHERE keeps only the rows that match.',
+        actually:
+          'The condition runs once per row against that row\'s own values; rows where it is true survive. Text uses single quotes, AND demands both conditions on the same row, OR widens the net.',
+        breaks:
+          'A missing WHERE on a read scans the whole table and crawls. The same omission on an UPDATE or DELETE changes or deletes every row. Reviewers read the WHERE clause first for exactly this reason.',
+      },
+      doThisNow: [
+        {
+          task: "In the Run real SQL box, change OR to AND in the example and run it. Predict the row count first.",
+          reveal:
+            'Zero rows. No single row has a role that is both admin and editor at once. AND tests one row at a time, a classic early SQL surprise.',
+        },
+        {
+          task: 'Now write a numeric filter: SELECT id, amount FROM orders WHERE amount > 50; and run it.',
+          reveal:
+            'Amounts are 40, 75, 120, 15, so only 75 and 120 pass: orders 102 and 103. Same WHERE mechanism, numeric comparison instead of text equality.',
+        },
+      ],
+      warStory:
+        'An engineer ran UPDATE users SET role = \'viewer\' and got distracted before typing the WHERE. Every account in the system became a viewer, including the admins, locking the team out of their own dashboard. Always write the WHERE before the SET.',
       tweak: {
         instruction: "Change OR to AND in the example and predict the result before running.",
         reveal:
           'Zero rows. No single row has a role that is both admin and editor at once. AND tests one row at a time, a classic early SQL surprise.',
+      },
+      receipt: {
+        explain: [
+          'How WHERE judges each row independently.',
+          'Why a missing WHERE is dangerous on reads and catastrophic on writes.',
+        ],
+        question: 'You can pick rows and columns. How do you put them in order and take just the top few?',
       },
       recap: [
         'WHERE judges every row alone and keeps the true ones.',
@@ -316,6 +406,8 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       'Explain why pagination requires an explicit order.',
     ],
     interactive: {
+      coldOpen:
+        'A user pages through results and sees the same row on page 1 and page 2, while another row never appears at all. No code is buggy. The query just forgot one clause, so the database returned rows in whatever order it pleased. Which clause makes order a guarantee instead of luck?',
       mental:
         'ORDER BY lines everyone up; LIMIT takes the first N from the line.',
       diagram: {
@@ -352,10 +444,38 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
           why: 'Without ORDER BY the database may return any two rows, and the choice can change between runs. Explicit order or no promises.',
         },
       ],
+      build: {
+        simple: 'ORDER BY sorts the rows and LIMIT keeps the first few.',
+        actually:
+          'The engine filters with WHERE, then sorts with ORDER BY (DESC for largest first, multiple keys read left to right), then cuts with LIMIT. That ordering is why top-N questions are this exact shape.',
+        breaks:
+          'LIMIT without ORDER BY returns N arbitrary rows, and the choice can change between runs. Page two then repeats rows page one already showed: the number-one pagination bug, and it is a missing sort.',
+      },
+      doThisNow: [
+        {
+          task: 'In the Run real SQL box, change the example to ORDER BY amount ASC LIMIT 1 and run it. Which order comes back?',
+          reveal:
+            'Ascending puts the smallest first, and 15 is the smallest amount, so order 104. Flip ASC/DESC to flip which end of the line you take.',
+        },
+        {
+          task: 'Sort by two keys: ORDER BY status, amount DESC and run it. Predict the grouping first.',
+          reveal:
+            'Rows group by status alphabetically, and within each status amounts run high to low. Multi-key sorts read left to right.',
+        },
+      ],
+      warStory:
+        'A "recent activity" feed paged with LIMIT but no ORDER BY. On a quiet database it looked fine; under load the row order shifted between requests, so users saw duplicates on every scroll. Adding ORDER BY created_at, id fixed a bug that had been "unreproducible" for weeks.',
       tweak: {
         instruction: 'Sort by two keys: ORDER BY status, amount DESC and predict the grouping.',
         reveal:
           'Rows group by status alphabetically (paid before pending), and within each status the amounts run high to low. Multi-key sorts read left to right.',
+      },
+      receipt: {
+        explain: [
+          'The filter then sort then cut order of operations.',
+          'Why every paginated endpoint needs an explicit, stable ORDER BY.',
+        ],
+        question: 'You can read data every way. How do you safely add, change, and remove it?',
       },
       recap: [
         'ORDER BY sorts; DESC for largest first.',
@@ -398,6 +518,8 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       'Preview a write with a SELECT first.',
     ],
     interactive: {
+      coldOpen:
+        'Every senior engineer has the same scar: they once ran an UPDATE or DELETE and forgot the WHERE. One missing line, and every row in the table changed at once. The statement was valid SQL, so the database obeyed instantly. What habit makes this nearly impossible to do by accident?',
       mental:
         'Writes are surgery and the WHERE clause is the aim: INSERT adds, UPDATE rewires, DELETE removes, all exactly where you point.',
       diagram: {
@@ -434,10 +556,38 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
           why: 'Only order 103 is pending. Deleting it leaves the three paid orders.',
         },
       ],
+      build: {
+        simple: 'INSERT adds rows, UPDATE changes them, DELETE removes them.',
+        actually:
+          'INSERT names columns and supplies values; UPDATE and DELETE act on every row their WHERE matches. The safe habit is preview-then-write: run a SELECT with the intended WHERE, confirm the rows, then convert it to the write.',
+        breaks:
+          'UPDATE or DELETE with no WHERE hits the entire table, and it is valid SQL so nothing warns you. Teams defend against it with transactions (reversible before commit) and mandatory review on any write in a migration.',
+      },
+      doThisNow: [
+        {
+          task: "In the Run real SQL box, preview a delete before doing it: run SELECT * FROM orders WHERE status = 'pending'; to see exactly what would be removed.",
+          reveal:
+            "It shows one row: order 103. Same WHERE, read instead of write. Previewing first is the single habit that prevents the forgotten-WHERE disaster.",
+        },
+        {
+          task: 'Now run the UPDATE example and the SELECT after it. Confirm only Lee (id 3) changed.',
+          reveal:
+            'The WHERE matched exactly one row, so Kay and Sam are untouched. The row count the database reports is your last chance to catch a bad aim.',
+        },
+      ],
+      warStory:
+        'A maintenance script meant to expire one coupon ran UPDATE coupons SET active = false with the WHERE accidentally on a separate, never-executed line. Every coupon in the system died mid-promotion. The team now requires every write in a migration to be previewed as a SELECT in review.',
       tweak: {
         instruction: 'Write the safety preview for that DELETE: the SELECT that shows exactly what would be removed.',
         reveal:
           "SELECT * FROM orders WHERE status = 'pending'; shows one row: order 103. Same WHERE, read instead of write. Preview first is the habit that prevents the war story.",
+      },
+      receipt: {
+        explain: [
+          'What each of INSERT, UPDATE, and DELETE does.',
+          'The preview-then-write habit that prevents table-wide accidents.',
+        ],
+        question: 'You can read and write one table. How do you combine two tables in a single query?',
       },
       recap: [
         'INSERT adds, UPDATE rewrites, DELETE removes.',
@@ -481,6 +631,8 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       'Predict the row count of an inner join.',
     ],
     interactive: {
+      coldOpen:
+        'The orders table knows user_id 1 placed an order. It has no idea that user 1 is named Kay; that fact lives in a different table. The most common performance bug in backend code comes from solving this with a loop instead of one query. What single keyword answers across both tables at once?',
       mental:
         'JOIN is a matchmaking party: the ON rule decides which rows pair up, and every pair walks out as one wider row.',
       diagram: {
@@ -528,10 +680,38 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
           why: 'The join produces four rows, then WHERE keeps the two belonging to Kay. Filters compose with joins naturally.',
         },
       ],
+      build: {
+        simple: 'JOIN combines two tables into one result.',
+        actually:
+          'FROM orders JOIN users ON orders.user_id = users.id pairs each order with its matching user, producing a wider row per pair. An inner join keeps only matches, so a user with two orders appears twice: the count follows the pairs.',
+        breaks:
+          'Omit the ON and you get a cross product: every row paired with every row, exploding in size and meaning. And solving cross-table reads with a loop in code is the N+1 query bug, the most common ORM performance problem.',
+      },
+      doThisNow: [
+        {
+          task: "In the Run real SQL box, add WHERE users.name = 'Kay' to the join and run it. Predict the row count first.",
+          reveal:
+            'Two rows. The join produces four, then WHERE keeps the two belonging to Kay. Filters compose with joins naturally.',
+        },
+        {
+          task: 'Now add ORDER BY orders.amount DESC to the join and run it. Which row lands first?',
+          reveal:
+            'Kay with 120 (pending) comes first. Clauses compose: join, then filter, then sort, then limit, all in one declarative statement.',
+        },
+      ],
+      warStory:
+        'A profile page made one query for the user, then looped making one more query per order to fetch details: 1 + N queries. At 200 orders the page took seconds. A single JOIN replaced 201 round trips with one, and the page became instant. That is the N+1 bug, named and slain.',
       tweak: {
         instruction: 'Add ORDER BY orders.amount DESC to the join and predict the first row.',
         reveal:
           'Kay with 120 (pending) comes first. Clauses compose: join, then filter, then sort, then limit, in one declarative statement.',
+      },
+      receipt: {
+        explain: [
+          'What the ON clause matches and why a row can appear more than once.',
+          'How a JOIN replaces an N+1 loop with one query.',
+        ],
+        question: 'You can combine tables. How do you collapse many rows into one summary number?',
       },
       writeDrillId: 'sql-join-practice',
       recap: [
@@ -575,6 +755,8 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       'Name result columns with AS.',
     ],
     interactive: {
+      coldOpen:
+        'Every dashboard you have ever seen (revenue by day, signups by plan, errors by endpoint) is one kind of query. The naive way is to fetch every row and count in code, which is routinely a hundred times slower. What lets the database do the counting and hand you only the summary?',
       mental:
         'GROUP BY sorts rows into labeled buckets, and the aggregates write one summary line per bucket.',
       diagram: {
@@ -612,10 +794,38 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
           why: 'Each paid bucket holds several different amounts, so a bare amount is ambiguous. PostgreSQL raises an error instead of picking one.',
         },
       ],
+      build: {
+        simple: 'GROUP BY counts and totals rows by category.',
+        actually:
+          'It drops rows into one bucket per distinct value, runs aggregates (COUNT, SUM, AVG, MIN, MAX) once per bucket, and returns one row each. Every SELECTed column must be grouped or inside an aggregate.',
+        breaks:
+          'Selecting a bare column that varies within a bucket is ambiguous; PostgreSQL rejects it rather than guessing. And computing these totals in application code instead of the database is the slow path teams keep rediscovering.',
+      },
+      doThisNow: [
+        {
+          task: 'In the Run real SQL box, run the GROUP BY status example and confirm two buckets, then read each bucket\'s count and total.',
+          reveal:
+            'Two rows: paid (3 orders, 130) and pending (1 order, 120). One summary line per distinct status, computed entirely in the database.',
+        },
+        {
+          task: 'Now group by user_id instead of status and run it. Predict how many buckets before you do.',
+          reveal:
+            'Three buckets: user 1 has 2 orders totaling 160, users 2 and 3 have one each. Join this back to users for names and you have composed modules 6 and 7.',
+        },
+      ],
+      warStory:
+        'An admin "total revenue" page loaded every order row into the app and summed them in a loop. At a few thousand orders it was fine; at two million it timed out. Replacing the loop with one SUM ... GROUP BY query made the page load in milliseconds: the database was built for exactly this.',
       tweak: {
         instruction: 'Group by user_id instead of status and predict the bucket count.',
         reveal:
           'Three buckets: user 1 has 2 orders totaling 160, users 2 and 3 have one each. Joining this back to users for names is exactly module 6 plus module 7 composed.',
+      },
+      receipt: {
+        explain: [
+          'How GROUP BY turns many rows into one summary row per category.',
+          'Why aggregation belongs in the database, not in app code.',
+        ],
+        question: 'You can query data every way. What three design ideas keep the tables themselves correct and fast?',
       },
       writeDrillId: 'db-group-by',
       recap: [
@@ -658,6 +868,8 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       'Decide which column deserves an index and defend it.',
     ],
     interactive: {
+      coldOpen:
+        'A query runs in 5 milliseconds on your laptop and 90 seconds in production. Same query, same code. The only difference is fifty million rows and one missing index. Meanwhile, WHERE email = NULL quietly returns nothing while the author swears it should work. Three table-design ideas prevent both.',
       mental:
         'A primary key is a fingerprint, NULL is an empty box (nothing equals it, even another empty box), and an index is the index page of a book.',
       diagram: {
@@ -703,9 +915,37 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
           why: 'An empty string is a value you can compare with =. NULL is the absence of any value and needs IS NULL.',
         },
       ],
+      build: {
+        simple: 'Tables have an id, some blank cells, and they can be made fast.',
+        actually:
+          'A primary key is each row\'s unique, never-null identity that other tables point at. NULL is the absence of a value, so it needs IS NULL, never = NULL. An index turns a full-table scan into a direct jump.',
+        breaks:
+          'A missing index on a frequently-filtered foreign key is the classic "fast in dev, dead in prod" slowdown. And = NULL silently matches zero rows, so a filter the author trusts quietly returns nothing.',
+      },
+      doThisNow: [
+        {
+          task: 'Write the query for users who DO have an email, using the right NULL operator.',
+          reveal:
+            'SELECT name FROM users WHERE email IS NOT NULL; returns Kay and Lee. Absence and presence each get their own operator; = and <> never work on NULL.',
+        },
+        {
+          task: 'Name the one column on the orders table most worth an index, and say why in one sentence.',
+          reveal:
+            'orders(user_id): nearly every query and JOIN filters orders by their owner, so an index there turns repeated full scans into direct lookups. Primary keys are already indexed for you.',
+        },
+      ],
+      warStory:
+        'A reporting query joined orders to users on user_id with no index on it. In staging (10k rows) it was instant; in production (60M rows) it ran for four minutes and pinned the database. One CREATE INDEX took the query back under 50ms. Index the columns you filter and join on.',
       tweak: {
         instruction: 'Write the query for users who DO have an email.',
         reveal: 'SELECT name FROM users WHERE email IS NOT NULL; returns Kay and Lee. Absence and presence each get their own operator.',
+      },
+      receipt: {
+        explain: [
+          'What primary and foreign keys guarantee.',
+          'Why NULL needs IS NULL, and what an index trades for read speed.',
+        ],
+        question: 'You can design and query a database. What stops an attacker from reading data they should never see?',
       },
       recap: [
         'Primary keys: unique, never null, the anchor other tables point at.',

@@ -38,6 +38,8 @@ export const securityFoundations: Problem[] = [
       'Explain why most attacks are automated.',
     ],
     interactive: {
+      coldOpen:
+        'You spent days building a beautiful signup form with length limits and validation. None of it protects you. An attacker never opens your form; they send raw requests with curl and put whatever they like in every field, including ones you never made. So where does security actually live?',
       mental:
         'Treat every request like a package from a stranger: inspect the contents, and ignore how pretty the form it supposedly came from was.',
       diagram: {
@@ -79,10 +81,40 @@ export const securityFoundations: Problem[] = [
           why: 'Discovery is automated and constant. Obscurity is not a delay tactic worth counting in days.',
         },
       ],
+      build: {
+        simple: 'Check user input before trusting it.',
+        actually:
+          'Every byte a client can set (body, query, headers, cookies, path, uploads) is attacker-controlled and crosses a trust boundary. Validate it (presence, type, format, bounds, allowlist) and neutralize it where it meets an interpreter. Only inside the boundary can code trust its inputs.',
+        breaks:
+          'Frontend validation is UX, not security; the attacker calls the API directly and skips it. Treat the browser as a hint and the server as the only real gate.',
+      },
+      doThisNow: [
+        {
+          task: 'Prove the form is bypassable. Send a request with a field your UI never offers and watch it arrive.',
+          command: 'curl -s -X POST https://httpbin.org/post -H "content-type: application/json" -d \'{"email":{"$ne":null},"admin":true}\'',
+          reveal:
+            'httpbin echoes back the exact body, including the uninvited admin:true and the object-valued email. Your real backend would receive these the same way. Nothing in a browser stopped it.',
+        },
+        {
+          task: 'List every attacker-controlled input of GET /search?q=term sent with a session cookie.',
+          reveal:
+            'The q parameter, every header (including the cookie), and the path. All of it crosses the trust boundary; the cookie being present does not make the rest trustworthy.',
+        },
+      ],
+      warStory:
+        'A site validated everything in JavaScript and assumed the server was safe. An attacker posted directly to the API with admin:true in the body, the handler wrote whatever it received, and they granted themselves admin in one request. The form was never involved.',
       tweak: {
         instruction: 'List the attacker-controlled inputs of GET /search?q=term with a session cookie.',
         reveal:
           'The q parameter, every header including the cookie itself, and the path. All of it crosses the trust boundary, and the cookie being present does not make the rest trustworthy.',
+      },
+      receipt: {
+        explain: [
+          'Why every client-settable byte is hostile until checked.',
+          'The difference between frontend validation (UX) and backend validation (security).',
+        ],
+        command: 'curl -X POST <your-api>/login -d \'{"admin":true}\'',
+        question: 'Input is hostile. What is the one piece of user data you must never store as it arrives?',
       },
       recap: [
         'Every client-settable byte is attacker-controlled.',
@@ -126,6 +158,8 @@ export const securityFoundations: Problem[] = [
       'Explain salting.',
     ],
     interactive: {
+      coldOpen:
+        'Your database will be stolen one day; assume it. The only question is what the thief gets. Store passwords one way and they have every account by morning. Store them another way and cracking even one takes centuries. The difference is a single library choice, made years before the breach.',
       mental:
         'A password hash is a meat grinder: meat in, no recipe back out, and deliberately slow grinding ruins the thief whole weekend.',
       diagram: {
@@ -172,10 +206,39 @@ export const securityFoundations: Problem[] = [
           why: 'Speed is a feature for file checksums and a vulnerability for password storage. Deliberate slowness is the defense.',
         },
       ],
+      build: {
+        simple: 'Scramble the password before saving it.',
+        actually:
+          'Store a one-way hash, never the password. Use a deliberately slow algorithm (bcrypt, scrypt, Argon2) so each guess costs ~100ms, and a per-user salt so identical passwords hash differently and rainbow tables are useless. The library does the work: bcrypt.hash and bcrypt.compare.',
+        breaks:
+          'Fast hashes (SHA-256) let a GPU try billions of guesses per second against a stolen database. And any service that can email you your current password stored it in plaintext: an instant red flag.',
+      },
+      doThisNow: [
+        {
+          task: 'Watch bcrypt make the same password hash differently every time. Run it twice and compare the two hashes.',
+          command: 'node -e "const b=require(\'bcryptjs\');console.log(b.hashSync(\'hunter2\',10));console.log(b.hashSync(\'hunter2\',10))"',
+          reveal:
+            'Two different strings for the same password: that is the per-user salt at work. Each hash embeds its own salt, so cracking one tells the attacker nothing about the other. (No bcryptjs installed? The point still holds: same input, different output.)',
+        },
+        {
+          task: 'Design the "forgot password" flow without ever revealing a password.',
+          reveal:
+            'Email a single-use, expiring reset link; the user sets a new password, which gets hashed fresh. There is nothing to reveal, because storage was correct from the start.',
+        },
+      ],
+      warStory:
+        'A breached company that stored bcrypt hashes sent a calm "rotate as a precaution" email. A company breached the same month had stored fast unsalted hashes; most accounts were cracked within days and it made international news. The difference was one library choice years earlier.',
       tweak: {
         instruction: 'A user clicks "forgot password". Design what happens without ever revealing a password.',
         reveal:
           'Email a single-use, expiring reset link; the user sets a new password, which gets hashed fresh. Nothing to reveal exists, because storage was correct.',
+      },
+      receipt: {
+        explain: [
+          'Why password hashing must be slow and salted.',
+          'Why "we will email you your password" proves a broken design.',
+        ],
+        question: 'The password is verified once. How does the server remember you are logged in across the next requests?',
       },
       writeDrillId: 'security-strong-password',
       recap: [
@@ -220,6 +283,8 @@ export const securityFoundations: Problem[] = [
       'State what JWT signatures do and do not provide.',
     ],
     interactive: {
+      coldOpen:
+        'HTTP forgets you the instant a request ends. Yet you stay logged in across dozens of clicks. Something is carrying proof of who you are on every single request. And one popular way to carry it lets anyone who steals it stay you until it expires, with no way to kick them out. Which one, and why?',
       mental:
         'A session is a coat check (the club keeps your coat, you hold a numbered ticket); a JWT is a stamped wristband (anyone can read it, only the club can stamp it, and it works until it expires).',
       diagram: {
@@ -271,10 +336,40 @@ export const securityFoundations: Problem[] = [
           why: 'HttpOnly hides the cookie from document.cookie, so script injection cannot exfiltrate the session id. Secure is the HTTPS-only flag.',
         },
       ],
+      build: {
+        simple: 'After login, the user carries something that proves who they are.',
+        actually:
+          'Two patterns. Sessions: the server stores a record and hands back a random id in a cookie (flagged HttpOnly, Secure, SameSite); revoke by deleting the record. Tokens (JWT): the server signs a payload the client carries in Authorization: Bearer; verify by checking the signature, which scales but makes revocation hard.',
+        breaks:
+          'A JWT is signed, not encrypted: anyone can base64-decode the payload, so secrets never go inside. And a leaked JWT keeps working until it expires, which is why short lifetimes plus refresh rotation exist.',
+      },
+      doThisNow: [
+        {
+          task: 'Decode a JWT payload yourself to prove it is readable, not secret. Paste any JWT\'s middle section.',
+          command: 'echo "eyJzdWIiOiIxMjMiLCJyb2xlIjoiYWRtaW4ifQ" | base64 -d',
+          reveal:
+            'Out comes {"sub":"123","role":"admin"}: plain readable JSON. No key required. Signing stops tampering; it hides nothing. Never put a secret in a JWT payload.',
+        },
+        {
+          task: 'Your mobile app and your server-rendered site both need auth. Decide the mechanism for each.',
+          reveal:
+            'Site: session cookie with all three flags and instant logout. App: short-lived bearer token plus refresh rotation, since cookies are a browser mechanism. Real systems often run both.',
+        },
+      ],
+      warStory:
+        'An API leaked a long-lived JWT in a log file. Because nothing could revoke it, the attacker stayed authenticated for the token\'s full 30-day lifetime even after the leak was found. The team cut token lifetimes to 15 minutes with refresh rotation that same week.',
       tweak: {
         instruction: 'Your mobile app and your server-rendered site both need auth. Sketch the choice for each.',
         reveal:
           'Site: session cookie with all three flags, instant logout. App: short-lived bearer token plus refresh rotation, because cookies are a browser mechanism. Mixed deployments like this are the norm.',
+      },
+      receipt: {
+        explain: [
+          'Where state lives in sessions vs tokens, and what that costs.',
+          'Why a JWT payload is readable and what HttpOnly protects.',
+        ],
+        command: 'echo "<jwt-payload>" | base64 -d',
+        question: 'Auth proves who you are. What stops a malicious input from running as code inside your app?',
       },
       writeDrillId: 'security-jwt-payload',
       recap: [
@@ -319,6 +414,8 @@ export const securityFoundations: Problem[] = [
       'Explain output escaping for HTML.',
     ],
     interactive: {
+      coldOpen:
+        "Type ' OR '1'='1 into a login box on a careless site and you might log in as the first user with no password. The same bug, in a comment box, runs your JavaScript in every visitor's browser. One mistake powers both, and it has emptied databases for twenty-five years. What is it?",
       mental:
         'Injection is a forged form field that escapes its box and rewrites the whole form; parameters are boxes nothing can escape.',
       diagram: {
@@ -365,10 +462,39 @@ export const securityFoundations: Problem[] = [
           why: 'User data became code, this time in the browser’s interpreter. Output escaping is the parameterized query of HTML.',
         },
       ],
+      build: {
+        simple: 'Never let user input run as code.',
+        actually:
+          'Injection is one disease: data pasted where code executes. The cure is to keep data on a separate channel: parameterized queries for SQL, output escaping for HTML, argument arrays for shell commands. The same hostile text then arrives as an inert value.',
+        breaks:
+          'String-built queries and raw-rendered HTML are the openings. Hand-rolled regex "sanitizing" loses because the bypass lists are endless. Use the inert channel, never a blocklist.',
+      },
+      doThisNow: [
+        {
+          task: 'See injection at the string level. Print the query that gluing builds for input \' OR \'1\'=\'1 and spot the always-true condition.',
+          command: "node -e \"const i=\\\"' OR '1'='1\\\"; console.log(\\\"SELECT * FROM users WHERE name = '\\\"+i+\\\"'\\\")\"",
+          reveal:
+            "It prints WHERE name = '' OR '1'='1', a condition true for every row: that is an auth bypass. A parameterized query ($1 with the value passed separately) would compare against the literal weird string and match nothing.",
+        },
+        {
+          task: 'Find the third costume: code runs exec("convert " + filename) on an uploaded filename. Name the attack and the fix.',
+          reveal:
+            'Command injection: a filename like "x; rm -rf /" becomes shell code. Same disease, same cure shape: pass arguments as an array, never build command strings.',
+        },
+      ],
+      warStory:
+        'A single forgotten string-built query in an admin tool let an attacker append ; and dump the entire users table. The rest of the codebase used parameters correctly; one corner did not. Reviewers now grep for string concatenation near query calls as a reflex.',
       tweak: {
         instruction: 'Find the third costume: code runs exec("convert " + filename) on an uploaded filename.',
         reveal:
           'Command injection: a filename like "x; rm -rf /" becomes shell code. Same disease, same cure shape: pass arguments as an array, never build command strings.',
+      },
+      receipt: {
+        explain: [
+          'Why SQLi, XSS, and command injection are one disease.',
+          'Why parameters and escaping beat hand-rolled sanitizing.',
+        ],
+        question: 'Code and input are safe. What about the database password sitting in your source file?',
       },
       writeDrillId: 'security-escape-html',
       recap: [
@@ -413,6 +539,8 @@ export const securityFoundations: Problem[] = [
       'Explain the three HTTPS guarantees.',
     ],
     interactive: {
+      coldOpen:
+        'Push an AWS key to a public repo and it can be found and abused within minutes, mining crypto on your bill before you finish lunch. Deleting the commit does nothing; the key is in history forever. The fixes here are not clever. They are boring habits, and boring is the entire point.',
       mental:
         'A committed secret is a tattoo: deleting the commit is a cover-up, everyone already took photos. Keys live in wallets (the environment), never on skin (the repo).',
       diagram: {
@@ -464,10 +592,40 @@ export const securityFoundations: Problem[] = [
           why: 'Least privilege caps the blast radius: if the reporting service leaks its credentials, the attacker gets read access to some tables instead of the keys to everything.',
         },
       ],
+      build: {
+        simple: 'Keep passwords out of your code and use HTTPS.',
+        actually:
+          'Secrets live in environment variables or a secrets manager; code reads process.env.DATABASE_URL, never the value. .env stays in .gitignore, .env.example is committed. HTTPS buys encryption, integrity, and server authentication. Rotate keys and grant least privilege.',
+        breaks:
+          'A committed secret is in git history forever; deleting the commit is theater, rotation is the only cure. Without HTTPS, a session cookie crosses public wifi in readable text, and one sniff is a stolen login.',
+      },
+      doThisNow: [
+        {
+          task: 'Check whether a repo has ever leaked a secret in its history. Search all commits, not just the current files.',
+          command: 'git log -p | grep -iE "password|secret|api[_-]?key|BEGIN PRIVATE KEY" | head',
+          reveal:
+            'Any hit means a secret lived in history and must be rotated, even if it is gone from the current code. This is roughly what automated scanners run against every public push.',
+        },
+        {
+          task: 'Set up a new project safely in three moves: ignore .env, commit an example, read from the environment.',
+          reveal:
+            'Add .env to .gitignore before anything else, commit a .env.example naming each variable (no values), and read each via process.env in code. Three boring moves prevent most famous incidents.',
+        },
+      ],
+      warStory:
+        'A developer committed a cloud key, noticed an hour later, and force-pushed a "fix" that removed it from the latest commit but not from history. Bots had already scraped it; the account ran up a five-figure bill overnight. The only real fix would have been rotating the key immediately.',
       tweak: {
         instruction: 'Your new project needs a database URL and a payment key. Write the first three security moves.',
         reveal:
           'Add .env to .gitignore before anything else, commit a .env.example naming both variables, read both via the environment in code. Three boring moves, most famous incidents prevented.',
+      },
+      receipt: {
+        explain: [
+          'Why a committed secret must be rotated, not just deleted.',
+          'The three guarantees of HTTPS and what least privilege limits.',
+        ],
+        command: 'git log -p | grep -i "secret\\|api_key"',
+        question: 'You can build a secure backend. Which language will you write it in, and what makes its runtime tick?',
       },
       recap: [
         'Secrets live in the environment; git history is forever.',
