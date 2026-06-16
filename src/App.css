@@ -104,7 +104,7 @@ html[data-theme='dark'] { background: #0e1116; }
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--paper) 92%, transparent), color-mix(in srgb, var(--paper-strong) 84%, transparent)),
     var(--paper);
-  padding: 24px;
+  padding: 20px 14px;
   backdrop-filter: blur(18px);
 }
 
@@ -657,9 +657,37 @@ h1 {
 }
 
 .subject-button strong {
+  display: block;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* Long titles scroll to reveal themselves on hover instead of just ending in
+   an ellipsis. */
+.subject-button:hover strong {
+  text-overflow: clip;
+  animation: subject-title-scroll 5s ease-in-out 0.35s infinite;
+}
+
+@keyframes subject-title-scroll {
+  0%, 10% { text-indent: 0; }
+  48%, 58% { text-indent: -60%; }
+  96%, 100% { text-indent: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subject-button:hover strong {
+    animation: none;
+    text-overflow: ellipsis;
+  }
+}
+
+/* The Encyclopedia is a reference, not a course to complete: no count, no bar.
+   It is the last subject group in the list (the Appendix track). */
+.subject-group:last-child .subject-button small,
+.subject-group:last-child .subject-progress {
+  display: none;
 }
 
 .subject-button small {
