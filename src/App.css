@@ -669,6 +669,16 @@ h1 {
    hover it slides left by that distance at a steady speed and back on leave.
    Titles that fit never get the class, so they never move. */
 .scrolling-text {
+  /* Self-clipping so overflow is measurable regardless of the parent layout.
+     Without min-width:0 a flex child (the subject title) refuses to shrink, so
+     scrollWidth equals clientWidth, the overflow reads as 0, and it never
+     scrolls. Owning the truncation here makes the measurement reliable. */
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   transition: text-indent var(--scroll-duration, 0s) linear;
 }
 
