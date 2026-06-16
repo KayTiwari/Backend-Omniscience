@@ -18,18 +18,23 @@ type ScrollingTextProps = {
 // blind keyframe loop), it never jumps or animates titles that already fit.
 export function ScrollingText({ text, as = 'span', className = '' }: ScrollingTextProps) {
   const elRef = useRef<HTMLElement | null>(null)
+  const contentRef = useRef<HTMLSpanElement | null>(null)
   const [overflow, setOverflow] = useState(0)
 
-  function measure(el: HTMLElement | null) {
-    if (el) setOverflow(Math.max(0, el.scrollWidth - el.clientWidth))
+  function measure() {
+    const el = elRef.current
+    const content = contentRef.current
+    if (el && content) setOverflow(Math.max(0, content.scrollWidth - el.clientWidth))
   }
 
   useLayoutEffect(() => {
     const el = elRef.current
+    const content = contentRef.current
     if (!el) return
-    measure(el)
-    const observer = new ResizeObserver(() => measure(el))
+    measure()
+    const observer = new ResizeObserver(measure)
     observer.observe(el)
+    if (content) observer.observe(content)
     return () => observer.disconnect()
     // Re-measure when the text changes.
   }, [text])
@@ -46,18 +51,27 @@ export function ScrollingText({ text, as = 'span', className = '' }: ScrollingTe
       } as CSSProperties)
     : undefined
   // Re-measure on hover so late-loading fonts or width changes are caught.
-  const onMouseEnter = () => measure(elRef.current)
+  const onMouseEnter = () => measure()
+
+  const content = (
+    <>
+      <span className="scrolling-text__static">{text}</span>
+      <span ref={contentRef} className="scrolling-text__moving" aria-hidden="true">
+        {text}
+      </span>
+    </>
+  )
 
   if (as === 'strong') {
     return (
       <strong ref={setRef} className={cls} style={style} onMouseEnter={onMouseEnter}>
-        {text}
+        {content}
       </strong>
     )
   }
   return (
     <span ref={setRef} className={cls} style={style} onMouseEnter={onMouseEnter}>
-      {text}
+      {content}
     </span>
   )
 }

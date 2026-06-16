@@ -663,37 +663,66 @@ h1 {
   text-overflow: ellipsis;
 }
 
-/* Measured hover-scroll (see ScrollingText.tsx). At rest the title is
-   truncated with an ellipsis. When it actually overflows, the component adds
-   .is-overflowing and the exact distance/duration as custom properties; on
-   hover it slides left by that distance at a steady speed and back on leave.
-   Titles that fit never get the class, so they never move. */
+/* Measured hover-scroll (see ScrollingText.tsx). A static layer owns the
+   ellipsis at rest; the hover layer moves with transform so the crawl stays
+   linear instead of fighting text-overflow reflow. */
 .scrolling-text {
-  /* Self-clipping so overflow is measurable regardless of the parent layout.
-     Without min-width:0 a flex child (the subject title) refuses to shrink, so
-     scrollWidth equals clientWidth, the overflow reads as 0, and it never
-     scrolls. Owning the truncation here makes the measurement reliable. */
   display: block;
+  position: relative;
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
   white-space: nowrap;
+}
+
+.scrolling-text__static {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   text-overflow: ellipsis;
-  transition: text-indent var(--scroll-duration, 0s) linear;
+  white-space: nowrap;
+  transition: opacity 80ms linear;
+}
+
+.scrolling-text__moving {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+  width: max-content;
+  max-width: none;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(0);
+  transition:
+    opacity 80ms linear,
+    transform var(--scroll-duration, 0s) linear;
 }
 
 .scrolling-text.is-overflowing:hover {
   text-overflow: clip;
-  text-indent: var(--scroll-distance, 0px);
+}
+
+.scrolling-text.is-overflowing:hover .scrolling-text__static {
+  opacity: 0;
+}
+
+.scrolling-text.is-overflowing:hover .scrolling-text__moving {
+  opacity: 1;
+  transform: translateX(var(--scroll-distance, 0px));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scrolling-text {
+  .scrolling-text__moving,
+  .scrolling-text__static {
     transition: none;
   }
-  .scrolling-text.is-overflowing:hover {
-    text-indent: 0;
-    text-overflow: ellipsis;
+  .scrolling-text.is-overflowing:hover .scrolling-text__static {
+    opacity: 1;
+  }
+  .scrolling-text.is-overflowing:hover .scrolling-text__moving {
+    opacity: 0;
+    transform: translateX(0);
   }
 }
 
