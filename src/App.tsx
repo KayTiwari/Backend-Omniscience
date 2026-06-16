@@ -47,6 +47,7 @@ import { InteractiveDiagram } from './InteractiveDiagram'
 import { LessonStations } from './LessonStations'
 import { parseProse, renderProse } from './LessonProse'
 import { ScrollProgress } from './ScrollProgress'
+import { ScrollingText } from './ScrollingText'
 import { interviewAnswers } from './interviewAnswers'
 import { getTeachingModel } from './problemTeaching'
 import { projects } from './projects'
@@ -985,7 +986,7 @@ function App() {
                     <SubjectIcon size={18} />
                   </span>
                   <span>
-                    <strong>{subject.title}</strong>
+                    <ScrollingText as="strong" text={subject.title} />
                     <small>
                       {subjectDone}/{subject.problems.length}
                     </small>
@@ -1012,7 +1013,7 @@ function App() {
                             : undefined}
                         >
                           {done ? <Check size={15} /> : <Circle size={15} />}
-                          <span>{problem.title}</span>
+                          <ScrollingText as="span" text={problem.title} />
                           {problem.type === 'coding' && <Code2 size={14} />}
                         </button>
                       )

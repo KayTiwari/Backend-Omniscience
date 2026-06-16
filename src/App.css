@@ -663,9 +663,29 @@ h1 {
   text-overflow: ellipsis;
 }
 
-/* Long titles + lesson names stay cleanly truncated. (A CSS-only hover scroll
-   was removed: without measuring overflow it janked on titles that already
-   fit. A measured component is the right way to add this back.) */
+/* Measured hover-scroll (see ScrollingText.tsx). At rest the title is
+   truncated with an ellipsis. When it actually overflows, the component adds
+   .is-overflowing and the exact distance/duration as custom properties; on
+   hover it slides left by that distance at a steady speed and back on leave.
+   Titles that fit never get the class, so they never move. */
+.scrolling-text {
+  transition: text-indent var(--scroll-duration, 0s) linear;
+}
+
+.scrolling-text.is-overflowing:hover {
+  text-overflow: clip;
+  text-indent: var(--scroll-distance, 0px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrolling-text {
+    transition: none;
+  }
+  .scrolling-text.is-overflowing:hover {
+    text-indent: 0;
+    text-overflow: ellipsis;
+  }
+}
 
 /* The Encyclopedia is a reference, not a course to complete: no count, no bar.
    It is the last subject group in the list (the Appendix track). */
