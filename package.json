@@ -8,10 +8,12 @@
     "build": "tsc -b && vite build",
     "check": "npm run lint && npm run build",
     "grader:selftest": "node --experimental-strip-types src/grader/selftest.ts",
+    "sql:selftest": "node --experimental-strip-types src/sql/selftest.ts",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.2",
     "lucide-react": "^1.17.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"

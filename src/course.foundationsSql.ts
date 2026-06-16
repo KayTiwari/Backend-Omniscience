@@ -17,6 +17,31 @@ const ordersTable = ` id  | user_id | amount | status
  103 |       1 |    120 | pending
  104 |       3 |     15 | paid`
 
+// The real schema behind the lessons above, so example queries actually run
+// against Postgres (PGlite) and return these exact rows.
+const sqlSetup = `CREATE TABLE users (
+  id integer PRIMARY KEY,
+  name text NOT NULL,
+  role text NOT NULL,
+  email text
+);
+INSERT INTO users (id, name, role, email) VALUES
+  (1, 'Kay', 'admin', 'kay@example.com'),
+  (2, 'Sam', 'viewer', NULL),
+  (3, 'Lee', 'editor', 'lee@example.com');
+
+CREATE TABLE orders (
+  id integer PRIMARY KEY,
+  user_id integer NOT NULL,
+  amount integer NOT NULL,
+  status text NOT NULL
+);
+INSERT INTO orders (id, user_id, amount, status) VALUES
+  (101, 1, 40, 'paid'),
+  (102, 2, 75, 'paid'),
+  (103, 1, 120, 'pending'),
+  (104, 3, 15, 'paid');`
+
 export const sqlFoundations: Problem[] = [
   {
     id: 'sql-rung-what-is-a-database',
@@ -145,6 +170,7 @@ The mental model that makes SQL click: every query takes tables in and produces 
       },
       example: {
         code: 'SELECT name, role FROM users;',
+        setupSql: sqlSetup,
         output: ' name | role\n------+--------\n Kay  | admin\n Sam  | viewer\n Lee  | editor',
         explain:
           'Two columns requested, so the result table has exactly those two, with every row since nothing filtered them yet.',
@@ -225,6 +251,7 @@ WHERE is also the difference between asking for a cup of water and asking for th
       },
       example: {
         code: "SELECT name, role FROM users\nWHERE role = 'admin' OR role = 'editor';",
+        setupSql: sqlSetup,
         output: ' name | role\n------+--------\n Kay  | admin\n Lee  | editor',
         explain:
           "Each of the three rows is tested. Kay passes the first condition, Lee the second, Sam passes neither and is dropped.",
@@ -302,6 +329,7 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       },
       example: {
         code: 'SELECT id, amount FROM orders\nORDER BY amount DESC\nLIMIT 2;',
+        setupSql: sqlSetup,
         output: ' id  | amount\n-----+--------\n 103 |    120\n 102 |     75',
         explain:
           'All four orders are sorted by amount descending (120, 75, 40, 15), then LIMIT keeps the first two.',
@@ -383,6 +411,7 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       },
       example: {
         code: "UPDATE users SET role = 'viewer' WHERE id = 3;\n\nSELECT name, role FROM users;",
+        setupSql: sqlSetup,
         output: ' name | role\n------+--------\n Kay  | admin\n Sam  | viewer\n Lee  | viewer',
         explain:
           'The WHERE matched exactly one row (Lee, id 3) and rewrote its role. Kay and Sam are untouched because the filter never matched them.',
@@ -465,6 +494,7 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       },
       example: {
         code: 'SELECT users.name, orders.amount, orders.status\nFROM orders\nJOIN users ON orders.user_id = users.id;',
+        setupSql: sqlSetup,
         output:
           ' name | amount | status\n------+--------+---------\n Kay  |     40 | paid\n Sam  |     75 | paid\n Kay  |    120 | pending\n Lee  |     15 | paid',
         explain:
@@ -558,6 +588,7 @@ One warning worth carrying: LIMIT without ORDER BY gives you N arbitrary rows. I
       },
       example: {
         code: 'SELECT status, COUNT(*) AS order_count, SUM(amount) AS total\nFROM orders\nGROUP BY status;',
+        setupSql: sqlSetup,
         output:
           ' status  | order_count | total\n---------+-------------+-------\n paid    |           3 |   130\n pending |           1 |   120',
         explain:

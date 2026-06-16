@@ -40,7 +40,11 @@ import { renderGlossaryText } from './GlossaryText'
 import type { GradeResult, GradeSpec } from './grader/types'
 import { highlight } from './highlight'
 import { InlineDrill } from './InlineDrill'
+import { SqlDrill } from './SqlDrill'
+import { SqlExample } from './SqlExample'
+import { sqlSpecsByProblemId } from './sql/sqlSpecs'
 import { InteractiveDiagram } from './InteractiveDiagram'
+import { LessonStations } from './LessonStations'
 import { parseProse, renderProse } from './LessonProse'
 import { ScrollProgress } from './ScrollProgress'
 import { interviewAnswers } from './interviewAnswers'
@@ -57,6 +61,9 @@ type ProgressState = {
   selectedChoice: Record<string, number>
   criterionChoice: Record<string, number>
   tutorialChoice: Record<string, number>
+  // Interleaved "do this now" tasks the learner has marked done, keyed
+  // `${problemId}:${taskIndex}`. Doing is the spine of a lesson.
+  doneTasks: Record<string, boolean>
   checkedSolutions: Record<string, boolean>
   defended: Record<string, boolean>
   code: Record<string, string>
@@ -83,6 +90,7 @@ const emptyProgress: ProgressState = {
   selectedChoice: {},
   criterionChoice: {},
   tutorialChoice: {},
+  doneTasks: {},
   checkedSolutions: {},
   defended: {},
   code: {},
@@ -100,6 +108,7 @@ function loadProgress(): ProgressState {
       selectedChoice: parsed.selectedChoice ?? {},
       criterionChoice: parsed.criterionChoice ?? {},
       tutorialChoice: parsed.tutorialChoice ?? {},
+      doneTasks: parsed.doneTasks ?? {},
       checkedSolutions: parsed.checkedSolutions ?? {},
       defended: parsed.defended ?? {},
       code: parsed.code ?? {},
@@ -172,6 +181,9 @@ function App() {
   const [openModal, setOpenModal] = useState<string | null>(null)
   const [encQuery, setEncQuery] = useState('')
   const [encLetter, setEncLetter] = useState('')
+  // Where to jump back to after a lesson -> encyclopedia detour. Holds the
+  // originating lesson's problem id so the encyclopedia can offer one-click return.
+  const [lessonReturn, setLessonReturn] = useState<string | null>(null)
   const [progress, setProgress] = useState<ProgressState>(() => loadProgress())
   const [gradeResults, setGradeResults] = useState<Record<string, GradeResult>>({})
   const [specsByProblemId, setSpecsByProblemId] = useState<Map<string, GradeSpec>>(
@@ -225,6 +237,13 @@ function App() {
       if (!problemId) return
       const location = findProblemLocation(problemId)
       if (!location) return
+      // Remember the lesson we came from so the encyclopedia can offer a one-click
+      // return. Only capture when leaving a real lesson, so term -> term hops keep
+      // pointing back at the original lesson.
+      const here = locationRef.current
+      if (!here.isEnc && here.problemId !== problemId) {
+        setLessonReturn(here.problemId)
+      }
       openProblem(location.subject, location.problem)
       window.setTimeout(() => {
         const target = document.getElementById(id)
@@ -243,6 +262,12 @@ function App() {
     activeSubject.problems.find((problem) => problem.id === activeProblemId) ??
     activeSubject.problems[0]
   const isCodingProblem = activeProblem.type === 'coding'
+
+  const isEncyclopediaPage = glossaryEntryById.has(activeProblem.id)
+  // Always reflects the page currently on screen, so event handlers registered
+  // once (with [] deps) can still read the live location.
+  const locationRef = useRef({ problemId: activeProblem.id, isEnc: isEncyclopediaPage })
+  locationRef.current = { problemId: activeProblem.id, isEnc: isEncyclopediaPage }
 
   const problemIds = useMemo(() => new Set(allProblems.map((problem) => problem.id)), [])
   const completedSet = useMemo(
@@ -268,7 +293,8 @@ function App() {
   const hasInlineDrills =
     !!activeProblem.interactive &&
     ((activeProblem.interactive.drills?.length ?? 0) > 0 ||
-      !!activeProblem.interactive.writeDrillId)
+      !!activeProblem.interactive.writeDrillId ||
+      (activeProblem.interactive.doThisNow?.some((task) => !!task.drillId) ?? false))
   useEffect(() => {
     const needsSpecs = isCodingProblem || hasInlineDrills
     if (!needsSpecs || specsByProblemId.size > 0) return
@@ -541,11 +567,32 @@ function App() {
     }
   }
 
+  // SQL drills are graded by PGlite inside <SqlDrill/>. When the learner's result
+  // set matches, record a synthetic pass so the same confidence + completion
+  // gating as the JS coding path applies.
+  function recordSqlSolved(problemId: string) {
+    setGradeResults((current) => ({
+      ...current,
+      [problemId]: { passed: true, results: [{ name: 'returns the expected rows', pass: true }] },
+    }))
+    if (
+      problemId === activeProblem.id &&
+      solutionChecked &&
+      tutorialCorrect &&
+      acceptanceCorrect &&
+      quizRequirementCorrect &&
+      !completedSet.has(activeProblem.id)
+    ) {
+      markProblemComplete(activeProblem.id)
+    }
+  }
+
   const selectedChoice = progress.selectedChoice[activeProblem.id]
   const solutionChecked = progress.checkedSolutions[activeProblem.id] === true
   const quizAnswered = selectedChoice !== undefined
   const quizCorrect = selectedChoice === activeProblem.correctChoice
-  const activeSpec = specsByProblemId.get(activeProblem.id)
+  const activeSqlSpec = sqlSpecsByProblemId.get(activeProblem.id)
+  const activeSpec = activeSqlSpec ? undefined : specsByProblemId.get(activeProblem.id)
   const activeCode = activeSpec ? (progress.code[activeProblem.id] ?? activeSpec.starter) : ''
   const activeCodeLanguage =
     activeSpec?.language ??
@@ -567,13 +614,26 @@ function App() {
   // Only authored questions gate progress. Interactive lessons carry real
   // predict-the-output checks; everything else has no generated quiz filler.
   const tutorialChecks = interactive
-    ? interactive.predicts.map((predict) => ({
+    ? (interactive.predicts ?? []).map((predict) => ({
         correctChoice: predict.correct,
         explanation: predict.why,
         options: predict.options,
         question: predict.question,
       }))
     : []
+  // Interleaved "do this now" tasks: the DOING spine of the lesson.
+  const doTasks = interactive?.doThisNow ?? []
+  const doTaskDone = (index: number) =>
+    progress.doneTasks[`${activeProblem.id}:${index}`] === true
+  const doTasksDoneCount = doTasks.filter((_, index) => doTaskDone(index)).length
+  const doTasksAllDone = doTasks.length === 0 || doTasksDoneCount === doTasks.length
+  function toggleDoTask(index: number) {
+    const key = `${activeProblem.id}:${index}`
+    setProgress((current) => ({
+      ...current,
+      doneTasks: { ...current.doneTasks, [key]: !current.doneTasks[key] },
+    }))
+  }
   // Optional deep practice: authored quick-writes only, never generated filler
   // and never a completion gate.
   const recallPrompts = interactive
@@ -613,19 +673,22 @@ function App() {
     : activeProblem.choices
       ? quizRequirementCorrect
       : solutionChecked
-  const canComplete = tutorialCorrect && acceptanceCorrect && applyRequirementDone
+  // DOING is the spine: completing a lesson means you did the hands-on tasks,
+  // applied it, and self-checked. Predict-the-output is an optional self-check,
+  // never a hard gate.
+  const canComplete = doTasksAllDone && acceptanceCorrect && applyRequirementDone
   const canCompleteAfterCheck =
-    tutorialCorrect &&
+    doTasksAllDone &&
     acceptanceCorrect &&
     (isCodingProblem ? codeRequirementCorrect : activeProblem.choices ? quizRequirementCorrect : true)
   const masterySteps = [
-    ...(tutorialChecks.length > 0
+    ...(doTasks.length > 0
       ? [
           {
-            label: 'Predict it',
-            detail: `${tutorialCorrectCount}/${tutorialChecks.length}`,
-            help: 'Run the snippet in your head, then answer.',
-            done: tutorialCorrect,
+            label: 'Do it',
+            detail: `${doTasksDoneCount}/${doTasks.length}`,
+            help: 'Run each task for real, then mark it done.',
+            done: doTasksAllDone,
           },
         ]
       : []),
@@ -676,11 +739,15 @@ function App() {
     {
       id: 'learn' as const,
       label: 'Learn',
-      hint: 'Read and run',
-      done: tutorialCorrectCount > 0 || applyRequirementDone || acceptanceCorrectCount > 0,
+      hint: 'Read and do',
+      done:
+        doTasksDoneCount > 0 ||
+        tutorialCorrectCount > 0 ||
+        applyRequirementDone ||
+        acceptanceCorrectCount > 0,
     },
     ...(tutorialChecks.length > 0
-      ? [{ id: 'predict' as const, label: 'Predict', hint: 'Check yourself', done: tutorialCorrect }]
+      ? [{ id: 'predict' as const, label: 'Self-check', hint: 'Optional', done: tutorialCorrect }]
       : []),
     ...(interactiveDrillIds.length > 0 || isCodingProblem || activeProblem.choices
       ? [
@@ -1341,11 +1408,27 @@ function App() {
         ) : glossaryEntryById.has(activeProblem.id) ? (
           (() => {
             const entry = glossaryEntryById.get(activeProblem.id)!
+            const returnLocation = lessonReturn ? findProblemLocation(lessonReturn) : null
             return (
               <article className="problem-panel encyclopedia-entry">
-                <button type="button" className="enc-back" onClick={() => openProblemById('appendix-index')}>
-                  ← Encyclopedia
-                </button>
+                <div className="enc-back-row">
+                  {returnLocation && (
+                    <button
+                      type="button"
+                      className="enc-back enc-back-lesson"
+                      onClick={() => {
+                        const target = lessonReturn
+                        setLessonReturn(null)
+                        if (target) openProblemById(target)
+                      }}
+                    >
+                      ← Back to {returnLocation.problem.title}
+                    </button>
+                  )}
+                  <button type="button" className="enc-back" onClick={() => openProblemById('appendix-index')}>
+                    ← Encyclopedia
+                  </button>
+                </div>
                 <span className="enc-category">{entry.category}</span>
                 <h2>{entry.term}</h2>
                 {entry.aka && entry.aka.length > 0 && (
@@ -1474,6 +1557,15 @@ function App() {
             </div>
           </section>
 
+          {activeSubject.stations && activeSubject.stations.length > 0 && (
+            <LessonStations
+              stations={activeSubject.stations}
+              activeProblemId={activeProblem.id}
+              completed={completedSet}
+              onSelect={openProblemById}
+            />
+          )}
+
           <section className="prompt-block task-block">
             <h3>Your Task</h3>
             {renderProse(activeProblem.prompt)}
@@ -1498,6 +1590,13 @@ function App() {
             ))}
           </nav>
 
+          {activePage === 'learn' && interactive?.coldOpen && (
+            <section className="cold-open" aria-label="Cold open">
+              <span className="term-callout-prompt">$</span>
+              <p>{renderGlossaryText(interactive.coldOpen)}</p>
+            </section>
+          )}
+
           {activePage === 'learn' && (interactive?.mental || interactive?.diagram) && (
             <section className="mental-model-block" aria-label="Mental model">
               {interactive.mental && (
@@ -1520,26 +1619,114 @@ function App() {
               {interactive.intro && (
                 <p className="interactive-intro">{renderGlossaryText(interactive.intro)}</p>
               )}
-              <div className="interactive-step">
-                <span className="interactive-badge">See it run</span>
-                <pre className="interactive-code"><code>{interactive.example.code}</code></pre>
-                <details className="interactive-run">
-                  <summary>Run ▶</summary>
-                  <pre className="interactive-output"><code>{interactive.example.output}</code></pre>
-                  {interactive.example.explain && (
-                    <p>{renderGlossaryText(interactive.example.explain)}</p>
-                  )}
-                </details>
-              </div>
+              {/* Live artifact first: show the thing before explaining it. */}
+              {interactive.example.setupSql ? (
+                <SqlExample
+                  code={interactive.example.code}
+                  setupSql={interactive.example.setupSql}
+                  fallbackOutput={interactive.example.output}
+                  explain={interactive.example.explain}
+                />
+              ) : (
+                <div className="interactive-step">
+                  <span className="interactive-badge">Live artifact</span>
+                  <pre className="interactive-code"><code>{interactive.example.code}</code></pre>
+                  <details className="interactive-run">
+                    <summary>Reveal output</summary>
+                    <pre className="interactive-output"><code>{interactive.example.output}</code></pre>
+                    {interactive.example.explain && (
+                      <p>{renderGlossaryText(interactive.example.explain)}</p>
+                    )}
+                  </details>
+                </div>
+              )}
+
+              {/* Build a mental model, then break it. The reveal is what sticks. */}
+              {interactive.build && (
+                <div className="build-break" aria-label="Build then break">
+                  <div className="build-break-card build-break-simple">
+                    <span className="interactive-badge">Simple version</span>
+                    <p>{renderGlossaryText(interactive.build.simple)}</p>
+                  </div>
+                  <div className="build-break-card build-break-actually">
+                    <span className="interactive-badge">The real version</span>
+                    <p>{renderGlossaryText(interactive.build.actually)}</p>
+                  </div>
+                  <div className="build-break-card build-break-breaks">
+                    <span className="interactive-badge">Where it breaks in prod</span>
+                    <p>{renderGlossaryText(interactive.build.breaks)}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* DOING is the spine: interleaved hands-on tasks, the loud block. */}
+              {doTasks.length > 0 && (
+                <div className="do-now-block" aria-label="Do this now">
+                  <div className="do-now-heading">
+                    <h4>Do this now</h4>
+                    <span className="do-now-count">{doTasksDoneCount}/{doTasks.length}</span>
+                  </div>
+                  {doTasks.map((task, index) => {
+                    const done = doTaskDone(index)
+                    const drillSpec = task.drillId ? specsByProblemId.get(task.drillId) : undefined
+                    return (
+                      <div className={`do-now-card ${done ? 'done' : ''}`} key={index}>
+                        <button
+                          type="button"
+                          className="do-now-check"
+                          onClick={() => toggleDoTask(index)}
+                          aria-pressed={done}
+                        >
+                          {done ? <Check size={16} /> : <Circle size={16} />}
+                        </button>
+                        <div className="do-now-body">
+                          <p className="do-now-task">{renderGlossaryText(task.task)}</p>
+                          {task.command && (
+                            <pre className="term-callout"><code>{task.command}</code></pre>
+                          )}
+                          {task.drillId && drillSpec && (
+                            <InlineDrill
+                              spec={drillSpec}
+                              code={progress.code[task.drillId] ?? drillSpec.starter}
+                              onChange={(value) => updateCode(task.drillId!, value)}
+                              onRun={() => void runCodingTests(task.drillId!)}
+                              running={runningProblemId === task.drillId}
+                              result={gradeResults[task.drillId]}
+                            />
+                          )}
+                          {task.drillId && !drillSpec && (
+                            <p className="interactive-intro">Loading runnable drill...</p>
+                          )}
+                          {task.reveal && (
+                            <details className="interactive-run">
+                              <summary>What you should see</summary>
+                              <p>{renderGlossaryText(task.reveal)}</p>
+                            </details>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
               {interactive.tweak && (
                 <div className="interactive-step">
-                  <span className="interactive-badge">Now you try</span>
+                  <span className="interactive-badge">Change one thing</span>
                   <p>{renderGlossaryText(interactive.tweak.instruction)}</p>
                   <details className="interactive-run">
                     <summary>Show what happens</summary>
                     <p>{renderGlossaryText(interactive.tweak.reveal)}</p>
                   </details>
                 </div>
+              )}
+
+              {/* Why this matters in a real job: a two-line field note. */}
+              {interactive.warStory && (
+                <aside className="war-story" aria-label="From the field">
+                  <span className="war-story-label">From the field</span>
+                  <p>{renderGlossaryText(interactive.warStory)}</p>
+                </aside>
               )}
             </section>
           )}
@@ -1758,8 +1945,8 @@ function App() {
           {activePage === 'predict' && tutorialChecks.length > 0 && (
             <section className="guided-tutorial-checks" aria-label="Predict the output">
               <div className="guided-tutorial-heading">
-                <h4>Predict The Output</h4>
-                <p>Run the snippet from the Learn page in your head, then check your prediction.</p>
+                <h4>Optional self-check</h4>
+                <p>You already did the work. If you want, sanity-check your understanding against the snippet.</p>
               </div>
               {interactive && (
                 <details className="predict-snippet">
@@ -1972,7 +2159,17 @@ function App() {
             </section>
           )}
 
-          {activePage === 'practice' && isCodingProblem && !activeSpec && (
+          {activePage === 'practice' && activeSqlSpec && (
+            <SqlDrill
+              key={activeSqlSpec.problemId}
+              spec={activeSqlSpec}
+              code={progress.code[activeSqlSpec.problemId] ?? activeSqlSpec.starter}
+              onChange={(value) => updateCode(activeSqlSpec.problemId, value)}
+              onSolved={() => recordSqlSolved(activeSqlSpec.problemId)}
+            />
+          )}
+
+          {activePage === 'practice' && isCodingProblem && !activeSpec && !activeSqlSpec && (
             <section className="coding-block">
               <div className="coding-heading">
                 <div>
@@ -2076,7 +2273,42 @@ function App() {
             </section>
           )}
 
-          {activePage === 'prove' && interactive?.recap && interactive.recap.length > 0 && (
+          {activePage === 'prove' && interactive?.receipt && (
+            <section className="lesson-receipt" aria-label="Receipt">
+              <div className="receipt-head">Receipt</div>
+              <div className="receipt-row">
+                <span className="receipt-icon">✅</span>
+                <div>
+                  <strong>You can now explain out loud</strong>
+                  <ul>
+                    {interactive.receipt.explain.map((item) => (
+                      <li key={item}>{renderGlossaryText(item)}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              {interactive.receipt.command && (
+                <div className="receipt-row">
+                  <span className="receipt-icon">🔧</span>
+                  <div>
+                    <strong>One command you can run from memory</strong>
+                    <pre className="term-callout"><code>{interactive.receipt.command}</code></pre>
+                  </div>
+                </div>
+              )}
+              {interactive.receipt.question && (
+                <div className="receipt-row">
+                  <span className="receipt-icon">❓</span>
+                  <div>
+                    <strong>One question for the next module</strong>
+                    <p>{renderGlossaryText(interactive.receipt.question)}</p>
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
+
+          {activePage === 'prove' && !interactive?.receipt && interactive?.recap && interactive.recap.length > 0 && (
             <section className="interactive-step interactive-recap recap-block">
               <span className="interactive-badge">Lock it in</span>
               <ul>

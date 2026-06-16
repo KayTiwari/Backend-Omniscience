@@ -35,6 +35,8 @@ export const apiFoundations: Problem[] = [
       'Give an example of two clients sharing one API.',
     ],
     interactive: {
+      coldOpen:
+        'Your backend team rewrites the entire service from Python to C# over a weekend. Not a single client app changes a line of code, and nobody notices. How is that possible? One idea makes it work, and breaking it is how you take down every client at once.',
       mental:
         'An API is a restaurant menu: you can only order what is listed, the kitchen chaos stays hidden, and changing the menu surprises every regular at once.',
       diagram: {
@@ -75,10 +77,40 @@ export const apiFoundations: Problem[] = [
           why: 'Response shape is the contract. Every client reading .name breaks the moment the field moves.',
         },
       ],
+      build: {
+        simple: 'An API lets one program talk to another.',
+        actually:
+          'An API is a documented contract: which methods and paths exist, what bodies they take, what responses they return. Clients build against the contract only; everything behind it (database, language, framework) is free to change.',
+        breaks:
+          'Renaming a response field from name to fullName looks internal but breaks every client reading .name the instant it ships. Contract changes ripple to everyone; internal changes ripple to no one.',
+      },
+      doThisNow: [
+        {
+          task: 'Call a real public API and read its contract in action. Note the JSON shape it promises.',
+          command: 'curl -s https://api.github.com/users/torvalds | head -n 12',
+          reveal:
+            'You get a documented JSON shape: login, id, name, and more. Every tool built on the GitHub API depends on those field names staying put. That stable shape is the contract.',
+        },
+        {
+          task: 'Write the three-line contract for DELETE /users/{id} yourself: request, success, missing.',
+          reveal:
+            'Request: DELETE /users/42. Success: 204 with no body. Missing: 404 with an error shape. You just did API design.',
+        },
+      ],
+      warStory:
+        'A company renamed a JSON field to be "cleaner" in a minor release. Within an hour, mobile apps that shipped months earlier (and could not be updated quickly) were crashing in users\' hands. Field names in a public response are a promise you cannot quietly take back.',
       tweak: {
         instruction: 'Write the three-line contract for DELETE /users/{id}.',
         reveal:
           'Request: DELETE /users/42. Success: 204 with no body. Missing: 404 with an error shape. You just did API design.',
+      },
+      receipt: {
+        explain: [
+          'What an API contract is and what it deliberately hides.',
+          'Why internal rewrites are safe but contract changes are not.',
+        ],
+        command: 'curl -s https://api.github.com/users/torvalds',
+        question: 'The contract says bodies are JSON. What exactly are the rules of JSON?',
       },
       recap: [
         'An API is a documented request/response contract: a menu.',
@@ -120,6 +152,8 @@ export const apiFoundations: Problem[] = [
       'Round-trip with parse and stringify.',
     ],
     interactive: {
+      coldOpen:
+        'A config file fails to load with "unexpected token." The file looks perfect. The culprit is one trailing comma or one single quote: habits that are legal in JavaScript and illegal in JSON. Knowing the strict rules cold turns a cryptic error into a ten-second fix.',
       mental:
         'JSON is the shipping container of data: one standard shape that every language can load, ship, and unload.',
       diagram: {
@@ -157,10 +191,41 @@ export const apiFoundations: Problem[] = [
           why: 'JSON forbids trailing commas. This is among the most common hand-written JSON errors.',
         },
       ],
+      build: {
+        simple: 'JSON is how APIs write data as text.',
+        actually:
+          'It has exactly six value types (object, array, string, number, boolean, null) and strict rules: double-quoted keys, no trailing commas, no comments. Languages parse text into live data and stringify data back into text.',
+        breaks:
+          'Hand-edited JSON breaks on the rules JavaScript forgives: a single-quoted key, a trailing comma, a stray comment. Each is a parse error, and the message ("unexpected token") rarely points at the real spot.',
+      },
+      doThisNow: [
+        {
+          task: 'Validate a real JSON snippet from the terminal. Pretty-print it to confirm it parses.',
+          command: 'echo \'{"name":"Kay","orders":[{"id":101}]}\' | python3 -m json.tool',
+          reveal:
+            'A valid document prints back indented. The tool walks the same grammar a server uses: object, then array, then nested object. Indenting JSON mentally is the core reading skill.',
+        },
+        {
+          task: 'Now break it on purpose: add a trailing comma and re-run. Read the error.',
+          command: 'echo \'{"items":[1,2,3,]}\' | python3 -m json.tool',
+          reveal:
+            'It fails with a parse error pointing near the comma. JSON forbids trailing commas even though JavaScript allows them. This is the most common hand-written JSON mistake.',
+        },
+      ],
+      warStory:
+        'A deploy failed at 2am because someone added a helpful // comment to a JSON config. JSON has no comments. The parser rejected the whole file, and the service would not boot. The strict rules exist so every language agrees on exactly one grammar.',
       tweak: {
         instruction: 'Add a second order to the array in the text and re-run the parse.',
         reveal:
           'user.orders.length becomes 2, and user.orders[1] is your new object. Arrays of objects are the shape of every API list response.',
+      },
+      receipt: {
+        explain: [
+          'The six JSON types and the strict rules that differ from JavaScript.',
+          'What parse and stringify do at the boundaries of an API.',
+        ],
+        command: 'echo \'{"a":1}\' | python3 -m json.tool',
+        question: 'JSON is the data. How do you organize the URLs that carry it?',
       },
       recap: [
         'Six types: object, array, string, number, boolean, null.',
@@ -203,6 +268,8 @@ export const apiFoundations: Problem[] = [
       'Express ownership with one nesting level.',
     ],
     interactive: {
+      coldOpen:
+        'You see POST /products/create in a codebase. Something is duplicated. POST already means create, so the word create in the path is doing nothing except inviting chaos: /create here, /add there, /new somewhere else, all for the same job. What is the rule that prevents this?',
       mental:
         'Routes are nouns on doors, and the HTTP method is what you do when you walk through: same door, different verbs.',
       diagram: {
@@ -239,10 +306,39 @@ export const apiFoundations: Problem[] = [
           why: 'A collection filtered by a query parameter. The nested GET /users/42/orders is the other defensible spelling; the verb versions are not.',
         },
       ],
+      build: {
+        simple: 'Routes are the URLs your API answers.',
+        actually:
+          'Paths are nouns, methods are verbs. /products is the collection, /products/7 is the item, and the five standard endpoints come from those two paths times the verbs. One nesting level shows ownership.',
+        breaks:
+          'Verbs leak into paths (/getProducts, /createOrder) the moment a team stops enforcing the convention. Every new client then starts with archaeology, and the inconsistency compounds for years.',
+      },
+      doThisNow: [
+        {
+          task: 'Write the five standard routes for a products resource, then nest one level for reviews.',
+          reveal:
+            'GET /products, POST /products, GET /products/7, PATCH /products/7, DELETE /products/7, then GET /products/7/reviews. Two nouns and one nesting level produce the whole surface.',
+        },
+        {
+          task: 'Fix two bad routes: /createOrder and /getOrderById. Rewrite them the REST way.',
+          reveal:
+            'POST /orders and GET /orders/{id}. The verb moves out of the path and into the method, where clients, caches, and proxies already look for it.',
+        },
+      ],
+      warStory:
+        'A platform grew to dozens of endpoints with no route convention: /users, /getProducts, /order_create. Onboarding a new partner took weeks of guesswork. The eventual cleanup was a multi-quarter migration. Writing the convention down on day one would have cost an afternoon.',
       tweak: {
         instruction: 'Design the routes for canceling order 7, both the status-change spelling and the action spelling.',
         reveal:
           'PATCH /orders/7 with {"status": "canceled"} treats it as data; POST /orders/7/cancellations treats it as an action. Both are defensible; pick one convention and never mix.',
+      },
+      receipt: {
+        explain: [
+          'Why paths are nouns and methods are verbs.',
+          'When nesting shows ownership and when a query filter is cleaner.',
+        ],
+        command: 'curl -s https://api.github.com/repos/torvalds/linux/issues',
+        question: 'Routes and verbs are set. What should the server send back when the request goes wrong?',
       },
       writeDrillId: 'api-route-match',
       recap: [
@@ -287,6 +383,8 @@ export const apiFoundations: Problem[] = [
       'Keep internals out of error bodies.',
     ],
     interactive: {
+      coldOpen:
+        'A partner emails: "your API is broken." If your error body has a code, a message, and a request id, you reply once and the ticket closes. If it returns a bare 500 with an HTML error page, you have just signed up for a week of archaeology. The error half of the contract is where good APIs separate from miserable ones.',
       mental:
         'An error response is an incident report form: the same fields every time, so anyone can file one and anyone can read one.',
       diagram: {
@@ -328,10 +426,40 @@ export const apiFoundations: Problem[] = [
           why: 'Attackers read stack traces as maps. The request id gives support the same power without the exposure.',
         },
       ],
+      build: {
+        simple: 'When something goes wrong, the API returns an error.',
+        actually:
+          'Every error wears one envelope: a machine-readable code clients branch on, a human message, per-field details for validation, and a request id that finds the full story in the logs. Codes are for programs; messages are for people.',
+        breaks:
+          'A stack trace or SQL fragment in an error body is a map for attackers and an embarrassment in screenshots. And clients that grep prose ("already registered") break the instant someone edits the copy.',
+      },
+      doThisNow: [
+        {
+          task: 'Trigger a real API error and read its shape. Does it carry a stable code and a message?',
+          command: 'curl -s https://api.github.com/repos/torvalds/this-repo-does-not-exist',
+          reveal:
+            'GitHub returns a JSON body with a "message" and a documentation_url, not an HTML page or a stack trace. Stable, readable, safe to show. That is the error contract done well.',
+        },
+        {
+          task: 'Write the 409 body for a duplicate email yourself, reusing the same envelope as the example.',
+          reveal:
+            '{"error":"email_taken","message":"That email is already registered.","request_id":"..."}. Same envelope, different code: that consistency is the whole design.',
+        },
+      ],
+      warStory:
+        'A production API leaked full stack traces in 500 bodies, including database table names and file paths. A security researcher mapped the entire internal structure from error pages alone. The fix: log the detail with a request id, return only the id. Same debuggability, no exposure.',
       tweak: {
         instruction: 'Write the 409 body for a duplicate email using the same envelope.',
         reveal:
           '{"error": "email_taken", "message": "That email is already registered.", "request_id": "..."}. Same envelope, different code: that consistency is the whole design.',
+      },
+      receipt: {
+        explain: [
+          'The one error envelope and who reads each field.',
+          'Why internals belong in logs behind a request id, never in the body.',
+        ],
+        command: 'curl -s https://api.github.com/repos/torvalds/nope',
+        question: 'Errors are well-shaped now. How do you stop bad input from reaching your logic in the first place?',
       },
       writeDrillId: 'api-result-to-response',
       recap: [
@@ -376,6 +504,8 @@ export const apiFoundations: Problem[] = [
       'Return a complete 400 in one pass.',
     ],
     interactive: {
+      coldOpen:
+        'A self-service signup form sends {"email":"...","role":"admin"}. If your endpoint writes whatever it receives, that user just made themselves an administrator. The fix is one validation rule, and it has a name: allowlisting. Most corrupt-data and injection incidents enter through exactly one unvalidated field.',
       mental:
         'Validation is a bouncer with a four-point checklist (presence, type, format, bounds) and a guest list: unknown fields do not get in.',
       diagram: {
@@ -413,10 +543,39 @@ export const apiFoundations: Problem[] = [
           why: 'It is a string where a number is expected (type), and once converted, -3 is below the minimum (bounds). Both belong in the 400 details.',
         },
       ],
+      build: {
+        simple: 'Check the input before you use it.',
+        actually:
+          'Four checks in order (presence, type, format, bounds) run before any business logic, plus a field allowlist so only declared fields are accepted. Collect every failure and return them together in one 400.',
+        breaks:
+          'Skip the allowlist and a public form can set role:admin (mass assignment). Skip bounds and a negative quantity triggers a refund. Each missing check is a specific, real incident.',
+      },
+      doThisNow: [
+        {
+          task: 'Walk the four checks against a hostile body: {"email":"kay@","quantity":"-3","role":"admin"}. Name which check each field fails.',
+          reveal:
+            'email fails format; quantity fails type (string) then bounds (-3); role is not an accepted field, so the allowlist drops it. Three problems caught before any code that could be damaged runs.',
+        },
+        {
+          task: 'Write the 400 body this produces, reusing the error envelope from the previous lesson.',
+          reveal:
+            '{"error":"validation_failed","details":{"email":"must be a valid email address","quantity":"must be a number between 1 and 100"}}. Two lessons composing into one response.',
+        },
+      ],
+      warStory:
+        'An e-commerce bug let users submit a negative quantity. The checkout math dutifully produced a negative total: a refund. People found it and "bought" their way to free money until a bounds check shipped. Validation is the cheapest insurance in the stack.',
       tweak: {
         instruction: 'Write the 400 body this validation produces, using the error envelope from the previous module.',
         reveal:
           '{"error": "validation_failed", "message": "...", "details": {"email": "must be a valid email address", "quantity": "must be a number between 1 and 100"}}. Two modules composing into one response.',
+      },
+      receipt: {
+        explain: [
+          'The four checks in order and why they run before business logic.',
+          'How allowlisting fields stops mass-assignment attacks.',
+        ],
+        command: 'curl -s -X POST https://httpbin.org/post -d "quantity=-3"',
+        question: 'Input is safe. A list endpoint could still return ten million rows. How do you slice it?',
       },
       writeDrillId: 'api-create-user-validation',
       recap: [
@@ -461,6 +620,8 @@ export const apiFoundations: Problem[] = [
       'Pin the underlying sort.',
     ],
     interactive: {
+      coldOpen:
+        'A user pages through orders and sees order 200 twice, then never sees 201. No code is buggy. The list just shifted under them because there was no stable sort and new rows kept arriving. GET /orders on a ten-million-row table cannot return everything, and slicing it wrong lies to users.',
       mental:
         'Pagination is reading a book: limit is the page size, offset is how deep you are, and ORDER BY is the binding that keeps pages from shuffling.',
       diagram: {
@@ -507,10 +668,40 @@ export const apiFoundations: Problem[] = [
           why: 'Unordered results may return in any sequence each query. Offsets only mean something against a pinned order; this is the SQL ladder paying off.',
         },
       ],
+      build: {
+        simple: 'Pagination returns a list one page at a time.',
+        actually:
+          'limit and offset slice the list (capped server-side), the response wraps items with total/limit/offset/has_more, and a stable ORDER BY with a unique tiebreak pins every row so page boundaries hold still.',
+        breaks:
+          'Offset pagination degrades on huge tables (the database walks past every skipped row) and pages drift when rows are inserted mid-browse. Cursor pagination (a token meaning "after this row") fixes both and is the standard for feeds.',
+      },
+      doThisNow: [
+        {
+          task: 'Page through a real paginated API and watch the page parameter change what you get.',
+          command: 'curl -s "https://api.github.com/repositories?per_page=3" | grep \'"full_name"\'',
+          reveal:
+            'You get exactly three repositories. GitHub also returns a Link header with the next page cursor: a real cursor-pagination contract in the wild, exactly the upgrade this lesson describes.',
+        },
+        {
+          task: 'Write the request for the first page of 2 items and predict has_more before checking the example.',
+          reveal:
+            'GET /orders?limit=2&offset=0 returns the first two with has_more true: two more remain past this page.',
+        },
+      ],
+      warStory:
+        'An analytics export paged with offset over a table that grew during the run. Rows shifted, so the export double-counted some orders and skipped others. The totals were wrong for a quarter before anyone noticed. A stable sort and cursors would have prevented it.',
       tweak: {
         instruction: 'Write the request for the first page of 2, and predict has_more.',
         reveal:
           'GET /orders?limit=2&offset=0 returns the first two with has_more true: two more remain past this page.',
+      },
+      receipt: {
+        explain: [
+          'How limit, offset, and a stable sort produce correct pages.',
+          'When offset pagination breaks and why cursors replace it.',
+        ],
+        command: 'curl -s "https://api.github.com/repositories?per_page=3"',
+        question: 'You can design a whole REST API now. What stops a stranger from calling the parts they should not?',
       },
       writeDrillId: 'api-pagination',
       recap: [

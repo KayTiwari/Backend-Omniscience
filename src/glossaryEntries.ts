@@ -40,7 +40,7 @@ const CATEGORY_TERMS: Record<GlossaryCategory, string[]> = {
   'Caching & Async': ['cache', 'CDN', 'cache invalidation', 'queue', 'worker', 'dead-letter queue', 'idempotency', 'retry', 'backpressure', 'rate limit', 'bloom filter'],
   'Scale & Reliability': ['horizontal scaling', 'sharding', 'replication', 'load balancer', 'consistent hashing', 'microservices', 'CAP theorem', 'eventual consistency', 'strong consistency', 'heartbeat', 'quorum', 'leader election', 'distributed lock', 'service discovery'],
   Operations: ['deployment', 'CI/CD', 'container', 'observability', 'log', 'metric', 'trace', 'latency', 'SLO', 'graceful shutdown'],
-  Technologies: ['MySQL', 'MongoDB', 'Redis', 'Memcached', 'DynamoDB', 'Cassandra', 'Elasticsearch', 'Kafka', 'RabbitMQ', 'Amazon SQS', 'Amazon S3', 'AWS Lambda', 'Nginx', 'ZooKeeper', 'Docker', 'Kubernetes', 'Prometheus', 'Apache Spark', 'Apache Flink'],
+  Technologies: ['MySQL', 'MongoDB', 'Redis', 'Memcached', 'DynamoDB', 'Cassandra', 'Elasticsearch', 'Kafka', 'RabbitMQ', 'Amazon SQS', 'Amazon S3', 'AWS Lambda', 'Nginx', 'ZooKeeper', 'Docker', 'Kubernetes', 'Prometheus', 'Apache Spark', 'Apache Flink', 'Amazon EC2', 'Amazon EBS', 'Auto Scaling', 'Elastic Load Balancing', 'Amazon RDS', 'Amazon Aurora', 'Amazon ElastiCache', 'Amazon CloudFront', 'Amazon Route 53', 'Amazon VPC', 'AWS IAM', 'Amazon CloudWatch', 'AWS CloudTrail', 'Amazon SNS', 'AWS Fargate', 'Amazon ECS', 'Amazon EKS', 'AWS CloudFormation', 'Amazon API Gateway', 'AWS Secrets Manager', 'AWS KMS', 'Amazon Cognito', 'AWS Step Functions'],
   Patterns: ['fanout', 'hot key', 'unique ID generation', 'distributed counting', 'long polling', 'server-sent events', 'geohash', 'single point of failure', 'multi-region', 'distributed transaction', 'saga', 'circuit breaker', 'load shedding', 'chunked upload', 'multi-tenancy'],
   'Language & Runtime': ['function', 'class', 'object', 'array', 'dictionary', 'for loop', 'while loop', 'runtime', 'concurrency model', 'side effect', 'memory usage', 'dependency management', 'runtime profiling'],
 }
@@ -3570,6 +3570,493 @@ const RICH: Record<string, Rich> = {
       },
     ],
     related: ['latency', 'memory usage', 'metric', 'observability'],
+  },
+
+  'Amazon EC2': {
+    body: [
+      '**Amazon EC2 is a rentable computer in the cloud.** You choose an instance type that fixes its CPU and memory, launch it from an image (an AMI) in minutes, and pay by the second while it runs. It is the general-purpose foundation: anything you could run on a server you can run on EC2.',
+      '**You own the stack above the hypervisor.** AWS gives you the virtual machine; you install the runtime, deploy the app, patch the OS, and decide how it scales. That control is the trade against managed services like Lambda or RDS, which hand some of that work back to AWS.',
+      '**EC2 rarely stands alone.** Instances sit in a VPC, attach EBS disks for durable storage, register behind a load balancer, and live in an Auto Scaling group so capacity follows demand instead of being fixed.',
+    ],
+    examples: [
+      'A steady, high-traffic API runs on a fleet of EC2 instances behind a load balancer, cheaper than per-request billing at that volume.',
+      'A batch job that needs a GPU launches a GPU instance type for an hour, then shuts down.',
+    ],
+    diagrams: [
+      {
+        caption: 'EC2 instances run in a VPC, attach EBS disks, and scale behind a load balancer.',
+        layout: 'row',
+        nodes: [
+          { id: 'lb', label: 'Load Balancer', accent: 'edge' },
+          { id: 'ec2', label: 'EC2 instances', sub: 'Auto Scaling group', accent: 'compute' },
+          { id: 'ebs', label: 'EBS', sub: 'attached disk', accent: 'storage' },
+        ],
+        edges: [
+          { from: 'lb', to: 'ec2', label: 'spread traffic' },
+          { from: 'ec2', to: 'ebs', label: 'persist' },
+        ],
+      },
+    ],
+    related: ['Amazon EBS', 'Auto Scaling', 'Elastic Load Balancing', 'Amazon VPC', 'AWS Lambda'],
+  },
+
+  'Auto Scaling': {
+    body: [
+      '**Auto Scaling keeps capacity matched to demand.** An Auto Scaling group launches or terminates EC2 instances automatically against a target (such as 60% CPU) or a schedule, so a traffic spike adds servers and a quiet night removes them.',
+      '**Why it matters:** fixed capacity is either wasteful (sized for peak, idle most of the time) or fragile (sized for average, falls over at peak). Scaling on demand is the elastic, pay-for-what-you-use model that makes the cloud worth it.',
+      '**It pairs with a load balancer and health checks.** New instances register with the balancer as they come up; unhealthy ones are replaced. This is also self-healing: a crashed instance is automatically swapped for a fresh one.',
+    ],
+    examples: [
+      'A ticketing site scales out for an on-sale spike, then back down an hour later.',
+      'A replacement instance is launched automatically when one fails its health check.',
+    ],
+    diagrams: [
+      {
+        caption: 'A target metric drives the group to add or remove instances.',
+        layout: 'row',
+        nodes: [
+          { id: 'metric', label: 'CPU / requests', sub: 'target', accent: 'edge' },
+          { id: 'asg', label: 'Auto Scaling group', accent: 'compute' },
+          { id: 'fleet', label: '2 → 8 instances', accent: 'success' },
+        ],
+        edges: [
+          { from: 'metric', to: 'asg', label: 'above target' },
+          { from: 'asg', to: 'fleet', label: 'scale out' },
+        ],
+      },
+    ],
+    related: ['Amazon EC2', 'Elastic Load Balancing', 'horizontal scaling', 'Amazon CloudWatch'],
+  },
+
+  'Elastic Load Balancing': {
+    body: [
+      '**Elastic Load Balancing is the front door for a fleet.** It accepts incoming traffic and spreads it across healthy targets (EC2 instances or containers), so no single server is overwhelmed and any one can fail without taking the service down.',
+      '**Health checks are the point.** The balancer continuously probes each target and stops sending traffic to one that fails, which is what makes rolling deploys and instance replacement invisible to users.',
+      '**It is where Auto Scaling plugs in.** As the group adds instances they register behind the balancer automatically, giving you one stable address in front of a changing set of servers.',
+    ],
+    examples: [
+      'An Application Load Balancer routes /api to one target group and /static to another.',
+      'During a deploy, new instances pass health checks before the balancer shifts traffic to them.',
+    ],
+    diagrams: [
+      {
+        caption: 'One stable entry point spreads traffic across healthy targets.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'elb', label: 'Load Balancer', accent: 'edge' },
+          { id: 'a', label: 'Instance A', accent: 'compute' },
+          { id: 'b', label: 'Instance B', accent: 'compute' },
+          { id: 'c', label: 'Instance C', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['Amazon EC2', 'Auto Scaling', 'load balancer', 'reverse proxy'],
+  },
+
+  'Amazon RDS': {
+    body: [
+      '**Amazon RDS is a managed relational database.** You pick an engine (Postgres, MySQL, SQL Server) and a size; AWS handles provisioning, backups, patching, replication, and failover. You still design the schema and write the queries, but you stop operating the database server.',
+      '**Multi-AZ is the reliability story.** RDS can keep a standby replica in a second availability zone and fail over automatically if the primary dies, turning a hardware failure into a brief blip instead of an outage.',
+      '**Read replicas scale reads.** For read-heavy workloads you add replicas and route reads to them, keeping writes on the primary, before you ever reach for sharding.',
+    ],
+    examples: [
+      'A SaaS app runs Postgres on Multi-AZ RDS so a zone failure fails over without manual work.',
+      'A reporting dashboard reads from an RDS read replica to keep load off the primary.',
+    ],
+    diagrams: [
+      {
+        caption: 'A primary with an automatic standby; reads can fan out to replicas.',
+        layout: 'row',
+        nodes: [
+          { id: 'app', label: 'App', accent: 'compute' },
+          { id: 'pri', label: 'RDS primary', sub: 'writes', accent: 'primary' },
+          { id: 'standby', label: 'Standby (Multi-AZ)', sub: 'auto failover', accent: 'replica' },
+        ],
+        edges: [
+          { from: 'app', to: 'pri', label: 'read / write' },
+          { from: 'pri', to: 'standby', label: 'replicate' },
+        ],
+      },
+    ],
+    related: ['Amazon Aurora', 'PostgreSQL', 'replication', 'read replica', 'database'],
+  },
+
+  'Amazon Aurora': {
+    body: [
+      '**Aurora is AWS’s cloud-native take on a relational database,** wire-compatible with Postgres and MySQL so existing drivers and tools work. The redesign separates compute from a distributed, self-healing storage layer spread across availability zones.',
+      '**That split is the advantage:** storage scales and replicates independently of the database instances, failover is faster than classic RDS, and adding read replicas is cheap because they share the same storage.',
+      '**When to choose it over plain RDS:** you want higher throughput, faster recovery, and many read replicas, and you are comfortable on AWS-specific infrastructure for it.',
+    ],
+    examples: [
+      'A high-traffic app uses Aurora Postgres with several read replicas sharing one storage volume.',
+      'A team migrates from RDS MySQL to Aurora MySQL with no application code changes.',
+    ],
+    diagrams: [
+      {
+        caption: 'Compute instances share one distributed storage layer across zones.',
+        layout: 'gather',
+        nodes: [
+          { id: 'w', label: 'Writer', accent: 'primary' },
+          { id: 'r1', label: 'Reader', accent: 'replica' },
+          { id: 'r2', label: 'Reader', accent: 'replica' },
+          { id: 'store', label: 'Shared storage', sub: 'replicated, multi-AZ', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['Amazon RDS', 'replication', 'read replica', 'PostgreSQL', 'database'],
+  },
+
+  'Amazon ElastiCache': {
+    body: [
+      '**ElastiCache is managed Redis or Memcached.** It puts an in-memory store in front of your database so hot reads come back in microseconds instead of hitting disk, and it holds ephemeral state like sessions and rate-limit counters.',
+      '**The pattern is cache-aside:** the app checks the cache first, falls back to the database on a miss, and writes the result back. The hard part is invalidation, keeping the cache from serving stale data after a write.',
+      '**It removes the ops burden** of running Redis yourself: failover, backups, and scaling are managed, while you focus on what to cache and for how long.',
+    ],
+    examples: [
+      'A product page caches the rendered catalog in Redis with a short TTL to absorb traffic spikes.',
+      'A rate limiter stores per-key request counts in ElastiCache for distributed counting.',
+    ],
+    diagrams: [
+      {
+        caption: 'Read the cache first; fall back to the database on a miss.',
+        layout: 'row',
+        nodes: [
+          { id: 'app', label: 'App', accent: 'compute' },
+          { id: 'cache', label: 'ElastiCache', sub: 'Redis', accent: 'cache' },
+          { id: 'db', label: 'Database', accent: 'primary' },
+        ],
+        edges: [
+          { from: 'app', to: 'cache', label: '1. check' },
+          { from: 'cache', to: 'db', label: '2. miss → load', dashed: true },
+        ],
+      },
+    ],
+    related: ['Redis', 'cache', 'cache invalidation', 'rate limit', 'Amazon RDS'],
+  },
+
+  'Amazon CloudFront': {
+    body: [
+      "**CloudFront is AWS’s CDN.** It caches content at edge locations physically close to users, so a request is served from a nearby city instead of crossing the world to your origin. That cuts latency and offloads traffic from S3 or your servers.",
+      '**It fronts both static and dynamic content.** Static assets (images, video, bundles) cache for a long time; dynamic responses can cache briefly or pass through, while still benefiting from the optimized edge network and TLS termination.',
+      '**Cache invalidation is the catch:** when content changes you either version the URL or issue an invalidation so the edge stops serving the old copy.',
+    ],
+    examples: [
+      'A media site serves images from S3 through CloudFront so users worldwide get them from a nearby edge.',
+      'A web app ships versioned asset filenames so a deploy never serves a stale cached bundle.',
+    ],
+    diagrams: [
+      {
+        caption: 'Users hit a nearby edge; only misses reach the origin.',
+        layout: 'row',
+        nodes: [
+          { id: 'user', label: 'User', accent: 'client' },
+          { id: 'edge', label: 'CloudFront edge', sub: 'cache', accent: 'edge' },
+          { id: 'origin', label: 'Origin', sub: 'S3 / app', accent: 'storage' },
+        ],
+        edges: [
+          { from: 'user', to: 'edge', label: 'request' },
+          { from: 'edge', to: 'origin', label: 'on miss', dashed: true },
+        ],
+      },
+    ],
+    related: ['CDN', 'Amazon S3', 'cache', 'Amazon Route 53', 'latency'],
+  },
+
+  'Amazon Route 53': {
+    body: [
+      '**Route 53 is AWS’s DNS,** translating your domain into the address clients connect to. Because every request starts with a DNS lookup, it is also a powerful place to steer traffic.',
+      '**Routing policies turn DNS into a traffic tool:** latency-based routing sends users to the nearest region, weighted routing splits traffic for canary releases, and failover routing points away from an unhealthy endpoint.',
+      '**Health checks make it a failover mechanism:** Route 53 can stop returning the address of a region that is down, rerouting users to a healthy one automatically.',
+    ],
+    examples: [
+      'A multi-region app uses latency-based routing so each user reaches the closest region.',
+      'A failover record sends traffic to a standby region when the primary fails its health check.',
+    ],
+    diagrams: [
+      {
+        caption: 'DNS routes each user to the closest healthy region.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'dns', label: 'Route 53', sub: 'latency routing', accent: 'edge' },
+          { id: 'us', label: 'us-east region', accent: 'compute' },
+          { id: 'eu', label: 'eu-west region', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['DNS', 'multi-region', 'Amazon CloudFront', 'load balancer', 'single point of failure'],
+  },
+
+  'Amazon VPC': {
+    body: [
+      '**A VPC is your private network inside AWS.** You carve it into subnets, decide which are public (reachable from the internet) and which are private (internal only), and control traffic with route tables and security groups.',
+      '**The standard shape:** load balancers sit in public subnets; application servers and databases sit in private subnets with no direct internet exposure. Outbound access from private subnets goes through a NAT gateway.',
+      '**Security groups are stateful firewalls** attached to resources, allowing only the ports and sources you specify. This network isolation is a core layer of defense, keeping the database unreachable from the open internet.',
+    ],
+    examples: [
+      'A web tier in a public subnet talks to a database in a private subnet that has no public IP.',
+      'A security group lets the app servers reach Postgres on 5432 but blocks everything else.',
+    ],
+    diagrams: [
+      {
+        caption: 'Public subnet faces the internet; the database hides in a private subnet.',
+        layout: 'row',
+        nodes: [
+          { id: 'net', label: 'Internet', accent: 'client' },
+          { id: 'pub', label: 'Public subnet', sub: 'load balancer', accent: 'edge' },
+          { id: 'priv', label: 'Private subnet', sub: 'app + DB', accent: 'primary' },
+        ],
+        edges: [
+          { from: 'net', to: 'pub', label: 'allowed' },
+          { from: 'pub', to: 'priv', label: 'internal only' },
+        ],
+      },
+    ],
+    related: ['firewall', 'NAT', 'CIDR', 'Amazon EC2', 'reverse proxy'],
+  },
+
+  'AWS IAM': {
+    body: [
+      '**IAM controls who can do what in your AWS account.** Policies are JSON rules that grant specific actions on specific resources; you attach them to users, groups, and roles to enforce least privilege, the principle of granting only the access actually needed.',
+      '**Roles are the key idea for services.** Instead of pasting long-lived keys into code, a service (an EC2 instance, a Lambda) assumes a role and receives temporary, automatically rotated credentials. This is how an app gets permission to read an S3 bucket without storing a secret.',
+      '**Get it wrong and it is a breach:** over-broad policies are how a single compromised component turns into account-wide access. Scoping permissions tightly is foundational security, not a formality.',
+    ],
+    examples: [
+      'A Lambda assumes a role that allows only s3:GetObject on one bucket, nothing more.',
+      'A developer group gets read-only access to production and full access to staging.',
+    ],
+    diagrams: [
+      {
+        caption: 'A service assumes a role and gets scoped, temporary credentials.',
+        layout: 'row',
+        nodes: [
+          { id: 'svc', label: 'Lambda / EC2', accent: 'compute' },
+          { id: 'role', label: 'IAM role', sub: 'least privilege', accent: 'edge' },
+          { id: 'res', label: 'S3 bucket', sub: 'GetObject only', accent: 'storage' },
+        ],
+        edges: [
+          { from: 'svc', to: 'role', label: 'assume' },
+          { from: 'role', to: 'res', label: 'allowed action' },
+        ],
+      },
+    ],
+    related: ['authentication', 'authorization', 'AWS Secrets Manager', 'AWS KMS', 'Amazon Cognito'],
+  },
+
+  'Amazon CloudWatch': {
+    body: [
+      '**CloudWatch is the eyes on your AWS system.** It collects metrics (CPU, latency, error counts), aggregates logs, and fires alarms when a metric crosses a threshold, so you can see what is happening and get paged before users complain.',
+      '**Alarms close the loop with automation:** a CloudWatch alarm can trigger Auto Scaling to add instances, or notify an on-call channel via SNS. Monitoring is not just dashboards; it drives action.',
+      '**Tune it or drown in noise.** Alert on the few signals that mean real user pain (error rate, p99 latency, queue depth) rather than every blip, or alarms get ignored.',
+    ],
+    examples: [
+      'A latency alarm pages on-call when p99 exceeds 500ms for five minutes.',
+      'A high-CPU alarm triggers the Auto Scaling group to add instances.',
+    ],
+    diagrams: [
+      {
+        caption: 'Metrics feed alarms that page humans or trigger scaling.',
+        layout: 'row',
+        nodes: [
+          { id: 'svc', label: 'Services', accent: 'compute' },
+          { id: 'cw', label: 'CloudWatch', sub: 'metrics + logs', accent: 'edge' },
+          { id: 'act', label: 'Alarm → scale / page', accent: 'danger' },
+        ],
+        edges: [
+          { from: 'svc', to: 'cw', label: 'emit' },
+          { from: 'cw', to: 'act', label: 'threshold crossed' },
+        ],
+      },
+    ],
+    related: ['observability', 'metric', 'log', 'Auto Scaling', 'AWS CloudTrail'],
+  },
+
+  'AWS CloudTrail': {
+    body: [
+      '**CloudTrail is the audit log of your AWS account:** it records who made which API call, when, from where, and whether it succeeded. Where CloudWatch tells you how the system is performing, CloudTrail tells you who changed it.',
+      '**It is the answer to "who did this?"** When a security group suddenly opened a port or a bucket went public, CloudTrail shows the identity, time, and source IP behind the change.',
+      '**It underpins compliance and forensics:** an immutable trail of account activity is required for many audits and is the first place you look during an incident.',
+    ],
+    examples: [
+      'An investigation traces a public-bucket change to a specific IAM user and time via CloudTrail.',
+      'A compliance audit uses CloudTrail history to prove who accessed production resources.',
+    ],
+    diagrams: [
+      {
+        caption: 'Every API call is recorded as an immutable audit event.',
+        layout: 'row',
+        nodes: [
+          { id: 'who', label: 'User / service', accent: 'client' },
+          { id: 'api', label: 'AWS API call', accent: 'compute' },
+          { id: 'trail', label: 'CloudTrail', sub: 'who, when, where', accent: 'storage' },
+        ],
+        edges: [
+          { from: 'who', to: 'api', label: 'action' },
+          { from: 'api', to: 'trail', label: 'record' },
+        ],
+      },
+    ],
+    related: ['Amazon CloudWatch', 'AWS IAM', 'observability', 'log'],
+  },
+
+  'Amazon SNS': {
+    body: [
+      '**SNS is pub/sub fan-out.** A publisher sends one message to a topic and SNS delivers a copy to every subscriber, which can be SQS queues, Lambda functions, HTTP endpoints, or email. One event, many independent reactions.',
+      '**The classic pattern is SNS + SQS fan-out:** an order-placed event is published once, and separate queues for billing, shipping, and analytics each receive it and process at their own pace.',
+      '**It decouples producers from consumers:** the publisher does not know or care who is listening, so you add new reactions to an event without touching the code that emits it.',
+    ],
+    examples: [
+      'An "order placed" topic fans out to billing, shipping, and analytics queues at once.',
+      'A deployment notification publishes to a topic that emails the team and posts to a webhook.',
+    ],
+    diagrams: [
+      {
+        caption: 'One published message fans out to many subscribers.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'topic', label: 'SNS topic', accent: 'queue' },
+          { id: 'bill', label: 'Billing queue', accent: 'compute' },
+          { id: 'ship', label: 'Shipping queue', accent: 'compute' },
+          { id: 'an', label: 'Analytics queue', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['Amazon SQS', 'queue', 'fanout', 'AWS Lambda', 'webhook'],
+  },
+
+  'AWS Fargate': {
+    body: [
+      '**Fargate runs containers without servers to manage.** You hand it a container image and a CPU/memory size; AWS finds the capacity, runs the task, and bills for the resources used. There are no EC2 hosts to patch or scale.',
+      '**It is a launch mode for ECS and EKS:** you keep the orchestration model (services, tasks, pods) but drop the responsibility of maintaining the underlying instances.',
+      '**The trade is control versus convenience:** Fargate is simpler and great for variable workloads, while self-managed EC2 hosts can be cheaper at steady, high utilization.',
+    ],
+    examples: [
+      'A team runs its API as ECS tasks on Fargate so there are no instances to maintain.',
+      'A nightly batch container scales to many Fargate tasks, then drops to zero.',
+    ],
+    diagrams: [
+      {
+        caption: 'You provide a container; Fargate runs it without managed hosts.',
+        layout: 'row',
+        nodes: [
+          { id: 'img', label: 'Container image', accent: 'edge' },
+          { id: 'far', label: 'Fargate', sub: 'serverless compute', accent: 'compute' },
+          { id: 'run', label: 'Running tasks', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['Amazon ECS', 'Amazon EKS', 'container', 'Docker', 'AWS Lambda'],
+  },
+
+  'Amazon ECS': {
+    body: [
+      '**ECS is AWS’s own container orchestrator.** It schedules Docker containers as tasks, keeps the desired number running, integrates with load balancers, and scales services up and down. It is simpler than Kubernetes and tightly wired into AWS.',
+      '**Two ways to run it:** on EC2 hosts you own and manage, or serverless on Fargate. Same task definitions, different responsibility for the underlying capacity.',
+      '**Pick ECS over EKS** when you want the easiest path to running containers on AWS and do not need Kubernetes portability or its ecosystem.',
+    ],
+    examples: [
+      'A web service runs as an ECS service on Fargate behind an Application Load Balancer.',
+      'A worker pool runs as ECS tasks that scale with SQS queue depth.',
+    ],
+    diagrams: [
+      {
+        caption: 'ECS keeps the desired count of container tasks running behind a balancer.',
+        layout: 'row',
+        nodes: [
+          { id: 'lb', label: 'Load Balancer', accent: 'edge' },
+          { id: 'ecs', label: 'ECS service', sub: 'desired count', accent: 'compute' },
+          { id: 'tasks', label: 'Container tasks', accent: 'success' },
+        ],
+        edges: [
+          { from: 'lb', to: 'ecs' },
+          { from: 'ecs', to: 'tasks', label: 'schedule' },
+        ],
+      },
+    ],
+    related: ['Amazon EKS', 'AWS Fargate', 'container', 'Docker', 'Kubernetes'],
+  },
+
+  'Amazon EKS': {
+    body: [
+      '**EKS is managed Kubernetes on AWS.** AWS runs the Kubernetes control plane for you; you run workloads on EC2 nodes or Fargate. You get the standard Kubernetes API, so manifests and tooling from elsewhere work unchanged.',
+      '**Choose it for portability and ecosystem:** if your team already knows Kubernetes or wants to avoid lock-in to an AWS-specific orchestrator, EKS is the fit, at the cost of more moving parts than ECS.',
+      '**It is heavier than ECS:** more concepts, more configuration, more to operate, justified when you need what Kubernetes specifically offers.',
+    ],
+    examples: [
+      'A company standardizes on Kubernetes across clouds and runs its AWS clusters on EKS.',
+      'A platform team uses EKS so existing Helm charts deploy without changes.',
+    ],
+    diagrams: [
+      {
+        caption: 'AWS manages the control plane; your pods run on nodes or Fargate.',
+        layout: 'row',
+        nodes: [
+          { id: 'cp', label: 'EKS control plane', sub: 'AWS-managed', accent: 'edge' },
+          { id: 'nodes', label: 'Worker nodes', sub: 'EC2 / Fargate', accent: 'compute' },
+          { id: 'pods', label: 'Pods', accent: 'success' },
+        ],
+        edges: [
+          { from: 'cp', to: 'nodes', label: 'schedule' },
+          { from: 'nodes', to: 'pods' },
+        ],
+      },
+    ],
+    related: ['Kubernetes', 'Amazon ECS', 'AWS Fargate', 'container', 'Docker'],
+  },
+
+  'AWS CloudFormation': {
+    body: [
+      '**CloudFormation is infrastructure as code for AWS.** You declare the resources you want (instances, buckets, roles, databases) in a template, and CloudFormation creates, updates, and deletes them as a single managed stack.',
+      '**The win is reproducibility:** the same template builds an identical staging and production environment, and changes are reviewed and version-controlled like application code instead of clicked into a console.',
+      '**It tracks state and rolls back:** a failed update reverts the stack to its last good state, so half-applied infrastructure changes do not leave you stranded.',
+    ],
+    examples: [
+      'One template provisions a VPC, an RDS database, and an Auto Scaling group as a single stack.',
+      'A pull request changes a template; the diff shows exactly what infrastructure will change.',
+    ],
+    diagrams: [
+      {
+        caption: 'A declared template becomes a managed stack of real resources.',
+        layout: 'row',
+        nodes: [
+          { id: 'tpl', label: 'Template', sub: 'declared resources', accent: 'edge' },
+          { id: 'cfn', label: 'CloudFormation', accent: 'compute' },
+          { id: 'stack', label: 'Live stack', sub: 'VPC, RDS, EC2', accent: 'success' },
+        ],
+        edges: [
+          { from: 'tpl', to: 'cfn', label: 'deploy' },
+          { from: 'cfn', to: 'stack', label: 'create / update' },
+        ],
+      },
+    ],
+    related: ['deployment', 'CI/CD', 'Amazon VPC', 'AWS IAM'],
+  },
+
+  'Amazon API Gateway': {
+    body: [
+      '**API Gateway is a managed front door for APIs.** It terminates HTTPS, authenticates and authorizes callers, throttles abusive clients, and routes each request to a Lambda or backend service, handling the cross-cutting concerns so your code does not have to.',
+      '**It is the classic entry point for serverless APIs:** a request hits API Gateway, which invokes a Lambda per route. The gateway owns auth, rate limiting, and request validation at the edge.',
+      '**It centralizes policy:** changing a rate limit or auth rule happens in one place instead of in every service behind it.',
+    ],
+    examples: [
+      'A REST API maps each route to a Lambda, with API Gateway enforcing API keys and throttling.',
+      'API Gateway validates the request body and rejects malformed calls before they reach Lambda.',
+    ],
+    diagrams: [
+      {
+        caption: 'The gateway authenticates and throttles, then routes to functions.',
+        layout: 'row',
+        nodes: [
+          { id: 'client', label: 'Client', accent: 'client' },
+          { id: 'gw', label: 'API Gateway', sub: 'auth + throttle', accent: 'edge' },
+          { id: 'fn', label: 'Lambda', accent: 'compute' },
+        ],
+        edges: [
+          { from: 'client', to: 'gw', label: 'HTTPS' },
+          { from: 'gw', to: 'fn', label: 'route' },
+        ],
+      },
+    ],
+    related: ['API gateway', 'AWS Lambda', 'rate limit', 'authentication', 'Amazon Cognito'],
   },
 
 }

@@ -39,6 +39,8 @@ The flow below is worth saying out loud until it feels boring. It is the map for
       'Name one failure mode for one hop.',
     ],
     interactive: {
+      coldOpen:
+        'You visit a site every day. Right now, can you name every hop your request makes, in order, from your keyboard to the server and back? Most engineers get four. Here is the whole chain.',
       mental:
         'The web is a postal service: the URL addresses the envelope, DNS finds the building, TCP and TLS are the sealed courier, and your backend is the mailroom that writes the reply.',
       diagram: {
@@ -82,10 +84,41 @@ The flow below is worth saying out loud until it feels boring. It is the map for
           why: 'A backend is the listening program. Requests arrive, its code runs, responses leave. That is the job.',
         },
       ],
+      build: {
+        simple: 'Your computer asks another computer for a page, and it sends one back.',
+        actually:
+          'That request crosses six hops: DNS turns the name into an IP, TCP opens a pipe, TLS encrypts it, the HTTP request travels, the server runs your code, and the response returns.',
+        breaks:
+          'Each hop fails differently: DNS pointing at the wrong machine, an expired TLS certificate, a server hanging on a slow query. Naming the broken hop before guessing the fix is the senior move.',
+      },
+      doThisNow: [
+        {
+          task: 'Run curl against a real site and read the raw response a browser would render.',
+          command: 'curl -s https://example.com | head -n 12',
+          reveal:
+            'You get the page HTML with no rendering: exactly what the server sent. curl is your window into raw HTTP, and you will use it constantly.',
+        },
+        {
+          task: 'Now ask curl to narrate the journey, not just the result. Read the lines that start with *.',
+          command: 'curl -v https://example.com 2>&1 | head -n 10',
+          reveal:
+            'The * lines are curl walking the chain: Trying <ip> (DNS done), Connected (TCP), a TLS line, then your GET request. You can watch every hop you just learned.',
+        },
+      ],
+      warStory:
+        'When production breaks, this chain is the diagnosis checklist. A 27-minute outage at a major provider in 2019 was not the servers: a bad DNS push meant names stopped resolving, so nothing downstream could even start.',
       tweak: {
         instruction: 'Run this in a terminal: curl https://example.com and read what comes back.',
         reveal:
           'You get the HTML of the page: the same response a browser receives, without the rendering. curl is the engineer’s window into raw HTTP, and you will use it constantly.',
+      },
+      receipt: {
+        explain: [
+          'The six hops from URL to response, in order.',
+          'Why every hop is a distinct place a request can fail.',
+        ],
+        command: 'curl -v https://example.com',
+        question: 'The first hop turns a name into a number. How does DNS do that so fast?',
       },
       recap: [
         'HTTP is two messages: a request and a response.',
@@ -130,6 +163,8 @@ One address, four decisions: how to talk, to whom, about what, with which option
       'Construct a URL with two query parameters.',
     ],
     interactive: {
+      coldOpen:
+        'Here is a URL: https://api.example.com/users/42?fields=name&limit=10. Four different parts, four different jobs, and a routing bug usually hides in exactly one of them. Can you point to which part decides which code runs?',
       mental:
         'A URL is a mailing address: the scheme is the carrier, the host is the building, the path is the apartment, and the query string is the delivery instructions.',
       diagram: {
@@ -162,10 +197,39 @@ One address, four decisions: how to talk, to whom, about what, with which option
           why: 'Query strings are text end to end. The backend must convert and validate before doing math, exactly the coercion lesson from JavaScript.',
         },
       ],
+      build: {
+        simple: 'A URL is the address of a page.',
+        actually:
+          'A URL is four decisions: scheme (how to talk), host (which machine, via DNS), path (which resource, read by the router), and query (options, always arriving as text).',
+        breaks:
+          'The classic "works locally, 404s in production" bug is almost always one of these four pointing somewhere unexpected: wrong host, a path the router does not recognize, or a query value the backend never validated.',
+      },
+      doThisNow: [
+        {
+          task: 'Pull apart a real URL by hand. Pick any link, and name its scheme, host, path, and query out loud before moving on.',
+          reveal:
+            'Scheme says how to talk, host says which machine, path names the resource the router will match, and query carries options as text. Four parts, four jobs, every time.',
+        },
+        {
+          task: 'Write a URL from a sentence: the products of the shop service, filtered to category books, page 2.',
+          reveal:
+            'Something like https://shop.example.com/products?category=books&page=2. The path names the collection; the query narrows it. The order of query keys does not matter.',
+        },
+      ],
+      warStory:
+        'A team shipped a feature that 404d for half of users. The cause: a trailing slash. /users/42 and /users/42/ matched different routes, and only one had the new handler. Reading the path precisely is a real debugging skill.',
       tweak: {
         instruction: 'Add &sort=name to the query string and say what changed.',
         reveal:
           'Just one more key=value option. Queries grow with & and never change which resource the path names, only how it is returned.',
+      },
+      receipt: {
+        explain: [
+          'The four parts of a URL and the job of each.',
+          'Why query values always need parsing and validation.',
+        ],
+        command: 'curl -s "https://httpbin.org/get?a=1&b=2"',
+        question: 'The path names a resource. What verb tells the server whether to read it, create it, or delete it?',
       },
       writeDrillId: 'internet-query-parser',
       recap: [
@@ -210,6 +274,8 @@ The request below is real, captured from curl talking to example.com. This is ge
       'Capture a real request with curl -v.',
     ],
     interactive: {
+      coldOpen:
+        'The entire web rides on a few lines of plain text a human can type. Here is a real request a browser sends. Once you can read these four lines, half of web debugging unlocks: is the Authorization header even being sent?',
       mental:
         'A request is a form letter: the first line states what you want, the headers are labeled fields, and the body is the enclosed package.',
       diagram: {
@@ -245,10 +311,41 @@ The request below is real, captured from curl talking to example.com. This is ge
           why: 'Accept declares response formats the client understands. */* means anything goes; an API client would send application/json.',
         },
       ],
+      build: {
+        simple: 'The browser tells the server which page it wants.',
+        actually:
+          'A request is a request line (METHOD path VERSION), a stack of Name: value headers (Host, Authorization, Accept), a blank line, then an optional body for POST and PUT.',
+        breaks:
+          'Most "it works in curl but not in the app" bugs are a header difference: a missing Authorization, a wrong Content-Type, or a proxy stripping a header between client and server. You diagnose it by comparing the request that left with the one that arrived.',
+      },
+      doThisNow: [
+        {
+          task: 'Capture your own request lines and read them against the example. Look for the Host header.',
+          command: 'curl -v https://example.com 2>&1 | grep "^>"',
+          reveal:
+            'The > prefix marks bytes you sent. You will see GET / HTTP/2, then Host, User-Agent, and Accept. < marks bytes received. This one flag turns curl into an HTTP microscope.',
+        },
+        {
+          task: 'Send a custom header and prove it arrives. httpbin echoes back what it received.',
+          command: 'curl -s -H "X-Demo: hello" https://httpbin.org/headers',
+          reveal:
+            'The JSON response lists every header the server saw, including your X-Demo: hello. This is exactly how you confirm an Authorization header is really being sent.',
+        },
+      ],
+      warStory:
+        'An API call worked from a laptop but failed in production with 401. The load balancer was stripping the Authorization header on one route. Nobody suspected it until someone compared the request that left the client with the one the server logged.',
       tweak: {
         instruction: 'Run curl -v https://example.com 2>&1 | grep "^>" to see your own request lines.',
         reveal:
           'You will see this same shape with your curl version. The > prefix marks bytes sent; < marks bytes received. This one flag turns curl into an HTTP microscope.',
+      },
+      receipt: {
+        explain: [
+          'The three parts of a request line and why Host is mandatory.',
+          'How to prove a specific header is being sent.',
+        ],
+        command: 'curl -s -H "X-Demo: hi" https://httpbin.org/headers',
+        question: 'The request arrives and the server runs. What shape does its reply take?',
       },
       writeDrillId: 'internet-request-line',
       recap: [
@@ -292,6 +389,8 @@ The response below is real, from example.com, trimmed to the essential headers. 
       'Capture a full response with curl -i.',
     ],
     interactive: {
+      coldOpen:
+        'The server got your request. Now it builds a reply with the same shape: a verdict, some labels, and the contents. As a backend engineer, every byte of that reply is yours to decide. What is the first line a browser reads to know if it worked?',
       mental:
         'A response is the reply envelope: a verdict stamped on top, labels describing the contents, then the contents themselves.',
       diagram: {
@@ -328,10 +427,41 @@ The response below is real, from example.com, trimmed to the essential headers. 
           why: 'Server code builds every part of the response. Writing that code is the backend job described literally.',
         },
       ],
+      build: {
+        simple: 'The server sends back the page.',
+        actually:
+          'A response is a status line (HTTP/2 200), headers describing the payload (content-type) and caching, a blank line, then the body. Your handler code authors all three sections.',
+        breaks:
+          'A wrong content-type is a silent integration bug: the body is perfect JSON but the header says text/html, so the client refuses to parse it. The data is fine; the label lied.',
+      },
+      doThisNow: [
+        {
+          task: 'Capture a full response, headers and body together, and find the content-type line.',
+          command: 'curl -i https://example.com | head -n 10',
+          reveal:
+            '-i includes headers with the body. The first line is the status verdict; content-type tells the browser to render the body as a page rather than download it.',
+        },
+        {
+          task: 'Compare two content-types: one HTML page and one JSON API. Notice how the header changes what you get.',
+          command: 'curl -sI https://httpbin.org/json | grep -i content-type',
+          reveal:
+            'The API declares application/json, so clients parse it as data. An HTML page declares text/html, so browsers render it. Same mechanism, different instruction to the client.',
+        },
+      ],
+      warStory:
+        'An endpoint returned valid JSON but with content-type text/html. Browsers showed it as a wall of text, and one frontend silently broke for a week. The fix was one header line. Reviewers check content-type for exactly this reason.',
       tweak: {
         instruction: 'Run curl -i https://example.com and compare your capture to the example.',
         reveal:
           'Same shape, fresher date header, possibly different cache headers. The -i flag includes headers with the body; -v shows both directions.',
+      },
+      receipt: {
+        explain: [
+          'The three sections of a response and who writes them.',
+          'How content-type changes what the client does with the body.',
+        ],
+        command: 'curl -i https://example.com',
+        question: 'That verdict was a three-digit code. What do the five code families mean?',
       },
       writeDrillId: 'internet-build-response',
       recap: [
@@ -377,6 +507,8 @@ The load-bearing distinction is 4xx versus 5xx: whose fault. A 4xx says fix the 
       'Explain why error code accuracy matters for monitoring.',
     ],
     interactive: {
+      coldOpen:
+        'A logged-in user asks for someone else\'s private data. Should the server say 401, 403, or 404? Pick before you read on. The wrong choice either leaks information or wakes the on-call engineer at 3am for nothing.',
       mental:
         'Status codes are five traffic lights: 2 means go, 3 means detour, 4 means you erred, 5 means we erred.',
       diagram: {
@@ -415,9 +547,40 @@ The load-bearing distinction is 4xx versus 5xx: whose fault. A 4xx says fix the 
           why: 'Framework middleware converts crashes into 500 responses. The 5xx family is the "our fault" signal that monitoring watches.',
         },
       ],
+      build: {
+        simple: 'The status code says whether it worked.',
+        actually:
+          'The first digit picks a family: 2xx worked, 3xx go elsewhere, 4xx the client erred, 5xx the server erred. The load-bearing split is 4xx versus 5xx: whose fault.',
+        breaks:
+          'Returning 500 for bad user input pollutes the one signal that matters: 5xx rate. It pages the backend team for what was really a malformed request. Returning 200 for an error hides failures from monitoring entirely.',
+      },
+      doThisNow: [
+        {
+          task: 'Trigger a real 404 and read the status line. Predict the family before you run it.',
+          command: 'curl -sI https://example.com/nonexistent-page | head -n 1',
+          reveal:
+            'A 404: a 4xx, meaning the client asked for something that is not there. Every URL you mistype produces one. Status codes are not theory.',
+        },
+        {
+          task: 'Ask httpbin to return any code you want, and confirm the first line matches. Try 503.',
+          command: 'curl -sI https://httpbin.org/status/503 | head -n 1',
+          reveal:
+            'You get exactly 503 Service Unavailable, a 5xx: the server signaling its own failure. This endpoint lets you rehearse how clients and dashboards react to each code.',
+        },
+      ],
+      warStory:
+        'A service returned 500 whenever a user submitted a bad form. The 5xx alerts fired constantly, the team learned to ignore them, and a real outage hid in the noise for an hour. Accurate 4xx versus 5xx is what keeps alerts trustworthy.',
       tweak: {
         instruction: 'Run curl -i https://example.com/nonexistent-page and read the status line.',
         reveal: 'A 404, with an error body. Status codes are not theory; every URL you mistype produces one.',
+      },
+      receipt: {
+        explain: [
+          'The five families and whose fault each implies.',
+          'Why 4xx versus 5xx accuracy keeps monitoring honest.',
+        ],
+        command: 'curl -sI https://httpbin.org/status/404',
+        question: 'The code tells you the outcome. What part of the request decided whether it was a read or a write?',
       },
       recap: [
         '2xx worked, 3xx moved, 4xx client erred, 5xx server erred.',
@@ -462,6 +625,8 @@ The load-bearing distinction is 4xx versus 5xx: whose fault. A 4xx says fix the 
       'Explain the POST retry hazard.',
     ],
     interactive: {
+      coldOpen:
+        'A payment request times out. The client retries it. The user gets charged twice. This bug is so common that an entire feature (idempotency keys) exists to prevent it. The root cause is a single property of one HTTP verb. Which one?',
       mental:
         'Methods are verbs stamped on the envelope: the same address means different work depending on the stamp.',
       diagram: {
@@ -495,10 +660,40 @@ The load-bearing distinction is 4xx versus 5xx: whose fault. A 4xx says fix the 
           why: 'PATCH means partial modification. PUT semantically replaces the whole resource, so sending one field via PUT implies erasing the rest.',
         },
       ],
+      build: {
+        simple: 'Different verbs do different things to a resource.',
+        actually:
+          'Each verb carries a contract clients, caches, and proxies rely on. Safe means no changes (GET). Idempotent means repeating is harmless (PUT, DELETE). POST is neither, so a retried POST can act twice.',
+        breaks:
+          'A team that tunnels everything through POST loses free retries, caching, and prefetching. And the double-charge from a retried POST is real enough that idempotency keys are a standard interview topic.',
+      },
+      doThisNow: [
+        {
+          task: 'Send the same GET twice and a POST twice (httpbin echoes each). Notice the GET is identical and harmless to repeat.',
+          command: 'curl -s -X POST -d "amount=10" https://httpbin.org/post | grep -i form',
+          reveal:
+            'Every POST is processed fresh: if this were a real charge endpoint, two requests would mean two charges. A GET, by contrast, can be repeated forever with no effect. That is the safe/idempotent difference made concrete.',
+        },
+        {
+          task: 'Assign a verb and path to three operations: list all orders, cancel order 7, re-run a failed export.',
+          reveal:
+            'GET /orders, DELETE /orders/7 (or PATCH if cancel is a status change), POST /exports/7/retries for the action. Actions without a natural noun usually become POST.',
+        },
+      ],
+      warStory:
+        'After a brief network blip, a checkout service retried in-flight POSTs and double-charged a batch of customers. The postmortem fix was textbook: an idempotency key on the POST so the second attempt returns the first result instead of charging again.',
       tweak: {
         instruction: 'Decide the verb and path for: list all orders, cancel order 7, re-run a failed export.',
         reveal:
           'GET /orders, DELETE /orders/7 (or PATCH if cancel is a status change), POST /exports/7/retries for the action. Actions without a natural noun usually become POST.',
+      },
+      receipt: {
+        explain: [
+          'Each verb\'s job and which are safe or idempotent.',
+          'Why a retried POST can double-charge and how idempotency keys fix it.',
+        ],
+        command: 'curl -s -X POST -d "k=v" https://httpbin.org/post',
+        question: 'Programs usually exchange JSON, not HTML. What does the full JSON conversation look like end to end?',
       },
       recap: [
         'GET read, POST create, PUT replace, PATCH modify, DELETE remove.',
@@ -552,6 +747,8 @@ The load-bearing distinction is 4xx versus 5xx: whose fault. A 4xx says fix the 
           'The client parses the JSON text into live data with the tools from the language ladders.',
         ],
       },
+      coldOpen:
+        'You send a perfect JSON body to an API and get back a 400. The data is valid. The bug is one missing header. This is the single most common mistake when people first call an API, and it takes ten seconds to spot once you know the shape of the conversation.',
       intro: 'Every module of this course appears in this one exchange.',
       example: {
         code: 'curl -X POST https://api.example.com/users \\\n  -H "content-type: application/json" \\\n  -d \'{"name": "Kay", "role": "admin"}\'',
@@ -584,10 +781,41 @@ The load-bearing distinction is 4xx versus 5xx: whose fault. A 4xx says fix the 
           why: 'Reading is GET, and the path names the resource. The verbs and paths compose exactly as the previous modules promised.',
         },
       ],
+      build: {
+        simple: 'An API call sends JSON and gets JSON back.',
+        actually:
+          'It is plain HTTP where both sides agree the bodies are JSON. The request declares content-type: application/json and carries the body; the server validates, then answers with a status code and a JSON body, often echoing the created resource with its new id.',
+        breaks:
+          'Four usual suspects when an integration fails: missing content-type header, malformed JSON body, wrong method, wrong path. Reading both raw messages side by side finds the culprit in minutes.',
+      },
+      doThisNow: [
+        {
+          task: 'POST real JSON to a live echo API and read what the server saw. Confirm your body parsed.',
+          command: 'curl -s -X POST https://httpbin.org/post -H "content-type: application/json" -d \'{"name":"Kay"}\'',
+          reveal:
+            'The response has a "json" field with your parsed object, because you declared content-type correctly. Drop that header and watch it land in "data" as an unparsed string instead: that is the most common beginner API bug.',
+        },
+        {
+          task: 'Now remove the content-type header and run it again. Compare where your data shows up.',
+          command: 'curl -s -X POST https://httpbin.org/post -d \'{"name":"Kay"}\'',
+          reveal:
+            'Without the header, the JSON arrives as a raw string in "data", and "json" is null. A real API would reject or misread it. The header is the promise; the body keeps it.',
+        },
+      ],
+      warStory:
+        'A mobile team filed a bug as "the API is broken." A backend engineer asked for the exact curl command. It had no content-type header. The whole thing was reproduced, diagnosed, and closed in five minutes, because curl made the request shareable.',
       tweak: {
         instruction: 'Modify the curl to create a viewer named Sam instead.',
         reveal:
           'Only the -d body changes: \'{"name": "Sam", "role": "viewer"}\'. Method, path, and header are the stable skeleton; the body is the variable data.',
+      },
+      receipt: {
+        explain: [
+          'The full JSON request/response conversation and the role of content-type.',
+          'The three curl flags (-X, -H, -d) that drive any API on earth.',
+        ],
+        command: 'curl -s -X POST https://httpbin.org/post -H "content-type: application/json" -d \'{"a":1}\'',
+        question: 'You can read the whole HTTP conversation now. What does the server do with the request before it replies?',
       },
       writeDrillId: 'api-json-response',
       recap: [

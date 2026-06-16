@@ -1,17 +1,19 @@
 import { useState } from 'react'
 import { renderProse } from './LessonProse'
 
+// A cohesive blue ramp instead of a generic rainbow, so a diagram reads as one
+// intentional system rather than a pile of unrelated colors.
 const PALETTE = [
-  '#e84a5f',
-  '#f59f00',
   '#2f80ed',
-  '#7c3aed',
-  '#0f8b8d',
-  '#00a878',
-  '#ff9700',
-  '#19c6ff',
-  '#e84a5f',
-  '#f59f00',
+  '#1f6fe0',
+  '#3b82f6',
+  '#2563eb',
+  '#1d4ed8',
+  '#4f93f7',
+  '#1e63d6',
+  '#3576e8',
+  '#2f80ed',
+  '#2563eb',
 ]
 
 interface Props {

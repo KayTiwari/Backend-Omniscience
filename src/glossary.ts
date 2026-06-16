@@ -687,6 +687,144 @@ export const glossaryTerms: GlossaryTerm[] = [
     definition:
       'Serving many customers (tenants) from shared infrastructure while isolating their data, on a spectrum from shared tables to dedicated stacks.',
   },
+  {
+    term: 'Amazon EC2',
+    definition:
+      "AWS's rentable virtual machines: you pick an instance type (CPU, memory), launch servers in minutes, and pay by the second while they run. The general-purpose way to run your own software in the cloud.",
+    synonyms: ['EC2', 'Elastic Compute Cloud'],
+  },
+  {
+    term: 'Amazon EBS',
+    definition:
+      'Elastic Block Store: a durable virtual disk you attach to an EC2 instance. It persists independently of the instance, can be snapshotted to S3, and survives a reboot.',
+    synonyms: ['EBS', 'Elastic Block Store'],
+  },
+  {
+    term: 'Auto Scaling',
+    definition:
+      'An AWS feature that adds or removes EC2 instances automatically based on demand (a target metric or schedule), so capacity tracks traffic instead of being fixed.',
+    synonyms: ['Auto Scaling Group', 'ASG'],
+  },
+  {
+    term: 'Elastic Load Balancing',
+    definition:
+      "AWS's managed load balancer. It spreads incoming traffic across healthy instances or containers, runs health checks, and is the front door for an Auto Scaling group.",
+    synonyms: ['ELB', 'Application Load Balancer', 'ALB'],
+  },
+  {
+    term: 'Amazon RDS',
+    definition:
+      'Relational Database Service: managed Postgres, MySQL, or SQL Server where AWS handles backups, patching, replication, and failover, so you run a relational database without operating the server.',
+    synonyms: ['RDS', 'Relational Database Service'],
+  },
+  {
+    term: 'Amazon Aurora',
+    definition:
+      "AWS's cloud-native relational database, wire-compatible with Postgres and MySQL, that separates compute from a distributed storage layer for higher throughput and faster failover than standard RDS.",
+    synonyms: ['Aurora'],
+  },
+  {
+    term: 'Amazon ElastiCache',
+    definition:
+      'Managed Redis or Memcached. It puts an in-memory cache in front of a database to absorb hot reads and hold sessions or rate-limit counters, without you running the cache servers.',
+    synonyms: ['ElastiCache'],
+  },
+  {
+    term: 'Amazon CloudFront',
+    definition:
+      "AWS's CDN: it caches and serves content from edge locations near users, fronting S3 or your application to cut latency and offload the origin.",
+    synonyms: ['CloudFront'],
+  },
+  {
+    term: 'Amazon Route 53',
+    definition:
+      "AWS's DNS service. It translates your domain into the right address and can route by latency, geography, weighting, or health, doubling as a traffic-steering and failover tool.",
+    synonyms: ['Route 53'],
+  },
+  {
+    term: 'Amazon VPC',
+    definition:
+      'Virtual Private Cloud: your own isolated network inside AWS. You define subnets (public and private), route tables, and security groups to control what can talk to what.',
+    synonyms: ['VPC', 'Virtual Private Cloud'],
+  },
+  {
+    term: 'AWS IAM',
+    definition:
+      'Identity and Access Management: who can do what in your AWS account. Policies grant least-privilege permissions to users, groups, and roles, and roles let services assume temporary credentials.',
+    synonyms: ['IAM', 'Identity and Access Management'],
+  },
+  {
+    term: 'Amazon CloudWatch',
+    definition:
+      "AWS's monitoring service: it collects metrics, logs, and alarms across services so you can see latency, errors, and resource use, and trigger alerts or scaling actions.",
+    synonyms: ['CloudWatch'],
+  },
+  {
+    term: 'AWS CloudTrail',
+    definition:
+      'An audit log of API activity in your AWS account: who called what, when, and from where. It answers "who changed this?" for security and compliance, distinct from CloudWatch performance monitoring.',
+    synonyms: ['CloudTrail'],
+  },
+  {
+    term: 'Amazon SNS',
+    definition:
+      'Simple Notification Service: pub/sub messaging that fans one published message out to many subscribers (queues, Lambdas, HTTP endpoints, email). Pairs with SQS for fan-out pipelines.',
+    synonyms: ['SNS', 'Simple Notification Service'],
+  },
+  {
+    term: 'AWS Fargate',
+    definition:
+      'A serverless way to run containers: you give it a container and resource size and AWS runs it without you managing EC2 hosts. A compute backend for ECS and EKS.',
+    synonyms: ['Fargate'],
+  },
+  {
+    term: 'Amazon ECS',
+    definition:
+      "Elastic Container Service: AWS's own orchestrator for running and scaling Docker containers, either on EC2 hosts you manage or serverless on Fargate.",
+    synonyms: ['ECS', 'Elastic Container Service'],
+  },
+  {
+    term: 'Amazon EKS',
+    definition:
+      'Elastic Kubernetes Service: managed Kubernetes on AWS. You get the standard Kubernetes API while AWS runs the control plane, useful when you want Kubernetes portability.',
+    synonyms: ['EKS', 'Elastic Kubernetes Service'],
+  },
+  {
+    term: 'AWS CloudFormation',
+    definition:
+      "Infrastructure as code for AWS: you declare resources in a template and CloudFormation creates, updates, and deletes them as one managed stack, so environments are reproducible.",
+    synonyms: ['CloudFormation'],
+  },
+  {
+    term: 'Amazon API Gateway',
+    definition:
+      'A managed front door for APIs: it terminates HTTPS, authenticates, throttles, and routes requests to Lambda or backend services, handling the cross-cutting concerns at the edge.',
+    synonyms: ['API Gateway'],
+  },
+  {
+    term: 'AWS Secrets Manager',
+    definition:
+      'A managed store for secrets (database passwords, API keys) with encryption, fine-grained access, and automatic rotation, so credentials stay out of code and config files.',
+    synonyms: ['Secrets Manager'],
+  },
+  {
+    term: 'AWS KMS',
+    definition:
+      'Key Management Service: creates and controls the encryption keys other AWS services use, so data at rest in S3, EBS, or RDS is encrypted with keys you govern and audit.',
+    synonyms: ['KMS', 'Key Management Service'],
+  },
+  {
+    term: 'Amazon Cognito',
+    definition:
+      'A managed user-identity service: sign-up, sign-in, social and SSO login, and token issuance for your app, so you do not build authentication and a user store from scratch.',
+    synonyms: ['Cognito'],
+  },
+  {
+    term: 'AWS Step Functions',
+    definition:
+      'A managed workflow engine: it coordinates multiple Lambdas and services as a state machine with retries, branching, and error handling, replacing brittle glue code for multi-step processes.',
+    synonyms: ['Step Functions'],
+  },
 ]
 
 export type GlossaryMatch = {

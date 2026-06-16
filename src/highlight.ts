@@ -25,6 +25,18 @@ const LITERALS = new Set([
   'None', 'True', 'False', 'self', 'this',
 ])
 
+// SQL is case-insensitive, so these are matched against word.toUpperCase().
+const SQL_KEYWORDS = new Set([
+  'SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'NOT', 'NULL', 'IS', 'IN', 'AS',
+  'ORDER', 'BY', 'GROUP', 'HAVING', 'LIMIT', 'OFFSET', 'DISTINCT', 'ON',
+  'JOIN', 'LEFT', 'RIGHT', 'INNER', 'OUTER', 'FULL', 'CROSS', 'USING',
+  'INSERT', 'INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE', 'CONFLICT', 'EXCLUDED',
+  'CREATE', 'TABLE', 'PRIMARY', 'KEY', 'REFERENCES', 'INTEGER', 'TEXT', 'NUMERIC',
+  'OVER', 'PARTITION', 'ASC', 'DESC', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END',
+  'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'RANK', 'DENSE_RANK', 'ROW_NUMBER',
+  'DO', 'NOTHING', 'RETURNING', 'WITH', 'UNION', 'ALL', 'BETWEEN', 'LIKE', 'EXISTS',
+])
+
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
@@ -33,8 +45,13 @@ function span(cls: string, text: string): string {
   return '<span class="tok-' + cls + '">' + esc(text) + '</span>'
 }
 
-export function highlight(code: string, language: 'js' | 'ts' | 'py' = 'js'): string {
-  const comment = language === 'py' ? /#[^\n]*/y : /\/\/[^\n]*|\/\*[\s\S]*?\*\//y
+export function highlight(code: string, language: 'js' | 'ts' | 'py' | 'sql' = 'js'): string {
+  const comment =
+    language === 'py'
+      ? /#[^\n]*/y
+      : language === 'sql'
+        ? /--[^\n]*|\/\*[\s\S]*?\*\//y
+        : /\/\/[^\n]*|\/\*[\s\S]*?\*\//y
   const string = /`(?:\\.|[^`\\])*`|'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"/y
   const number = /\b\d[\d_]*(?:\.\d+)?\b/y
   const ident = /[A-Za-z_$][\w$]*/y
@@ -63,7 +80,7 @@ export function highlight(code: string, language: 'js' | 'ts' | 'py' = 'js'): st
       const word = m[0]
       i = ident.lastIndex
       let cls: string | null = null
-      if (KEYWORDS.has(word)) cls = 'keyword'
+      if (language === 'sql' ? SQL_KEYWORDS.has(word.toUpperCase()) : KEYWORDS.has(word)) cls = 'keyword'
       else if (LITERALS.has(word)) cls = 'literal'
       else {
         let j = i

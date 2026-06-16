@@ -37,6 +37,7 @@ import { conceptSubjects } from './course.concepts'
 import { appendixSubject } from './course.appendix'
 import { systemDesignPractice } from './course.systemDesignPractice'
 import { awsSubject } from './course.aws'
+import { urlJourneySubject } from './course.url'
 import { tutorials as longTutorials } from './tutorials'
 
 export type ProblemType = 'lesson' | 'coding' | 'quiz' | 'debug' | 'design'
@@ -51,10 +52,30 @@ export type PredictCheck = {
   why: string
 }
 
+// One interleaved "Do this now" action: a tiny, ~30-second hands-on task that
+// makes the learner DO something (run a command, change one line and re-run,
+// write code in the embedded editor) instead of reading passively. This is the
+// spine of a lesson: doing beats predicting.
+export type DoTask = {
+  // Imperative, concrete action. "Run `dig google.com +trace`", "Change the
+  // status to 302 and re-run", "Open DevTools -> Network, find the slowest req".
+  task: string
+  // Optional copyable terminal command, shown as a terminal-style callout.
+  command?: string
+  // Optional drill id: embeds a runnable editor + tests for this step.
+  drillId?: string
+  // What the learner should observe / the answer, revealed after they try.
+  reveal?: string
+}
+
 // Foundational, hands-on lesson content. When a Problem carries this, the app
-// shows a runnable worked example, authored predict-the-output checks, and a
-// "change one thing" tweak instead of the generic teaching scaffold.
+// shows a cold-open hook, a live artifact, a build-then-break mental model,
+// interleaved "do this now" tasks, a war story, and a receipt instead of the
+// generic teaching scaffold. The whole shape is DOING-first.
 export type InteractiveLesson = {
+  // A concrete, slightly unsettling question or scenario that opens the lesson.
+  // Never a definition. Rendered as a terminal-style hook card at the very top.
+  coldOpen?: string
   intro?: string
   // A one-sentence analogy that gives the concept a memorable shape, shown as
   // a highlighted Mental Model card on the Learn page.
@@ -62,16 +83,31 @@ export type InteractiveLesson = {
   // An authored concept diagram: ordered nodes with a click-to-read
   // explanation per node, rendered with InteractiveDiagram.
   diagram?: { nodes: string[]; explanations: string[] }
-  example: { code: string; output: string; explain?: string }
-  predicts: PredictCheck[]
+  // When `setupSql` is present, the example is a real query: the Learn page
+  // seeds Postgres (PGlite) with `setupSql`, runs `code`, and shows the actual
+  // result table instead of the static `output` text.
+  example: { code: string; output: string; explain?: string; setupSql?: string }
+  // Build a mental model, then break it: the simple version, what is actually
+  // true, and where it breaks in production. The reveal is what makes it stick.
+  build?: { simple: string; actually: string; breaks: string }
+  // Interleaved hands-on tasks — the dominant interaction. The learner DOES.
+  doThisNow?: DoTask[]
+  // Optional, secondary self-check: predict-the-output multiple choice. Doing
+  // comes first; this is never the primary path or a hard completion gate.
+  predicts?: PredictCheck[]
   tweak?: { instruction: string; reveal: string }
   // Drill problem ids whose runnable editor + tests are embedded directly in the
   // lesson body. Falls back to writeDrillId when omitted.
   drills?: string[]
   writeDrillId?: string
+  // A two-line "why this matters in a real job" field note shown at section end.
+  warStory?: string
   // Up to three takeaways shown as a "Lock It In" recap at the end of the
   // lesson. Retention consolidation: the learner re-reads exactly what to keep.
   recap?: string[]
+  // Structured end-of-lesson receipt: things you can now explain out loud, one
+  // command you can run from memory, one question to bring to the next module.
+  receipt?: { explain: string[]; command?: string; question?: string }
 }
 
 export type Problem = {
@@ -95,6 +131,11 @@ export type Problem = {
 
 export type ProblemDifficulty = 'Warmup' | 'Core' | 'Hard' | 'Boss'
 
+// One stop on a module's journey path. When a Subject defines `stations`, the
+// lesson view shows a sticky station-path progress indicator
+// ([Browser]->[DNS]->[TCP]->...) so the learner feels they are traveling.
+export type Station = { label: string; problemId: string }
+
 export type Subject = {
   id: string
   title: string
@@ -102,6 +143,9 @@ export type Subject = {
   icon: LucideIcon | ComponentType<{ size?: number; className?: string }>
   color: string
   problems: Problem[]
+  // Optional ordered journey across this subject's problems, rendered as a
+  // sticky station-path indicator above the lesson.
+  stations?: Station[]
 }
 
 const longTutorialProblems = longTutorials.reduce<Record<string, Problem[]>>((acc, tutorial) => {
@@ -927,6 +971,7 @@ export const subjectTracks: { label: string; subjectIds: string[] }[] = [
   {
     label: 'Backend Concepts',
     subjectIds: [
+      'url-journey',
       'internet',
       'http-networking',
       'api',
@@ -1047,7 +1092,7 @@ const mergedSubjects: Subject[] = [
       ...(capstoneProblems[subject.id] ?? []),
     ]),
   })),
-  ...[...extraSubjects, csharpSubject, awsSubject, ...conceptSubjects, appendixSubject].map((subject) => ({
+  ...[urlJourneySubject, ...extraSubjects, csharpSubject, awsSubject, ...conceptSubjects, appendixSubject].map((subject) => ({
     ...subject,
     problems: sortProblemsByPhase([
       ...(foundationProblems[subject.id] ?? []),

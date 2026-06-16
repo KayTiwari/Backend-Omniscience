@@ -1,7 +1,10 @@
 // Lightweight declarative SVG diagram engine for the encyclopedia. Two families:
 // box diagrams (labeled boxes + arrows) in row/stack/fanout/gather/ring layouts,
 // and sequence diagrams (lifelines + ordered messages). Theme-aware via the
-// accent palette. No dependencies.
+// accent palette. Each box carries a conceptual line-art glyph so nodes read as
+// illustrations, not bare rectangles. No dependencies.
+
+import { DiagramGlyph } from './DiagramIcons'
 
 export type DiagramAccent =
   | 'default'
@@ -69,8 +72,8 @@ const ACCENTS: Record<DiagramAccent, { fill: string; stroke: string; text: strin
   success: { fill: 'rgba(0,168,120,0.16)', stroke: 'rgba(0,168,120,0.8)', text: 'var(--ink)' },
 }
 
-const BOX_W = 150
-const BOX_H = 52
+const BOX_W = 182
+const BOX_H = 56
 const GAP_X = 64
 const GAP_Y = 24
 const PAD = 16
@@ -140,15 +143,21 @@ function anchor(a: Placed, b: Placed): { x: number; y: number } {
   return { x: ax, y: dy >= 0 ? a.y + BOX_H : a.y }
 }
 
+const ICON_X = 16
+const TEXT_X = 46
+
 function NodeBox({ n }: { n: Placed }) {
   const a = ACCENTS[n.accent ?? 'default']
   return (
     <g transform={`translate(${n.x} ${n.y})`}>
-      <rect width={BOX_W} height={BOX_H} rx="9" fill={a.fill} stroke={a.stroke} strokeWidth="1.5" />
+      <rect width={BOX_W} height={BOX_H} rx="10" fill={a.fill} stroke={a.stroke} strokeWidth="1.5" />
+      <g transform={`translate(${ICON_X} ${BOX_H / 2 - 11})`}>
+        <DiagramGlyph label={n.label} accent={n.accent} color={a.stroke} />
+      </g>
       <text
-        x={BOX_W / 2}
+        x={TEXT_X}
         y={n.sub ? BOX_H / 2 - 5 : BOX_H / 2 + 1}
-        textAnchor="middle"
+        textAnchor="start"
         dominantBaseline="middle"
         className="diagram-node-label"
         fill={a.text}
@@ -156,7 +165,7 @@ function NodeBox({ n }: { n: Placed }) {
         {n.label}
       </text>
       {n.sub && (
-        <text x={BOX_W / 2} y={BOX_H / 2 + 11} textAnchor="middle" dominantBaseline="middle" className="diagram-node-sub">
+        <text x={TEXT_X} y={BOX_H / 2 + 11} textAnchor="start" dominantBaseline="middle" className="diagram-node-sub">
           {n.sub}
         </text>
       )}
