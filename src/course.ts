@@ -38,6 +38,7 @@ import { appendixSubject } from './course.appendix'
 import { systemDesignPractice } from './course.systemDesignPractice'
 import { awsSubject } from './course.aws'
 import { urlJourneySubject } from './course.url'
+import { aiBackendSubject } from './course.aiBackend'
 import { tutorials as longTutorials } from './tutorials'
 
 export type ProblemType = 'lesson' | 'coding' | 'quiz' | 'debug' | 'design'
@@ -991,6 +992,7 @@ export const subjectTracks: { label: string; subjectIds: string[] }[] = [
       'distributed',
       'system-design',
       'aws',
+      'ai-backend',
       'utilities',
       'algorithms',
       'capstone',
@@ -1092,7 +1094,7 @@ const mergedSubjects: Subject[] = [
       ...(capstoneProblems[subject.id] ?? []),
     ]),
   })),
-  ...[urlJourneySubject, ...extraSubjects, csharpSubject, awsSubject, ...conceptSubjects, appendixSubject].map((subject) => ({
+  ...[urlJourneySubject, aiBackendSubject, ...extraSubjects, csharpSubject, awsSubject, ...conceptSubjects, appendixSubject].map((subject) => ({
     ...subject,
     problems: sortProblemsByPhase([
       ...(foundationProblems[subject.id] ?? []),
