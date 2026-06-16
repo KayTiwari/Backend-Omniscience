@@ -204,6 +204,8 @@ const modules: Problem[] = [
     questions: ['What does the cloud rent you?', 'What are the main AWS service buckets?', 'Who secures what in the shared responsibility model?'],
     checklist: ['Define cloud computing.', 'List the AWS service buckets.', 'Explain shared responsibility.'],
     interactive: {
+      coldOpen:
+        'A misconfigured S3 bucket leaks a million customer records. Whose fault is it, AWS\'s or yours? The answer (yours) is the most important sentence in cloud computing, and it has a name: the shared responsibility model. Nobody knows all 200 AWS services, so what is the skill that actually matters?',
       mental: 'AWS is a utility company for computing: you plug in and pay for the compute, storage, and bandwidth you draw, instead of building your own power plant.',
       diagram: {
         nodes: ['AWS', 'Compute', 'Storage & DB', 'Networking'],
@@ -232,9 +234,39 @@ const modules: Problem[] = [
           why: 'Nobody knows all 200. Mapping a problem to compute/storage/db/networking and the 2-3 right services is the durable skill.',
         },
       ],
+      build: {
+        simple: 'AWS rents you servers and services over the internet.',
+        actually:
+          'It is 200+ services that group into a handful of buckets: compute (EC2, Lambda, containers), storage and databases (S3, RDS, DynamoDB), networking (VPC, Route 53, CloudFront, load balancers), plus security (IAM) and observability (CloudWatch). You pay for what you use and scale on demand.',
+        breaks:
+          'Shared responsibility: AWS secures the infrastructure; YOU secure what you put in it and how you configure access. A public bucket or an open security group is your mistake, not theirs. The skill is mapping a problem to the right bucket, not memorizing all 200 services.',
+      },
+      doThisNow: [
+        {
+          task: 'Classify six services into buckets: S3, EC2, RDS, Route 53, IAM, CloudWatch.',
+          reveal:
+            'Storage: S3. Compute: EC2. Database: RDS. Networking: Route 53. Security: IAM. Observability: CloudWatch. Six services, six buckets. That mapping is the durable skill.',
+        },
+        {
+          task: 'If you have the AWS CLI configured, confirm who you are acting as. (Read-only, no changes.)',
+          command: 'aws sts get-caller-identity',
+          reveal:
+            'It prints your account id, user/role ARN, and user id: exactly the identity whose permissions (IAM) govern everything you can do. No CLI? Just note that every AWS action runs as some identity, which is the next lesson.',
+        },
+      ],
+      warStory:
+        'A startup left an S3 bucket set to public "just to test." A scanner found it in hours and downloaded every file. AWS had done its job perfectly; the configuration was the company\'s responsibility. Shared responsibility is not fine print, it is the line between AWS\'s job and yours.',
       tweak: {
         instruction: 'Classify these into buckets: S3, EC2, RDS, Route 53, IAM, CloudWatch.',
         reveal: 'Storage: S3. Compute: EC2. Database: RDS. Networking: Route 53. Security: IAM. Observability: CloudWatch. Six services, six buckets.',
+      },
+      receipt: {
+        explain: [
+          'The service buckets and the on-demand pricing model.',
+          'What the shared responsibility model puts on you.',
+        ],
+        command: 'aws sts get-caller-identity',
+        question: 'AWS runs everywhere on Earth. How is that infrastructure laid out, and why does it matter for uptime?',
       },
       recap: [
         'The cloud rents compute, storage, and networking on demand.',
@@ -270,6 +302,8 @@ const modules: Problem[] = [
     questions: ['What is the difference between a region and an AZ?', 'Why run across multiple AZs?', 'What are edge locations for?'],
     checklist: ['Distinguish region, AZ, and edge.', 'Explain multi-AZ for availability.', 'Explain when to go multi-region.'],
     interactive: {
+      coldOpen:
+        'The cheapest way to run on AWS is in a single availability zone. It is also the most common way to get paged at 3am, because when that one data center has a bad night, you are simply down. The fix is one architectural choice. What is an AZ, and why is spreading across a few of them the production baseline?',
       mental: 'A region is a city, AZs are separate buildings in that city (one fire does not burn them all), and edge locations are corner kiosks all over the world.',
       diagram: {
         nodes: ['Region', 'AZ a', 'AZ b', 'AZ c'],
@@ -298,9 +332,37 @@ const modules: Problem[] = [
           why: 'AZs are within one region. Global low latency needs regions near users and edge caching.',
         },
       ],
+      build: {
+        simple: 'AWS has data centers around the world.',
+        actually:
+          'A region is a geographic area (us-east-1); an availability zone is an isolated data center within it (own power, own network); edge locations are many small sites near users for CloudFront and Route 53. Spread across AZs for availability within a region, across regions for global reach and disaster recovery.',
+        breaks:
+          'Running in a single AZ means a single data center failure takes you fully down: the most common availability mistake. Multi-AZ (a standby in another AZ with automatic failover) is the baseline; multi-region is the costlier next step.',
+      },
+      doThisNow: [
+        {
+          task: 'Design the layout for an app that must survive a data center outage but serves only one country. Single-AZ, multi-AZ, or multi-region?',
+          reveal:
+            'Multi-AZ in a single region. It survives a data center failure without the cost and complexity of multi-region, which you would add only for global latency or region-level disaster recovery.',
+        },
+        {
+          task: 'Now extend it: users in both Tokyo and London need low latency. What changes?',
+          reveal:
+            'Deploy in regions near each (e.g. ap-northeast-1 and eu-west-1) plus CloudFront at the edge. AZs live inside one region, so global latency needs multiple regions, not more AZs.',
+        },
+      ],
+      warStory:
+        'A company ran its whole stack in one AZ to cut costs. A power event in that single data center took the entire product offline for hours while competitors in multi-AZ setups never blinked. The savings evaporated in one outage; multi-AZ became non-negotiable the next week.',
       tweak: {
         instruction: 'Decide the layout for an app that must survive a data center outage but serves one country.',
         reveal: 'Single region, multiple AZs (multi-AZ). That survives a data center failure without the cost and complexity of multi-region, which you would add only for global reach or region-level disaster recovery.',
+      },
+      receipt: {
+        explain: [
+          'The difference between region, AZ, and edge.',
+          'Why multi-AZ is the availability baseline and when to go multi-region.',
+        ],
+        question: 'Your infrastructure spans data centers. What decides who is allowed to touch any of it?',
       },
       recap: [
         'Region = geographic area; AZ = isolated data center within it; edge = many small sites near users.',
@@ -336,6 +398,8 @@ const modules: Problem[] = [
     questions: ['Why are roles preferred over access keys?', 'What does least privilege limit?', 'What is an IAM policy?'],
     checklist: ['Explain users, roles, and policies.', 'Justify roles over keys.', 'Apply least privilege.'],
     interactive: {
+      coldOpen:
+        'One leaked credential is how most cloud breaches start. The difference between "an attacker read one bucket" and "an attacker owned the whole account" is a single principle you decide up front. AWS assumes breach; your job is to make a breach small. What is that principle, and why are stored keys the enemy?',
       mental: 'IAM is the building\'s badge system: each badge (role) opens exactly the doors that job needs, badges expire, and nobody walks around with the master key.',
       diagram: {
         nodes: ['Lambda / EC2', 'IAM role', 'S3 bucket'],
@@ -363,9 +427,37 @@ const modules: Problem[] = [
           why: 'Security assumes breach. Least privilege caps the blast radius so one leaked identity is a contained incident, not account-wide.',
         },
       ],
+      build: {
+        simple: 'IAM controls who can do what in AWS.',
+        actually:
+          'IAM is users, roles, and policies (JSON allow/deny rules). Services get IAM roles: temporary, scoped credentials with no stored keys to leak. Least privilege means each identity can do exactly its job and nothing more, so a compromise is contained.',
+        breaks:
+          'Hardcoded access keys leak and grant standing access; roles avoid that. Giving "admin to be safe" or using the all-powerful root account for daily work means one compromise is account-wide. Lock root behind MFA and never use it routinely.',
+      },
+      doThisNow: [
+        {
+          task: 'Write the least-privilege policy intent for a Lambda that only reads the "reports" bucket. What Action and Resource?',
+          reveal:
+            'Effect Allow, Action s3:GetObject, Resource arn:aws:s3:::reports/*. Default-deny everywhere else. The function can read its one bucket and touch nothing else in the account.',
+        },
+        {
+          task: 'A teammate suggests sharing the root account credentials for a quick task. What do you say, and what is the right move?',
+          reveal:
+            'No. Root is all-powerful and should be MFA-locked and never used for daily work. Create an IAM role or user scoped to exactly the needed permissions instead.',
+        },
+      ],
+      warStory:
+        'A developer hardcoded long-lived AWS keys into a repo for convenience. The repo went public, bots found the keys in minutes, and spun up expensive instances to mine crypto on the company\'s bill. An IAM role with temporary credentials would have left nothing to steal.',
       tweak: {
         instruction: 'A teammate suggests sharing the root account credentials for a quick task. What do you say?',
         reveal: 'No: the root account is all-powerful and should be locked behind MFA and never used for daily work. Create an IAM role or user with exactly the needed permissions instead.',
+      },
+      receipt: {
+        explain: [
+          'What IAM users, roles, and policies are.',
+          'Why least privilege and roles beat hardcoded keys and admin-for-safety.',
+        ],
+        question: 'Permissions are set. What are the actual ways to run your code on AWS?',
       },
       recap: [
         'IAM = users, roles, and policies (JSON allow/deny rules).',
@@ -401,6 +493,8 @@ const modules: Problem[] = [
     questions: ['When do you need EC2 over Lambda?', 'What does Fargate remove?', 'What are Lambda\'s trade-offs?'],
     checklist: ['Place EC2, containers, and Lambda on the control/convenience spectrum.', 'Match a workload to a compute option.', 'Name Lambda\'s trade-offs.'],
     interactive: {
+      coldOpen:
+        'An image-resize that runs a few times a day on a 24/7 server wastes money idling. A steady high-traffic API on per-request serverless gets a shocking bill. Same mistake, opposite directions: the wrong point on the compute spectrum. Three ways to run code, one axis (control vs convenience). How do you pick?',
       mental: 'Compute is a spectrum from cooking from scratch (EC2: full control, all the work) to a meal kit (containers) to a vending machine (Lambda: instant, no work, less control).',
       diagram: {
         nodes: ['EC2', 'Containers', 'Lambda'],
@@ -428,9 +522,37 @@ const modules: Problem[] = [
           why: 'Fargate is serverless containers: you define the task, AWS runs it with no machines for you to manage.',
         },
       ],
+      build: {
+        simple: 'There are a few ways to run your code on AWS.',
+        actually:
+          'A control-vs-convenience spectrum: EC2 (full virtual servers, you patch and manage), containers (ECS/EKS, often on Fargate which removes the machines), and Lambda (functions on events, no servers, billed per request). Pick the least management that meets the need.',
+        breaks:
+          'Cost flips by traffic shape: Lambda is cheap for spiky/low volume but expensive (and cold-start-prone) at steady high volume, where containers or EC2 win. Matching compute to the workload is the whole decision.',
+      },
+      doThisNow: [
+        {
+          task: 'Match three workloads to a compute option: a legacy app needing OS control, portable scaling microservices, and resizing an image on each S3 upload.',
+          reveal:
+            'EC2 (OS control), containers on Fargate (portable scaling), Lambda (event-driven, scales from zero, pay per resize). Each picks the least management that still meets the need.',
+        },
+        {
+          task: 'Decide: a steady, high-volume API runs 24/7. Lambda or containers, and why?',
+          reveal:
+            'Containers (or EC2). At steady high volume, per-request Lambda billing gets expensive and cold starts add latency. Lambda wins for spiky/low traffic; always-on load is cheaper on reserved compute.',
+        },
+      ],
+      warStory:
+        'A team ran a high-traffic API on Lambda because "serverless scales." It did scale, and the monthly bill scaled right along with it, far above what a couple of always-on containers would have cost. They moved the steady traffic to Fargate and kept Lambda for the bursty background jobs.',
       tweak: {
         instruction: 'A steady, high-volume service runs 24/7. Lambda or containers, and why?',
         reveal: 'Containers (or EC2): at steady high volume, per-request Lambda billing gets expensive and cold starts add latency. Lambda wins for spiky/low traffic; always-on steady load is cheaper on reserved compute.',
+      },
+      receipt: {
+        explain: [
+          'Where EC2, containers, and Lambda sit on the control/convenience spectrum.',
+          'How traffic shape decides which is cheaper.',
+        ],
+        question: 'Your code runs somewhere. Where do its files and data actually live?',
       },
       recap: [
         'EC2 = full control, full ops; Lambda = no servers, less control; containers in between.',
@@ -466,6 +588,8 @@ const modules: Problem[] = [
     questions: ['What goes in S3 vs the database?', 'How does EBS differ from EFS?', 'Why not store images in a relational DB?'],
     checklist: ['Distinguish object, block, and file storage.', 'Choose storage for three scenarios.', 'Explain the blobs-in-the-DB anti-pattern.'],
     interactive: {
+      coldOpen:
+        'A database mysteriously slows to a crawl, and the cause is not the queries: someone stored 5 MB PDF attachments as blobs in table rows. Every query now hauls megabytes it does not need. AWS has three storage shapes, and putting bytes in the wrong one is the classic mistake. Where do files actually belong?',
       mental: 'S3 is a giant coat check (hand over an item, get a ticket/key). EBS is the hard drive bolted into one computer. EFS is a shared network drive the whole office mounts.',
       diagram: {
         nodes: ['App', 'S3', 'Database'],
@@ -493,9 +617,37 @@ const modules: Problem[] = [
           why: 'EFS is a shared file system many instances mount at once. EBS attaches to only one instance; Glacier is cold archival.',
         },
       ],
+      build: {
+        simple: 'AWS has a few places to store data.',
+        actually:
+          'S3 is object storage for files/blobs (key-addressed, eleven-nines durable, cheap, CDN-friendly). EBS is a virtual disk attached to one EC2 instance. EFS is a shared file system many instances mount at once. Files go in S3; the database keeps only the key.',
+        breaks:
+          'The classic anti-pattern is storing large blobs (images, PDFs, video) inside a relational database, which bloats it and slows every query. S3 is purpose-built for bytes; the database should hold metadata and the S3 key, nothing more.',
+      },
+      doThisNow: [
+        {
+          task: 'Place three things: user-uploaded videos, the boot disk for one EC2 server, and shared files read by a fleet of 10 servers.',
+          reveal:
+            'Videos: S3 (with the key in the DB). Boot disk: EBS (one instance). Shared fleet files: EFS (many instances mount it). Object, block, file: three shapes, three jobs.',
+        },
+        {
+          task: 'Fix a slow database that stores PDF attachments as blobs. What is the change?',
+          reveal:
+            'Move the PDFs to S3 and replace each blob with its S3 key. The database shrinks dramatically and queries speed up, because it no longer hauls megabytes of file data per row.',
+        },
+      ],
+      warStory:
+        'A document app stored uploaded PDFs directly in Postgres rows. As usage grew, backups ballooned to hundreds of gigabytes and every query slowed. Migrating the files to S3 and keeping only the key shrank the database by 90% and made it fast again. The right tool for bytes was never the database.',
       tweak: {
         instruction: 'Your database is huge and slow, and you find it stores PDF attachments as blobs. What is the fix?',
         reveal: 'Move the PDFs to S3 and replace each blob with its S3 key. The database shrinks dramatically and queries speed up, because it no longer hauls megabytes of file data around.',
+      },
+      receipt: {
+        explain: [
+          'The difference between object (S3), block (EBS), and file (EFS) storage.',
+          'Why blobs belong in S3 with only the key in the database.',
+        ],
+        question: 'Files live in S3. Where does the structured, queryable data live, and managed by what?',
       },
       recap: [
         'S3 = object storage for files/blobs (durable, cheap, CDN-friendly).',
@@ -531,6 +683,8 @@ const modules: Problem[] = [
     questions: ['When is RDS/Aurora the right choice vs DynamoDB?', 'What does multi-AZ give an RDS database?', 'Where does ElastiCache fit?'],
     checklist: ['Choose between relational and DynamoDB by access pattern.', 'Explain multi-AZ and read replicas.', 'Place a cache in the data tier.'],
     interactive: {
+      coldOpen:
+        'You could run your own Postgres on an EC2 box and spend your nights patching it, backing it up, and praying the failover works. Or AWS does all of that and you pick the right managed service for your access pattern. The same SQL-vs-NoSQL choice from before, now with real service names. Which managed database for which job?',
       mental: 'RDS/Aurora is the managed Swiss-Army relational database; DynamoDB is the specialized high-speed key lookup; ElastiCache is the memory shelf in front of both.',
       diagram: {
         nodes: ['App', 'ElastiCache', 'RDS / Aurora', 'DynamoDB'],
@@ -559,9 +713,37 @@ const modules: Problem[] = [
           why: 'Multi-AZ keeps a synchronized standby in another data center and fails over automatically, the production availability baseline.',
         },
       ],
+      build: {
+        simple: 'AWS runs managed databases for you.',
+        actually:
+          'RDS/Aurora is managed relational (backups, patching, multi-AZ failover, read replicas) and the default for transactional join-heavy data. DynamoDB is serverless NoSQL for high-scale key access. ElastiCache (Redis/Memcached) sits in front for hot reads, Redshift for analytics. Choose by access pattern.',
+        breaks:
+          'DynamoDB shines at key lookups, not ad-hoc queries and joins, so forcing relational workloads onto it hurts. And skipping multi-AZ leaves the database a single point of failure: it is the production availability baseline.',
+      },
+      doThisNow: [
+        {
+          task: 'Match three workloads: orders and payments with joins; user sessions read by id at huge scale; hot product reads hammering the DB.',
+          reveal:
+            'RDS/Aurora for the transactional joins, DynamoDB (or ElastiCache) for the massive key lookups, ElastiCache in front of RDS for the hot reads. Same access-pattern logic, now with managed services.',
+        },
+        {
+          task: 'Your RDS database is overwhelmed by reads on a few hot products. Name two AWS moves before resorting to sharding.',
+          reveal:
+            'Add read replicas to spread reads, and put ElastiCache in front so most reads never hit the database. Reach for sharding or DynamoDB only if those are not enough.',
+        },
+      ],
+      warStory:
+        'A team put their entire transactional app on DynamoDB because it "scales infinitely." The first time the product team asked for a report joining orders to customers, they discovered DynamoDB does not do joins, and rebuilt half the data layer on Aurora. Access pattern, not hype, picks the database.',
       tweak: {
         instruction: 'Your RDS database is overwhelmed by read traffic on a few hot products. Two AWS moves?',
         reveal: 'Add read replicas to spread reads, and put ElastiCache in front so most reads never hit the database at all. Reach for sharding or DynamoDB only if those are not enough.',
+      },
+      receipt: {
+        explain: [
+          'When RDS/Aurora fits vs DynamoDB, and where ElastiCache sits.',
+          'What multi-AZ and read replicas each provide.',
+        ],
+        question: 'Compute and data are placed. How does a user\'s request actually reach them, securely?',
       },
       recap: [
         'RDS/Aurora for transactional relational data; DynamoDB for high-scale key-value.',
@@ -599,6 +781,8 @@ const modules: Problem[] = [
     questions: ['What belongs in a public vs private subnet?', 'When is an ALB vs an NLB right?', 'What does Route 53 do first?'],
     checklist: ['Lay out a VPC with public and private subnets.', 'Trace a request from DNS to database.', 'Choose ALB vs NLB.'],
     interactive: {
+      coldOpen:
+        'Attackers run scanners around the clock looking for one thing: a database with a public path to the internet. Put yours in the wrong subnet and you are on that list within hours. AWS networking is mostly one rule done right: only the front door is public, everything valuable is private. How does a request travel through that, and where does the database hide?',
       mental: 'The VPC is a secure office building: Route 53 is the address, CloudFront the lobby branch nearest you, the load balancer the reception desk, and the database a locked back room no visitor can reach directly.',
       diagram: {
         nodes: ['Route 53', 'CloudFront', 'Load balancer', 'App (private)', 'DB (private)'],
@@ -628,9 +812,37 @@ const modules: Problem[] = [
           why: 'Routing by path means reading the HTTP request, which is Layer 7: the ALB. NLB operates at L4 (IP/port) and cannot see paths.',
         },
       ],
+      build: {
+        simple: 'Networking gets requests to your app.',
+        actually:
+          'Your VPC is a private network with public subnets (the load balancer) and private subnets (app, then database). Route 53 resolves the domain, CloudFront serves cached content from the edge, an ALB (L7, routes by path/host) or NLB (L4, fast TCP) spreads traffic across the private fleet. Security groups are per-resource firewalls.',
+        breaks:
+          'The classic, dangerous mistake is a database in a public subnet, reachable from the internet, which scanners find constantly. Only the load balancer should be public; each tier is reachable only from the one in front of it.',
+      },
+      doThisNow: [
+        {
+          task: 'Lay out a VPC: place a load balancer, app servers, and a database into public vs private subnets.',
+          reveal:
+            'Load balancer in a public subnet; app servers in a private subnet reachable only from the LB; database in a deeper private subnet reachable only from the app. The database has no public path at all.',
+        },
+        {
+          task: 'Trace a user in Tokyo loading an image. Which AWS pieces run, in order, and which are skipped on a cache hit?',
+          reveal:
+            'Route 53 resolves the domain, CloudFront serves the image from a Tokyo edge (cache hit). The load balancer and app are not even touched for cached static content; only a cache miss reaches the origin.',
+        },
+      ],
+      warStory:
+        'A team launched fast and put RDS in a public subnet "to connect easily from their laptops." Automated scanners found the open database port within a day and began brute-forcing it. Moving the database to a private subnet and connecting through a bastion closed a door that should never have been open.',
       tweak: {
         instruction: 'Trace a user in Tokyo loading an image: which AWS pieces, in order?',
         reveal: 'Route 53 resolves the domain, CloudFront serves the image from a Tokyo edge (likely a cache hit from S3), and only on a miss does it fetch from the origin. The load balancer and app are not even touched for cached static content.',
+      },
+      receipt: {
+        explain: [
+          'The public/private subnet layout and the request path through it.',
+          'When to use an ALB (L7) vs an NLB (L4).',
+        ],
+        question: 'Synchronous traffic is handled. How do you run background work, scale automatically, and watch it all?',
       },
       recap: [
         'VPC: public subnets for the load balancer, private for app and database.',
@@ -666,6 +878,8 @@ const modules: Problem[] = [
     questions: ['How do SQS and SNS differ?', 'What drives Auto Scaling?', 'What do CloudWatch, CloudTrail, and X-Ray each answer?'],
     checklist: ['Decouple work with a queue.', 'Explain what triggers autoscaling.', 'Map the three observability tools to their questions.'],
     interactive: {
+      coldOpen:
+        'Someone deleted a production S3 bucket overnight. Which AWS tool tells you exactly who did it and when? (It is not the one most people guess.) This last layer (queues, autoscaling, observability) is the difference between an app that runs and one that survives an incident. Three tools answer three different questions.',
       mental: 'SQS is the kitchen ticket rail (work waits to be picked up), Auto Scaling hires and sends cooks home as the rush rises and falls, and CloudWatch is the manager watching every station.',
       diagram: {
         nodes: ['App tier', 'SQS', 'Workers', 'CloudWatch'],
@@ -694,9 +908,37 @@ const modules: Problem[] = [
           why: 'Auto Scaling reacts to CloudWatch metrics crossing a threshold, so capacity follows real load automatically.',
         },
       ],
+      build: {
+        simple: 'AWS can decouple work, scale, and monitor itself.',
+        actually:
+          'SQS is a managed queue (drop work, workers drain it); SNS/EventBridge fan one event out to many subscribers. Auto Scaling adds and removes instances driven by CloudWatch alarms (CPU, queue depth) across AZs. Observability splits three ways: CloudWatch (metrics/logs/alarms), CloudTrail (audit of who did what), X-Ray (cross-service latency).',
+        breaks:
+          'SQS gives each message to one consumer, so fan-out needs SNS/EventBridge instead. And skipping observability means flying blind during an incident: CloudWatch alarms are what page someone (and trigger scaling) before users notice.',
+      },
+      doThisNow: [
+        {
+          task: 'Pick the service: one "order placed" event must trigger email, analytics, AND inventory updates. SQS or SNS/EventBridge?',
+          reveal:
+            'SNS or EventBridge. A queue (SQS) delivers each message to one consumer; SNS/EventBridge broadcast one event to all subscribers. Fan-out needs pub/sub, not a queue.',
+        },
+        {
+          task: 'Match the question to the tool: "who deleted this bucket last night?", "is CPU over 80%?", "where did this slow request spend its time?"',
+          reveal:
+            'CloudTrail (who did what, the audit log), CloudWatch (metrics/alarms like CPU), X-Ray (cross-service request tracing). Three questions, three tools.',
+        },
+      ],
+      warStory:
+        'During an outage a team had no tracing and could not tell which of six services was slow, so they guessed and restarted the wrong one twice. After adding X-Ray, the next incident took minutes: the trace pointed straight at the slow database call. Observability is what turns a panicked guess into a diagnosis.',
       tweak: {
         instruction: 'Investigating "who deleted this S3 bucket last night" — which observability tool?',
         reveal: 'CloudTrail: it is the audit log of every API call (who did what, when). CloudWatch is metrics/logs/alarms; X-Ray traces request latency. The "who did what" question is CloudTrail.',
+      },
+      receipt: {
+        explain: [
+          'How SQS, SNS/EventBridge, and Auto Scaling make a system resilient.',
+          'What CloudWatch, CloudTrail, and X-Ray each answer.',
+        ],
+        question: 'You can architect on AWS. Which beginner on-ramp do you want to lock in next?',
       },
       recap: [
         'SQS decouples slow work; SNS/EventBridge fan out events to many.',
