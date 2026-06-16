@@ -1,29 +1,30 @@
 .app-shell {
   /* Editorial light identity: warm off-white paper, near-black ink, one
-     saturated green accent. Typography does the heavy lifting. */
+     saturated blue accent. Typography does the heavy lifting. */
   --ink: #14130f;
   --muted: #6f6a60;
   --line: #e4ded2;
   --paper: #fffdf8;
   --paper-strong: #f1ece1;
   --field: #fffdf8;
-  --surface-hover: #efe9dc;
-  --surface-soft: #f3eee3;
+  --surface-hover: #eef2fb;
+  --surface-soft: #f1ece1;
   --app-bg: #f7f5f0;
-  --brand-a: #14130f;
-  --brand-b: #1f7a3d;
-  --brand-c: #2f9e54;
-  --brand-gradient: linear-gradient(135deg, #1f7a3d, #2f9e54);
+  /* brand-a is a dark surface (code blocks); keep it dark in both modes. */
+  --brand-a: #263238;
+  --brand-b: #2f80ed;
+  --brand-c: #19c6ff;
+  --brand-gradient: linear-gradient(135deg, #263238, #2f80ed, #19c6ff, #263238);
   --flame: #d6443a;
   --flame-dark: #a3271f;
   --ember: #c2641a;
   --ember-soft: #f5e6d3;
-  --mint: #1f7a3d;
-  --mint-soft: #e2efe5;
-  --teal: #0f7d6f;
-  --teal-soft: #ddefe9;
+  --mint: #00a878;
+  --mint-soft: #e3f9f0;
+  --teal: #0f8b8d;
+  --teal-soft: #dff4f4;
   --shadow: 0 1px 0 rgba(20, 19, 15, 0.04), 0 14px 32px rgba(20, 19, 15, 0.06);
-  --shadow-hover: 0 16px 36px rgba(31, 122, 61, 0.14);
+  --shadow-hover: 0 16px 36px rgba(47, 128, 237, 0.16);
   --button-hover: #efe9dc;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
@@ -32,7 +33,7 @@
 }
 
 .app-shell[data-theme='dark'] {
-  /* Terminal / IDE dark identity: slate background, syntax-green accent. */
+  /* Terminal / IDE dark identity: slate background, bright blue accent. */
   --ink: #c9d1d9;
   --muted: #8b949e;
   --line: #232b34;
@@ -42,10 +43,11 @@
   --surface-hover: #1d2530;
   --surface-soft: #161b22;
   --app-bg: #0e1116;
-  --brand-a: #c9d1d9;
-  --brand-b: #3fb950;
-  --brand-c: #56d364;
-  --brand-gradient: linear-gradient(135deg, #3fb950, #2ea043);
+  /* brand-a is the dark code-block surface; it must stay dark in dark mode too. */
+  --brand-a: #20272f;
+  --brand-b: #58a6ff;
+  --brand-c: #79c0ff;
+  --brand-gradient: linear-gradient(135deg, #20272f, #58a6ff, #79c0ff, #20272f);
   --flame: #f0883e;
   --flame-dark: #db6d28;
   --ember: #d29922;
@@ -55,7 +57,7 @@
   --teal: #39c5cf;
   --teal-soft: #102a2c;
   --shadow: 0 1px 0 rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.5);
-  --shadow-hover: 0 18px 44px rgba(63, 185, 80, 0.2);
+  --shadow-hover: 0 18px 44px rgba(88, 166, 255, 0.2);
   --button-hover: #1d2530;
 }
 
@@ -3595,14 +3597,27 @@ input:focus-visible {
 
 .interactive-badge {
   justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
   color: var(--brand-b);
-  background: color-mix(in srgb, var(--brand-b) 12%, transparent);
-  border-radius: 999px;
-  padding: 3px 10px;
+  background: color-mix(in srgb, var(--brand-b) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand-b) 28%, transparent);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+/* Code-comment marker so section labels read as terminal/IDE annotations
+   rather than generic rounded course-platform pills. */
+.interactive-badge::before {
+  content: '//';
+  opacity: 0.55;
+  font-weight: 700;
 }
 
 .interactive-code,
@@ -3847,12 +3862,24 @@ input:focus-visible {
 }
 
 .task-block {
-  border: 1px solid color-mix(in srgb, var(--brand-b) 30%, transparent);
-  border-left: 4px solid var(--brand-b);
-  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--brand-b) 30%, var(--line));
+  border-left: 3px solid var(--brand-b);
+  border-radius: 4px;
   background: color-mix(in srgb, var(--brand-b) 5%, var(--field));
   padding: 14px 16px;
   margin-top: 18px;
+}
+
+.task-block h3 {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+/* Terminal prompt glyph so the task reads as a command to run, not a notice. */
+.task-block h3::before {
+  content: '❯ ';
+  color: var(--brand-b);
+  font-weight: 700;
 }
 
 .task-block .lesson-prose p {
@@ -4057,7 +4084,7 @@ input:focus-visible {
   flex: 1;
   min-width: 150px;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 4px;
   padding: 10px 14px;
   background: var(--field);
   cursor: pointer;
@@ -4084,14 +4111,19 @@ input:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
   background: color-mix(in srgb, var(--brand-b) 12%, transparent);
   color: var(--brand-b);
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 12px;
   font-weight: 700;
   flex-shrink: 0;
+}
+
+.lesson-pager-label strong {
+  font-family: var(--font-mono);
 }
 
 .lesson-pager-label {
@@ -4160,16 +4192,17 @@ input:focus-visible {
 .mental-model-card {
   display: grid;
   gap: 8px;
-  border: 1px solid color-mix(in srgb, #7c3aed 35%, transparent);
-  border-left: 4px solid #7c3aed;
-  border-radius: 10px;
-  background: color-mix(in srgb, #7c3aed 5%, var(--field));
+  border: 1px solid color-mix(in srgb, #2f80ed 32%, var(--line));
+  border-left: 3px solid #2f80ed;
+  border-radius: 4px;
+  background: color-mix(in srgb, #2f80ed 6%, var(--field));
   padding: 14px 16px;
 }
 
 .mental-model-card .interactive-badge {
-  color: #7c3aed;
-  background: color-mix(in srgb, #7c3aed 12%, transparent);
+  color: #2f80ed;
+  background: color-mix(in srgb, #2f80ed 10%, transparent);
+  border-color: color-mix(in srgb, #2f80ed 28%, transparent);
 }
 
 .mental-model-card p {
