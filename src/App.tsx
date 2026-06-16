@@ -66,6 +66,9 @@ type ProgressState = {
   // Interleaved "do this now" tasks the learner has marked done, keyed
   // `${problemId}:${taskIndex}`. Doing is the spine of a lesson.
   doneTasks: Record<string, boolean>
+  // Lesson pages the learner has scrolled all the way through, keyed
+  // `${problemId}:${page}`. Auto-marked on scroll-past, never a button click.
+  readSections: Record<string, boolean>
   checkedSolutions: Record<string, boolean>
   defended: Record<string, boolean>
   code: Record<string, string>
@@ -96,6 +99,7 @@ const emptyProgress: ProgressState = {
   criterionChoice: {},
   tutorialChoice: {},
   doneTasks: {},
+  readSections: {},
   checkedSolutions: {},
   defended: {},
   code: {},
@@ -114,6 +118,7 @@ function loadProgress(): ProgressState {
       criterionChoice: parsed.criterionChoice ?? {},
       tutorialChoice: parsed.tutorialChoice ?? {},
       doneTasks: parsed.doneTasks ?? {},
+      readSections: parsed.readSections ?? {},
       checkedSolutions: parsed.checkedSolutions ?? {},
       defended: parsed.defended ?? {},
       code: parsed.code ?? {},
@@ -203,6 +208,7 @@ function App() {
   const [lessonNav, setLessonNav] = useState({ problemId: '', step: 0 })
   const celebrateTimerRef = useRef<number | undefined>(undefined)
   const codeHighlightRef = useRef<HTMLPreElement>(null)
+  const bottomSentinelRef = useRef<HTMLDivElement>(null)
   const graderModuleRef = useRef<Promise<GraderModule> | null>(null)
 
   useEffect(() => {
@@ -788,6 +794,63 @@ function App() {
   ]
   const pageIndex = Math.min(lessonStep, lessonPages.length - 1)
   const activePage = lessonPages[pageIndex].id
+
+  // Rough per-page time estimate, split from the problem's total minutes by a
+  // weight (Learn carries most of the reading), so each step shows a "~N min"
+  // tag and "how long is this" anxiety drops.
+  const pageTimeWeights: Record<string, number> = { learn: 5, predict: 1, practice: 3, prove: 1 }
+  const pageWeightSum = lessonPages.reduce((sum, page) => sum + (pageTimeWeights[page.id] ?? 2), 0)
+  const pageMinutes = (id: string) =>
+    Math.max(1, Math.round((activeProblem.minutes * (pageTimeWeights[id] ?? 2)) / pageWeightSum))
+
+  // J/K page through the lesson, ? toggles the shortcut help. Ignored while
+  // typing in an editor or when the encyclopedia is open.
+  useEffect(() => {
+    function onKey(event: globalThis.KeyboardEvent) {
+      if (event.metaKey || event.ctrlKey || event.altKey) return
+      const target = event.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      ) {
+        return
+      }
+      if (event.key === '?') {
+        setOpenModal((current) => (current === 'shortcuts' ? null : 'shortcuts'))
+        return
+      }
+      if (isEncyclopediaPage) return
+      if (event.key === 'j' || event.key === 'J') {
+        setLessonNav({ problemId: activeProblem.id, step: Math.min(pageIndex + 1, lessonPages.length - 1) })
+      } else if (event.key === 'k' || event.key === 'K') {
+        setLessonNav({ problemId: activeProblem.id, step: Math.max(pageIndex - 1, 0) })
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [pageIndex, lessonPages.length, activeProblem.id, isEncyclopediaPage])
+
+  // Auto-mark a lesson page read once its bottom scrolls into view. Persisted,
+  // so the "you finished this" signal survives a reload, with no button.
+  useEffect(() => {
+    const el = bottomSentinelRef.current
+    if (!el) return
+    const key = `${activeProblem.id}:${activePage}`
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setProgress((current) =>
+            current.readSections[key]
+              ? current
+              : { ...current, readSections: { ...current.readSections, [key]: true } },
+          )
+        }
+      },
+      { rootMargin: '0px 0px -8% 0px' },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [activeProblem.id, activePage])
 
   function checkSolutions() {
     setProgress((current) => ({
@@ -1596,22 +1659,26 @@ function App() {
           </section>
 
           <nav className="lesson-pager" aria-label="Lesson pages">
-            {lessonPages.map((page, index) => (
-              <button
-                key={page.id}
-                type="button"
-                className={`lesson-pager-step ${index === pageIndex ? 'current' : ''} ${page.done ? 'done' : ''}`}
-                onClick={() => setLessonStep(index)}
-              >
-                <span className="lesson-pager-dot">
-                  {page.done ? <Check size={13} /> : index + 1}
-                </span>
-                <span className="lesson-pager-label">
-                  <strong>{page.label}</strong>
-                  <small>{page.hint}</small>
-                </span>
-              </button>
-            ))}
+            {lessonPages.map((page, index) => {
+              const read = progress.readSections[`${activeProblem.id}:${page.id}`] === true
+              return (
+                <button
+                  key={page.id}
+                  type="button"
+                  className={`lesson-pager-step ${index === pageIndex ? 'current' : ''} ${page.done ? 'done' : ''} ${read && !page.done ? 'read' : ''}`}
+                  onClick={() => setLessonStep(index)}
+                >
+                  <span className="lesson-pager-dot">
+                    {page.done ? <Check size={13} /> : index + 1}
+                  </span>
+                  <span className="lesson-pager-label">
+                    <strong>{page.label}</strong>
+                    <small>{page.hint}</small>
+                  </span>
+                  <span className="lesson-pager-time">~{pageMinutes(page.id)} min</span>
+                </button>
+              )
+            })}
           </nav>
 
           {activePage === 'learn' && interactive?.coldOpen && (
@@ -2451,6 +2518,23 @@ function App() {
               Reset progress
             </button>
           </div>
+          )}
+
+          {/* Marks the current page read once it scrolls into view. */}
+          <div ref={bottomSentinelRef} aria-hidden="true" />
+
+          {openModal === 'shortcuts' && (
+            <Modal title="Keyboard shortcuts" onClose={() => setOpenModal(null)}>
+              <ul className="shortcut-list">
+                <li><kbd>J</kbd><span>Next lesson page</span></li>
+                <li><kbd>K</kbd><span>Previous lesson page</span></li>
+                <li><kbd>?</kbd><span>Toggle this help</span></li>
+              </ul>
+              <p className="shortcut-note">
+                Pages also auto-mark as read once you scroll to the end, and each step shows a rough
+                time estimate.
+              </p>
+            </Modal>
           )}
 
           <div className="lesson-pager-nav">
