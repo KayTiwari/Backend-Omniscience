@@ -178,12 +178,12 @@ export const glossaryTerms: GlossaryTerm[] = [
   {
     term: 'index',
     definition: 'A database lookup structure that speeds reads for selected columns at the cost of storage and slower writes.',
-    synonyms: ['database index'],
+    synonyms: ['database index', 'DB indexes', 'DB index'],
   },
   {
     term: 'transaction',
     definition: 'An all-or-nothing group of database operations that commit together or roll back together.',
-    synonyms: ['DB transaction'],
+    synonyms: ['DB transaction', 'transactions'],
   },
   {
     term: 'migration',
@@ -213,7 +213,7 @@ export const glossaryTerms: GlossaryTerm[] = [
   {
     term: 'queue',
     definition: 'A buffer for asynchronous work. Producers add jobs; workers process them later.',
-    synonyms: ['message queue', 'job queue'],
+    synonyms: ['message queue', 'message queues', 'job queue'],
   },
   {
     term: 'worker',
@@ -223,7 +223,7 @@ export const glossaryTerms: GlossaryTerm[] = [
   {
     term: 'dead-letter queue',
     definition: 'A place for jobs that failed too many times so they can be inspected instead of retried forever.',
-    synonyms: ['DLQ'],
+    synonyms: ['DLQ', 'dead-letter queues'],
   },
   {
     term: 'backpressure',
@@ -937,6 +937,704 @@ export const glossaryTerms: GlossaryTerm[] = [
     definition:
       'A graded test set for a non-deterministic LLM feature. Since output varies, you score against examples (deterministically or with an LLM judge) instead of asserting exact equality.',
     synonyms: ['evals', 'LLM eval'],
+  },
+  {
+    term: 'agent knowledge core',
+    definition:
+      'The single source of truth that defines an agent fleet: the agent types, the shared behavioral rules, and the system standards every agent inherits. Change it once and every agent changes; without it, definitions drift across prompts until two agents that should match no longer do.',
+    synonyms: ['knowledge core', 'agent core'],
+  },
+  {
+    term: 'agent type',
+    definition:
+      'A named agent role with a fixed contract: its purpose, the tools it may call, the constraints it must obey, and the shape of its output. Typing an agent turns an ad-hoc prompt into a unit you can review, reuse, and enforce.',
+    synonyms: ['agent role'],
+  },
+  {
+    term: 'agent behavioral rules',
+    definition:
+      'The shared laws every agent obeys regardless of type: ground claims before stating them, protect secrets, escalate on low confidence, stop after a step budget. They live in the knowledge core and are inherited, not copy-pasted into each prompt.',
+    synonyms: ['behavioral rules', 'agent rules'],
+  },
+  {
+    term: 'agent capability',
+    definition:
+      'A power granted to an agent, defined by the narrowest set of tools that does the job (a default-deny allow-list) plus the constraints that bound it: step, cost, and approval limits. Adding a capability is a tool-access decision first and a prompt second.',
+    synonyms: ['agent capabilities', 'agent tool access'],
+  },
+  {
+    term: 'handoff protocol',
+    definition:
+      'The typed payload one agent passes to another when delegating work: what was done, what was found, what to do next, and what is forbidden. A clean handoff keeps the receiving agent grounded and bounded; passing the raw transcript leaks constraints and budget.',
+    synonyms: ['agent handoff', 'handoff'],
+  },
+  {
+    term: 'agent memory',
+    definition:
+      'The engineered recall around a stateless model: working memory (curated task state kept in the context window across a multi-step loop) and persistent memory (facts written to a store and retrieved on later runs). The model remembers nothing between calls; you build both.',
+    synonyms: ['working memory', 'persistent memory'],
+  },
+  {
+    term: 'context sharing',
+    definition:
+      'How collaborating agents share state without inheriting every transcript: a shared scratchpad (a blackboard) plus typed handoffs, where each agent reads the curated slice it needs and writes back a curated result. Sharing raw transcripts blows the budget and leaks constraints.',
+    synonyms: ['blackboard', 'shared context'],
+  },
+  {
+    term: 'multi-agent system',
+    definition:
+      'A workflow where several specialized agents collaborate, each with its own type, tools, and memory, coordinating through handoffs and shared context. Worth the complexity only when one agent cannot hold the whole job; otherwise it multiplies cost and failure modes.',
+    synonyms: ['multi-agent', 'agent orchestration', 'agent fleet'],
+  },
+  {
+    term: 'agent discovery',
+    definition:
+      'How agents and tools find each other at runtime: a registry lists what exists, what it does, and how to call it, so an agent looks up a capability instead of hardcoding it. Service discovery applied to agents and tools, and the idea behind protocols like MCP.',
+    synonyms: ['capability discovery', 'agent registry', 'tool registry'],
+  },
+  {
+    term: 'agent governance',
+    definition:
+      'The control structure over an agent fleet: shared standards (schemas, logging, naming), review for adding types or granting tools, versioned definitions, audit logs of every tool call, and human-approval gates on risky actions. The platform layer that keeps a growing fleet consistent and accountable.',
+    synonyms: ['agent governance structures'],
+  },
+  {
+    term: 'Model Context Protocol',
+    definition:
+      'An open protocol (MCP) that lets agents discover and call tools and data sources through one common contract, instead of every team hand-wiring every tool into every agent. Service discovery and a standard interface for the agent ecosystem.',
+    synonyms: ['MCP'],
+  },
+  {
+    term: 'CRUD',
+    definition:
+      'Create, Read, Update, Delete: the four basic operations a data API exposes over a resource, usually mapped to POST, GET, PUT or PATCH, and DELETE.',
+  },
+  {
+    term: 'REST',
+    definition:
+      'An API style that models the server as resources addressed by URLs and acted on with HTTP methods, using status codes and representations (usually JSON) instead of custom verbs.',
+    synonyms: ['RESTful'],
+  },
+  {
+    term: 'routing',
+    definition:
+      'Matching an incoming request method and path to the handler that should serve it. The first decision a web framework makes on every request.',
+    synonyms: ['request routing', 'route matching'],
+  },
+  {
+    term: 'filtering',
+    definition:
+      'Narrowing a list endpoint to rows that match query criteria (status=open, owner=me), applied as WHERE conditions so the client receives only what it asked for.',
+  },
+  {
+    term: 'sorting',
+    definition:
+      'Ordering a list endpoint by one or more fields (sort=-created_at), applied as ORDER BY so results arrive in a defined, stable order.',
+  },
+  {
+    term: 'pagination',
+    definition:
+      'Returning a large result set in pages instead of all at once, by offset and limit or by a cursor, so responses stay bounded in size and cost.',
+    synonyms: ['paging', 'cursor pagination'],
+  },
+  {
+    term: 'slug',
+    definition:
+      'A short, URL-safe identifier derived from text (my-first-post), used in place of a raw id so links are readable and stable.',
+    synonyms: ['slugs', 'URL slug'],
+  },
+  {
+    term: 'short-code generation',
+    definition:
+      'Producing a compact, unique, URL-safe code (often base62) to stand in for a longer value, as a URL shortener maps abc123 to a full link. It must guarantee uniqueness, usually via a unique index or a counter.',
+    synonyms: ['short code'],
+  },
+  {
+    term: 'fast ack',
+    definition:
+      'Acknowledging a request immediately with a 2xx and doing the real work asynchronously afterward, so the caller is not blocked and the provider does not time out and retry.',
+    synonyms: ['fast acknowledgement', 'ack then process'],
+  },
+  {
+    term: 'conditional request',
+    definition:
+      'An HTTP request that only proceeds if a precondition holds, using ETag with If-None-Match or If-Modified-Since, so the server can answer 304 Not Modified and skip resending unchanged data.',
+    synonyms: ['conditional requests'],
+  },
+  {
+    term: 'redirect',
+    definition:
+      'An HTTP response (301, 302, 307, 308) that points the client at a different URL via the Location header. 301 and 308 are permanent; 302 and 307 are temporary.',
+    synonyms: ['redirects', 'HTTP redirect'],
+  },
+  {
+    term: 'HTTP caching',
+    definition:
+      'Caching at the HTTP layer using response headers (Cache-Control, ETag, Expires) so browsers, CDNs, and proxies can reuse responses without re-asking the origin.',
+    synonyms: ['response caching'],
+  },
+  {
+    term: 'cache-aside',
+    definition:
+      'A caching pattern where the application checks the cache first and, on a miss, loads from the source, stores it in the cache, and returns it. The cache is populated lazily, on demand.',
+    synonyms: ['look-aside cache', 'lazy caching'],
+  },
+  {
+    term: 'TTL',
+    definition:
+      'Time To Live: how long a cached value or record stays valid before it expires and must be refreshed. The simplest cache-invalidation strategy.',
+    synonyms: ['time to live'],
+  },
+  {
+    term: 'eviction',
+    definition:
+      'Removing entries from a full cache to make room for new ones, by a policy such as LRU (least recently used) or LFU (least frequently used). Distinct from expiry, which is time-based.',
+    synonyms: ['cache eviction', 'LRU'],
+  },
+  {
+    term: 'exponential backoff',
+    definition:
+      'Retrying a failed operation after waiting longer each time (1s, 2s, 4s, and so on), usually with jitter, so a struggling dependency is not hammered by synchronized retries.',
+    synonyms: ['backoff', 'backoff and jitter'],
+  },
+  {
+    term: 'background job',
+    definition:
+      'Work deferred out of the request path to a worker that runs it later (send an email, process a video), so the user gets a fast response and slow work happens asynchronously.',
+    synonyms: ['background jobs', 'async job'],
+  },
+  {
+    term: 'HMAC signature',
+    definition:
+      'A keyed hash (hash-based message authentication code) attached to a message so the receiver can verify it came from a holder of the shared secret and was not altered. The standard way to authenticate webhooks.',
+    synonyms: ['HMAC signatures', 'HMAC'],
+  },
+  {
+    term: 'replay protection',
+    definition:
+      'Stopping an attacker from re-sending a previously valid request, by rejecting stale timestamps and remembering recently seen nonces or event ids so each request is accepted only once.',
+    synonyms: ['anti-replay'],
+  },
+  {
+    term: 'audit log',
+    definition:
+      'An append-only record of who did what and when (actor, action, target, timestamp), kept for accountability and incident review rather than for application logic.',
+    synonyms: ['audit logs', 'audit trail'],
+  },
+  {
+    term: 'auth',
+    definition:
+      'Shorthand for the pair of authentication (proving who you are) and authorization (deciding what you may do). The two are distinct steps and are easy to confuse.',
+  },
+  {
+    term: 'aggregation',
+    definition:
+      'Summarizing many rows into fewer using functions like COUNT, SUM, AVG, MIN, and MAX with GROUP BY, so a query returns totals per category instead of raw rows.',
+    synonyms: ['aggregate query', 'GROUP BY'],
+  },
+  {
+    term: 'optimistic locking',
+    definition:
+      'Concurrency control that lets readers proceed and detects a conflict at write time with a version column or timestamp, retrying if the row changed underneath. It avoids holding a lock, at the cost of occasional retries.',
+    synonyms: ['optimistic concurrency'],
+  },
+  {
+    term: 'relational modeling',
+    definition:
+      'Designing data as tables with keys and relationships (one-to-many, many-to-many) and normalizing to remove duplication, so the schema enforces integrity through foreign keys and joins.',
+    synonyms: ['data modeling', 'schema design'],
+  },
+  {
+    term: 'apdex',
+    definition:
+      'Application Performance Index: a single score from 0 to 1 that buckets request latencies into satisfied, tolerating, and frustrated against a target, giving one number for user-perceived speed.',
+    synonyms: ['Apdex score'],
+  },
+  {
+    term: 'error rate',
+    definition:
+      'The fraction of requests that fail over a window (failed responses divided by total), a primary signal of service health and a common SLO and alert threshold.',
+    synonyms: ['failure rate'],
+  },
+  {
+    term: 'percentile',
+    definition:
+      'A latency cut point: p99 is the value 99 percent of requests come in under. Tail percentiles like p95 and p99 reveal the slow experiences that an average hides.',
+    synonyms: ['percentiles', 'p99', 'tail latency'],
+  },
+  {
+    term: 'status workflow',
+    definition:
+      'A defined set of states a record moves through (draft to submitted to approved to paid) with allowed transitions, so a status can change only along legal edges. A state machine for a row.',
+    synonyms: ['status state machine', 'state workflow'],
+  },
+  {
+    term: 'top-k',
+    definition:
+      'Finding the k highest-ranked items (the top 10 by score) from a large set, often with a heap or a sorted structure, instead of sorting everything. Common for leaderboards and trending lists.',
+    synonyms: ['top-k query', 'top n'],
+  },
+  {
+    term: 'shell',
+    definition:
+      'A program that reads a line of text, runs the program you named with the arguments you gave, prints its output, and waits for the next line. bash, zsh, and sh are common shells. The command line is this read-run-print loop.',
+    synonyms: ['command shell', 'bash', 'zsh'],
+  },
+  {
+    term: 'terminal',
+    definition:
+      'The window that shows text and takes your keystrokes. It displays whatever the shell and programs print. The terminal is the screen; the shell is the program running inside it that interprets your commands.',
+    synonyms: ['terminal emulator', 'console'],
+  },
+  {
+    term: 'command-line prompt',
+    definition:
+      'The text the shell prints when it is idle and ready for input, often ending in $ (or # for root). When the prompt is showing, the shell is waiting; when it is gone, a program is still running.',
+    synonyms: ['shell prompt', 'prompt'],
+  },
+  {
+    term: 'working directory',
+    definition:
+      'The one directory your shell is currently sitting in. Every relative path is resolved against it, and pwd prints it. Each terminal tab has its own working directory.',
+    synonyms: ['current directory', 'cwd', 'pwd'],
+  },
+  {
+    term: 'pwd',
+    definition:
+      'Print working directory: the command that shows the full absolute path of the directory you are currently in. The first thing to check when a command behaves unexpectedly.',
+    synonyms: ['print working directory'],
+  },
+  {
+    term: 'ls',
+    definition:
+      'Lists the contents of a directory. ls -l shows the long form (permissions, owner, size, date), ls -a shows hidden dotfiles, and ls -la shows both.',
+    synonyms: ['list directory'],
+  },
+  {
+    term: 'cd',
+    definition:
+      'Change directory: moves your shell into another directory. cd path goes there, cd .. goes up one level, and cd with no argument returns to your home directory.',
+    synonyms: ['change directory'],
+  },
+  {
+    term: 'absolute path',
+    definition:
+      'A file address that starts at the root (/) and is the same no matter where you are standing, like /home/abhi/notes.txt. Scripts and config prefer absolute paths because they are location-independent.',
+    synonyms: ['full path'],
+  },
+  {
+    term: 'relative path',
+    definition:
+      'A file address resolved against your current working directory, like notes.txt or ../config. The same relative path points at different files depending on your pwd.',
+    synonyms: ['relative file path'],
+  },
+  {
+    term: 'home directory',
+    definition:
+      'Your personal directory (for example /home/abhi or /Users/abhi), where your files and dotfiles live. The shell expands ~ to it, and cd with no argument jumps there.',
+    synonyms: ['~', 'home folder'],
+  },
+  {
+    term: 'root directory',
+    definition:
+      'The single top of the filesystem, written /. Every absolute path begins here. Not to be confused with the root user (the administrator account) or a user home directory.',
+    synonyms: ['filesystem root', '/'],
+  },
+  {
+    term: 'cat',
+    definition:
+      'Prints the entire contents of a file to the screen, and can join (concatenate) multiple files. Great for short files; a mistake for huge ones, which flood the terminal.',
+    synonyms: ['concatenate'],
+  },
+  {
+    term: 'less',
+    definition:
+      'A pager that opens a file in a scrollable view (arrow keys, /search, q to quit) without loading it all into memory. The safe way to read large files.',
+    synonyms: ['pager'],
+  },
+  {
+    term: 'head',
+    definition:
+      'Prints the first lines of a file (10 by default; head -n N for N lines). Handy for peeking at the start of a file or the top of command output.',
+    synonyms: ['head command'],
+  },
+  {
+    term: 'tail',
+    definition:
+      'Prints the last lines of a file (10 by default; tail -n N for N). tail -f follows the file and prints new lines as they are written, the standard way to watch a live log; tail -F survives log rotation.',
+    synonyms: ['tail command', 'tail -f'],
+  },
+  {
+    term: 'mkdir',
+    definition:
+      'Makes a new directory. mkdir -p makes a whole nested path at once and succeeds even if it already exists.',
+    synonyms: ['make directory'],
+  },
+  {
+    term: 'touch',
+    definition:
+      'Creates an empty file if it does not exist, or updates a file timestamp if it does. The quickest way to make a placeholder file.',
+    synonyms: ['touch command'],
+  },
+  {
+    term: 'cp',
+    definition:
+      'Copies a file (cp a b) or a directory tree (cp -r dir1 dir2), leaving the original in place. Copying a large file takes real time because all the bytes are read and rewritten.',
+    synonyms: ['copy file'],
+  },
+  {
+    term: 'mv',
+    definition:
+      'Moves a file or directory, which is also how you rename (move to a new name in the same directory). Within one filesystem mv is instant because only the directory entry changes, no bytes move.',
+    synonyms: ['move', 'rename file'],
+  },
+  {
+    term: 'rm',
+    definition:
+      'Deletes files (rm file) and directory trees (rm -r dir). There is no recycle bin: removal is immediate and usually unrecoverable. rm -i prompts first; rm -rf forces without asking, so treat it with care.',
+    synonyms: ['remove file', 'delete file'],
+  },
+  {
+    term: 'file permissions',
+    definition:
+      'The read/write/execute rights a file grants to three classes: the owning user, the owning group, and everyone else. Shown by ls -l as ten characters (type plus three rwx groups) and set with chmod.',
+    synonyms: ['unix permissions', 'rwx', 'permission bits'],
+  },
+  {
+    term: 'chmod',
+    definition:
+      'Changes a file permission bits, either symbolically (chmod +x, chmod g-w) or with octal (chmod 644, chmod 755). Octal sums r=4, w=2, x=1 per class. chmod +x is how you make a script runnable.',
+    synonyms: ['change mode', 'chmod +x'],
+  },
+  {
+    term: 'chown',
+    definition:
+      'Changes who owns a file: chown user file sets the owner, chown user:group file sets owner and group. Often needs sudo. A frequent fix for a server that cannot read its own files.',
+    synonyms: ['change owner'],
+  },
+  {
+    term: 'pipe',
+    definition:
+      'The | operator, which connects one program standard output to the next program standard input with no temp file, like cat log | grep ERROR | wc -l. Composing small single-purpose tools this way is the heart of the command line.',
+    synonyms: ['pipeline', '|'],
+  },
+  {
+    term: 'redirection',
+    definition:
+      'Sending a program stream to or from a file: > writes stdout (overwriting), >> appends, < feeds a file in as stdin, 2> captures stderr, and 2>&1 merges stderr into stdout.',
+    synonyms: ['redirect', 'output redirection'],
+  },
+  {
+    term: 'standard streams',
+    definition:
+      'The three default channels every program has: standard input (stdin, fd 0), standard output (stdout, fd 1) for normal results, and standard error (stderr, fd 2) for errors. Pipes and redirects rewire where they go.',
+    synonyms: ['stdin', 'stdout', 'stderr'],
+  },
+  {
+    term: 'grep',
+    definition:
+      'Searches text for lines matching a pattern (a regular expression) and prints them, from files or piped input. Key flags: -i ignore case, -r recurse a tree, -n line numbers, -v invert, -c count.',
+    synonyms: ['grep command', 'text search'],
+  },
+  {
+    term: 'find',
+    definition:
+      'Walks a directory tree and returns paths matching tests like -name, -type, -size, and -mtime, and can act on them with -delete or -exec. Where grep searches inside files, find searches for the files themselves.',
+    synonyms: ['find command', 'file search'],
+  },
+  {
+    term: 'uname',
+    definition:
+      'Prints system information: uname -a shows the kernel, architecture, and OS in one line, and uname -r just the kernel release. The first command for "what is this machine".',
+    synonyms: ['uname -a', 'uname -r'],
+  },
+  {
+    term: 'uptime',
+    definition:
+      'Shows how long the machine has been running and the load average (roughly how many processes are competing for CPU over the last 1, 5, and 15 minutes). Compare the load to the core count to judge saturation.',
+    synonyms: ['load uptime'],
+  },
+  {
+    term: 'load average',
+    definition:
+      'Three numbers (1, 5, 15 minute) for how many processes are running or waiting, including for disk. Meaningful only against the CPU core count: 1.0 saturates 1 core but idles an 8-core box.',
+    synonyms: ['system load'],
+  },
+  {
+    term: 'hostname',
+    definition:
+      'Prints (or sets) the machine name. hostname -i prints its IP address. Useful to confirm which server you are actually on before running a command.',
+    synonyms: ['machine name'],
+  },
+  {
+    term: 'df',
+    definition:
+      'Disk free: shows space used and available per mounted filesystem. df -h gives human units and a Use% column. Finds which filesystem is full, not what filled it (that is du).',
+    synonyms: ['df -h', 'disk free'],
+  },
+  {
+    term: 'du',
+    definition:
+      'Disk usage: sums the size of files in a directory tree. du -sh * shows the total of each item here; pair with sort -h to find the directory that ate the disk. The complement to df.',
+    synonyms: ['du -sh', 'disk usage'],
+  },
+  {
+    term: 'free',
+    definition:
+      'Shows memory used, free, and available. free -m reports in megabytes. "available" (what apps can still use, including reclaimable cache) matters more than raw "free", because Linux uses spare RAM as disk cache.',
+    synonyms: ['free -m', 'memory usage command'],
+  },
+  {
+    term: 'lsblk',
+    definition:
+      'Lists block devices (disks and partitions) as a tree with their mount points. Shows the physical storage layout beneath the filesystems that df reports on.',
+    synonyms: ['list block devices'],
+  },
+  {
+    term: 'mount',
+    definition:
+      'Attaches a filesystem to a directory (the mount point) so its files become accessible, and lists what is currently mounted. A filesystem must be mounted before you can read or write it; findmnt shows the mount tree.',
+    synonyms: ['mount point', 'findmnt'],
+  },
+  {
+    term: 'process',
+    definition:
+      'A running instance of a program, with its own memory and a numeric process id (PID). Everything executing on a Linux box is a process owned by some user; you list them with ps/top and signal them with kill.',
+    synonyms: ['running program'],
+  },
+  {
+    term: 'PID',
+    definition:
+      'Process id: the number the kernel assigns each running process. You target a process by its PID (kill 4471) or find it by name with pgrep. PID 1 is the init/systemd process that starts everything else.',
+    synonyms: ['process id'],
+  },
+  {
+    term: 'ps',
+    definition:
+      'Lists processes. ps aux shows every process with its user, PID, CPU, and memory; ps aux | grep name filters to what you care about. A snapshot, where top is a live view.',
+    synonyms: ['ps aux', 'process status'],
+  },
+  {
+    term: 'top',
+    definition:
+      'A live, auto-updating, sorted view of running processes by CPU or memory. The fastest way to spot what is saturating a machine. htop is a friendlier interactive version.',
+    synonyms: ['htop', 'process monitor'],
+  },
+  {
+    term: 'kill',
+    definition:
+      'Sends a signal to a process by PID. kill PID sends SIGTERM (a catchable "please shut down"); kill -9 PID sends SIGKILL (forced, uncatchable, last resort). pkill/killall signal by name.',
+    synonyms: ['kill -9', 'pkill', 'killall'],
+  },
+  {
+    term: 'signal',
+    definition:
+      'A numbered message sent to a process. SIGTERM (15) and SIGINT (2, from Ctrl-C) are catchable so a program can clean up; SIGKILL (9) and SIGSTOP cannot be caught. Graceful shutdown relies on handling SIGTERM.',
+    synonyms: ['SIGTERM', 'SIGKILL', 'unix signal'],
+  },
+  {
+    term: 'job control',
+    definition:
+      'Managing programs started from your shell: & runs in the background, Ctrl-Z suspends the foreground job, bg resumes it in the background, fg brings it forward, and jobs lists them. nohup/disown keep a job alive after the terminal closes.',
+    synonyms: ['bg', 'fg', 'jobs'],
+  },
+  {
+    term: 'sudo',
+    definition:
+      'Runs a single command as another user (root by default) for permitted users, after your own password, with an audit log. Safer than logging in as root because it is per-command and recorded.',
+    synonyms: ['superuser do'],
+  },
+  {
+    term: 'root user',
+    definition:
+      'The superuser, user id 0, allowed to read, write, and kill anything. You rarely log in as root; you elevate single commands with sudo. Distinct from the root directory (/).',
+    synonyms: ['superuser', 'uid 0'],
+  },
+  {
+    term: 'user and group',
+    definition:
+      'Every file and process belongs to a user and a group; group membership lets several users share access via the group permission bits. id shows your user, group, and memberships; usermod -aG adds a user to a group.',
+    synonyms: ['unix users', 'unix groups', 'id'],
+  },
+  {
+    term: 'ip command',
+    definition:
+      'The modern tool for network interfaces and routes: ip addr shows your IP addresses, ip route shows how packets leave the machine. Replaces the deprecated ifconfig.',
+    synonyms: ['ip addr', 'ifconfig'],
+  },
+  {
+    term: 'ping',
+    definition:
+      'Sends ICMP echo requests to check whether a host answers and how long the round trip takes. A failed ping does not always mean down: some hosts and firewalls block ICMP, so test the real port too.',
+    synonyms: ['ping command', 'ICMP echo'],
+  },
+  {
+    term: 'ss',
+    definition:
+      'Shows socket statistics: ss -tlnp lists which TCP ports are listening and which process owns each. The fast modern replacement for netstat; the quick check that your service is actually bound.',
+    synonyms: ['netstat', 'ss -tlnp'],
+  },
+  {
+    term: 'dig',
+    definition:
+      'Queries DNS, resolving a name to IP addresses and showing records. dig +short example.com prints just the answer; host is a shorter version. The tool to confirm a name resolves to the right address.',
+    synonyms: ['dig command', 'host command', 'DNS lookup'],
+  },
+  {
+    term: 'curl',
+    definition:
+      'Makes HTTP (and other protocol) requests from the command line. curl -v shows the full handshake and headers, curl -I just the response headers and status. The single most useful tool for debugging an HTTP endpoint.',
+    synonyms: ['curl command'],
+  },
+  {
+    term: 'wget',
+    definition:
+      'Downloads files over HTTP(S) and FTP from the command line, and can mirror sites. Where curl is built for inspecting requests, wget is built for retrieving files (wget -c resumes a partial download).',
+    synonyms: ['wget command'],
+  },
+  {
+    term: 'SSH',
+    definition:
+      'Secure shell: an encrypted remote login and command channel. ssh user@host opens a shell on a remote machine; the same protocol carries scp and rsync. How you reach every server you do not sit in front of.',
+    synonyms: ['secure shell', 'ssh'],
+  },
+  {
+    term: 'SSH key',
+    definition:
+      'A key pair for password-free SSH login: a private key you keep secret and a public key you place in the server ~/.ssh/authorized_keys. ssh-keygen makes the pair; far harder to brute-force than a password. Keep the private key chmod 600.',
+    synonyms: ['ssh-keygen', 'key pair', 'authorized_keys'],
+  },
+  {
+    term: 'scp',
+    definition:
+      'Secure copy: copies a file to or from a remote host over SSH (scp file user@host:/path). Simple for one-off transfers; for repeated or large syncs, rsync is faster because it sends only what changed.',
+    synonyms: ['secure copy'],
+  },
+  {
+    term: 'rsync',
+    definition:
+      'Synchronizes files and directories, locally or over SSH, transferring only changed parts and preserving permissions and timestamps. rsync -a --delete makes a destination match a source. Far faster than scp for repeated transfers.',
+    synonyms: ['rsync -a', 'remote sync'],
+  },
+  {
+    term: 'tar',
+    definition:
+      'Bundles many files into one archive (tape archive). tar -cf creates, -xf extracts, -tf lists; add z for gzip compression (tar -czf archive.tar.gz folder). Does not compress by itself; the z flag adds it.',
+    synonyms: ['tarball', 'tar -czf'],
+  },
+  {
+    term: 'gzip',
+    definition:
+      'Compresses a single file in place to file.gz (gunzip reverses it). Often paired with tar via the z flag for compressed tarballs. Compression shrinks bytes; archiving (tar) bundles files; the two are separate jobs.',
+    synonyms: ['gunzip', 'gz'],
+  },
+  {
+    term: 'package manager',
+    definition:
+      'A tool that installs software plus its dependencies from a trusted repository, verifies signatures, and tracks what is installed for clean updates and removal. apt (Debian/Ubuntu) and dnf (RHEL/Fedora) are the common ones.',
+    synonyms: ['apt', 'dnf', 'yum'],
+  },
+  {
+    term: 'make',
+    definition:
+      'Builds software from a Makefile of rules. In the from-source three-step (./configure, make, make install), make compiles the code and make install copies the result into system paths. configure prepares the build for your system.',
+    synonyms: ['make install', 'configure make'],
+  },
+  {
+    term: 'which',
+    definition:
+      'Prints the full path of a program the shell would run for a given name (which node -> /usr/bin/node). Reveals which copy wins when a tool is installed more than once; whereis also finds related files.',
+    synonyms: ['which command', 'whereis'],
+  },
+  {
+    term: 'environment variable',
+    definition:
+      'A named value programs read for configuration (database URLs, API keys, ports). echo $NAME reads one, export NAME=value sets it for child processes. The standard way twelve-factor apps stay the same across dev, staging, and prod.',
+    synonyms: ['env var', 'export', 'env'],
+  },
+  {
+    term: 'PATH',
+    definition:
+      'The environment variable listing the colon-separated directories the shell searches, left to right, to turn a command name into a program. "command not found" means it is in none of them; two copies means the earlier one wins.',
+    synonyms: ['$PATH', 'search path'],
+  },
+  {
+    term: 'shell script',
+    definition:
+      'A file of shell commands run top to bottom, turning a sequence into a reusable program. A shebang (#!/usr/bin/env bash) picks the interpreter, $1/$@ read arguments, and set -euo pipefail makes it stop on the first failure.',
+    synonyms: ['bash script', 'shebang'],
+  },
+  {
+    term: 'exit code',
+    definition:
+      'The number a command returns when it finishes: 0 means success, non-zero means failure. $? holds the last one. Scripts and CI branch on it (cmd1 && cmd2, if cmd; then ...), which is how success and failure drive control flow.',
+    synonyms: ['exit status', 'return code', '$?'],
+  },
+  {
+    term: 'cron',
+    definition:
+      'A scheduler that runs commands automatically on a five-field schedule (minute, hour, day-of-month, month, day-of-week). crontab -e edits jobs. It runs them in a minimal environment, so use absolute paths and redirect output to a log.',
+    synonyms: ['crontab', 'cron job'],
+  },
+  {
+    term: 'systemd',
+    definition:
+      'The init system on most modern Linux distros: it starts services at boot, supervises and restarts them, and collects their logs. systemctl controls services (start/stop/enable); journalctl reads their logs.',
+    synonyms: ['systemctl', 'service manager'],
+  },
+  {
+    term: 'journalctl',
+    definition:
+      'Reads the systemd journal (each service captured stdout/stderr). journalctl -u nginx shows one service logs, -f follows live, -e jumps to the end, --since filters by time, -p err by priority. First stop when a service will not start.',
+    synonyms: ['journal logs', 'systemd logs'],
+  },
+  {
+    term: 'sed',
+    definition:
+      'A stream editor that transforms text line by line. sed \'s/old/new/g\' substitutes text in a stream or file; sed -i edits the file in place. Common in pipelines and scripts for find-and-replace on the fly.',
+    synonyms: ['stream editor'],
+  },
+  {
+    term: 'awk',
+    definition:
+      'A field-aware text processor. awk \'{print $2}\' prints the second whitespace-separated field; it can also filter (awk \'$3 > 100\') and compute (awk \'{s+=$1} END{print s}\'). The power tool for columnar text.',
+    synonyms: ['awk command'],
+  },
+  {
+    term: 'sort',
+    definition:
+      'Orders lines of text. sort -n sorts numerically (so 9 before 10), -r reverses, -k sorts by a field, -h handles human sizes (2G > 900M). Almost always precedes uniq, which only collapses adjacent duplicates.',
+    synonyms: ['sort command'],
+  },
+  {
+    term: 'uniq',
+    definition:
+      'Collapses adjacent duplicate lines; uniq -c prefixes each with a count. Because it only sees neighbors, you sort first. sort | uniq -c | sort -rn is the count-and-rank idiom for finding the most common values.',
+    synonyms: ['uniq -c'],
+  },
+  {
+    term: 'cut',
+    definition:
+      'Extracts columns from each line: cut -d"," -f1 takes the first comma-separated field. Defaults to tab-delimited, so set -d for other separators. A quick way to slice structured text; awk handles messier whitespace.',
+    synonyms: ['cut command'],
+  },
+  {
+    term: 'wc',
+    definition:
+      'Counts lines, words, and bytes. wc -l counts lines (the most common use), -w words, -c bytes. Frequently the last stage of a pipeline: ... | grep ERROR | wc -l counts matches.',
+    synonyms: ['word count', 'wc -l'],
+  },
+  {
+    term: 'alias',
+    definition:
+      'A short name for a longer command (alias ll=\'ls -la\'). Defined in a shell it lasts only that session; put it in ~/.bashrc to keep it. For anything that needs arguments mid-command, use a shell function instead.',
+    synonyms: ['shell alias'],
+  },
+  {
+    term: 'man',
+    definition:
+      'Opens the manual page for a command (man ls), shown in the less pager (/search, q to quit). --help prints a shorter inline summary; apropos searches man pages by keyword when you do not know the command name.',
+    synonyms: ['man page', 'manual', '--help'],
   },
 ]
 

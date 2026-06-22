@@ -18,6 +18,7 @@ export type GlossaryCategory =
   | 'Patterns'
   | 'Language & Runtime'
   | 'AI & LLMs'
+  | 'Linux & Shell'
 
 export type GlossaryEntry = {
   term: string
@@ -34,17 +35,18 @@ export type GlossaryEntry = {
 // Terms grouped into categories (mirrors the old appendix areas). Anything not
 // listed falls back to 'Operations'.
 const CATEGORY_TERMS: Record<GlossaryCategory, string[]> = {
-  'HTTP & Web': ['URL', 'DNS', 'TCP', 'TLS', 'HTTP', 'request', 'response', 'header', 'body', 'query string', 'status code', 'reverse proxy', 'CORS', 'request path', 'webhook', 'IP address', 'port', 'UDP', 'packet', 'CIDR', 'NAT', 'firewall', 'OSI model'],
-  APIs: ['API', 'endpoint', 'JSON', 'middleware', 'service', 'service shape', 'business rule', 'validation', 'controller', 'repository', 'config', 'framework', 'API gateway'],
-  Databases: ['database', 'SQL', 'PostgreSQL', 'table', 'primary key', 'foreign key', 'index', 'transaction', 'migration', 'N+1 query', 'write-ahead log', 'checksum'],
-  Security: ['authentication', 'authorization', 'JWT', 'OAuth', 'CSRF', 'XSS'],
-  'Caching & Async': ['cache', 'CDN', 'cache invalidation', 'queue', 'worker', 'dead-letter queue', 'idempotency', 'retry', 'backpressure', 'rate limit', 'bloom filter'],
+  'HTTP & Web': ['URL', 'DNS', 'TCP', 'TLS', 'HTTP', 'request', 'response', 'header', 'body', 'query string', 'status code', 'reverse proxy', 'CORS', 'request path', 'webhook', 'IP address', 'port', 'UDP', 'packet', 'CIDR', 'NAT', 'firewall', 'OSI model', 'redirect', 'conditional request', 'HTTP caching'],
+  APIs: ['API', 'endpoint', 'JSON', 'middleware', 'service', 'service shape', 'business rule', 'validation', 'controller', 'repository', 'config', 'framework', 'API gateway', 'CRUD', 'REST', 'routing', 'filtering', 'sorting', 'pagination', 'slug', 'short-code generation', 'fast ack'],
+  Databases: ['database', 'SQL', 'PostgreSQL', 'table', 'primary key', 'foreign key', 'index', 'transaction', 'migration', 'N+1 query', 'write-ahead log', 'checksum', 'aggregation', 'optimistic locking', 'relational modeling'],
+  Security: ['authentication', 'authorization', 'JWT', 'OAuth', 'CSRF', 'XSS', 'HMAC signature', 'replay protection', 'audit log', 'auth'],
+  'Caching & Async': ['cache', 'CDN', 'cache invalidation', 'queue', 'worker', 'dead-letter queue', 'idempotency', 'retry', 'backpressure', 'rate limit', 'bloom filter', 'cache-aside', 'TTL', 'eviction', 'exponential backoff', 'background job'],
   'Scale & Reliability': ['horizontal scaling', 'sharding', 'replication', 'load balancer', 'consistent hashing', 'microservices', 'CAP theorem', 'eventual consistency', 'strong consistency', 'heartbeat', 'quorum', 'leader election', 'distributed lock', 'service discovery'],
-  Operations: ['deployment', 'CI/CD', 'container', 'observability', 'log', 'metric', 'trace', 'latency', 'SLO', 'graceful shutdown'],
+  Operations: ['deployment', 'CI/CD', 'container', 'observability', 'log', 'metric', 'trace', 'latency', 'SLO', 'graceful shutdown', 'apdex', 'error rate', 'percentile'],
   Technologies: ['MySQL', 'MongoDB', 'Redis', 'Memcached', 'DynamoDB', 'Cassandra', 'Elasticsearch', 'Kafka', 'RabbitMQ', 'Amazon SQS', 'Amazon S3', 'AWS Lambda', 'Nginx', 'ZooKeeper', 'Docker', 'Kubernetes', 'Prometheus', 'Apache Spark', 'Apache Flink', 'Amazon EC2', 'Amazon EBS', 'Auto Scaling', 'Elastic Load Balancing', 'Amazon RDS', 'Amazon Aurora', 'Amazon ElastiCache', 'Amazon CloudFront', 'Amazon Route 53', 'Amazon VPC', 'AWS IAM', 'Amazon CloudWatch', 'AWS CloudTrail', 'Amazon SNS', 'AWS Fargate', 'Amazon ECS', 'Amazon EKS', 'AWS CloudFormation', 'Amazon API Gateway', 'AWS Secrets Manager', 'AWS KMS', 'Amazon Cognito', 'AWS Step Functions'],
-  Patterns: ['fanout', 'hot key', 'unique ID generation', 'distributed counting', 'long polling', 'server-sent events', 'geohash', 'single point of failure', 'multi-region', 'distributed transaction', 'saga', 'circuit breaker', 'load shedding', 'chunked upload', 'multi-tenancy'],
+  Patterns: ['fanout', 'hot key', 'unique ID generation', 'distributed counting', 'long polling', 'server-sent events', 'geohash', 'single point of failure', 'multi-region', 'distributed transaction', 'saga', 'circuit breaker', 'load shedding', 'chunked upload', 'multi-tenancy', 'status workflow', 'top-k'],
   'Language & Runtime': ['function', 'class', 'object', 'array', 'dictionary', 'for loop', 'while loop', 'runtime', 'concurrency model', 'side effect', 'memory usage', 'dependency management', 'runtime profiling'],
-  'AI & LLMs': ['LLM', 'token', 'context window', 'prompt', 'system prompt', 'prompt engineering', 'hallucination', 'temperature', 'inference', 'fine-tuning', 'embedding', 'vector database', 'semantic search', 'RAG', 'tool use', 'AI agent', 'prompt injection', 'structured output', 'prompt caching', 'eval'],
+  'AI & LLMs': ['LLM', 'token', 'context window', 'prompt', 'system prompt', 'prompt engineering', 'hallucination', 'temperature', 'inference', 'fine-tuning', 'embedding', 'vector database', 'semantic search', 'RAG', 'tool use', 'AI agent', 'prompt injection', 'structured output', 'prompt caching', 'eval', 'agent knowledge core', 'agent type', 'agent behavioral rules', 'agent capability', 'handoff protocol', 'agent memory', 'context sharing', 'multi-agent system', 'agent discovery', 'agent governance', 'Model Context Protocol'],
+  'Linux & Shell': ['shell', 'terminal', 'command-line prompt', 'working directory', 'pwd', 'ls', 'cd', 'absolute path', 'relative path', 'home directory', 'root directory', 'cat', 'less', 'head', 'tail', 'mkdir', 'touch', 'cp', 'mv', 'rm', 'file permissions', 'chmod', 'chown', 'pipe', 'redirection', 'standard streams', 'grep', 'find', 'uname', 'uptime', 'load average', 'hostname', 'df', 'du', 'free', 'lsblk', 'mount', 'process', 'PID', 'ps', 'top', 'kill', 'signal', 'job control', 'sudo', 'root user', 'user and group', 'ip command', 'ping', 'ss', 'dig', 'curl', 'wget', 'SSH', 'SSH key', 'scp', 'rsync', 'tar', 'gzip', 'package manager', 'make', 'which', 'environment variable', 'PATH', 'shell script', 'exit code', 'cron', 'systemd', 'journalctl', 'sed', 'awk', 'sort', 'uniq', 'cut', 'wc', 'alias', 'man'],
 }
 
 function categoryFor(term: string): GlossaryCategory {
@@ -4500,6 +4502,278 @@ const RICH: Record<string, Rich> = {
     related: ['tool use', 'LLM', 'eval', 'prompt injection'],
   },
 
+  'agent knowledge core': {
+    body: [
+      `**One agent is a prompt; a fleet is a system.** The knowledge core is the single place that defines what agents exist (the types), how they all must behave (the shared rules), and the conventions that make them interoperable (the standards). It is the base class your agents inherit from.`,
+      `**Define once, inherit everywhere.** When a policy changes (never email a customer without approval), you edit the core and every agent gets the change. Spread the same rule across ten prompts and the change lands in nine of them; the tenth becomes the incident.`,
+      `**It holds three things.** Agent types (named role contracts), behavioral rules (the laws every type obeys), and system standards (output schemas, logging, naming). Read once, change once, review in one place.`,
+    ],
+    examples: [
+      'A refund-approval rule lives in the core; all twelve agents inherit it, so no agent can be the one that forgot.',
+      'Adding a new agent means writing a type that points at the core, not copying another prompt and editing it.',
+    ],
+    diagrams: [
+      {
+        caption: 'The core defines types, rules, and standards; every agent inherits them.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'core', label: 'Knowledge core', accent: 'primary' },
+          { id: 'types', label: 'Agent types', accent: 'compute' },
+          { id: 'rules', label: 'Behavioral rules', accent: 'edge' },
+          { id: 'std', label: 'System standards', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['agent type', 'agent behavioral rules', 'agent governance', 'AI agent'],
+  },
+
+  'agent type': {
+    body: [
+      `**A type is a contract, not a personality.** It declares four things: the purpose, the tools the agent may call, the constraints it must obey, and the shape of its output. A researcher type reads and summarizes and may never write; a deployer type may ship a release but only behind approval.`,
+      `**Typing turns a prompt into a reviewable unit.** Because the tools are an allow-list and the constraints are explicit, a reviewer sees at a glance what the agent can and cannot do, and the platform can enforce it. "Some prompt someone wrote" becomes a thing you can audit.`,
+      `**Many instances, one type.** A type is the definition; a running agent is an instance bound to it. Ten support agents share one type, so they behave identically and a fix to the type fixes all of them.`,
+    ],
+    examples: [
+      'researcher: purpose read and summarize, tools [search, read_doc], constraints [no_write, cite], output ResearchBrief.',
+      'deployer: purpose ship a release, tools [build, release], constraints [requires_approval], output DeployReport.',
+    ],
+    diagrams: [
+      {
+        caption: 'An agent type is a four-field contract.',
+        layout: 'row',
+        nodes: [
+          { id: 'purpose', label: 'Purpose' },
+          { id: 'tools', label: 'Tools', accent: 'primary' },
+          { id: 'constraints', label: 'Constraints', accent: 'edge' },
+          { id: 'output', label: 'Output', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['agent knowledge core', 'agent capability', 'agent governance', 'AI agent'],
+  },
+
+  'agent behavioral rules': {
+    body: [
+      `**The laws every agent obeys, whatever its type.** Ground every claim before stating it, never exfiltrate secrets, escalate when confidence is low, stop after a step budget, log every tool call. They are not per-task instructions; they are the constitution of the fleet.`,
+      `**They belong in the core, inherited.** Copy-pasting the rules into each prompt guarantees drift: someone edits one and forgets another. Put them in one place every type inherits, and a change is fleet-wide and reviewable.`,
+      `**They are enforced, not merely requested.** A rule like "stop after N steps" is a hard cap in the loop, and "never send without approval" is an approval gate in front of the tool, because a model can be talked out of a politely worded instruction but not out of a missing permission.`,
+    ],
+    examples: [
+      'Step budget: the loop hard-stops at 12 steps regardless of what the model wants to do next.',
+      'Escalation rule: below a confidence threshold the agent hands off to a human instead of guessing.',
+    ],
+    diagrams: [
+      {
+        caption: 'Shared rules every agent inherits from the core.',
+        layout: 'stack',
+        nodes: [
+          { id: 'ground', label: 'Ground claims', accent: 'success' },
+          { id: 'secrets', label: 'Protect secrets', accent: 'danger' },
+          { id: 'escalate', label: 'Escalate on doubt', accent: 'edge' },
+          { id: 'stop', label: 'Stop at budget' },
+        ],
+      },
+    ],
+    related: ['agent knowledge core', 'agent governance', 'prompt injection', 'AI agent'],
+  },
+
+  'agent capability': {
+    body: [
+      `**A capability is power, and power is tools.** Granting a new capability means granting the narrowest set of tools that does the job, default-deny: the agent can call exactly these and nothing else. A read-only agent handed a delete tool can delete, and the model will eventually find a reason to.`,
+      `**Constraints bound what tools do not.** Tools say what it may call; constraints say how much and under what conditions: a step budget, a cost budget, rate limits, and an approval gate before any irreversible action. A capability without a budget is how a demo becomes a runaway bill.`,
+      `**Grant it like an IAM permission.** The review question is never "can it do the task" but "what is the worst this tool set allows, and what stops that." Least privilege, applied to a non-deterministic caller.`,
+    ],
+    examples: [
+      'draft_refund: tools [read_account, prepare_refund] but NOT issue_refund, requires_approval, max 6 steps.',
+      'The same internal API exposes read and refund; granting "read billing" without scoping hands over refunds too.',
+    ],
+    diagrams: [
+      {
+        caption: 'A capability is a narrow tool set, bounded by constraints and a gate.',
+        layout: 'row',
+        nodes: [
+          { id: 'tools', label: 'Allow-list tools', accent: 'primary' },
+          { id: 'constraints', label: 'Constraints', accent: 'edge' },
+          { id: 'gate', label: 'Approval gate', accent: 'danger' },
+          { id: 'action', label: 'Action', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['tool use', 'agent type', 'handoff protocol', 'prompt injection'],
+  },
+
+  'handoff protocol': {
+    body: [
+      `**A handoff is a typed payload, not a chat dump.** When one agent finishes and another takes over, it passes four things: what was done, what was found, what to do next, and what is forbidden. The receiving agent starts grounded in exactly what it needs.`,
+      `**The forbidden field is the point.** A handoff that only says what to do, never what not to do, lets the original constraints evaporate at the boundary. Carrying the bounds forward is what keeps a multi-agent chain from leaking power step by step.`,
+      `**Typed beats transcript.** Passing the whole conversation blows the token budget and drags every prior instruction (and every injection) along with it. A small typed summary is cheaper, clearer, and safer.`,
+    ],
+    examples: [
+      'A { done, found, next, forbidden } summary from a research agent to a writer agent: ~200 tokens, fully bounded.',
+      'Passing the raw 30k-token transcript instead: expensive, and the writer inherits constraints nobody re-checked.',
+    ],
+    diagrams: [
+      {
+        caption: 'Work moves as a typed payload, not the raw transcript.',
+        layout: 'row',
+        nodes: [
+          { id: 'a', label: 'Agent A', accent: 'compute' },
+          { id: 'payload', label: 'Typed payload', accent: 'queue' },
+          { id: 'b', label: 'Agent B', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['agent capability', 'context sharing', 'multi-agent system', 'AI agent'],
+  },
+
+  'agent memory': {
+    body: [
+      `**The model is stateless; memory is engineered around it.** A single call knows only its context window and forgets the instant it returns. Everything that looks like memory is something you build on top of that amnesia.`,
+      `**Working memory lives in the window and must be curated.** Across a multi-step loop you feed back the running task state, but the window is finite and billed per token, so you keep what the next step needs and summarize or drop the rest. Stuff every raw tool result back in and it overflows and forgets its own start.`,
+      `**Persistent memory lives in a store.** Facts that must outlive the task (a preference, a prior decision) are written to a row, file, or vector index and retrieved on later runs. The model does not remember; the store does. This is retrieval pointed at the history of the agent itself.`,
+    ],
+    examples: [
+      'Working memory at step 7: a ~200-token summary of goal, done, and next, not the full transcript.',
+      'Persistent memory: store the last decision for a customer so next week the agent does not refund the same charge twice.',
+    ],
+    diagrams: [
+      {
+        caption: 'Working memory is curated in the window; persistent memory lives in a store.',
+        layout: 'row',
+        nodes: [
+          { id: 'work', label: 'Working memory', accent: 'cache' },
+          { id: 'curate', label: 'Curate', accent: 'edge' },
+          { id: 'store', label: 'Persistent store', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['context window', 'RAG', 'context sharing', 'AI agent'],
+  },
+
+  'context sharing': {
+    body: [
+      `**Agents share state without trading transcripts.** When several agents collaborate, each needs a view of the task, but inheriting every other transcript explodes cost and drags constraints along. The pattern is a shared scratchpad (a blackboard) plus typed handoffs.`,
+      `**A blackboard is the shared, curated state.** Any agent reads the slice it needs and writes back a curated result; the board holds the task state, not the chatter. It is a small structured record, not a growing log.`,
+      `**Slices, not dumps.** Each read is the minimum an agent needs to act, and each write is a curated result. This keeps every agent grounded and bounded and keeps the whole workflow inside the token budget.`,
+    ],
+    examples: [
+      'A board read returns { status: refund_prepared, amount: 42.00 } for one invoice: a slice, not the history.',
+      'Sharing the full transcript between five agents instead: five times the tokens and five chances to leak a constraint.',
+    ],
+    diagrams: [
+      {
+        caption: 'Agents read and write curated slices on a shared blackboard.',
+        layout: 'gather',
+        nodes: [
+          { id: 'a1', label: 'Agent 1', accent: 'compute' },
+          { id: 'a2', label: 'Agent 2', accent: 'compute' },
+          { id: 'a3', label: 'Agent 3', accent: 'compute' },
+          { id: 'board', label: 'Blackboard', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['agent memory', 'handoff protocol', 'multi-agent system', 'context window'],
+  },
+
+  'multi-agent system': {
+    body: [
+      `**Several specialized agents collaborating on one job.** Each has its own type, tools, and memory, and they coordinate through handoffs and shared context. A research agent gathers, a writer drafts, a reviewer checks, each bounded to its slice.`,
+      `**Worth it only when one agent cannot hold the job.** Multiple agents multiply cost, latency, and failure modes. Reach for it when the work genuinely splits into specialties with clean handoffs, not because it sounds sophisticated; otherwise a single agent or a fixed workflow is cheaper and easier to test.`,
+      `**Coordination is the hard part.** The system is only as good as its handoffs, shared context, and governance. Loose handoffs leak constraints, shared transcripts blow the budget, and no registry means agents cannot find each other. The agents are easy; the platform around them is the work.`,
+    ],
+    examples: [
+      'A research, write, review pipeline: each stage a typed agent passing a typed handoff to the next.',
+      'A single extraction task wrapped in three agents: it just added cost and three places to fail.',
+    ],
+    diagrams: [
+      {
+        caption: 'Specialized agents pass typed handoffs down a pipeline.',
+        layout: 'row',
+        nodes: [
+          { id: 'research', label: 'Research', accent: 'compute' },
+          { id: 'write', label: 'Write', accent: 'primary' },
+          { id: 'review', label: 'Review', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['handoff protocol', 'context sharing', 'agent discovery', 'agent governance'],
+  },
+
+  'agent discovery': {
+    body: [
+      `**Agents and tools find each other through a registry, not hardcoding.** In a fleet, an agent should look up a capability (what exists, what it does, how to call it) instead of having every tool wired into it by hand. This is service discovery applied to agents and tools.`,
+      `**Register once, discover everywhere.** A tool registers with its name, description, schema, and a grant scope. Any authorized agent can then discover and call it with zero bespoke wiring, and a new tool is available fleet-wide the moment it is registered.`,
+      `**Discovery and authorization are one act.** The grant scope on a registry entry decides who may even see a tool, so an unauthorized agent cannot discover the dangerous verbs. This is the idea behind protocols like MCP.`,
+    ],
+    examples: [
+      'Register issue_refund with grant finance-only, and only finance agents can discover or call it.',
+      'Without a registry, every new tool is hand-wired into each agent and nothing is consistent or findable.',
+    ],
+    diagrams: [
+      {
+        caption: 'A registry lets any authorized agent discover a tool.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'reg', label: 'Registry', accent: 'storage' },
+          { id: 'a', label: 'Agent A', accent: 'compute' },
+          { id: 'b', label: 'Agent B', accent: 'compute' },
+          { id: 'c', label: 'Agent C', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['Model Context Protocol', 'service discovery', 'agent governance', 'multi-agent system'],
+  },
+
+  'agent governance': {
+    body: [
+      `**Ten agents need a platform, the way ten services do.** Governance is the control structure: shared standards, review for adding types or granting tools, versioned definitions, audit logs, and approval gates. It is the difference between a fleet you can change safely and a pile of prompts nobody dares touch.`,
+      `**Standards make agents interoperable and reviewable.** One output schema family, one logging and tracing format, one naming scheme, one error shape, so the output of any agent can feed another and any engineer can read any log.`,
+      `**Audit and review make it accountable.** Every tool call is logged with a trace id, so after an incident you can answer who did what, with which tool, granted by whom. Adding power goes through review, so a grant is deliberate and recorded, not wired in by whoever was nearby.`,
+    ],
+    examples: [
+      'Every agent emits the same log shape (agent, type, tool, args hash, decision, trace id): fully auditable.',
+      'A tool grant requires review and is versioned, so "who gave it that permission" always has an answer.',
+    ],
+    diagrams: [
+      {
+        caption: 'Standards, discovery, review, and audit make a fleet governable.',
+        layout: 'gather',
+        nodes: [
+          { id: 'std', label: 'Standards' },
+          { id: 'disc', label: 'Discovery', accent: 'edge' },
+          { id: 'review', label: 'Review', accent: 'primary' },
+          { id: 'audit', label: 'Audit log', accent: 'storage' },
+          { id: 'fleet', label: 'Governed fleet', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['agent knowledge core', 'agent discovery', 'observability', 'multi-agent system'],
+  },
+
+  'Model Context Protocol': {
+    body: [
+      `**MCP is a common contract for agents to find and call tools.** Instead of every team hand-wiring every tool and data source into every agent, a tool exposes itself through one standard interface, and any MCP-aware agent can discover and use it. Service discovery and a standard plug for the agent ecosystem.`,
+      `**It turns tools into discoverable capabilities.** A server advertises its tools (name, description, schema); a client (the agent host) lists and calls them. The N-by-M integration problem (every agent times every tool) collapses into one protocol both sides speak.`,
+      `**Why it matters.** The same reason HTTP and SQL mattered: a shared interface lets an ecosystem grow. A tool built once works with any compliant host, and an agent gains new abilities by connecting a server, not by shipping new code.`,
+    ],
+    examples: [
+      'A filesystem MCP server exposes read_file and list_dir; any MCP host can use them without custom glue.',
+      'Before MCP, each tool was integrated per-agent and per-vendor; after, you register once and discover from any client.',
+    ],
+    diagrams: [
+      {
+        caption: 'A tool server speaks one protocol that any agent host can call.',
+        layout: 'row',
+        nodes: [
+          { id: 'server', label: 'MCP server', accent: 'storage' },
+          { id: 'proto', label: 'Protocol', accent: 'edge' },
+          { id: 'host', label: 'Agent host', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['agent discovery', 'tool use', 'API', 'multi-agent system'],
+  },
+
   'prompt injection': {
     body: [
       '**Prompt injection is the SQL injection of LLM apps.** When the model reads anything a user or the web controls (a message, a document, a web page, an email), that content can carry hidden instructions that hijack the model into ignoring your rules.',
@@ -4613,6 +4887,1941 @@ const RICH: Record<string, Rich> = {
       },
     ],
     related: ['LLM', 'hallucination', 'prompt engineering', 'temperature'],
+  },
+
+  shell: {
+    body: [
+      '**The shell is a read-run-print loop for commands.** You type a line, it finds and runs the program you named with the arguments you gave, prints the output, then shows the prompt and waits for the next line. Chat with a server, deploy code, debug an outage: it is all that one loop.',
+      '**A command is a program plus arguments.** In `ls -l /etc`, `ls` is the program, `-l` an option, `/etc` a target. Almost everything on the command line is this shape, which is why a handful of rules unlock the whole surface.',
+      '**bash, zsh, sh are shells.** They differ in features (history, completion, scripting niceties) but share the core loop. The shell is distinct from the terminal: the terminal is the window, the shell is the interpreter running inside it.',
+    ],
+    examples: [
+      'whoami -> runs a program that prints your username.',
+      'echo "hi" -> the shell passes "hi" to the echo program, which prints it.',
+      'A missing prompt means a program is still running; "command not found" means the shell could not locate the program.',
+    ],
+    diagrams: [
+      {
+        caption: 'The shell loop: read a line, run the program, print output, wait.',
+        layout: 'row',
+        nodes: [
+          { id: 'in', label: 'You type a line', accent: 'client', glyph: 'bubble' },
+          { id: 'parse', label: 'Shell parses', sub: 'program + args', accent: 'edge' },
+          { id: 'run', label: 'Run program', accent: 'compute', glyph: 'chip' },
+          { id: 'out', label: 'Print + prompt', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['terminal', 'command-line prompt', 'pipe', 'standard streams'],
+  },
+
+  terminal: {
+    body: [
+      '**The terminal is the window that shows text and takes your keystrokes.** It draws whatever the shell and programs print and sends what you type to the shell. It is the screen and keyboard of the command line.',
+      '**Terminal versus shell.** People say "the terminal" to mean both, but they are two layers: the terminal (the emulator window) displays characters; the shell (bash/zsh) running inside interprets your commands. When something misbehaves, knowing which layer you are talking to speeds the fix.',
+    ],
+    examples: [
+      'macOS Terminal, iTerm2, Windows Terminal, and the VS Code panel are terminal emulators.',
+      'Over SSH, your local terminal shows the output of a shell running on a remote machine.',
+    ],
+    diagrams: [
+      {
+        caption: 'The terminal is the window; the shell runs inside it.',
+        layout: 'row',
+        nodes: [
+          { id: 'term', label: 'Terminal', sub: 'shows text', accent: 'client' },
+          { id: 'shell', label: 'Shell', sub: 'interprets', accent: 'primary', glyph: 'chip' },
+          { id: 'prog', label: 'Programs', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['shell', 'command-line prompt'],
+  },
+
+  'command-line prompt': {
+    body: [
+      '**The prompt is the shell telling you it is idle and ready.** It is the text before your cursor, often ending in `$` for a normal user or `#` for root. When the prompt is showing, the shell is waiting for input.',
+      '**No prompt means a program is running.** If you run something and the prompt does not come back, the command has not finished (it may be working, waiting on input, or stuck). Reading the prompt is reading the state of the machine, and it is why you never assume a long command has "frozen".',
+    ],
+    examples: [
+      'abhi@host:~/projects$  shows user, host, and current directory before the $.',
+      'A # prompt warns you are root: every command runs with full privileges.',
+    ],
+    diagrams: [
+      {
+        caption: 'Prompt present means idle; prompt absent means busy.',
+        layout: 'row',
+        nodes: [
+          { id: 'idle', label: 'Prompt shown', sub: 'shell waiting', accent: 'success' },
+          { id: 'run', label: 'Prompt gone', sub: 'program running', accent: 'queue' },
+        ],
+      },
+    ],
+    related: ['shell', 'terminal'],
+  },
+
+  'working directory': {
+    body: [
+      '**Your shell always sits in exactly one directory, the working directory.** Every relative path is resolved against it, so "here" is a real, specific place at all times. `pwd` prints it.',
+      '**It is per-shell state.** Each terminal tab has its own working directory, and `cd` changes it. A command that worked in one tab can do something different in another simply because the working directory differs.',
+      '**Most "wrong file" incidents are really "wrong directory".** A reflexive `pwd` before any destructive command is the cheapest insurance on the command line.',
+    ],
+    examples: [
+      'In /home/abhi/projects, the relative path app.js means /home/abhi/projects/app.js.',
+      'Open a second tab; it may start in your home directory, so the same relative command misfires.',
+    ],
+    diagrams: [
+      {
+        caption: 'pwd reports where you stand; relative paths resolve from there.',
+        layout: 'row',
+        nodes: [
+          { id: 'pwd', label: 'Working directory', sub: 'pwd prints it', accent: 'primary', glyph: 'route' },
+          { id: 'rel', label: 'Relative path', sub: 'resolved here', accent: 'edge' },
+        ],
+      },
+    ],
+    related: ['pwd', 'cd', 'relative path', 'absolute path'],
+  },
+
+  pwd: {
+    body: [
+      '**pwd prints the working directory: the full absolute path you are standing in.** It answers "where am I right now" before you run anything that depends on location.',
+      '**It is the first debugging step.** When a command cannot find a file or deletes the wrong one, the usual cause is the wrong directory, and `pwd` is the one-keystroke check.',
+    ],
+    examples: [
+      '$ pwd -> /home/abhi/projects',
+      'pwd before rm -rf ./* confirms you are about to clean the directory you think you are.',
+    ],
+    diagrams: [
+      {
+        caption: 'pwd answers "where am I" with a full path from root.',
+        layout: 'row',
+        nodes: [
+          { id: 'cmd', label: 'pwd', accent: 'primary', glyph: 'route' },
+          { id: 'path', label: '/home/abhi/projects', sub: 'absolute path', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['working directory', 'cd', 'ls', 'absolute path'],
+  },
+
+  ls: {
+    body: [
+      '**ls lists what is in a directory.** Bare `ls` shows visible names. `ls -l` shows the long form: permissions, link count, owner, group, size, modified date, name. `ls -a` reveals hidden entries (names starting with a dot). `ls -la` does both and is the most-typed listing in practice.',
+      '**The long form is dense but readable.** The leading ten characters of each `ls -l` line are the file type plus its read/write/execute permissions, which is how you spot a directory, a script, or a file the server cannot read.',
+    ],
+    examples: [
+      'ls -la -> shows .bashrc and .git that plain ls hides.',
+      'ls -lh -> sizes in human-readable units (1.4K, 4.0M).',
+      'ls -lt -> sort by modified time, newest first.',
+    ],
+    diagrams: [
+      {
+        caption: 'ls flags change how much each entry reveals.',
+        layout: 'row',
+        nodes: [
+          { id: 'plain', label: 'ls', sub: 'names', accent: 'edge', glyph: 'list' },
+          { id: 'long', label: 'ls -l', sub: 'perms, owner, size', accent: 'compute', glyph: 'list' },
+          { id: 'all', label: 'ls -a', sub: '+ hidden dotfiles', accent: 'success', glyph: 'list' },
+        ],
+      },
+    ],
+    related: ['working directory', 'cd', 'file permissions'],
+  },
+
+  cd: {
+    body: [
+      '**cd changes the working directory.** `cd path` moves into it, `cd ..` moves up one level, `cd -` jumps back to the previous directory, and `cd` with no argument returns home.',
+      '**Every cd changes what relative paths mean.** After moving, the same relative command resolves against the new location. Scripts that assume a directory without cd-ing there first run against wherever they happened to launch from.',
+    ],
+    examples: [
+      'cd /var/log -> absolute move; cd .. -> up one; cd -> home.',
+      'cd projects && pwd -> confirms you landed where you expected.',
+    ],
+    diagrams: [
+      {
+        caption: 'cd walks you down, up, or home through the tree.',
+        layout: 'row',
+        nodes: [
+          { id: 'down', label: 'cd projects', sub: 'down', accent: 'compute', glyph: 'route' },
+          { id: 'up', label: 'cd ..', sub: 'up one', accent: 'edge', glyph: 'route' },
+          { id: 'home', label: 'cd', sub: 'home', accent: 'success', glyph: 'route' },
+        ],
+      },
+    ],
+    related: ['working directory', 'pwd', 'absolute path', 'relative path', 'home directory'],
+  },
+
+  'absolute path': {
+    body: [
+      '**An absolute path starts at the root (/) and is the same from anywhere.** `/home/abhi/notes.txt` names that file from the top of the tree down, so it resolves identically no matter your working directory.',
+      '**Prefer absolute paths in scripts, cron, and services.** Background jobs run from a directory you did not choose, so a relative path can resolve somewhere unexpected. An absolute path removes that ambiguity.',
+    ],
+    examples: [
+      '/etc/hostname -> same file whether you are in /tmp or /home.',
+      'A systemd service should write /var/app/run.log, not run.log.',
+    ],
+    diagrams: [
+      {
+        caption: 'Absolute paths anchor at root, independent of where you stand.',
+        layout: 'row',
+        nodes: [
+          { id: 'root', label: '/', sub: 'root', accent: 'primary', glyph: 'route' },
+          { id: 'abs', label: '/home/abhi/notes.txt', sub: 'same everywhere', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['relative path', 'root directory', 'home directory', 'working directory'],
+  },
+
+  'relative path': {
+    body: [
+      '**A relative path is resolved against your current directory.** `notes.txt` or `../config` is silently prefixed with your `$PWD`, so the same relative path points at different files as you move.',
+      '**The shorthand: `.` is here, `..` is the parent, `~` is home.** `./run.sh` is the script right here; `../data` is the data folder one level up. Convenient for typing, risky in scripts where the launch directory is not guaranteed.',
+    ],
+    examples: [
+      'From /home/abhi/projects, cat notes.txt reads /home/abhi/projects/notes.txt.',
+      'cat ../notes.txt reads /home/abhi/notes.txt (one level up).',
+    ],
+    diagrams: [
+      {
+        caption: 'A relative path resolves against the working directory.',
+        layout: 'row',
+        nodes: [
+          { id: 'pwd', label: '$PWD', sub: 'current dir', accent: 'edge', glyph: 'route' },
+          { id: 'rel', label: 'notes.txt', sub: 'relative', accent: 'compute' },
+          { id: 'full', label: '$PWD/notes.txt', sub: 'resolved', accent: 'success' },
+        ],
+        edges: [
+          { from: 'pwd', to: 'rel' },
+          { from: 'rel', to: 'full', label: 'prefixed' },
+        ],
+      },
+    ],
+    related: ['absolute path', 'working directory', 'home directory', 'cd'],
+  },
+
+  'home directory': {
+    body: [
+      '**Your home directory is your personal space** (for example /home/abhi or /Users/abhi), where your files, settings, and dotfiles live. You own it and can write freely inside it.',
+      '**The shell expands `~` to it.** `~/notes.txt` and `$HOME/notes.txt` both point at your home directory regardless of where you currently stand, and `cd` with no argument jumps there.',
+    ],
+    examples: [
+      '~/.bashrc -> your shell startup file, inside home.',
+      'cd ~ or just cd -> returns to home from anywhere.',
+    ],
+    diagrams: [
+      {
+        caption: '~ expands to your home directory before the program runs.',
+        layout: 'row',
+        nodes: [
+          { id: 'tilde', label: '~', sub: 'shorthand', accent: 'edge', glyph: 'route' },
+          { id: 'home', label: '/home/abhi', sub: 'your home', accent: 'success' },
+        ],
+        edges: [{ from: 'tilde', to: 'home', label: 'expands to' }],
+      },
+    ],
+    related: ['root directory', 'absolute path', 'relative path', 'cd'],
+  },
+
+  'root directory': {
+    body: [
+      '**The root directory is the single top of the filesystem, written `/`.** Every absolute path begins here, and every other directory descends from it. Linux has one unified tree, not per-drive letters.',
+      '**Do not confuse three "roots".** The root directory (`/`) is the top of the tree; the root user is the all-powerful administrator account; a user home is that user personal folder. `rm -rf /` is catastrophic precisely because `/` is the root of everything.',
+    ],
+    examples: [
+      '/ contains /etc, /home, /var, /usr, and the rest of the system.',
+      'ls / -> shows the top-level directories of the whole machine.',
+    ],
+    diagrams: [
+      {
+        caption: 'Everything descends from the single root, /.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'root', label: '/', sub: 'root dir', accent: 'primary', glyph: 'route' },
+          { id: 'etc', label: '/etc', sub: 'config', accent: 'edge', glyph: 'doc' },
+          { id: 'home', label: '/home', sub: 'users', accent: 'client' },
+          { id: 'var', label: '/var', sub: 'logs, data', accent: 'storage' },
+        ],
+      },
+    ],
+    related: ['absolute path', 'home directory', 'working directory'],
+  },
+
+  cat: {
+    body: [
+      '**cat prints the whole contents of a file to the screen** and can join several files together (its name is short for concatenate). It is the fast way to read a short file or feed one into a pipe.',
+      '**Wrong tool for huge files.** `cat` dumps everything at once, so on a multi-gigabyte log it floods the terminal and can hang a slow SSH session. Reach for `less`, `head`, or `tail` instead when a file is large.',
+    ],
+    examples: [
+      'cat /etc/hostname -> prints the machine name.',
+      'cat a.txt b.txt > both.txt -> concatenates two files into one.',
+      'cat log | grep ERROR -> pipe the file into a filter.',
+    ],
+    diagrams: [
+      {
+        caption: 'cat streams the entire file out at once.',
+        layout: 'row',
+        nodes: [
+          { id: 'file', label: 'file', accent: 'storage', glyph: 'doc' },
+          { id: 'cat', label: 'cat', accent: 'compute' },
+          { id: 'out', label: 'whole contents', sub: 'to screen', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['less', 'head', 'tail', 'pipe'],
+  },
+
+  less: {
+    body: [
+      '**less opens a file in a scrollable pager** so you can move through it with the arrow keys, jump with `/search`, and quit with `q`, all without loading the whole file into memory.',
+      '**The safe way to read large files.** Because it reads lazily, `less` opens a multi-gigabyte file instantly where `cat` would flood the screen. It is also where `man` pages and many tools display their output.',
+    ],
+    examples: [
+      'less /var/log/syslog -> page through a big log; q to quit.',
+      'Inside less: /error finds the next "error"; n repeats; G jumps to the end.',
+    ],
+    diagrams: [
+      {
+        caption: 'less shows one screen at a time from a large file.',
+        layout: 'row',
+        nodes: [
+          { id: 'file', label: 'large file', accent: 'storage', glyph: 'doc' },
+          { id: 'less', label: 'less', sub: 'lazy read', accent: 'compute' },
+          { id: 'view', label: 'one screen', sub: 'scroll, search', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['cat', 'head', 'tail'],
+  },
+
+  head: {
+    body: [
+      '**head prints the first lines of a file**, ten by default, or `head -n N` for N lines. It is the quick peek at the top of a file or the start of command output.',
+      '**Pairs with pipes.** `some-command | head` shows just the first lines of a long output, which is handy when you only need a sample.',
+    ],
+    examples: [
+      'head config.yml -> first 10 lines.',
+      'head -n 1 data.csv -> just the header row.',
+      'ls -lt | head -n 5 -> the five most recently modified entries.',
+    ],
+    diagrams: [
+      {
+        caption: 'head keeps the start of the input.',
+        layout: 'row',
+        nodes: [
+          { id: 'in', label: 'file / input', accent: 'storage', glyph: 'doc' },
+          { id: 'head', label: 'head -n N', accent: 'compute' },
+          { id: 'out', label: 'first N lines', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['tail', 'cat', 'less', 'pipe'],
+  },
+
+  tail: {
+    body: [
+      '**tail prints the last lines of a file**, ten by default, or `tail -n N`. The end of a log is usually where the latest, most relevant events are.',
+      '**tail -f follows a live file.** It keeps printing new lines as they are appended, the standard way to watch a service log while reproducing a bug. `tail -F` follows by name so it survives log rotation (when the file is renamed and recreated).',
+    ],
+    examples: [
+      'tail -n 100 app.log -> the last 100 lines.',
+      'tail -f app.log -> stream new lines until Ctrl-C.',
+      'tail -F app.log -> keep following even after the log rotates.',
+    ],
+    diagrams: [
+      {
+        caption: 'tail shows the end; tail -f keeps following new lines.',
+        layout: 'row',
+        nodes: [
+          { id: 'log', label: 'log file', accent: 'storage', glyph: 'doc' },
+          { id: 'tail', label: 'tail -f', accent: 'compute', glyph: 'loop' },
+          { id: 'live', label: 'new lines', sub: 'as written', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['head', 'cat', 'less'],
+  },
+
+  mkdir: {
+    body: [
+      '**mkdir makes a new directory.** `mkdir logs` creates one; `mkdir -p a/b/c` creates a whole nested path in one go and succeeds even if parts already exist (it is idempotent).',
+      '**-p is the everyday flag.** It saves you from creating each level by hand and from errors when a directory is already there, which makes it safe to run in scripts.',
+    ],
+    examples: [
+      'mkdir build -> one directory.',
+      'mkdir -p site/css/vendor -> three nested levels at once.',
+    ],
+    diagrams: [
+      {
+        caption: 'mkdir -p builds an entire nested path in one command.',
+        layout: 'row',
+        nodes: [
+          { id: 'cmd', label: 'mkdir -p site/css', accent: 'compute' },
+          { id: 'site', label: 'site/', accent: 'edge', glyph: 'route' },
+          { id: 'css', label: 'site/css/', accent: 'success', glyph: 'route' },
+        ],
+        edges: [
+          { from: 'cmd', to: 'site' },
+          { from: 'site', to: 'css' },
+        ],
+      },
+    ],
+    related: ['touch', 'cp', 'mv', 'rm'],
+  },
+
+  touch: {
+    body: [
+      '**touch creates an empty file if it does not exist**, or updates the modified timestamp of an existing one. The quickest way to make a placeholder or mark a file as freshly changed.',
+      '**Common uses.** Scaffolding empty files before you fill them, creating a marker/lock file, or bumping a timestamp so a build tool treats a file as new.',
+    ],
+    examples: [
+      'touch index.html -> creates an empty file.',
+      'touch a b c -> creates three files at once.',
+      'touch existing.txt -> leaves contents, updates the mtime.',
+    ],
+    diagrams: [
+      {
+        caption: 'touch makes an empty file or refreshes a timestamp.',
+        layout: 'row',
+        nodes: [
+          { id: 'cmd', label: 'touch file', accent: 'compute' },
+          { id: 'new', label: 'empty file', sub: 'if missing', accent: 'success', glyph: 'doc' },
+          { id: 'mtime', label: 'updated mtime', sub: 'if it exists', accent: 'edge' },
+        ],
+      },
+    ],
+    related: ['mkdir', 'cp', 'mv', 'rm'],
+  },
+
+  cp: {
+    body: [
+      '**cp copies a file**: `cp a b` leaves `a` in place and writes a copy at `b`. To copy a directory and everything in it, use `cp -r dir1 dir2`.',
+      '**Copying moves bytes.** Unlike a rename, `cp` reads the source and writes a second copy, so copying a large file takes real time and disk space. `cp` without `-r` silently skips directories.',
+    ],
+    examples: [
+      'cp config.yml config.yml.bak -> a quick backup before editing.',
+      'cp -r src/ dist/ -> copy a whole directory tree.',
+      'cp -i a b -> prompt before overwriting an existing b.',
+    ],
+    diagrams: [
+      {
+        caption: 'cp duplicates: the original stays, a copy is written.',
+        layout: 'row',
+        nodes: [
+          { id: 'src', label: 'a', sub: 'original', accent: 'storage', glyph: 'doc' },
+          { id: 'cp', label: 'cp a b', accent: 'compute' },
+          { id: 'dst', label: 'b', sub: 'copy', accent: 'success', glyph: 'doc' },
+        ],
+      },
+    ],
+    related: ['mv', 'rm', 'mkdir', 'touch'],
+  },
+
+  mv: {
+    body: [
+      '**mv moves a file or directory, and renaming is just moving** to a new name in the same directory. `mv old.txt new.txt` renames; `mv file dir/` moves it into a directory.',
+      '**Within one filesystem, mv is instant.** It only rewrites the directory entry pointing at the existing data, so no bytes move even for a huge file. Across filesystems it falls back to copy-then-delete, which does take time.',
+    ],
+    examples: [
+      'mv draft.md final.md -> rename in place.',
+      'mv *.png images/ -> move all PNGs into a directory.',
+      'mv -i a b -> prompt before overwriting b.',
+    ],
+    diagrams: [
+      {
+        caption: 'mv re-points the name; the data does not move (same filesystem).',
+        layout: 'row',
+        nodes: [
+          { id: 'old', label: 'old.txt', accent: 'storage', glyph: 'doc' },
+          { id: 'mv', label: 'mv', accent: 'compute' },
+          { id: 'new', label: 'new.txt', sub: 'same bytes', accent: 'success', glyph: 'doc' },
+        ],
+        edges: [{ from: 'old', to: 'new', label: 'rename' }],
+      },
+    ],
+    related: ['cp', 'rm', 'mkdir'],
+  },
+
+  rm: {
+    body: [
+      '**rm deletes, and there is no recycle bin.** `rm file` removes a file; `rm -r dir` removes a directory and everything inside; `rm -rf dir` forces it without prompting. Deletion is immediate and usually unrecoverable.',
+      '**The one command to slow down for.** `rm -rf "$VAR"` where `VAR` is empty, an unquoted glob in the wrong directory, or the wrong `pwd` have all caused real data loss. Quote variables, verify your directory, and prefer `rm -i` (prompt) when unsure.',
+    ],
+    examples: [
+      'rm temp.log -> gone, no confirmation.',
+      'rm -r build/ -> remove a directory tree.',
+      'rm -i *.bak -> ask before deleting each match.',
+    ],
+    diagrams: [
+      {
+        caption: 'rm unlinks immediately; there is no undo.',
+        layout: 'row',
+        nodes: [
+          { id: 'file', label: 'file', accent: 'storage', glyph: 'doc' },
+          { id: 'rm', label: 'rm', accent: 'danger' },
+          { id: 'gone', label: 'gone', sub: 'no recycle bin', accent: 'danger', glyph: 'warning' },
+        ],
+      },
+    ],
+    related: ['cp', 'mv', 'mkdir', 'find'],
+  },
+
+  'file permissions': {
+    body: [
+      '**Permissions grant read, write, and execute to three classes:** the owning user, the owning group, and everyone else. `ls -l` shows them as ten characters: one type character then three rwx groups.',
+      '**rwx means different things for files and directories.** On a file: read the contents, change it, run it as a program. On a directory: read lists names, write creates or deletes entries, execute lets you enter (cd into) it.',
+      '**They are the gate on a shared system.** Half of "works locally, fails on the server" is a missing execute bit on a script or the wrong owner on a directory. `chmod` changes the bits, `chown` changes the owner.',
+    ],
+    examples: [
+      '-rwxr-xr-x = owner rwx, group r-x, other r-x (a typical script).',
+      '-rw-r--r-- = owner rw, others read (a typical data file).',
+      'A directory needs execute to be entered, even if its files are readable.',
+    ],
+    diagrams: [
+      {
+        caption: 'Ten characters: type plus rwx for owner, group, other.',
+        layout: 'row',
+        nodes: [
+          { id: 'type', label: '-', sub: 'type', accent: 'edge' },
+          { id: 'owner', label: 'rwx', sub: 'owner', accent: 'primary', glyph: 'shield' },
+          { id: 'group', label: 'r-x', sub: 'group', accent: 'compute', glyph: 'shield' },
+          { id: 'other', label: 'r--', sub: 'other', accent: 'storage', glyph: 'shield' },
+        ],
+      },
+    ],
+    related: ['chmod', 'chown', 'ls'],
+  },
+
+  chmod: {
+    body: [
+      '**chmod changes the permission bits of a file.** Symbolic form: `chmod +x script` adds execute, `chmod g-w file` removes group write. Octal form: `chmod 644 file` sets exact bits.',
+      '**Octal is read/write/execute summed per class:** r=4, w=2, x=1. So rwx=7, r-x=5, r--=4. `chmod 755` (owner rwx, others r-x) is standard for scripts and directories; `chmod 644` (owner rw, others r) is standard for plain files.',
+      '**Avoid chmod 777.** Giving everyone full rights is a frequent insecure "fix" that opens a file to every user on the machine and is flagged by every audit. Use the least permission that works.',
+    ],
+    examples: [
+      'chmod +x deploy.sh -> make a script runnable.',
+      'chmod 600 id_rsa -> private key readable only by you.',
+      'chmod -R 755 public/ -> apply recursively to a tree.',
+    ],
+    diagrams: [
+      {
+        caption: 'Octal: sum r=4, w=2, x=1 per class.',
+        layout: 'row',
+        nodes: [
+          { id: 'rwx', label: 'rwx = 7', sub: '4+2+1', accent: 'primary', glyph: 'shield' },
+          { id: 'rx', label: 'r-x = 5', sub: '4+0+1', accent: 'compute', glyph: 'shield' },
+          { id: 'r', label: 'r-- = 4', sub: '4+0+0', accent: 'storage', glyph: 'shield' },
+        ],
+      },
+    ],
+    related: ['file permissions', 'chown', 'ls'],
+  },
+
+  chown: {
+    body: [
+      '**chown changes who owns a file.** `chown alice file` sets the owning user; `chown alice:devs file` sets owner and group at once. Changing ownership usually requires sudo.',
+      '**A classic server fix.** When a web server returns blank pages or "permission denied", the files are often owned by the wrong user. `chown -R www-data:www-data /var/www` hands the tree to the service account that needs to read it.',
+    ],
+    examples: [
+      'sudo chown abhi:abhi notes.txt -> set owner and group.',
+      'sudo chown -R deploy:deploy /srv/app -> recurse over a tree.',
+    ],
+    diagrams: [
+      {
+        caption: 'chown reassigns the owning user and group.',
+        layout: 'row',
+        nodes: [
+          { id: 'before', label: 'owned by root', accent: 'danger', glyph: 'shield' },
+          { id: 'chown', label: 'chown www-data', accent: 'compute' },
+          { id: 'after', label: 'owned by www-data', sub: 'can read now', accent: 'success', glyph: 'shield' },
+        ],
+        edges: [
+          { from: 'before', to: 'chown' },
+          { from: 'chown', to: 'after' },
+        ],
+      },
+    ],
+    related: ['file permissions', 'chmod'],
+  },
+
+  pipe: {
+    body: [
+      '**A pipe (`|`) connects one program standard output to the next program standard input**, with no temporary file. `cat log | grep ERROR | wc -l` streams data through three stages.',
+      '**This is the Unix philosophy in one character.** Each tool does one thing well; pipes compose them into exactly the answer you need. Both programs run at once, so a pipeline starts producing output immediately instead of waiting for a file.',
+    ],
+    examples: [
+      'ps -e | grep node -> processes whose line mentions node.',
+      'cat access.log | grep 500 | wc -l -> count 500 responses.',
+      'history | tail -n 20 -> your last 20 commands.',
+    ],
+    diagrams: [
+      {
+        caption: 'A pipe wires stdout of one stage into stdin of the next.',
+        layout: 'row',
+        nodes: [
+          { id: 'cat', label: 'cat log', accent: 'edge', glyph: 'doc' },
+          { id: 'grep', label: 'grep ERROR', accent: 'compute', glyph: 'funnel' },
+          { id: 'wc', label: 'wc -l', sub: 'count', accent: 'success' },
+        ],
+        edges: [
+          { from: 'cat', to: 'grep', label: '|' },
+          { from: 'grep', to: 'wc', label: '|' },
+        ],
+      },
+    ],
+    related: ['redirection', 'standard streams', 'grep'],
+  },
+
+  redirection: {
+    body: [
+      '**Redirection sends a program stream to or from a file.** `cmd > out.txt` writes stdout (overwriting), `cmd >> out.txt` appends, `cmd < in.txt` feeds a file in as stdin, and `cmd 2> err.txt` captures stderr separately.',
+      '**Merge with 2>&1.** `cmd > all.txt 2>&1` puts both stdout and stderr in one file. Order matters: `2>&1` copies wherever stdout points at that moment, so `2>&1 > file` does not capture errors the way `> file 2>&1` does.',
+      '**Watch the truncation.** `>` empties the target the instant the command starts, so redirecting into a file you are also reading can erase it before it is read.',
+    ],
+    examples: [
+      'echo hi > log -> overwrite; echo bye >> log -> append.',
+      'build 2> errors.txt -> keep only the errors.',
+      'job > job.log 2>&1 -> capture everything in one file.',
+    ],
+    diagrams: [
+      {
+        caption: '> overwrites, >> appends, 2> captures errors.',
+        layout: 'row',
+        nodes: [
+          { id: 'cmd', label: 'command', accent: 'compute' },
+          { id: 'over', label: '> file', sub: 'overwrite', accent: 'primary', glyph: 'doc' },
+          { id: 'app', label: '>> file', sub: 'append', accent: 'edge', glyph: 'doc' },
+          { id: 'err', label: '2> file', sub: 'stderr', accent: 'danger', glyph: 'doc' },
+        ],
+      },
+    ],
+    related: ['pipe', 'standard streams'],
+  },
+
+  'standard streams': {
+    body: [
+      '**Every program has three default channels:** standard input (stdin, fd 0) it reads from, standard output (stdout, fd 1) for normal results, and standard error (stderr, fd 2) for errors. By default stdin is your keyboard and both outputs go to the screen.',
+      '**They are separate on purpose.** Errors ride stderr so you can capture results and diagnostics independently: `cmd > out.txt 2> err.txt` splits them. A plain `> out.txt` only catches stdout, which is why errors sometimes "disappear" from a redirected file.',
+      '**Logs are built on this.** Services write to stdout/stderr and the platform routes those streams to files or aggregators, so understanding them is understanding how observability works.',
+    ],
+    examples: [
+      'fd 0 = stdin, fd 1 = stdout, fd 2 = stderr.',
+      'ls /nope > out 2> err -> the error lands in err, not out.',
+      'cmd 2>&1 -> send stderr wherever stdout currently goes.',
+    ],
+    diagrams: [
+      {
+        caption: 'Three channels: input, results, and errors.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'prog', label: 'program', accent: 'compute', glyph: 'chip' },
+          { id: 'in', label: 'stdin (0)', sub: 'input', accent: 'client' },
+          { id: 'out', label: 'stdout (1)', sub: 'results', accent: 'success' },
+          { id: 'err', label: 'stderr (2)', sub: 'errors', accent: 'danger' },
+        ],
+      },
+    ],
+    related: ['redirection', 'pipe'],
+  },
+
+  grep: {
+    body: [
+      '**grep prints the lines that match a pattern**, from a file or from piped input. `grep ERROR app.log` shows just the error lines; `ps -e | grep node` filters any command output.',
+      '**The flags that matter:** `-i` ignore case, `-r` recurse a directory tree, `-n` show line numbers, `-v` invert (lines that do not match), `-c` count matches. `grep -rin "todo" src/` is a daily codebase audit.',
+      '**The pattern is a regular expression.** `^ERROR` anchors the start, `5[0-9][0-9]` matches a 5xx code, and `.` means any character. Quote patterns so the shell does not mangle them, and use `grep -F` for a literal string.',
+    ],
+    examples: [
+      'grep -in timeout app.log -> case-insensitive, with line numbers.',
+      'grep -v "^#" config -> every non-comment line.',
+      'grep -rl "API_KEY" . -> files that contain the string.',
+    ],
+    diagrams: [
+      {
+        caption: 'grep keeps matching lines and drops the rest.',
+        layout: 'row',
+        nodes: [
+          { id: 'in', label: 'text', sub: 'file or pipe', accent: 'storage', glyph: 'doc' },
+          { id: 'grep', label: 'grep PATTERN', accent: 'compute', glyph: 'funnel' },
+          { id: 'out', label: 'matching lines', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['find', 'pipe', 'standard streams'],
+  },
+
+  find: {
+    body: [
+      '**find walks a directory tree and returns paths matching tests** you give it: by name, type, size, and age. Where grep searches inside files for lines, find searches the filesystem for the files themselves.',
+      '**The shape is where, then what:** `find . -name "*.log" -type f -size +1M -mtime +7` means files, named *.log, over 1MB, older than 7 days, all at once. Quote `-name` patterns so the shell does not expand the `*` first.',
+      '**Then act on the matches.** `-delete` removes them; `-exec cmd {} \\;` runs a command per match (`{}` is the file). Always run the plain find first to see exactly what would be touched before using -delete.',
+    ],
+    examples: [
+      'find . -name "*.tmp" -type f -> all .tmp files below here.',
+      'find /var -size +500M -> hunt what filled a disk.',
+      'find . -name "*.log" -mtime +30 -delete -> clean old logs.',
+    ],
+    diagrams: [
+      {
+        caption: 'find: start path, filter tests, then an action.',
+        layout: 'row',
+        nodes: [
+          { id: 'path', label: 'find PATH', accent: 'edge', glyph: 'route' },
+          { id: 'tests', label: '-name -size -mtime', sub: 'filters', accent: 'compute', glyph: 'funnel' },
+          { id: 'act', label: 'print / -delete / -exec', sub: 'action', accent: 'success' },
+        ],
+        edges: [
+          { from: 'path', to: 'tests' },
+          { from: 'tests', to: 'act' },
+        ],
+      },
+    ],
+    related: ['grep', 'rm', 'ls'],
+  },
+
+  uname: {
+    body: [
+      '**uname prints what kind of system you are on.** `uname -a` gives the kernel name, version, architecture, and OS in one line; `uname -r` gives just the kernel release. It is the first thing you run on an unfamiliar machine.',
+      '**Why it matters.** Install instructions, kernel modules, and compiled binaries are often architecture- and kernel-specific, so knowing x86_64 versus arm64 and the kernel version up front prevents installing the wrong thing.',
+    ],
+    examples: [
+      'uname -a -> Linux web-1 6.8.0-40-generic x86_64 GNU/Linux.',
+      'uname -r -> 6.8.0-40-generic (kernel release only).',
+      'uname -m -> x86_64 (the machine architecture).',
+    ],
+    diagrams: [
+      {
+        caption: 'uname answers "what is this machine" in one line.',
+        layout: 'row',
+        nodes: [
+          { id: 'cmd', label: 'uname -a', accent: 'compute' },
+          { id: 'out', label: 'kernel + arch + OS', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['hostname', 'uptime', 'package manager'],
+  },
+
+  uptime: {
+    body: [
+      '**uptime shows how long the machine has run and how busy it is.** The load average (1, 5, 15 minute) is roughly how many processes are running or waiting for CPU and disk over those windows.',
+      '**Read load against the core count.** A load of 1.0 saturates a single core but barely touches an 8-core box. A load steadily above the number of cores means processes are queuing for CPU, a sign of saturation.',
+    ],
+    examples: [
+      'uptime -> up 37 days, load average: 0.42, 0.55, 0.60.',
+      'Load 8.0 on 8 cores = fully busy; on 2 cores = badly overloaded.',
+      'nproc tells you the core count to compare against.',
+    ],
+    diagrams: [
+      {
+        caption: 'Load average is only meaningful next to the core count.',
+        layout: 'row',
+        nodes: [
+          { id: 'load', label: 'load 4.0', accent: 'edge', glyph: 'gauge' },
+          { id: 'cores', label: 'vs core count', accent: 'compute', glyph: 'chip' },
+          { id: 'verdict', label: 'busy or idle?', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['load average', 'top', 'uname'],
+  },
+
+  'load average': {
+    body: [
+      '**Load average is three numbers for system demand** over the last 1, 5, and 15 minutes: how many processes are running or waiting (for CPU and, on Linux, for disk I/O). Rising across the three windows means load is growing.',
+      '**Compare it to cores.** Divide by the CPU count for a rough utilization: load 4 on 4 cores is ~100%, on 8 cores ~50%. High load with low CPU often means processes are blocked on slow disk or network, not compute.',
+    ],
+    examples: [
+      '0.42, 0.55, 0.60 on an 8-core box -> comfortably idle.',
+      '16, 14, 9 on 4 cores -> heavily overloaded and trending down slowly.',
+      'High load but idle CPU -> likely I/O wait, not CPU starvation.',
+    ],
+    diagrams: [
+      {
+        caption: 'Three windows show whether load is rising or falling.',
+        layout: 'row',
+        nodes: [
+          { id: 'm1', label: '1 min', sub: 'now', accent: 'danger', glyph: 'gauge' },
+          { id: 'm5', label: '5 min', accent: 'edge', glyph: 'gauge' },
+          { id: 'm15', label: '15 min', sub: 'trend', accent: 'compute', glyph: 'gauge' },
+        ],
+      },
+    ],
+    related: ['uptime', 'top', 'process'],
+  },
+
+  hostname: {
+    body: [
+      '**hostname prints (or sets) the machine name**, and `hostname -i` prints its IP address. On a wall of near-identical terminals, it is the quick confirmation of which server you are actually about to change.',
+      '**A safety habit.** Running `hostname` before a destructive command, especially when you have several SSH sessions open, prevents the classic "ran it on prod instead of staging" mistake.',
+    ],
+    examples: [
+      'hostname -> web-prod-1.',
+      'hostname -i -> 10.0.0.12.',
+      'Your prompt often already shows it: deploy@web-prod-1:~$.',
+    ],
+    diagrams: [
+      {
+        caption: 'hostname confirms which box you are on.',
+        layout: 'row',
+        nodes: [
+          { id: 'cmd', label: 'hostname', accent: 'compute' },
+          { id: 'name', label: 'web-prod-1', sub: 'this machine', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['uname', 'ip command', 'SSH'],
+  },
+
+  df: {
+    body: [
+      '**df reports free and used space per mounted filesystem.** `df -h` adds human units and a Use% column. It identifies which filesystem is full, the symptom, but not what filled it, which is `du` job.',
+      '**A full disk is a top incident cause.** It surfaces as unrelated write failures, empty logs, and crashing databases, so `df -h` is one of the first checks on any sick server.',
+    ],
+    examples: [
+      'df -h -> /dev/root 49G 47G 1.8G 97% / (nearly full).',
+      'df -h /var -> usage for just the filesystem holding /var.',
+      'df -i -> inode usage (you can run out of inodes with disk to spare).',
+    ],
+    diagrams: [
+      {
+        caption: 'df finds the full mount; du finds the cause.',
+        layout: 'row',
+        nodes: [
+          { id: 'df', label: 'df -h', sub: 'which mount', accent: 'primary' },
+          { id: 'full', label: '/ at 97%', accent: 'danger', glyph: 'warning' },
+          { id: 'du', label: 'du -sh', sub: 'what filled it', accent: 'compute', glyph: 'funnel' },
+        ],
+      },
+    ],
+    related: ['du', 'lsblk', 'mount', 'free'],
+  },
+
+  du: {
+    body: [
+      '**du sums the size of files in a tree.** `du -sh *` shows the total of each item in the current directory; piping through `sort -h` brings the biggest to the bottom, which is how you find the directory that ate the disk.',
+      '**df then du is the disk-triage drill.** df names the full filesystem; du walks down inside it to the culprit. du is slower than df because it actually traverses files.',
+    ],
+    examples: [
+      'du -sh * | sort -h -> each item here, smallest to largest.',
+      'du -sh /var/* | sort -h | tail -3 -> the three biggest under /var.',
+      'du -sh . -> total size of the current tree.',
+    ],
+    diagrams: [
+      {
+        caption: 'du drills into a tree to find the big directory.',
+        layout: 'row',
+        nodes: [
+          { id: 'du', label: 'du -sh *', accent: 'compute', glyph: 'funnel' },
+          { id: 'sort', label: 'sort -h', accent: 'edge' },
+          { id: 'big', label: 'biggest dir', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['df', 'sort', 'find'],
+  },
+
+  free: {
+    body: [
+      '**free shows memory used, free, and available.** `free -m` reports in megabytes. The number that matters is "available": what applications can still use, including cache the kernel can reclaim.',
+      '**Low "free" is normal.** Linux deliberately uses spare RAM as disk cache, so "free" is often small on a healthy box. Judge memory pressure by "available" and by swap usage, not by raw free.',
+    ],
+    examples: [
+      'free -m -> total 7976, used 6210, available 1500.',
+      'Lots of buff/cache and high available -> healthy, not starved.',
+      'available near zero and swap climbing -> real memory pressure.',
+    ],
+    diagrams: [
+      {
+        caption: 'Judge memory by "available", not raw "free".',
+        layout: 'row',
+        nodes: [
+          { id: 'used', label: 'used', accent: 'danger' },
+          { id: 'cache', label: 'buff/cache', sub: 'reclaimable', accent: 'cache' },
+          { id: 'avail', label: 'available', sub: 'what apps get', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['top', 'df', 'uptime'],
+  },
+
+  lsblk: {
+    body: [
+      '**lsblk lists block devices (disks and partitions) as a tree**, each with its size and mount point. It shows the physical storage layer beneath the filesystems that `df` reports on.',
+      '**Useful when adding or diagnosing storage.** Before mounting a new disk or resizing a partition, `lsblk` shows what devices exist and which are already mounted where.',
+    ],
+    examples: [
+      'lsblk -> sda 50G, sda1 49G mounted at /.',
+      'lsblk -f -> also shows filesystem type and label.',
+      'A device with no mount point is attached but not in use yet.',
+    ],
+    diagrams: [
+      {
+        caption: 'lsblk shows disks and partitions under the filesystems.',
+        layout: 'stack',
+        nodes: [
+          { id: 'disk', label: 'sda (disk)', accent: 'storage', glyph: 'database' },
+          { id: 'part', label: 'sda1 (partition)', accent: 'edge' },
+          { id: 'mnt', label: 'mounted at /', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['mount', 'df', 'du'],
+  },
+
+  mount: {
+    body: [
+      '**mount attaches a filesystem to a directory** (the mount point) so its contents become accessible there, and with no arguments lists what is currently mounted. A disk or partition is unusable until it is mounted.',
+      '**The tree is unified.** Unlike drive letters, Linux grafts every filesystem into one tree at a chosen directory, so /home and /var can live on different disks yet appear as ordinary directories. `findmnt` shows the mount tree clearly.',
+    ],
+    examples: [
+      'mount -> lists all current mounts and their options.',
+      'sudo mount /dev/sdb1 /mnt/data -> attach a disk at /mnt/data.',
+      'findmnt / -> what is mounted at the root and how.',
+    ],
+    diagrams: [
+      {
+        caption: 'A filesystem must be mounted to a directory to be used.',
+        layout: 'row',
+        nodes: [
+          { id: 'dev', label: '/dev/sdb1', sub: 'filesystem', accent: 'storage', glyph: 'database' },
+          { id: 'mount', label: 'mount', accent: 'compute' },
+          { id: 'dir', label: '/mnt/data', sub: 'accessible', accent: 'success', glyph: 'route' },
+        ],
+        edges: [
+          { from: 'dev', to: 'mount' },
+          { from: 'mount', to: 'dir' },
+        ],
+      },
+    ],
+    related: ['lsblk', 'df', 'root directory'],
+  },
+
+  process: {
+    body: [
+      '**A process is a running instance of a program**, with its own memory and a numeric process id (PID), owned by some user. Everything executing on the machine is a process, from your shell to the database.',
+      '**You observe and control them.** `ps` and `top` list processes; `kill` sends them signals. PID 1 is the init system (systemd) that the kernel starts first and that launches everything else.',
+    ],
+    examples: [
+      'Your shell, each tab, and every server are separate processes.',
+      'ps -p 4471 -> details of one process by PID.',
+      'A process keeps a deleted-but-open file alive until it exits.',
+    ],
+    diagrams: [
+      {
+        caption: 'A program becomes a process with a PID and an owner.',
+        layout: 'row',
+        nodes: [
+          { id: 'prog', label: 'program', accent: 'storage', glyph: 'doc' },
+          { id: 'run', label: 'run', accent: 'compute' },
+          { id: 'proc', label: 'process', sub: 'PID + owner', accent: 'success', glyph: 'chip' },
+        ],
+      },
+    ],
+    related: ['PID', 'ps', 'top', 'kill', 'signal'],
+  },
+
+  PID: {
+    body: [
+      '**A PID is the number the kernel assigns each process.** You target a process by its PID (`kill 4471`) and find a PID by name with `pgrep`. The shell variable `$!` holds the PID of the last backgrounded job.',
+      '**PID 1 is special.** It is the init/systemd process the kernel starts first; it adopts orphaned processes and reaps them. Inside a container, your main process is usually PID 1.',
+    ],
+    examples: [
+      'ps aux | grep node -> find the PID in the second column.',
+      'sleep 60 & echo $! -> prints the backgrounded job PID.',
+      'pgrep -f server.js -> PIDs of matching processes.',
+    ],
+    diagrams: [
+      {
+        caption: 'Find the PID, then act on it.',
+        layout: 'row',
+        nodes: [
+          { id: 'find', label: 'pgrep / ps', accent: 'edge', glyph: 'funnel' },
+          { id: 'pid', label: 'PID 4471', accent: 'primary' },
+          { id: 'act', label: 'kill / inspect', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['process', 'ps', 'kill', 'job control'],
+  },
+
+  ps: {
+    body: [
+      '**ps lists processes.** `ps aux` shows every process with its user, PID, CPU%, memory%, and command; `ps aux | grep name` filters to what you care about. It is a snapshot, where `top` is a live, updating view.',
+      '**A common trick.** `ps aux | grep [n]ode` brackets the first letter so grep does not match its own line in the results, a small but handy habit.',
+    ],
+    examples: [
+      'ps aux | grep [p]ython -> python processes, without the grep line.',
+      'ps -p 4471 -o pid,etime,cmd -> chosen columns for one PID.',
+      'ps -ef --forest -> processes as a parent/child tree.',
+    ],
+    diagrams: [
+      {
+        caption: 'ps is a snapshot; top is the live view.',
+        layout: 'row',
+        nodes: [
+          { id: 'ps', label: 'ps aux', sub: 'snapshot', accent: 'compute' },
+          { id: 'grep', label: '| grep name', accent: 'edge', glyph: 'funnel' },
+          { id: 'top', label: 'top', sub: 'live', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['top', 'process', 'PID', 'kill'],
+  },
+
+  top: {
+    body: [
+      '**top is a live, sorted view of running processes**, refreshing every second, ordered by CPU (or press M for memory). It is the fastest way to see what is saturating a machine right now.',
+      '**htop is the friendlier cousin.** It adds color, per-core bars, scrolling, and mouse support, and lets you select and kill a process interactively. Either one is your real-time window into the box.',
+    ],
+    examples: [
+      'top -> watch CPU-hungry processes climb to the top.',
+      'In top: press M to sort by memory, P by CPU, q to quit.',
+      'htop -> interactive view; F9 to send a signal to a selected process.',
+    ],
+    diagrams: [
+      {
+        caption: 'top updates live, sorted by what is using the most.',
+        layout: 'row',
+        nodes: [
+          { id: 'top', label: 'top / htop', accent: 'compute', glyph: 'gauge' },
+          { id: 'sort', label: 'sort by CPU/mem', accent: 'edge' },
+          { id: 'spot', label: 'spot the hog', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['ps', 'process', 'load average', 'kill'],
+  },
+
+  kill: {
+    body: [
+      '**kill sends a signal to a process by PID.** `kill PID` sends SIGTERM (15), a catchable "please shut down" that lets the program clean up. `kill -9 PID` sends SIGKILL, enforced by the kernel and uncatchable, used only when SIGTERM is ignored.',
+      '**Signal by name too.** `pkill name` and `killall name` signal matching processes without a PID lookup. Reach for `-9` as an escalation, not a default, because it skips cleanup and can drop in-flight work.',
+    ],
+    examples: [
+      'kill 4471 -> polite SIGTERM.',
+      'kill -9 4471 -> forced SIGKILL after TERM is ignored.',
+      'pkill -f server.js -> signal by command match.',
+    ],
+    diagrams: [
+      {
+        caption: 'Ask politely first; force only if ignored.',
+        layout: 'row',
+        nodes: [
+          { id: 'term', label: 'kill (SIGTERM)', sub: 'graceful', accent: 'compute' },
+          { id: 'wait', label: 'still alive?', accent: 'edge' },
+          { id: 'kill9', label: 'kill -9 (SIGKILL)', sub: 'forced', accent: 'danger', glyph: 'warning' },
+        ],
+        edges: [
+          { from: 'term', to: 'wait' },
+          { from: 'wait', to: 'kill9', label: 'if yes' },
+        ],
+      },
+    ],
+    related: ['signal', 'process', 'PID', 'ps'],
+  },
+
+  signal: {
+    body: [
+      '**A signal is a numbered message sent to a process.** SIGTERM (15, the default kill) and SIGINT (2, sent by Ctrl-C) are catchable, so a program can run cleanup before exiting. SIGKILL (9) and SIGSTOP cannot be caught or ignored.',
+      '**Graceful shutdown depends on it.** Orchestrators send SIGTERM and wait a few seconds for in-flight work to finish before SIGKILL. A service that ignores SIGTERM drops requests and corrupts state on every restart.',
+    ],
+    examples: [
+      'Ctrl-C -> SIGINT to the foreground process.',
+      'kill -TERM 4471 -> request graceful shutdown.',
+      'A handler for SIGTERM flushes buffers and closes connections.',
+    ],
+    diagrams: [
+      {
+        caption: 'Catchable signals allow cleanup; SIGKILL does not.',
+        layout: 'row',
+        nodes: [
+          { id: 'catch', label: 'SIGTERM / SIGINT', sub: 'catchable', accent: 'success' },
+          { id: 'clean', label: 'cleanup then exit', accent: 'compute' },
+          { id: 'kill', label: 'SIGKILL', sub: 'no cleanup', accent: 'danger', glyph: 'warning' },
+        ],
+      },
+    ],
+    related: ['kill', 'process', 'job control'],
+  },
+
+  'job control': {
+    body: [
+      '**Job control manages programs started from your shell.** `&` runs a command in the background, `Ctrl-Z` suspends the foreground job, `bg` resumes it in the background, `fg` brings it forward, and `jobs` lists them.',
+      '**Keep jobs alive past the terminal.** Closing the terminal can send SIGHUP and kill background jobs; `nohup cmd &` or `disown` detach a job so it survives logout. For long remote work, a terminal multiplexer (tmux/screen) is sturdier.',
+    ],
+    examples: [
+      'long-task & -> run in the background, get the prompt back.',
+      'Ctrl-Z then bg -> park a running job into the background.',
+      'jobs -> list shell jobs; fg %1 -> bring job 1 forward.',
+    ],
+    diagrams: [
+      {
+        caption: 'Move a job between foreground and background.',
+        layout: 'row',
+        nodes: [
+          { id: 'fg', label: 'foreground', accent: 'compute' },
+          { id: 'susp', label: 'Ctrl-Z', sub: 'suspend', accent: 'edge' },
+          { id: 'bg', label: 'bg', sub: 'background', accent: 'success', glyph: 'loop' },
+        ],
+        edges: [
+          { from: 'fg', to: 'susp' },
+          { from: 'susp', to: 'bg' },
+        ],
+      },
+    ],
+    related: ['process', 'signal', 'PID'],
+  },
+
+  sudo: {
+    body: [
+      '**sudo runs a single command as another user, root by default**, for users the policy permits, after your own password, and it logs every use. It is how humans get temporary elevation without sharing the root password.',
+      '**Per-command beats a root login.** Because each elevation is one command and recorded, sudo limits blast radius and leaves an audit trail, where logging in as root does neither. Permission comes from a group (sudo or wheel) plus the sudoers policy.',
+    ],
+    examples: [
+      'sudo apt install nginx -> install as root, with a log.',
+      'sudo -u deploy ./run.sh -> run as the deploy user.',
+      'sudo systemctl restart app -> restart a service.',
+    ],
+    diagrams: [
+      {
+        caption: 'sudo elevates one command and records it.',
+        layout: 'row',
+        nodes: [
+          { id: 'you', label: 'you', accent: 'client', glyph: 'person' },
+          { id: 'sudo', label: 'sudo', sub: 'check + log', accent: 'edge', glyph: 'shield' },
+          { id: 'root', label: 'runs as root', accent: 'success' },
+        ],
+        edges: [
+          { from: 'you', to: 'sudo' },
+          { from: 'sudo', to: 'root' },
+        ],
+      },
+    ],
+    related: ['root user', 'user and group', 'file permissions'],
+  },
+
+  'root user': {
+    body: [
+      '**root is the superuser, user id 0**, allowed to read, write, and kill anything on the system. It bypasses permission checks, which is exactly why you avoid using it casually.',
+      '**Prefer elevation over login.** Rather than logging in as root, run individual commands with `sudo`. Services should run as their own low-privilege users so a bug in one cannot take the whole machine. Do not confuse the root user with the root directory (`/`).',
+    ],
+    examples: [
+      'uid 0 in id output means root.',
+      'A # prompt (instead of $) warns you are root.',
+      'rm -rf / is catastrophic as root: it can erase the system.',
+    ],
+    diagrams: [
+      {
+        caption: 'root bypasses permissions; reach it via sudo, not login.',
+        layout: 'row',
+        nodes: [
+          { id: 'root', label: 'root (uid 0)', sub: 'unrestricted', accent: 'danger', glyph: 'shield' },
+          { id: 'sudo', label: 'via sudo', sub: 'per command', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['sudo', 'user and group', 'file permissions'],
+  },
+
+  'user and group': {
+    body: [
+      '**Every file and process belongs to a user and a group.** Group membership is how several users share access to the same files through the group permission bits, without making files world-accessible.',
+      '**Manage with id and usermod.** `id` shows your user, primary group, and all memberships; `usermod -aG devs alice` adds alice to the devs group. New group membership only applies to sessions started after the change.',
+    ],
+    examples: [
+      'id -> uid=1000(abhi) gid=1000(abhi) groups=...,27(sudo).',
+      'sudo usermod -aG docker abhi -> let abhi use docker (re-login needed).',
+      'chgrp devs file; chmod g+rw file -> share a file with a group.',
+    ],
+    diagrams: [
+      {
+        caption: 'Groups let several users share the same files.',
+        layout: 'gather',
+        nodes: [
+          { id: 'a', label: 'alice', accent: 'client', glyph: 'person' },
+          { id: 'b', label: 'bob', accent: 'client', glyph: 'person' },
+          { id: 'g', label: 'group: devs', sub: 'shared access', accent: 'success', glyph: 'shield' },
+        ],
+        edges: [
+          { from: 'a', to: 'g' },
+          { from: 'b', to: 'g' },
+        ],
+      },
+    ],
+    related: ['sudo', 'root user', 'file permissions', 'chown'],
+  },
+
+  'ip command': {
+    body: [
+      '**ip is the modern tool for interfaces and routes.** `ip addr` lists your network interfaces and their IP addresses; `ip route` shows how packets leave the machine. It replaces the older, deprecated `ifconfig`.',
+      '**First rung of network debugging.** Before testing reachability, confirm your own address: a missing or unexpected IP on an interface explains a lot of "cannot connect" problems immediately.',
+    ],
+    examples: [
+      'ip addr show -> interfaces (lo, eth0) and their IPs.',
+      'ip -brief addr -> a compact one-line-per-interface view.',
+      'ip route -> the default gateway and routes.',
+    ],
+    diagrams: [
+      {
+        caption: 'ip addr is the first rung: know your own address.',
+        layout: 'row',
+        nodes: [
+          { id: 'cmd', label: 'ip addr', accent: 'compute' },
+          { id: 'iface', label: 'eth0: 10.0.0.12', sub: 'your IP', accent: 'success', glyph: 'globe' },
+        ],
+      },
+    ],
+    related: ['ping', 'ss', 'dig', 'hostname'],
+  },
+
+  ping: {
+    body: [
+      '**ping checks whether a host answers and how long the round trip takes**, by sending ICMP echo requests. It is the quick reachability test on the network-debugging ladder.',
+      '**A failed ping is not proof of "down".** Many hosts and firewalls block ICMP while still serving real traffic, so confirm with the actual port (curl) before concluding a host is unreachable.',
+    ],
+    examples: [
+      'ping -c1 example.com -> one echo, with the round-trip time.',
+      'ping 10.0.0.5 -> test a host by IP, skipping DNS.',
+      'ping fails but curl :443 returns 200 -> ICMP is just blocked.',
+    ],
+    diagrams: [
+      {
+        caption: 'ping tests reachability; blocked ICMP can mislead.',
+        layout: 'row',
+        nodes: [
+          { id: 'ping', label: 'ping host', accent: 'compute' },
+          { id: 'reply', label: 'reply in 11ms', accent: 'success' },
+          { id: 'block', label: 'no reply', sub: 'maybe ICMP blocked', accent: 'danger' },
+        ],
+      },
+    ],
+    related: ['ip command', 'dig', 'ss', 'curl'],
+  },
+
+  ss: {
+    body: [
+      '**ss shows socket statistics.** `ss -tlnp` lists which TCP ports are in the LISTEN state and which process owns each, the fast way to confirm your service is actually bound and listening.',
+      '**The modern netstat.** It is faster and the recommended replacement. A frequent finding: a service bound to 127.0.0.1 (local only) instead of 0.0.0.0 (all interfaces), which works on the box but not from other machines.',
+    ],
+    examples: [
+      'ss -tlnp -> listening TCP ports and owning processes.',
+      'ss -tlnp | grep :8080 -> is anything listening on 8080?',
+      'ss -s -> a summary of socket counts.',
+    ],
+    diagrams: [
+      {
+        caption: 'ss confirms the port is open and who owns it.',
+        layout: 'row',
+        nodes: [
+          { id: 'ss', label: 'ss -tlnp', accent: 'compute', glyph: 'funnel' },
+          { id: 'listen', label: '0.0.0.0:8080', sub: 'LISTEN (node)', accent: 'success' },
+          { id: 'local', label: '127.0.0.1:8080', sub: 'local only', accent: 'danger' },
+        ],
+      },
+    ],
+    related: ['ip command', 'ping', 'curl'],
+  },
+
+  dig: {
+    body: [
+      '**dig queries DNS**, resolving a name to IP addresses and showing the records behind it. `dig +short example.com` prints just the answer; `host example.com` is a shorter variant.',
+      '**The DNS rung of debugging.** If a name resolves to the wrong or no address, nothing above it works. DNS caching and TTLs mean dig and an app can briefly disagree until the cached record expires.',
+    ],
+    examples: [
+      'dig +short example.com -> 93.184.216.34.',
+      'dig example.com MX -> the mail servers for the domain.',
+      'dig @8.8.8.8 example.com -> ask a specific resolver.',
+    ],
+    diagrams: [
+      {
+        caption: 'dig turns a name into the address everything else uses.',
+        layout: 'row',
+        nodes: [
+          { id: 'name', label: 'example.com', accent: 'client' },
+          { id: 'dig', label: 'dig', accent: 'compute', glyph: 'globe' },
+          { id: 'ip', label: '93.184.216.34', accent: 'success' },
+        ],
+        edges: [
+          { from: 'name', to: 'dig' },
+          { from: 'dig', to: 'ip', label: 'resolves' },
+        ],
+      },
+    ],
+    related: ['ping', 'ip command', 'curl'],
+  },
+
+  curl: {
+    body: [
+      '**curl makes HTTP requests from the command line** and shows exactly what comes back. `curl -v` prints the full handshake (DNS, TCP, TLS, request, response); `curl -I` prints just the response headers and status line.',
+      '**The HTTP debugger.** When a service "is down", `curl` to its real URL tells you the truth: the status code, the headers, and the body, separating a network problem from an application one.',
+    ],
+    examples: [
+      'curl -sI https://example.com | head -n1 -> HTTP/1.1 200 OK.',
+      "curl -X POST -d '{\"a\":1}' -H 'content-type: application/json' url.",
+      'curl -v http://localhost:8080 -> full request/response trace.',
+    ],
+    diagrams: [
+      {
+        caption: 'curl makes the real request and shows the real answer.',
+        layout: 'row',
+        nodes: [
+          { id: 'curl', label: 'curl -v', accent: 'compute' },
+          { id: 'req', label: 'request', accent: 'edge', glyph: 'route' },
+          { id: 'resp', label: '200 OK + headers', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['wget', 'dig', 'ss', 'ping'],
+  },
+
+  wget: {
+    body: [
+      '**wget downloads files over HTTP(S) and FTP**, and can mirror whole sites. Where curl is built for inspecting requests, wget is built for retrieving files reliably, including resuming partial downloads.',
+      '**Common in scripts and setup.** `wget URL` saves the file under its name; `wget -c URL` resumes an interrupted download; `wget -r` recurses. For one-off file fetches in automation it is a sturdy default.',
+    ],
+    examples: [
+      'wget https://example.com/app.tar.gz -> save the file.',
+      'wget -c bigfile.iso -> resume a partial download.',
+      'wget -qO- url -> print the body to stdout (quiet).',
+    ],
+    diagrams: [
+      {
+        caption: 'wget retrieves files; -c resumes a partial one.',
+        layout: 'row',
+        nodes: [
+          { id: 'wget', label: 'wget URL', accent: 'compute' },
+          { id: 'file', label: 'file saved', accent: 'success', glyph: 'doc' },
+          { id: 'resume', label: 'wget -c', sub: 'resume', accent: 'edge', glyph: 'loop' },
+        ],
+      },
+    ],
+    related: ['curl', 'scp', 'rsync'],
+  },
+
+  SSH: {
+    body: [
+      '**SSH (secure shell) gives you an encrypted shell on a remote machine.** `ssh user@host` opens a session and drops you at that machine prompt; `ssh -p 2222 user@host` uses a non-default port. Every command then runs remotely.',
+      '**The backbone of server work.** Deploys, backups, and fixes all ride SSH, and the same protocol carries file copies via scp and rsync. Prefer key-based auth and a non-root user.',
+    ],
+    examples: [
+      'ssh deploy@prod-1 -> encrypted shell on the server.',
+      'ssh -p 2222 user@host -> connect on a custom port.',
+      "ssh user@host 'df -h' -> run one remote command and return.",
+    ],
+    diagrams: [
+      {
+        caption: 'SSH is an encrypted shell on a remote machine.',
+        layout: 'row',
+        nodes: [
+          { id: 'you', label: 'your machine', accent: 'client', glyph: 'person' },
+          { id: 'tunnel', label: 'encrypted tunnel', accent: 'edge', glyph: 'shield' },
+          { id: 'host', label: 'remote shell', accent: 'success', glyph: 'chip' },
+        ],
+        edges: [
+          { from: 'you', to: 'tunnel' },
+          { from: 'tunnel', to: 'host' },
+        ],
+      },
+    ],
+    related: ['SSH key', 'scp', 'rsync', 'hostname'],
+  },
+
+  'SSH key': {
+    body: [
+      '**An SSH key pair replaces passwords for login.** You keep a private key secret and place its public half in the server `~/.ssh/authorized_keys`. The server challenges you to prove you hold the private key, which is far harder to brute-force than a password.',
+      '**Make and install it.** `ssh-keygen -t ed25519` creates the pair; `ssh-copy-id user@host` installs the public key. SSH refuses a private key that others can read, so keep it `chmod 600` (and `~/.ssh` 700).',
+    ],
+    examples: [
+      'ssh-keygen -t ed25519 -> id_ed25519 (private) + .pub (public).',
+      'ssh-copy-id deploy@prod-1 -> install the public key.',
+      'chmod 600 ~/.ssh/id_ed25519 -> required tight permissions.',
+    ],
+    diagrams: [
+      {
+        caption: 'Private key stays with you; public key sits on the server.',
+        layout: 'row',
+        nodes: [
+          { id: 'priv', label: 'private key', sub: 'you keep it', accent: 'primary', glyph: 'shield' },
+          { id: 'pub', label: 'public key', sub: 'authorized_keys', accent: 'success', glyph: 'shield' },
+        ],
+        edges: [{ from: 'priv', to: 'pub', label: 'proves identity' }],
+      },
+    ],
+    related: ['SSH', 'scp', 'file permissions'],
+  },
+
+  scp: {
+    body: [
+      '**scp copies files over SSH.** `scp file user@host:/path` sends a file to a server; `scp user@host:/path/file .` pulls one down. It rides the same encrypted channel as ssh.',
+      '**Fine for one-offs.** For repeated transfers or large directories, rsync is much faster because it sends only what changed, where scp re-sends everything each time.',
+    ],
+    examples: [
+      'scp build.tar.gz deploy@prod-1:/tmp/ -> upload a file.',
+      'scp deploy@prod-1:/var/log/app.log . -> download a file.',
+      'scp -r dir user@host:/path -> copy a directory tree.',
+    ],
+    diagrams: [
+      {
+        caption: 'scp copies one file over the SSH tunnel.',
+        layout: 'row',
+        nodes: [
+          { id: 'local', label: 'local file', accent: 'client', glyph: 'doc' },
+          { id: 'scp', label: 'scp (over SSH)', accent: 'edge', glyph: 'shield' },
+          { id: 'remote', label: 'remote path', accent: 'success', glyph: 'doc' },
+        ],
+        edges: [
+          { from: 'local', to: 'scp' },
+          { from: 'scp', to: 'remote' },
+        ],
+      },
+    ],
+    related: ['SSH', 'rsync', 'wget'],
+  },
+
+  rsync: {
+    body: [
+      '**rsync synchronizes files and directories, sending only what changed.** `rsync -a src/ host:/dst/` copies a tree over SSH, preserving permissions and timestamps; `--delete` makes the destination match the source exactly.',
+      '**Built for repeated transfers.** Because it transfers only differences, re-syncing a large tree is fast where scp re-sends everything. Mind the trailing slash: `src/` means "the contents of src", `src` means "the src directory itself".',
+    ],
+    examples: [
+      'rsync -av dist/ deploy@prod-1:/var/www/ -> sync a build.',
+      'rsync -a --delete src/ dst/ -> make dst an exact mirror of src.',
+      'rsync -avz big/ host:/data/ -> add -z to compress in transit.',
+    ],
+    diagrams: [
+      {
+        caption: 'rsync transfers only the changed pieces.',
+        layout: 'row',
+        nodes: [
+          { id: 'src', label: 'source tree', accent: 'client', glyph: 'doc' },
+          { id: 'diff', label: 'compare', sub: 'send only changes', accent: 'edge', glyph: 'funnel' },
+          { id: 'dst', label: 'destination', sub: 'in sync', accent: 'success' },
+        ],
+        edges: [
+          { from: 'src', to: 'diff' },
+          { from: 'diff', to: 'dst' },
+        ],
+      },
+    ],
+    related: ['scp', 'SSH', 'tar'],
+  },
+
+  tar: {
+    body: [
+      '**tar bundles many files into one archive.** `tar -cf a.tar dir` creates, `tar -xf a.tar` extracts, `tar -tf a.tar` lists. Add `z` for gzip compression in the same step: `tar -czf a.tar.gz dir`. The letters read create/extract/list, gzip, file, verbose.',
+      '**Backups and releases are tarballs.** A .tar.gz (or .tgz) is the standard way to ship a directory. `tar -tzf` peeks inside before extracting, and `-C dir` controls where files land so they do not scatter.',
+    ],
+    examples: [
+      'tar -czf site.tar.gz site/ -> create a compressed archive.',
+      'tar -xzf site.tar.gz -C /tmp/out -> extract into a chosen dir.',
+      'tar -tzf site.tar.gz -> list contents without extracting.',
+    ],
+    diagrams: [
+      {
+        caption: 'tar -czf bundles and compresses; -xzf reverses both.',
+        layout: 'row',
+        nodes: [
+          { id: 'files', label: 'folder', accent: 'storage', glyph: 'doc' },
+          { id: 'tar', label: 'tar -czf', sub: 'bundle + gzip', accent: 'compute' },
+          { id: 'arc', label: 'archive.tar.gz', accent: 'success' },
+        ],
+        edges: [
+          { from: 'files', to: 'tar' },
+          { from: 'tar', to: 'arc' },
+        ],
+      },
+    ],
+    related: ['gzip', 'rsync', 'package manager'],
+  },
+
+  gzip: {
+    body: [
+      '**gzip compresses a single file in place** to file.gz, and `gunzip` reverses it. Compression shrinks bytes; archiving (tar) bundles files. The two are separate jobs, which is why you tar a folder first and then gzip it (or use `tar -z`).',
+      '**It replaces the original by default.** Use `gzip -k` to keep the source. Other compressors trade speed for size: bzip2 (`j` in tar) and xz (`J`) compress smaller but slower.',
+    ],
+    examples: [
+      'gzip big.log -> big.log.gz (original removed).',
+      'gunzip big.log.gz -> back to big.log.',
+      'gzip -k file -> keep the original alongside file.gz.',
+    ],
+    diagrams: [
+      {
+        caption: 'gzip shrinks one file; gunzip restores it.',
+        layout: 'row',
+        nodes: [
+          { id: 'file', label: 'file', accent: 'storage', glyph: 'doc' },
+          { id: 'gzip', label: 'gzip', accent: 'compute' },
+          { id: 'gz', label: 'file.gz', sub: 'smaller', accent: 'success' },
+        ],
+        edges: [{ from: 'file', to: 'gz', label: 'compress' }],
+      },
+    ],
+    related: ['tar', 'cat'],
+  },
+
+  'package manager': {
+    body: [
+      '**A package manager installs software plus all its dependencies** from a trusted, signed repository, and tracks what it installed so it can update or remove cleanly. apt (Debian/Ubuntu) and dnf (RHEL/Fedora, older yum) are the common ones.',
+      '**Reproducibility comes from packages.** `apt update` refreshes the catalog, `apt install pkg` resolves and installs, `apt remove pkg` removes. Pinning versions makes servers repeatable; hand-installed binaries do not.',
+    ],
+    examples: [
+      'sudo apt update && sudo apt install -y nginx.',
+      'sudo dnf install -y jq -> the RHEL/Fedora equivalent.',
+      'apt list --installed -> everything the manager placed.',
+    ],
+    diagrams: [
+      {
+        caption: 'A package manager resolves dependencies and tracks installs.',
+        layout: 'row',
+        nodes: [
+          { id: 'req', label: 'apt install nginx', accent: 'client' },
+          { id: 'resolve', label: 'resolve + verify', sub: 'deps, signatures', accent: 'compute', glyph: 'funnel' },
+          { id: 'done', label: 'installed + tracked', accent: 'success' },
+        ],
+        edges: [
+          { from: 'req', to: 'resolve' },
+          { from: 'resolve', to: 'done' },
+        ],
+      },
+    ],
+    related: ['make', 'which', 'uname'],
+  },
+
+  make: {
+    body: [
+      '**make builds software from a Makefile of rules.** In the from-source three-step, `./configure` inspects your system and generates the Makefile, `make` compiles the code, and `sudo make install` copies the result into system paths.',
+      '**It is what package managers automate.** When no package exists you compile by hand, but from-source installs land outside the package manager records, so they are harder to update and remove cleanly. Prefer a package when one exists.',
+    ],
+    examples: [
+      './configure && make && sudo make install -> the classic three-step.',
+      'make -> compile using the rules in the Makefile.',
+      'make clean -> remove build artifacts (if the Makefile defines it).',
+    ],
+    diagrams: [
+      {
+        caption: 'The from-source three-step.',
+        layout: 'row',
+        nodes: [
+          { id: 'conf', label: './configure', sub: 'prepare', accent: 'edge' },
+          { id: 'make', label: 'make', sub: 'compile', accent: 'compute', glyph: 'chip' },
+          { id: 'install', label: 'make install', sub: 'place files', accent: 'success' },
+        ],
+        edges: [
+          { from: 'conf', to: 'make' },
+          { from: 'make', to: 'install' },
+        ],
+      },
+    ],
+    related: ['package manager', 'which'],
+  },
+
+  which: {
+    body: [
+      '**which prints the path of the program the shell would run** for a name: `which node` -> `/usr/bin/node`. It resolves against your PATH, so it shows the exact binary that wins.',
+      '**It settles version confusion.** When a tool is installed twice (a package plus a from-source copy), `which` reveals which one is first on the PATH and therefore actually used. `whereis` also locates related man pages and sources.',
+    ],
+    examples: [
+      'which python3 -> /usr/bin/python3.',
+      'which -a node -> every node on the PATH, in order.',
+      'command -v jq -> a portable alternative to which.',
+    ],
+    diagrams: [
+      {
+        caption: 'which shows which copy on the PATH wins.',
+        layout: 'row',
+        nodes: [
+          { id: 'name', label: 'which node', accent: 'compute' },
+          { id: 'path', label: 'search PATH', accent: 'edge', glyph: 'route' },
+          { id: 'bin', label: '/usr/bin/node', accent: 'success' },
+        ],
+        edges: [
+          { from: 'name', to: 'path' },
+          { from: 'path', to: 'bin' },
+        ],
+      },
+    ],
+    related: ['package manager', 'make', 'PATH'],
+  },
+
+  'environment variable': {
+    body: [
+      '**Environment variables are named values programs read for configuration.** `echo $NAME` reads one, `env` lists them all, and `export NAME=value` sets one so the programs you launch inherit it. Without export, the value stays local to your shell.',
+      '**The standard way to configure apps.** Database URLs, API keys, and ports come from the environment so the same build runs in dev, staging, and prod with different values. A missing or wrong env var is a top "works locally, breaks deployed" cause.',
+    ],
+    examples: [
+      'export DATABASE_URL=postgres://... -> config a child process reads.',
+      'echo $HOME, echo $USER -> common built-in variables.',
+      'NAME=x cmd -> set NAME just for this one command.',
+    ],
+    diagrams: [
+      {
+        caption: 'export shares a variable with child processes.',
+        layout: 'row',
+        nodes: [
+          { id: 'set', label: 'export NAME=v', accent: 'compute' },
+          { id: 'shell', label: 'shell environment', accent: 'edge' },
+          { id: 'child', label: 'child reads $NAME', accent: 'success', glyph: 'chip' },
+        ],
+        edges: [
+          { from: 'set', to: 'shell' },
+          { from: 'shell', to: 'child', label: 'inherited' },
+        ],
+      },
+    ],
+    related: ['PATH', 'shell script', 'cron'],
+  },
+
+  PATH: {
+    body: [
+      '**PATH is the environment variable that lists where the shell looks for programs**, colon-separated and searched left to right. Type `node` and the shell runs the first `node` it finds across those directories.',
+      '**It explains two everyday errors.** "command not found" means the program is in none of the PATH directories; two installed copies means the earlier directory wins (`which` shows which). Prepend a directory to override; persist the change in a startup file.',
+    ],
+    examples: [
+      'echo $PATH -> /usr/local/bin:/usr/bin:/bin.',
+      'export PATH="/opt/tool/bin:$PATH" -> make a new tool runnable.',
+      'which -a python -> every python on the PATH, in order.',
+    ],
+    diagrams: [
+      {
+        caption: 'The shell searches PATH left to right; first match wins.',
+        layout: 'row',
+        nodes: [
+          { id: 'cmd', label: 'node', accent: 'client' },
+          { id: 'search', label: 'scan PATH dirs', accent: 'compute', glyph: 'route' },
+          { id: 'first', label: 'first match runs', accent: 'success' },
+        ],
+        edges: [
+          { from: 'cmd', to: 'search' },
+          { from: 'search', to: 'first' },
+        ],
+      },
+    ],
+    related: ['environment variable', 'which', 'package manager'],
+  },
+
+  'shell script': {
+    body: [
+      '**A shell script is a file of commands run top to bottom**, turning a sequence you keep retyping into a reusable program. A shebang (`#!/usr/bin/env bash`) picks the interpreter, and `chmod +x` plus `./script.sh` runs it.',
+      '**The safety habits matter most.** Read arguments as `$1`, `$2`, `$@`; quote every expansion ("$file") so spaces do not break commands; and start with `set -euo pipefail` so the script stops at the first failure instead of charging into a bad state.',
+    ],
+    examples: [
+      '#!/usr/bin/env bash + set -euo pipefail -> a safe header.',
+      'name="${1:-world}" -> first argument with a default.',
+      'cmd1 && cmd2 -> run cmd2 only if cmd1 succeeded.',
+    ],
+    diagrams: [
+      {
+        caption: 'Shebang, arguments, body, exit code.',
+        layout: 'stack',
+        nodes: [
+          { id: 'sb', label: '#!/usr/bin/env bash', sub: 'interpreter', accent: 'edge' },
+          { id: 'args', label: '$1 $@ + set -euo pipefail', accent: 'compute' },
+          { id: 'exit', label: 'exit 0 / exit 1', sub: 'report result', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['exit code', 'environment variable', 'cron'],
+  },
+
+  'exit code': {
+    body: [
+      '**An exit code is the number a command returns when it finishes:** 0 means success, any non-zero means failure. The shell variable `$?` holds the last command exit code.',
+      '**It drives control flow.** `cmd1 && cmd2` runs cmd2 only on success; `cmd1 || cmd2` only on failure; `if cmd; then ...` branches on it. CI and orchestrators treat a non-zero exit as "this step failed", which is why scripts must `exit 1` on real errors.',
+    ],
+    examples: [
+      'true; echo $? -> 0. false; echo $? -> 1.',
+      'grep x file && echo found -> prints only if grep matched.',
+      'A script ending exit 1 tells CI the job failed.',
+    ],
+    diagrams: [
+      {
+        caption: '0 is success; non-zero is failure; $? holds the last.',
+        layout: 'row',
+        nodes: [
+          { id: 'ok', label: 'exit 0', sub: 'success', accent: 'success' },
+          { id: 'fail', label: 'exit non-zero', sub: 'failure', accent: 'danger', glyph: 'warning' },
+          { id: 'branch', label: '&& / || / if', sub: 'branch on it', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['shell script', 'systemd'],
+  },
+
+  cron: {
+    body: [
+      '**cron runs commands automatically on a schedule.** Each `crontab -e` line is five time fields (minute, hour, day-of-month, month, day-of-week) plus a command; `*` means "every", so `0 2 * * *` is 02:00 daily.',
+      '**Two traps cause most cron incidents.** It runs jobs in a minimal environment with a short PATH, so use absolute paths; and it mails output to an unread mailbox, so redirect with `>> /var/log/job.log 2>&1` or failures stay invisible. systemd timers are a modern alternative with better logging.',
+    ],
+    examples: [
+      '0 2 * * * /usr/local/bin/backup.sh >> /var/log/backup.log 2>&1.',
+      '*/15 * * * * -> every 15 minutes.',
+      'crontab -l -> list jobs; crontab -e -> edit them.',
+    ],
+    diagrams: [
+      {
+        caption: 'Five fields set the time; log the output.',
+        layout: 'row',
+        nodes: [
+          { id: 'fields', label: 'min hr dom mon dow', sub: 'schedule', accent: 'edge' },
+          { id: 'run', label: 'cron runs cmd', sub: 'minimal env', accent: 'compute', glyph: 'loop' },
+          { id: 'log', label: '>> log 2>&1', sub: 'be visible', accent: 'success', glyph: 'doc' },
+        ],
+      },
+    ],
+    related: ['systemd', 'shell script', 'PATH'],
+  },
+
+  systemd: {
+    body: [
+      '**systemd is the init system on most modern Linux distros.** It starts services at boot, supervises and restarts them on failure, and collects their logs. You control services with `systemctl` and read logs with `journalctl`.',
+      '**start and enable are independent.** `systemctl start app` runs it now; `systemctl enable app` makes it start at boot; you usually want both (`enable --now`). A unit file declares what to run, which user (`User=`), and the restart policy.',
+    ],
+    examples: [
+      'systemctl status nginx -> running? since when? PID? recent logs.',
+      'sudo systemctl enable --now app -> start now and at boot.',
+      'systemctl restart app -> stop then start.',
+    ],
+    diagrams: [
+      {
+        caption: 'systemd supervises services; systemctl controls them.',
+        layout: 'row',
+        nodes: [
+          { id: 'ctl', label: 'systemctl start/enable', accent: 'compute' },
+          { id: 'sd', label: 'systemd supervises', sub: 'restart on fail', accent: 'primary', glyph: 'loop' },
+          { id: 'log', label: 'journalctl -u', sub: 'logs', accent: 'success', glyph: 'doc' },
+        ],
+      },
+    ],
+    related: ['journalctl', 'cron', 'exit code'],
+  },
+
+  journalctl: {
+    body: [
+      '**journalctl reads the systemd journal**, where each service captured stdout/stderr is stored. `journalctl -u nginx` shows one service logs; `-f` follows live, `-e` jumps to the end, `--since "1 hour ago"` filters by time, `-p err` by priority.',
+      '**First stop when a service misbehaves.** Paired with `systemctl status`, it answers "what did it say before it died". Always scope with `-u`; an unscoped journalctl dumps the whole system and overwhelms.',
+    ],
+    examples: [
+      'journalctl -u app -e -> end of one service log.',
+      'journalctl -u app -f -> follow it live during a repro.',
+      'journalctl -u app --since "10 min ago" -p err -> recent errors only.',
+    ],
+    diagrams: [
+      {
+        caption: 'journalctl reads a service captured logs.',
+        layout: 'row',
+        nodes: [
+          { id: 'svc', label: 'service stdout/stderr', accent: 'edge' },
+          { id: 'journal', label: 'systemd journal', accent: 'storage', glyph: 'database' },
+          { id: 'read', label: 'journalctl -u', sub: '-f, --since, -p', accent: 'success', glyph: 'doc' },
+        ],
+        edges: [
+          { from: 'svc', to: 'journal' },
+          { from: 'journal', to: 'read' },
+        ],
+      },
+    ],
+    related: ['systemd', 'tail', 'standard streams'],
+  },
+
+  sed: {
+    body: [
+      '**sed is a stream editor that transforms text line by line.** `sed \'s/old/new/g\'` substitutes every occurrence per line in a stream or file; the `g` makes it global within each line. It shines in pipelines and scripts for on-the-fly find-and-replace.',
+      '**In-place edits are powerful and sharp.** `sed -i` rewrites the file directly; `sed -i.bak` keeps a backup. A wrong pattern with `-i` can damage data, so test the substitution by printing to the screen first.',
+    ],
+    examples: [
+      "sed 's/ERROR/WARN/g' log -> print log with ERROR replaced.",
+      "sed -n '5,10p' file -> print only lines 5 to 10.",
+      "sed -i.bak 's/8080/9090/' config -> edit in place, keep config.bak.",
+    ],
+    diagrams: [
+      {
+        caption: 'sed rewrites each line as the stream flows through.',
+        layout: 'row',
+        nodes: [
+          { id: 'in', label: 'text stream', accent: 'storage', glyph: 'doc' },
+          { id: 'sed', label: "sed 's/old/new/g'", accent: 'compute' },
+          { id: 'out', label: 'transformed', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['awk', 'grep', 'pipe'],
+  },
+
+  awk: {
+    body: [
+      '**awk is a field-aware text processor.** It splits each line into fields ($1, $2, ...; $0 is the whole line) on whitespace by default, so `awk \'{print $2}\'` prints the second column. `-F,` sets a different separator.',
+      '**It filters and computes too.** `awk \'$3 > 100\'` prints lines where the third field exceeds 100; `awk \'{s+=$1} END{print s}\'` sums a column. For columnar data it goes well beyond cut.',
+    ],
+    examples: [
+      "awk '{print $1}' access.log -> the first field (an IP).",
+      "awk -F, '{print $2, $1}' people.csv -> swap two CSV columns.",
+      "awk '$4==500' access.log -> only lines with status 500.",
+    ],
+    diagrams: [
+      {
+        caption: 'awk addresses each line by field.',
+        layout: 'row',
+        nodes: [
+          { id: 'line', label: '10.0.0.5 GET /a 200', accent: 'storage' },
+          { id: 'awk', label: "awk '{print $1}'", accent: 'compute', glyph: 'funnel' },
+          { id: 'f', label: '10.0.0.5', sub: 'field $1', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['sed', 'cut', 'grep', 'pipe'],
+  },
+
+  sort: {
+    body: [
+      '**sort orders lines of text.** `sort -n` compares numerically (so 9 comes before 10), `-r` reverses, `-k2` sorts by the second field, `-h` understands human sizes (2G > 900M).',
+      '**It sets up uniq.** Because `uniq` only collapses adjacent duplicates, `sort` almost always comes first: `sort | uniq -c | sort -rn` counts and ranks. Watch out: the default lexical sort puts "10" before "2", so use `-n` for numbers.',
+    ],
+    examples: [
+      'sort -n nums.txt -> numeric order.',
+      'du -sh * | sort -h -> items by real size.',
+      'sort file | uniq -c | sort -rn -> rank by frequency.',
+    ],
+    diagrams: [
+      {
+        caption: 'sort orders lines so uniq can group them.',
+        layout: 'row',
+        nodes: [
+          { id: 'in', label: 'unordered lines', accent: 'storage' },
+          { id: 'sort', label: 'sort (-n/-r/-k/-h)', accent: 'compute' },
+          { id: 'out', label: 'ordered', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['uniq', 'wc', 'cut', 'du'],
+  },
+
+  uniq: {
+    body: [
+      '**uniq collapses adjacent duplicate lines**, and `uniq -c` prefixes each group with a count. Because it only compares neighbors, the input must be sorted first.',
+      '**The count-and-rank workhorse.** `sort | uniq -c | sort -rn` is the idiom for "what appears most": sort to group, uniq -c to count, sort -rn to rank. It answers log questions (top IPs, common errors) in one line.',
+    ],
+    examples: [
+      'sort codes.txt | uniq -c -> count of each line.',
+      'sort | uniq -c | sort -rn | head -> the top values.',
+      'uniq -d -> only the duplicated lines.',
+    ],
+    diagrams: [
+      {
+        caption: 'sort then uniq -c counts; sort -rn ranks.',
+        layout: 'row',
+        nodes: [
+          { id: 'sort', label: 'sort', accent: 'edge' },
+          { id: 'uniq', label: 'uniq -c', sub: 'count groups', accent: 'compute', glyph: 'funnel' },
+          { id: 'rank', label: 'sort -rn', sub: 'rank', accent: 'success' },
+        ],
+        edges: [
+          { from: 'sort', to: 'uniq' },
+          { from: 'uniq', to: 'rank' },
+        ],
+      },
+    ],
+    related: ['sort', 'wc', 'grep'],
+  },
+
+  cut: {
+    body: [
+      '**cut extracts columns from each line.** `cut -d"," -f1` takes the first comma-separated field; `-f1,3` takes fields 1 and 3. It is a fast slice for clean, single-delimiter data.',
+      '**Mind the default delimiter.** cut splits on tabs by default, so on space- or comma-separated data you must set `-d`. For messy whitespace (runs of spaces), awk is more forgiving because it splits on any whitespace.',
+    ],
+    examples: [
+      'cut -d"," -f1 people.csv -> the first CSV column.',
+      'cut -d":" -f1 /etc/passwd -> usernames.',
+      'cut -c1-8 file -> characters 1 through 8 of each line.',
+    ],
+    diagrams: [
+      {
+        caption: 'cut slices a chosen field from each line.',
+        layout: 'row',
+        nodes: [
+          { id: 'line', label: 'alice,42,nyc', accent: 'storage' },
+          { id: 'cut', label: 'cut -d, -f1', accent: 'compute', glyph: 'funnel' },
+          { id: 'out', label: 'alice', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['awk', 'sort', 'grep'],
+  },
+
+  wc: {
+    body: [
+      '**wc counts lines, words, and bytes.** `wc -l` counts lines (the most common use), `-w` words, `-c` bytes. With no flag it prints all three plus the filename.',
+      '**Usually the last stage of a pipeline.** `... | grep ERROR | wc -l` counts how many lines matched. It turns a filtered stream into a single number, the answer to "how many".',
+    ],
+    examples: [
+      'wc -l access.log -> number of log lines.',
+      'grep -c ERROR log -> grep can count directly too.',
+      'ls | wc -l -> how many entries in this directory.',
+    ],
+    diagrams: [
+      {
+        caption: 'wc -l turns a stream into a count.',
+        layout: 'row',
+        nodes: [
+          { id: 'in', label: 'filtered lines', accent: 'storage' },
+          { id: 'wc', label: 'wc -l', accent: 'compute' },
+          { id: 'n', label: 'a number', accent: 'success' },
+        ],
+      },
+    ],
+    related: ['grep', 'sort', 'uniq', 'pipe'],
+  },
+
+  alias: {
+    body: [
+      '**An alias is a short name for a longer command:** `alias ll=\'ls -la\'` makes `ll` expand to `ls -la`. It is one of the cheapest ways to speed up the commands you type all day.',
+      '**Make it persist, and know its limit.** An alias defined in a shell vanishes when it closes; add it to `~/.bashrc` (or `~/.zshrc`) to keep it. Aliases cannot take arguments in the middle of the command; for that, use a shell function.',
+    ],
+    examples: [
+      "alias ll='ls -la' -> two letters for a long listing.",
+      "alias gs='git status' -> common git shortcut.",
+      'Put aliases in ~/.bashrc so every shell has them.',
+    ],
+    diagrams: [
+      {
+        caption: 'An alias expands a short name into a full command.',
+        layout: 'row',
+        nodes: [
+          { id: 'll', label: 'll', sub: 'you type', accent: 'client' },
+          { id: 'exp', label: 'alias expands', accent: 'compute' },
+          { id: 'full', label: 'ls -la', sub: 'runs', accent: 'success' },
+        ],
+        edges: [
+          { from: 'll', to: 'exp' },
+          { from: 'exp', to: 'full' },
+        ],
+      },
+    ],
+    related: ['man', 'environment variable', 'shell script'],
+  },
+
+  man: {
+    body: [
+      '**man opens the manual page for a command** (`man ls`), shown in the less pager (search with `/`, quit with `q`). It is the authoritative, offline reference for flags and behavior.',
+      '**Faster lookups too.** `ls --help` prints a shorter usage summary inline, quicker for a flag reminder; `apropos word` searches man pages by keyword when you do not know the command name. Manuals have sections: `man 5 crontab` is the file format, `man 1 crontab` the command.',
+    ],
+    examples: [
+      'man grep -> full manual; /-i finds the -i flag; q quits.',
+      'tar --help | head -20 -> quick usage without the full page.',
+      'apropos compress -> commands related to compression.',
+    ],
+    diagrams: [
+      {
+        caption: 'Look it up: man for depth, --help for speed.',
+        layout: 'row',
+        nodes: [
+          { id: 'man', label: 'man cmd', sub: 'full reference', accent: 'compute', glyph: 'doc' },
+          { id: 'help', label: 'cmd --help', sub: 'quick summary', accent: 'edge' },
+          { id: 'apropos', label: 'apropos word', sub: 'search by topic', accent: 'success', glyph: 'funnel' },
+        ],
+      },
+    ],
+    related: ['alias', 'shell', 'grep'],
   },
 
 }

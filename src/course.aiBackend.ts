@@ -14,7 +14,7 @@ const ANTHROPIC_CURL =
 export const aiBackendSubject: Subject = {
   id: 'ai-backend',
   title: 'AI for Backend Engineering',
-  subtitle: 'From your first API call to production LLM systems: tokens, prompts, RAG, tools, agents, and evals.',
+  subtitle: 'From your first API call to production LLM systems: tokens, prompts, RAG, tools, agents, agent fleets, and evals.',
   icon: LightningIcon,
   color: '#7c5cff',
   problems: [
@@ -1083,8 +1083,427 @@ export const aiBackendSubject: Subject = {
       },
     },
     {
+      id: 'ai-rung-agent-knowledge-core',
+      title: 'Module 13: Agent Types And The Knowledge Core',
+      type: 'lesson',
+      difficulty: 'Core',
+      minutes: 14,
+      prompt: 'You run five agents. Explain why each one needs a declared type, a shared set of behavioral rules, and one source of truth that defines them, and what breaks when that source does not exist.',
+      explanation: `One agent is a prompt. A fleet of agents is a system, and the difference is where the definitions live.
+
+**An agent type is a named role with a fixed contract.** Not a personality: a declared purpose, the tools it may call, the constraints it must obey, and the shape of what it returns. A researcher type reads and summarizes and may never write; a deployer type may run a release but only after approval. Typing an agent turns "some prompt someone wrote" into a unit you can reason about, review, and reuse.
+
+**Behavioral rules are the laws every agent obeys, whatever its type.** Ground every claim before stating it, never exfiltrate secrets, escalate when confidence is low, stop after a fixed number of steps. These rules do not belong copy-pasted into each prompt; they belong in one place that every agent inherits.
+
+**The knowledge core is that one place.** It is the single source of truth that defines the agent types, the shared rules, and the system standards (output schemas, logging format, naming). When a policy changes, you change the core, and every agent changes with it. Without a core, each agent is a snowflake and the fleet drifts until two agents that should behave identically no longer do.`,
+      production:
+        'Drift is the failure mode of an agent fleet. The moment behavior is defined in five files instead of one, a policy change lands in four of them and the fifth becomes the incident. The knowledge core is the same instinct as a shared config or a base class: define once, inherit everywhere, so review and change have a single home.',
+      walkthrough: [
+        'Define an agent type as a contract: purpose, allowed tools, constraints, output shape.',
+        'Separate type-specific behavior from the shared rules every agent obeys.',
+        'Put types, rules, and standards in one knowledge core, not in each prompt.',
+        'Change a rule in the core and confirm every agent inherits it.',
+      ],
+      questions: [
+        'What four things does an agent type declare?',
+        'Why do shared behavioral rules belong in the knowledge core instead of each prompt?',
+        'What drifts when there is no single source of truth for agent definitions?',
+      ],
+      checklist: [
+        'Define an agent type as a contract, not a personality.',
+        'Name three behavioral rules every agent should inherit.',
+        'Explain how a knowledge core prevents fleet drift.',
+      ],
+      interactive: {
+        coldOpen:
+          'A team ran five agents. Each lived in its own file with a copy-pasted system prompt that had drifted a little over months. A new policy landed: never email a customer without human approval. An engineer edited the rule into four of the five prompts. The fifth agent emailed four thousand customers that night. The bug was not the prompt. It was that there were five prompts where there should have been one definition. What is the one place that should have held that rule?',
+        mental:
+          'The knowledge core is the base class for your agents: types inherit shared rules and standards from it, so a change in one place changes every agent at once.',
+        diagram: {
+          nodes: ['Knowledge core', 'Agent types', 'Behavioral rules', 'System standards', 'Every agent'],
+          explanations: [
+            'The single source of truth. It defines what agents exist and how they must behave, so there is exactly one place to read and one place to change.',
+            'Named roles with contracts: purpose, allowed tools, constraints, and output shape. A researcher reads; a deployer ships behind approval.',
+            'The shared laws every type inherits: ground claims, protect secrets, escalate on low confidence, stop after a step budget.',
+            'The conventions that make agents interoperable: output schemas, logging format, naming, error shape.',
+            'Each running agent is an instance of a type bound to the core. Change the core and all of them change; there is no fifth prompt to miss.',
+          ],
+        },
+        example: {
+          code: `// One agent type, declared in the knowledge core (not in a prompt string):
+type AgentType = {
+  name: 'researcher'
+  purpose: 'Read sources and summarize. Never writes or sends.'
+  tools: ['search', 'read_doc']          // allow-list, nothing else
+  constraints: ['no_write', 'cite_every_claim', 'max_steps:8']
+  output: 'ResearchBrief'                 // a fixed schema
+  inherits: 'base_rules'                  // shared behavioral rules
+}`,
+          output: `researcher -> may search + read, must cite, cannot write, stops at 8 steps
+deployer   -> may release, but only after human approval
+both inherit base_rules: ground, protect secrets, escalate, log every step`,
+          explain:
+            'The type is data, not a paragraph of English. Because tools are an allow-list and constraints are explicit, a reviewer sees at a glance what this agent can and cannot do, and the core can enforce it.',
+        },
+        build: {
+          simple: 'An agent is a clever prompt.',
+          actually:
+            'An agent is an instance of a declared type, bound to a shared knowledge core. The type fixes its purpose, tools, constraints, and output; the core supplies the rules and standards every type inherits.',
+          breaks:
+            'When definitions live in prompt strings scattered across the codebase, they drift. Two agents meant to behave identically diverge, a policy change misses one file, and the gap becomes an incident. Centralizing the definition is what makes a fleet maintainable.',
+        },
+        doThisNow: [
+          {
+            task: 'Write the contract for one agent you would actually run. Fill four fields: purpose, allowed tools (allow-list), constraints, output shape.',
+            reveal:
+              'If you cannot list the allowed tools, the agent is under-specified and will reach for whatever is available. The contract forces you to decide power up front, which is exactly the decision you want in review, not in production.',
+          },
+          {
+            task: 'Take one rule from that contract (say, never send without approval) and ask: where would it live for ten agents? Name the single location.',
+            reveal:
+              'The answer is the knowledge core, inherited by every type. If your answer was "in each prompt," you just described the five-prompts bug. One location is the whole point.',
+          },
+        ],
+        warStory:
+          'Claude Code ships with a single settings and rules layer rather than per-session prompts, because a coding agent that forgets the project rules on session two is worse than no agent. Teams that scale agents past one converge on the same move: define behavior once, inherit it everywhere, review it in one place.',
+        tweak: {
+          instruction: 'In one sentence, tell a teammate the difference between an agent type and an agent instance.',
+          reveal:
+            'A type is the contract (purpose, tools, constraints, output) defined once in the core; an instance is one running agent bound to that contract. Many instances, one type, one core.',
+        },
+        receipt: {
+          explain: [
+            'An agent type is a contract: purpose, allowed tools, constraints, output shape.',
+            'The knowledge core holds types, shared rules, and standards as one source of truth so the fleet does not drift.',
+          ],
+          question: 'A type lists the tools an agent may call. How do you decide which tools, and how do you keep one agent from doing damage with them?',
+        },
+        recap: [
+          'One agent is a prompt; a fleet needs declared types and one core.',
+          'Behavioral rules and standards are inherited from the core, not copy-pasted.',
+          'No single source of truth means drift, and drift becomes an incident.',
+        ],
+      },
+    },
+    {
+      id: 'ai-rung-agent-capabilities',
+      title: 'Module 14: Capabilities, Constraints, Tool Access, And Handoffs',
+      type: 'lesson',
+      difficulty: 'Core',
+      minutes: 14,
+      prompt: 'Define a new agent capability the safe way: pick the tools it can touch, the constraints that bound it, and the handoff protocol it uses to pass work to another agent. Explain why each is least-privilege by default.',
+      explanation: `Giving an agent a new capability is giving it new power, and power is defined by the tools it can call. Adding a capability is therefore a tool-access decision first and a prompt second.
+
+**Tool access is an allow-list, default deny.** An agent can only do what its tools let it do. A read-only research agent that is handed a delete tool can delete, and the model will eventually find a reason to. So you grant the narrowest set that accomplishes the job and nothing more. This is least privilege, the rule you already apply to database users and service accounts, applied now to a non-deterministic caller.
+
+**Constraints bound the capability in dimensions tools do not.** Tools say what it may call; constraints say how much and under what conditions: a step budget, a token or money budget, rate limits, and gates that require human approval before an irreversible action. A capability without a budget is how a demo becomes a runaway bill.
+
+**Handoff protocols move work between agents without losing the contract.** When a research agent finishes and a writer agent takes over, the handoff is a typed payload, not a blob of chat: what was done, what was found, what the next agent must do, and what it may not. A clean handoff means the receiving agent starts grounded and bounded; a sloppy one leaks the whole transcript and the original constraints evaporate.`,
+      production:
+        'Most agent incidents are over-grant incidents: an agent held a tool it never needed, and the model found a path to misuse it. Treat every new capability like a new IAM permission. The review question is never "can it do the task" but "what is the worst thing this tool set allows, and what stops that."',
+      walkthrough: [
+        'Start from default-deny: list the smallest tool allow-list that does the job.',
+        'Add constraints tools cannot express: step budget, cost budget, approval gates.',
+        'Define the handoff as a typed payload: done, found, next, forbidden.',
+        'Ask the worst-case question for the tool set before granting it.',
+      ],
+      questions: [
+        'Why is tool access an allow-list instead of a deny-list?',
+        'What do constraints bound that tool access does not?',
+        'What belongs in a handoff payload between two agents?',
+      ],
+      checklist: [
+        'Grant tools least-privilege, default deny.',
+        'Name two constraints that bound a capability beyond its tools.',
+        'Describe a typed handoff payload between agents.',
+      ],
+      interactive: {
+        coldOpen:
+          'A support agent was given a tool set to "help with billing." Helping with billing meant reading accounts, and reading meant the same internal API that could also issue refunds, so the refund method was in scope. One well-phrased customer message later, the agent issued a refund it was never meant to. No tool was broken. The agent simply used a power nobody decided to withhold. What decision, made before any prompt, would have prevented it?',
+        mental:
+          'An agent capability is an IAM role for a non-deterministic caller: the tools are the permissions, the constraints are the limits, and least privilege is still the only safe default.',
+        diagram: {
+          nodes: ['New capability', 'Tool allow-list', 'Constraints', 'Approval gate', 'Handoff payload'],
+          explanations: [
+            'A new capability starts as a question of power, not phrasing. What must this agent touch to do the job, and nothing else?',
+            'Default-deny. The agent can call exactly these tools and no others, so a tool that can do damage is simply absent unless the job requires it.',
+            'They bound the dimensions tools cannot: a step budget so the loop ends, a cost budget so the bill is capped, rate limits so it cannot stampede.',
+            'It sits in front of any irreversible action. The agent may prepare a refund or a delete; a human confirms before it executes.',
+            'When work passes on, it travels as typed state: what was done, what was found, what to do next, and what is off-limits. The contract survives the handoff.',
+          ],
+        },
+        example: {
+          code: `// Defining a capability = tools + constraints + handoff, default deny.
+capability "draft_refund" {
+  tools:       ['read_account', 'prepare_refund']   // NOT 'issue_refund'
+  constraints: { max_steps: 6, max_cost_usd: 0.50, requires_approval: true }
+  handoff_to:  'human_review'
+}
+// Handoff payload (typed, not the raw transcript):
+{ done:      'verified order #8821 is refundable',
+  found:     'duplicate charge of $42.00',
+  next:      'approve or reject the prepared refund',
+  forbidden: ['issue any other refund', 'email the customer'] }`,
+          output: `agent can:    read the account, prepare a refund draft
+agent cannot: issue the refund, email anyone, exceed 6 steps or $0.50
+on finish:    hands a typed summary to human_review, not the chat log`,
+          explain:
+            'The dangerous verb (issue_refund) is absent from the allow-list, so no prompt can summon it. The handoff carries a clean summary and an explicit forbidden list, so the next stage starts with the same bounds instead of inheriting a loose transcript.',
+        },
+        build: {
+          simple: 'You add a capability by telling the agent it can now do X.',
+          actually:
+            'You add a capability by granting the narrowest tools that do X, attaching constraints (budgets, gates) that bound how far it can go, and defining the typed handoff it uses to pass work on. The prompt comes last.',
+          breaks:
+            'Grant one tool too many and the model will eventually find the path to misuse it; skip the budget and the loop can run up cost; hand off the raw transcript and the receiving agent loses every constraint you set. Over-grant and loose handoffs are where agent capabilities turn into incidents.',
+        },
+        doThisNow: [
+          {
+            task: 'Take a capability you want (say, "manage calendar") and write its tool allow-list. Then write the deny-list of nearby tools it must NOT get (delete_event? email_guests?).',
+            reveal:
+              'The deny-list is the real design. "Manage calendar" sounds bounded until you notice it sits next to deleting and emailing. Naming what to withhold is the least-privilege decision; the allow-list alone hides it.',
+          },
+          {
+            task: 'Write the handoff payload one agent would pass to the next for a two-step task. Use four fields: done, found, next, forbidden.',
+            reveal:
+              'If forbidden is empty, you are about to hand the next agent unbounded power. A handoff that only says what to do, never what not to do, is how constraints leak across a multi-agent chain.',
+          },
+        ],
+        warStory:
+          'The standard prompt-injection defense is not a cleverer prompt; it is least privilege. Anthropic and every serious agent team converge on the same rule: assume the model can be talked into anything, and make sure the tools it holds cannot do real damage. An agent that physically lacks the delete tool cannot be tricked into deleting.',
+        tweak: {
+          instruction: 'In one sentence, explain why "can it do the task" is the wrong question when granting an agent a tool.',
+          reveal:
+            'The task only tells you the minimum power needed; it never tells you the maximum harm possible. The right question is the worst thing the tool set allows, because the model will explore the whole surface, not just the happy path.',
+        },
+        receipt: {
+          explain: [
+            'Tool access is a default-deny allow-list; constraints add budgets and approval gates the tools cannot express.',
+            'A handoff is a typed payload (done, found, next, forbidden), not the raw transcript.',
+          ],
+          question: 'These agents run multi-step and hand off to each other. Where does the state between steps live, and what stops the context from either being lost or leaking everywhere?',
+        },
+        recap: [
+          'A capability is tools + constraints + handoff, granted least-privilege.',
+          'Tools say what it may call; constraints say how much and behind what gate.',
+          'Handoffs are typed payloads that carry the contract, not the chat log.',
+        ],
+      },
+    },
+    {
+      id: 'ai-rung-agent-memory',
+      title: 'Module 15: Agent Memory And Context Sharing',
+      type: 'lesson',
+      difficulty: 'Core',
+      minutes: 14,
+      prompt: 'A multi-step workflow has to remember within a task and across tasks, and several agents have to share context without drowning in each transcript. Explain working memory versus persistent memory and how agents share context safely.',
+      explanation: `A single model call has no memory; the context window is all it knows, and it forgets the moment the call returns. Multi-step agents are built on top of that amnesia, so memory is something you engineer, not something the model has.
+
+**Working memory is the live task state, and it lives in the context window.** Across a multi-step loop, the running record of what the agent did, observed, and decided is fed back in on each step. Because the window is finite and you pay per token, working memory has to be curated: keep what the next step needs, summarize or drop the rest. An agent that stuffs every tool result back into the window verbatim runs out of room and out of budget.
+
+**Persistent memory is what survives the task, and it lives outside the model.** Facts the agent should recall next week (a user preference, a prior decision, a learned constraint) go into a store: a database row, a file, a vector index for semantic recall. The model does not remember; you write the fact down and retrieve it on the next run. This is retrieval pointed at the history of the agent itself.
+
+**Context sharing is memory between agents, and it is a payload, not a free-for-all.** When several agents collaborate they need a shared view without each inheriting every other transcript. The pattern is a shared scratchpad (a blackboard) plus typed handoffs: each agent reads the curated state it needs and writes back a curated result. Sharing raw transcripts blows the budget and leaks constraints; sharing typed state keeps each agent grounded and bounded.`,
+      production:
+        'Memory is a cost and a correctness problem at once. Too little curation and the context window overflows mid-task while the bill balloons; too little persistence and the agent re-learns the same fact every run and contradicts a decision it made yesterday. Teams that ship reliable agents treat working memory like a cache (small, curated, evicted) and persistent memory like a database (durable, indexed, retrieved).',
+      walkthrough: [
+        'Separate working memory (in-window task state) from persistent memory (in a store).',
+        'Curate working memory each step: keep what the next step needs, summarize the rest.',
+        'Persist facts that must outlive the task; retrieve them on the next run.',
+        'Share context between agents as typed state on a blackboard, not raw transcripts.',
+      ],
+      questions: [
+        'Where does the working memory of an agent physically live?',
+        'Why must working memory be curated on every step?',
+        'How do multiple agents share context without inheriting every transcript?',
+      ],
+      checklist: [
+        'Distinguish working memory from persistent memory.',
+        'Explain why uncurated working memory overflows cost and the window.',
+        'Describe a blackboard plus typed handoffs for shared context.',
+      ],
+      interactive: {
+        coldOpen:
+          'An agent handled a thirty-step task beautifully for the first twenty steps, then started repeating actions it had already done and contradicting its own earlier decisions. Nothing crashed. The running record of what it had done had grown so large it was being trimmed from the front of the context window, so the agent literally forgot its own first half. The window was full. What two kinds of memory would have saved it?',
+        mental:
+          'Working memory is the RAM of the agent: fast, in the context window, finite, wiped when the task ends. Persistent memory is its disk: durable, outside the model, retrieved when needed.',
+        diagram: {
+          nodes: ['Step state', 'Curate window', 'Persistent store', 'Blackboard', 'Next agent'],
+          explanations: [
+            'Each step produces state: the action taken, the result observed, the decision made. This is working memory, fed back into the next step.',
+            'Before the next step, the state is curated to fit the window: keep what matters, summarize tool output, drop noise. Uncurated state overflows the window and the budget.',
+            'Facts that must outlive the task are written to a store (row, file, or vector index) and retrieved on a later run. The model does not remember; the store does.',
+            'When agents collaborate, a shared board holds the curated task state any of them can read and write, so they share a view without trading whole transcripts.',
+            'Work passes on as a typed slice of that state, so the next agent starts grounded in exactly what it needs and bounded by what it must not touch.',
+          ],
+        },
+        example: {
+          code: `// Working memory: curated each step, NOT the raw transcript.
+working = {
+  goal: 'reconcile invoice #8821',
+  done: ['fetched invoice', 'found duplicate charge'],
+  next: 'prepare a refund draft',
+}                              // small, fits the window, cheap
+
+// Persistent memory: written to survive the task.
+store.put('customer:42', { prefers: 'email', last_decision: 'refunded dup charge' })
+
+// Context sharing: the writer agent reads a SLICE, not everything.
+blackboard.read('invoice:8821')  ->  { status: 'refund_prepared', amount: 42.00 }`,
+          output: `in-window working memory:  ~200 tokens of curated state  (cheap, survives the loop)
+raw transcript instead:    ~40,000 tokens and climbing    (overflows, expensive)
+persistent store:          recalled next week, no re-learning, no contradiction`,
+          explain:
+            'The curated working state is two hundred tokens the next step can act on; the raw transcript would be tens of thousands and growing. Persisting the decision means next week the agent retrieves "already refunded" instead of re-deciding and possibly refunding twice.',
+        },
+        build: {
+          simple: 'The agent remembers what it has been doing.',
+          actually:
+            'The model remembers nothing between calls. You engineer working memory by feeding curated task state back into the window each step, and persistent memory by writing facts to a store and retrieving them later. Shared context between agents is typed state on a blackboard, read and written in slices.',
+          breaks:
+            'Feed the raw transcript back every step and the window overflows mid-task while the bill climbs; skip persistence and the agent re-learns the same fact and contradicts past decisions; share whole transcripts between agents and you multiply both problems across the fleet. Curation and persistence are the engineering, not the model.',
+        },
+        doThisNow: [
+          {
+            task: 'Take a ten-step task and write what its working memory should hold at step 7. Now write what it should NOT hold (every raw tool output? the full step-1 prompt?).',
+            reveal:
+              'The "should not" list is the curation. If step 7 carries every raw observation from steps 1 through 6, you are paying for and crowding the window with state the next step cannot use. Working memory is a summary that moves forward, not an append-only log.',
+          },
+          {
+            task: 'Name one fact your agent should still know a week later, and say exactly where it would live and how it would come back.',
+            reveal:
+              'If the answer is "in the conversation," it is already gone; conversations are working memory and they end. The fact has to be written to a store and retrieved by key or by semantic search next run. That write-and-retrieve is the whole of persistent memory.',
+          },
+        ],
+        warStory:
+          'Claude Code keeps a project memory file on disk precisely because a coding agent that forgets the project conventions every session is a liability. The pattern generalizes: durable facts live in a store the agent reads at the start of each run, and the live task state stays small in the window. Mixing the two, or skipping the store, is how long-running agents go incoherent.',
+        tweak: {
+          instruction: 'In one sentence, explain why a long agent task can start forgetting its own earlier steps even though nothing errored.',
+          reveal:
+            'The running record outgrew the context window, so the oldest state was trimmed to make room; the agent did not fail, it simply no longer had its first steps in view. The fix is curated working memory plus a persistent store, not a bigger prompt.',
+        },
+        receipt: {
+          explain: [
+            'Working memory is curated task state in the context window; persistent memory is facts written to a store and retrieved later.',
+            'Agents share context as typed slices on a blackboard, never as whole transcripts.',
+          ],
+          question: 'You now have many agents, each with tools, memory, and handoffs. How do they find each other and the tools they need, and who enforces that they all follow the same standards?',
+        },
+        recap: [
+          'The model has no memory; working and persistent memory are engineered.',
+          'Curate working memory each step or the window and the bill overflow.',
+          'Agents share curated, typed state on a blackboard, not raw transcripts.',
+        ],
+      },
+    },
+    {
+      id: 'ai-rung-agent-governance',
+      title: 'Module 16: Governance, Standards, And Discovery Across Agents',
+      type: 'lesson',
+      difficulty: 'Hard',
+      minutes: 15,
+      prompt: 'A fleet of agents has to follow the same standards, find each other and the tools they need, and stay under control as it grows. Explain coding standards, discovery, and governance for agents, and what each prevents.',
+      explanation: `One agent needs a prompt. Ten agents need governance, the same way ten services need a platform team. As the fleet grows, the hard problems stop being "make the agent smart" and become "keep them consistent, findable, and accountable."
+
+**Standards make agents interoperable and reviewable.** Shared output schemas, a common logging and tracing format, naming conventions, and a fixed error shape are to agents what a style guide and base classes are to a codebase. With standards, the output of any agent can feed the input of another and any engineer can read any log. Without them, every integration is a custom adapter and every incident is an archaeology dig.
+
+**Discovery is how agents and tools find each other at runtime.** In a fleet, an agent should not hardcode the address of every tool or peer; it should look them up in a registry that lists what exists, what it does, and how to call it. This is service discovery applied to agents and tools (the idea behind protocols like MCP): a tool registers once, and any authorized agent can discover and use it without bespoke wiring.
+
+**Governance is the control structure over all of it.** Who can add an agent type or grant a tool, and through what review. How agent definitions are versioned and rolled back. What every agent must log so actions are auditable after the fact. Which actions require human approval. Governance is the difference between a fleet you can change safely and a pile of prompts nobody dares touch.`,
+      production:
+        'Agent fleets fail the way microservice estates fail: not from one bad agent, but from the absence of a platform. No standards and integrations rot; no discovery and every new tool is hand-wired; no governance and nobody knows who granted the tool behind the incident. The senior move is to build the platform (standards, registry, review, audit) before you have twenty agents, not after.',
+      walkthrough: [
+        'Set shared standards: output schemas, logging and tracing format, naming, error shape.',
+        'Put tools and agents in a registry so they are discovered, not hardcoded.',
+        'Govern change: who can add or grant, how definitions are versioned and reviewed.',
+        'Require an audit trail: every agent logs its tool calls and decisions.',
+      ],
+      questions: [
+        'What do shared standards let one agent do with the output of another?',
+        'What problem does a tool and agent registry solve as the fleet grows?',
+        'What three things does agent governance control?',
+      ],
+      checklist: [
+        'Name three standards that make agents interoperable.',
+        'Explain discovery via a registry instead of hardcoded wiring.',
+        'List what governance must control as a fleet scales.',
+      ],
+      interactive: {
+        coldOpen:
+          'An incident review asked a simple question: which agent issued the bad write, and who gave it that tool? Nobody could answer. The agents logged in three different formats, two of them not at all; the tool had been wired directly into one agent months ago by someone who had since left; there was no record of the grant. The agent was not the failure. The absence of a platform around the agents was. What three things, present from the start, would have answered every question in minutes?',
+        mental:
+          'Governing agents is platform engineering: standards are the style guide, the registry is service discovery, and governance is the review-and-audit layer. A fleet without a platform rots exactly like services without one.',
+        diagram: {
+          nodes: ['Standards', 'Registry', 'Review and grant', 'Audit log', 'Governed fleet'],
+          explanations: [
+            'The shared contracts: one output schema family, one logging and tracing format, one naming scheme, one error shape. They make any agent readable and composable.',
+            'Lists every tool and agent: what it is, what it does, how to call it. Agents discover capabilities at runtime instead of hardcoding them.',
+            'Adding an agent type or granting a tool goes through review, so power is granted deliberately and recorded, not wired in by whoever was nearby.',
+            'Every agent writes its tool calls and decisions to a log, so after an incident you can answer who did what, with which tool, granted by whom.',
+            'Together these make a governed fleet: consistent, discoverable, changeable, and accountable, the way a platform makes a microservice estate operable.',
+          ],
+        },
+        example: {
+          code: `// Discovery: a tool registers once; agents look it up, not hardcode it.
+registry.register({
+  name:   'issue_refund',
+  does:   'Refund a charge by id. IRREVERSIBLE.',
+  schema: RefundArgs,
+  grant:  'finance-agents-only',     // governance: who may discover/use it
+})
+
+// Standard log line every agent emits (one format, always):
+{ ts, agent: 'support-v3', type: 'support', tool: 'read_account',
+  args_hash, decision: 'prepared refund', step: 4, trace_id }`,
+          output: `new tool added       -> any authorized agent discovers it, zero rewiring
+unauthorized agent   -> cannot even see 'issue_refund' (grant scoped)
+incident review      -> one trace_id reconstructs every step and grant`,
+          explain:
+            'The tool is registered once with a grant scope, so discovery and authorization are the same act; agents outside finance never see it. Because every agent logs in one format with a trace id, the whole chain of an incident reconstructs from the audit log instead of from memory.',
+        },
+        build: {
+          simple: 'Governance is paperwork you add once the agents work.',
+          actually:
+            'Governance is the platform that lets a fleet exist: standards so agents interoperate, a registry so they discover tools instead of hardcoding them, review so power is granted deliberately, and audit logs so actions are accountable. It is the same platform layer that makes microservices operable.',
+          breaks:
+            'Skip standards and every integration is a custom adapter; skip discovery and every new tool is hand-wired into each agent; skip review and audit and no one can say who granted the tool behind an incident. Fleets do not fail from one bad agent; they fail from the missing platform around all of them.',
+        },
+        doThisNow: [
+          {
+            task: 'Write the one log-line format every agent in a fleet must emit. List the fields you would require on every single tool call.',
+            reveal:
+              'If your format lacks a trace id or the tool name, you cannot reconstruct an incident across agents. The minimum is who (agent + type), what (tool + args hash), why (decision), and a trace id that stitches a multi-agent chain into one story.',
+          },
+          {
+            task: 'Pick one irreversible tool and write its registry entry: what it does, its schema, and who is allowed to discover and call it.',
+            reveal:
+              'The "who is allowed" field is governance and discovery in one line. If every agent can discover every tool, you have no governance; scoping the grant at registration is what keeps the dangerous verbs out of reach of the agents that should never hold them.',
+          },
+        ],
+        warStory:
+          'The Model Context Protocol exists because the alternative did not scale: every team hand-wired every tool into every agent, and nothing was discoverable or consistent. A shared protocol turns tools into things agents can find and call by a common contract, which is service discovery arriving for agents. The lesson is old: estates need platforms, and an agent fleet is an estate.',
+        tweak: {
+          instruction: 'In one sentence, explain why an agent fleet without governance fails like a microservice estate without a platform.',
+          reveal:
+            'Both fail not from a single bad component but from the absence of shared standards, discovery, and accountability, so integrations rot, wiring sprawls, and no one can trace an incident to its cause. The platform is what makes scale survivable.',
+        },
+        receipt: {
+          explain: [
+            'Standards, a registry, review, and audit logs are the platform a fleet needs to stay consistent, discoverable, and accountable.',
+            'Discovery via a registry replaces hardcoded wiring; governance records who granted what.',
+          ],
+          question: 'You can now design, bound, remember, and govern an agent fleet. Which of these would you build first for a brand-new team, and why does the order matter?',
+        },
+        recap: [
+          'Ten agents need a platform: standards, discovery, governance.',
+          'A registry makes tools discoverable and grants scoped in one place.',
+          'Audit logs and review are what make a growing fleet accountable.',
+        ],
+      },
+    },
+    {
       id: 'ai-rung-evals',
-      title: 'Module 13: Evals, Testing What Is Not Deterministic',
+      title: 'Module 17: Evals, Testing What Is Not Deterministic',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 13,
@@ -1168,7 +1587,7 @@ export const aiBackendSubject: Subject = {
     },
     {
       id: 'ai-rung-guardrails',
-      title: 'Module 14: Guardrails And Prompt Injection',
+      title: 'Module 18: Guardrails And Prompt Injection',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 13,
@@ -1252,7 +1671,7 @@ export const aiBackendSubject: Subject = {
     },
     {
       id: 'ai-rung-capstone',
-      title: 'Module 15: Capstone, A RAG Support Agent',
+      title: 'Module 19: Capstone, A RAG Support Agent',
       type: 'lesson',
       difficulty: 'Core',
       minutes: 16,
