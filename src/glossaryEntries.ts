@@ -19,6 +19,7 @@ export type GlossaryCategory =
   | 'Language & Runtime'
   | 'AI & LLMs'
   | 'Linux & Shell'
+  | 'AWS'
 
 export type GlossaryEntry = {
   term: string
@@ -42,7 +43,8 @@ const CATEGORY_TERMS: Record<GlossaryCategory, string[]> = {
   'Caching & Async': ['cache', 'CDN', 'cache invalidation', 'queue', 'worker', 'dead-letter queue', 'idempotency', 'retry', 'backpressure', 'rate limit', 'bloom filter', 'cache-aside', 'TTL', 'eviction', 'exponential backoff', 'background job'],
   'Scale & Reliability': ['horizontal scaling', 'sharding', 'replication', 'load balancer', 'consistent hashing', 'microservices', 'CAP theorem', 'eventual consistency', 'strong consistency', 'heartbeat', 'quorum', 'leader election', 'distributed lock', 'service discovery'],
   Operations: ['deployment', 'CI/CD', 'container', 'observability', 'log', 'metric', 'trace', 'latency', 'SLO', 'graceful shutdown', 'apdex', 'error rate', 'percentile'],
-  Technologies: ['MySQL', 'MongoDB', 'Redis', 'Memcached', 'DynamoDB', 'Cassandra', 'Elasticsearch', 'Kafka', 'RabbitMQ', 'Amazon SQS', 'Amazon S3', 'AWS Lambda', 'Nginx', 'ZooKeeper', 'Docker', 'Kubernetes', 'Prometheus', 'Apache Spark', 'Apache Flink', 'Amazon EC2', 'Amazon EBS', 'Auto Scaling', 'Elastic Load Balancing', 'Amazon RDS', 'Amazon Aurora', 'Amazon ElastiCache', 'Amazon CloudFront', 'Amazon Route 53', 'Amazon VPC', 'AWS IAM', 'Amazon CloudWatch', 'AWS CloudTrail', 'Amazon SNS', 'AWS Fargate', 'Amazon ECS', 'Amazon EKS', 'AWS CloudFormation', 'Amazon API Gateway', 'AWS Secrets Manager', 'AWS KMS', 'Amazon Cognito', 'AWS Step Functions'],
+  Technologies: ['MySQL', 'MongoDB', 'Redis', 'Memcached', 'Cassandra', 'Elasticsearch', 'Kafka', 'RabbitMQ', 'Nginx', 'ZooKeeper', 'Docker', 'Kubernetes', 'Prometheus', 'Apache Spark', 'Apache Flink'],
+  AWS: ['AWS region', 'availability zone', 'shared responsibility model', 'AWS IAM', 'IAM role', 'IAM policy', 'AWS STS', 'service role', 'least privilege', 'Amazon VPC', 'subnet', 'route table', 'internet gateway', 'NAT gateway', 'security group', 'network ACL', 'VPC endpoint', 'Amazon EC2', 'AMI', 'EC2 user data', 'Auto Scaling', 'Amazon ECS', 'AWS Fargate', 'Amazon EKS', 'AWS Lambda', 'Amazon S3', 'Amazon EBS', 'Amazon EFS', 'Amazon RDS', 'Amazon Aurora', 'DynamoDB', 'Amazon ElastiCache', 'Amazon API Gateway', 'Application Load Balancer', 'Elastic Load Balancing', 'Amazon CloudFront', 'Amazon Route 53', 'Amazon SQS', 'Amazon SNS', 'Amazon EventBridge', 'Amazon Kinesis', 'Amazon CloudWatch', 'AWS X-Ray', 'AWS CloudTrail', 'AWS KMS', 'AWS Secrets Manager', 'AWS Systems Manager Parameter Store', 'AWS WAF', 'AWS Shield', 'AWS CloudFormation', 'AWS CDK', 'AWS CodePipeline', 'AWS Step Functions', 'Amazon Cognito'],
   Patterns: ['fanout', 'hot key', 'unique ID generation', 'distributed counting', 'long polling', 'server-sent events', 'geohash', 'single point of failure', 'multi-region', 'distributed transaction', 'saga', 'circuit breaker', 'load shedding', 'chunked upload', 'multi-tenancy', 'status workflow', 'top-k'],
   'Language & Runtime': ['function', 'class', 'object', 'array', 'dictionary', 'for loop', 'while loop', 'runtime', 'concurrency model', 'side effect', 'memory usage', 'dependency management', 'runtime profiling'],
   'AI & LLMs': ['LLM', 'token', 'context window', 'prompt', 'system prompt', 'prompt engineering', 'hallucination', 'temperature', 'inference', 'fine-tuning', 'embedding', 'vector database', 'semantic search', 'RAG', 'tool use', 'AI agent', 'prompt injection', 'structured output', 'prompt caching', 'eval', 'agent knowledge core', 'agent type', 'agent behavioral rules', 'agent capability', 'handoff protocol', 'agent memory', 'context sharing', 'multi-agent system', 'agent discovery', 'agent governance', 'Model Context Protocol'],
@@ -6822,6 +6824,806 @@ const RICH: Record<string, Rich> = {
       },
     ],
     related: ['alias', 'shell', 'grep'],
+  },
+
+  'AWS region': {
+    body: [
+      '**A region is a geographic location with its own isolated copy of AWS services** (us-east-1 in Virginia, eu-west-1 in Ireland). You pick a region for latency to your users, data-residency requirements, and price, which varies by region.',
+      '**Regions are isolated from each other.** Data does not silently cross between them, which is why going multi-region is a deliberate, more expensive decision rather than a default. Within a region you get multiple availability zones for cheap resilience.',
+    ],
+    examples: [
+      'Serve EU users from eu-west-1 to cut latency and meet data-residency rules.',
+      'us-east-1 is the largest region and where some global services anchor.',
+      'Cross-region replication (S3, Aurora) is opt-in and billed.',
+    ],
+    diagrams: [
+      {
+        caption: 'A region holds multiple availability zones.',
+        layout: 'stack',
+        nodes: [
+          { id: 'r', label: 'Region (eu-west-1)', accent: 'primary', glyph: 'globe' },
+          { id: 'az', label: 'AZ a / AZ b / AZ c', sub: 'separate data centers', accent: 'edge' },
+        ],
+      },
+    ],
+    related: ['availability zone', 'shared responsibility model', 'Amazon CloudFront'],
+  },
+
+  'availability zone': {
+    body: [
+      '**An availability zone (AZ) is one or more physically separate data centers within a region**, linked by fast, low-latency networking. Spreading resources across AZs means a single data-center failure does not take you down.',
+      '**Multi-AZ is the cheapest reliability win on AWS.** Because AZs share a fast intra-region link, running instances in several AZs behind a load balancer (and a multi-AZ database) costs little but survives a whole-AZ outage. Multi-region, by contrast, is far costlier.',
+    ],
+    examples: [
+      'Run ECS tasks across AZ a/b/c behind an ALB so one AZ failing is invisible.',
+      'RDS multi-AZ keeps a synchronous standby in another AZ for failover.',
+      'An EC2 instance and its EBS volume live in one AZ (zonal).',
+    ],
+    diagrams: [
+      {
+        caption: 'Spread across AZs to survive a data-center failure.',
+        layout: 'gather',
+        nodes: [
+          { id: 'a', label: 'AZ a (task)', accent: 'compute' },
+          { id: 'b', label: 'AZ b (task)', accent: 'compute' },
+          { id: 'alb', label: 'ALB routes around failure', accent: 'success' },
+        ],
+        edges: [
+          { from: 'a', to: 'alb' },
+          { from: 'b', to: 'alb' },
+        ],
+      },
+    ],
+    related: ['AWS region', 'Elastic Load Balancing', 'Amazon RDS'],
+  },
+
+  'shared responsibility model': {
+    body: [
+      '**AWS secures the cloud; you secure what is in it.** AWS is responsible for the hardware, data centers, and managed-service internals (security *of* the cloud). You are responsible for IAM, security groups, your data, and patching anything you run on EC2 (security *in* the cloud).',
+      '**Most breaches are on the customer side of the line.** A public S3 bucket, an over-broad IAM policy, a leaked access key, an unpatched EC2 instance: these are your responsibility, and they are where the incidents happen. Audits focus here for a reason.',
+    ],
+    examples: [
+      'AWS patches the Lambda runtime host; you write the least-privilege role.',
+      'A public S3 bucket leaking data is your responsibility, not AWS.',
+      'For RDS, AWS patches the engine; you manage access and encryption settings.',
+    ],
+    diagrams: [
+      {
+        caption: 'The line between AWS and you.',
+        layout: 'row',
+        nodes: [
+          { id: 'aws', label: 'AWS: OF the cloud', sub: 'hardware, DCs, internals', accent: 'primary', glyph: 'shield' },
+          { id: 'you', label: 'You: IN the cloud', sub: 'IAM, data, config', accent: 'danger', glyph: 'shield' },
+        ],
+      },
+    ],
+    related: ['AWS IAM', 'least privilege', 'AWS region'],
+  },
+
+  'IAM role': {
+    body: [
+      '**An IAM role is an identity anything can temporarily assume** to get short-lived credentials from STS, scoped by the role policies. An EC2 instance, a Lambda, a CI pipeline, or another account assumes a role instead of holding a long-lived key.',
+      '**Roles beat static keys for workloads.** There is nothing permanent to leak: STS credentials auto-expire, and access is exactly the role policy. A role has a trust policy (who may assume it) and permission policies (what they can then do).',
+    ],
+    examples: [
+      'Attach an instance role to EC2 so the app reads S3 with no stored key.',
+      'A Lambda execution role grants the function its permissions.',
+      'Cross-account: account A assumes a role in account B that trusts A.',
+    ],
+    diagrams: [
+      {
+        caption: 'Assume a role, get short-lived credentials, act.',
+        layout: 'row',
+        nodes: [
+          { id: 'id', label: 'instance / Lambda', accent: 'client', glyph: 'chip' },
+          { id: 'assume', label: 'assume role (STS)', accent: 'edge', glyph: 'shield' },
+          { id: 'act', label: 'scoped access', accent: 'success' },
+        ],
+        edges: [
+          { from: 'id', to: 'assume' },
+          { from: 'assume', to: 'act' },
+        ],
+      },
+    ],
+    related: ['IAM policy', 'AWS STS', 'service role', 'least privilege', 'AWS IAM'],
+  },
+
+  'IAM policy': {
+    body: [
+      '**A policy is a JSON document of permissions** (effect + action + resource) attached to a user, group, or role. "Allow s3:GetObject on arn:aws:s3:::my-bucket/*" grants exactly that. The default is implicit deny, so you only get what a policy explicitly allows.',
+      '**Scope to least privilege.** Specific actions on specific resource ARNs, never Action s3:* on Resource "*". An explicit Deny always wins over any Allow, and permission boundaries / SCPs can cap what any policy may grant.',
+    ],
+    examples: [
+      'Allow s3:GetObject on one bucket ARN, nothing else.',
+      'Resource "*" with broad actions is effectively admin (avoid).',
+      'CloudTrail shows the exact action a denied call needed.',
+    ],
+    diagrams: [
+      {
+        caption: 'A policy is effect + action + resource.',
+        layout: 'row',
+        nodes: [
+          { id: 'eff', label: 'Allow', accent: 'success' },
+          { id: 'act', label: 's3:GetObject', accent: 'compute' },
+          { id: 'res', label: 'one bucket ARN', accent: 'storage', glyph: 'shield' },
+        ],
+      },
+    ],
+    related: ['IAM role', 'least privilege', 'AWS IAM', 'service role'],
+  },
+
+  'AWS STS': {
+    body: [
+      '**STS (Security Token Service) issues short-lived credentials** when an identity assumes a role. It is the machinery behind role assumption, cross-account access, and federation. The credentials carry an expiry, so even a leaked one dies in minutes to hours.',
+      '**Why it matters.** STS is what lets you avoid long-lived access keys entirely: instances, functions, and pipelines get temporary credentials on demand, scoped to a role, with nothing static to steal.',
+    ],
+    examples: [
+      'AssumeRole returns temporary access key, secret, and session token.',
+      'GitHub Actions uses OIDC + STS to assume a role with no stored key.',
+      'Federated SSO users get STS credentials, not permanent ones.',
+    ],
+    diagrams: [
+      {
+        caption: 'STS hands out credentials that expire.',
+        layout: 'row',
+        nodes: [
+          { id: 'role', label: 'assume role', accent: 'edge' },
+          { id: 'sts', label: 'STS', accent: 'compute', glyph: 'shield' },
+          { id: 'cred', label: 'short-lived creds', sub: 'auto-expire', accent: 'success' },
+        ],
+        edges: [
+          { from: 'role', to: 'sts' },
+          { from: 'sts', to: 'cred' },
+        ],
+      },
+    ],
+    related: ['IAM role', 'IAM policy', 'least privilege', 'AWS IAM'],
+  },
+
+  'service role': {
+    body: [
+      '**A service role is a role an AWS service assumes to act on your behalf**, scoped to exactly what that workload needs: a Lambda execution role, an ECS task role, a CodePipeline role. The standard way services get permissions without embedded keys.',
+      '**Keep it least-privilege.** A Lambda that reads one table and writes one bucket should have a role granting only those two, not broad access. The execution role is also how the function gets credentials at runtime, with nothing in the code.',
+    ],
+    examples: [
+      'Lambda execution role: dynamodb:GetItem on one table + logs write.',
+      'ECS task role: s3:PutObject on the uploads bucket only.',
+      'Over-broad service roles are a common audit finding.',
+    ],
+    diagrams: [
+      {
+        caption: 'A service assumes a scoped role to act.',
+        layout: 'row',
+        nodes: [
+          { id: 'svc', label: 'Lambda / ECS task', accent: 'compute', glyph: 'chip' },
+          { id: 'role', label: 'service role', accent: 'edge', glyph: 'shield' },
+          { id: 'res', label: 'just what it needs', accent: 'success' },
+        ],
+        edges: [
+          { from: 'svc', to: 'role' },
+          { from: 'role', to: 'res' },
+        ],
+      },
+    ],
+    related: ['IAM role', 'IAM policy', 'least privilege', 'AWS Lambda'],
+  },
+
+  'least privilege': {
+    body: [
+      '**Least privilege means granting the minimum permissions needed and no more**, scoped to specific actions and specific resource ARNs. Start from deny-all and add specific allows; never start from admin and try to trim back.',
+      '**It is the highest-leverage security control.** When (not if) a credential or role is compromised, least privilege is what bounds the blast radius to a few actions on a few resources instead of the whole account. Most large breaches trace back to one over-permissioned identity.',
+    ],
+    examples: [
+      'An upload service gets s3:PutObject on one bucket, not s3:*.',
+      'A read-only reporting role gets Get/Query, never Put/Delete.',
+      'Scope every policy to resource ARNs, not Resource "*".',
+    ],
+    diagrams: [
+      {
+        caption: 'Least privilege contains the blast radius.',
+        layout: 'row',
+        nodes: [
+          { id: 'broad', label: 'broad access', sub: 'one leak = total', accent: 'danger', glyph: 'shield' },
+          { id: 'least', label: 'least privilege', sub: 'one leak = contained', accent: 'success', glyph: 'shield' },
+        ],
+      },
+    ],
+    related: ['IAM policy', 'IAM role', 'AWS IAM', 'shared responsibility model'],
+  },
+
+  subnet: {
+    body: [
+      '**A subnet is a slice of a VPC IP range pinned to one availability zone.** It is "public" if its route table sends internet-bound traffic to an internet gateway, and "private" if it does not. That route, nothing else, decides public vs private.',
+      '**The standard layout.** Load balancers and bastions go in public subnets; app servers and databases go in private subnets (reachable only from inside the VPC). Spread subnets across AZs so a zone failure does not take a tier down.',
+    ],
+    examples: [
+      'Public subnet: route 0.0.0.0/0 -> internet gateway.',
+      'Private subnet: no internet route, or 0.0.0.0/0 -> NAT gateway.',
+      'One subnet per AZ per tier (public/app/data) is a common pattern.',
+    ],
+    diagrams: [
+      {
+        caption: 'Public vs private is decided by the route table.',
+        layout: 'row',
+        nodes: [
+          { id: 'pub', label: 'public subnet', sub: '-> IGW', accent: 'edge', glyph: 'route' },
+          { id: 'priv', label: 'private subnet', sub: 'no IGW route', accent: 'primary', glyph: 'route' },
+        ],
+      },
+    ],
+    related: ['route table', 'internet gateway', 'NAT gateway', 'Amazon VPC'],
+  },
+
+  'route table': {
+    body: [
+      '**A route table decides where traffic from a subnet goes.** A route sending 0.0.0.0/0 to an internet gateway makes a subnet public; sending it to a NAT gateway gives outbound-only access; no internet route keeps it fully private.',
+      '**It is the switch that defines a subnet character.** Two otherwise-identical subnets are public or private purely by their route table, which is why "what makes a subnet public" is the route, not a setting on the subnet itself.',
+    ],
+    examples: [
+      '0.0.0.0/0 -> igw-... : public subnet.',
+      '0.0.0.0/0 -> nat-... : private subnet with outbound internet.',
+      'Local routes within the VPC are automatic.',
+    ],
+    diagrams: [
+      {
+        caption: 'The route for 0.0.0.0/0 sets a subnet behavior.',
+        layout: 'row',
+        nodes: [
+          { id: 'igw', label: '-> IGW', sub: 'public', accent: 'edge' },
+          { id: 'nat', label: '-> NAT', sub: 'outbound only', accent: 'compute' },
+          { id: 'none', label: 'no route', sub: 'fully private', accent: 'primary' },
+        ],
+      },
+    ],
+    related: ['subnet', 'internet gateway', 'NAT gateway', 'Amazon VPC'],
+  },
+
+  'internet gateway': {
+    body: [
+      '**An internet gateway (IGW) allows two-way traffic between a public subnet and the internet.** A subnet becomes public only because its route table points internet-bound traffic at the IGW.',
+      '**It is the front door for inbound and outbound internet.** Resources needing to be reachable from the internet (a load balancer) sit in a subnet routed to an IGW; resources that should not be reachable stay in private subnets with no IGW route.',
+    ],
+    examples: [
+      'An ALB in a public subnet uses the IGW to receive internet traffic.',
+      'No IGW route = no inbound or outbound internet for that subnet.',
+      'One IGW per VPC, attached at the VPC level.',
+    ],
+    diagrams: [
+      {
+        caption: 'The IGW connects public subnets to the internet.',
+        layout: 'row',
+        nodes: [
+          { id: 'net', label: 'Internet', accent: 'edge', glyph: 'globe' },
+          { id: 'igw', label: 'internet gateway', accent: 'primary' },
+          { id: 'pub', label: 'public subnet', accent: 'success', glyph: 'route' },
+        ],
+        edges: [
+          { from: 'net', to: 'igw' },
+          { from: 'igw', to: 'pub' },
+        ],
+      },
+    ],
+    related: ['NAT gateway', 'subnet', 'route table', 'Amazon VPC'],
+  },
+
+  'NAT gateway': {
+    body: [
+      '**A NAT gateway lets private-subnet resources make outbound internet connections** (download packages, call external APIs) while staying unreachable from inbound. It sits in a public subnet, and private subnets route 0.0.0.0/0 to it.',
+      '**It is also a real cost line.** NAT gateways bill per hour and per GB processed, so routing heavy egress (or AWS-service traffic) through one gets expensive. A VPC gateway endpoint for S3/DynamoDB bypasses NAT for that traffic, cutting cost and exposure.',
+    ],
+    examples: [
+      'Private app servers run apt update through the NAT gateway.',
+      'Heavy S3 reads through NAT cost per GB; an S3 endpoint avoids it.',
+      'No NAT = private instances time out on outbound calls.',
+    ],
+    diagrams: [
+      {
+        caption: 'NAT gives private subnets outbound-only internet.',
+        layout: 'row',
+        nodes: [
+          { id: 'priv', label: 'private instance', accent: 'primary', glyph: 'chip' },
+          { id: 'nat', label: 'NAT gateway', sub: 'outbound only', accent: 'edge' },
+          { id: 'net', label: 'Internet', accent: 'success', glyph: 'globe' },
+        ],
+        edges: [
+          { from: 'priv', to: 'nat' },
+          { from: 'nat', to: 'net' },
+        ],
+      },
+    ],
+    related: ['internet gateway', 'subnet', 'VPC endpoint', 'Amazon VPC'],
+  },
+
+  'security group': {
+    body: [
+      '**A security group is a stateful, allow-only firewall attached to a resource** (instance, RDS, task). You allow inbound and outbound by port and source; return traffic is automatically permitted because it is stateful.',
+      '**Reference other security groups, not IPs.** The idiom is to allow the app tier security group as the source on the database security group, so rules keep working as instances scale in and out. There are no deny rules; that is what NACLs are for.',
+    ],
+    examples: [
+      'DB SG: allow inbound 5432 from the app SG only.',
+      'ALB SG: allow inbound 443 from 0.0.0.0/0.',
+      'Stateful: allow inbound 443 and the response goes back automatically.',
+    ],
+    diagrams: [
+      {
+        caption: 'Security groups chain by referencing each other.',
+        layout: 'row',
+        nodes: [
+          { id: 'alb', label: 'ALB SG', sub: '443 from internet', accent: 'edge', glyph: 'shield' },
+          { id: 'app', label: 'app SG', sub: 'from ALB SG', accent: 'compute', glyph: 'shield' },
+          { id: 'db', label: 'db SG', sub: 'from app SG', accent: 'primary', glyph: 'shield' },
+        ],
+        edges: [
+          { from: 'alb', to: 'app' },
+          { from: 'app', to: 'db' },
+        ],
+      },
+    ],
+    related: ['network ACL', 'subnet', 'Amazon VPC', 'least privilege'],
+  },
+
+  'network ACL': {
+    body: [
+      '**A network ACL (NACL) is a stateless, ordered firewall at the subnet boundary.** It supports explicit allow and deny, and evaluates each direction independently, so you must allow return traffic (ephemeral ports) yourself.',
+      '**It is a coarse backstop, not the everyday tool.** Security groups (stateful, per-resource) do most firewalling; NACLs add a subnet-level layer where you need explicit deny (block an IP range) or defense in depth. Rules are numbered and evaluated in order.',
+    ],
+    examples: [
+      'Deny an abusive IP range at the subnet edge with a NACL deny rule.',
+      'Stateless: a missing ephemeral-port allow breaks return traffic.',
+      'Default NACL allows all; custom NACLs deny all until you add rules.',
+    ],
+    diagrams: [
+      {
+        caption: 'NACL (subnet edge, stateless) vs security group (resource, stateful).',
+        layout: 'row',
+        nodes: [
+          { id: 'nacl', label: 'NACL', sub: 'subnet, stateless, deny', accent: 'edge', glyph: 'shield' },
+          { id: 'sg', label: 'security group', sub: 'resource, stateful, allow', accent: 'primary', glyph: 'shield' },
+        ],
+      },
+    ],
+    related: ['security group', 'subnet', 'Amazon VPC'],
+  },
+
+  'VPC endpoint': {
+    body: [
+      '**A VPC endpoint is a private connection from your VPC to an AWS service** that keeps traffic on the AWS network instead of routing over the internet. Gateway endpoints cover S3 and DynamoDB; interface endpoints (PrivateLink) cover most other services.',
+      '**It cuts cost and exposure.** Gateway endpoints for S3/DynamoDB are free and remove that traffic from the NAT gateway (no per-GB NAT charge) while keeping it off the public internet. A common fix for a climbing NAT bill.',
+    ],
+    examples: [
+      'Add an S3 gateway endpoint so private Lambdas read S3 without NAT.',
+      'Interface endpoint for Secrets Manager keeps secret fetches private.',
+      'Gateway endpoints (S3/DynamoDB) are free; interface endpoints bill hourly.',
+    ],
+    diagrams: [
+      {
+        caption: 'An endpoint keeps service traffic on the AWS network.',
+        layout: 'row',
+        nodes: [
+          { id: 'vpc', label: 'private subnet', accent: 'primary', glyph: 'route' },
+          { id: 'ep', label: 'VPC endpoint', sub: 'no internet/NAT', accent: 'edge' },
+          { id: 's3', label: 'S3 / DynamoDB', accent: 'success', glyph: 'bucket' },
+        ],
+        edges: [
+          { from: 'vpc', to: 'ep' },
+          { from: 'ep', to: 's3' },
+        ],
+      },
+    ],
+    related: ['NAT gateway', 'subnet', 'Amazon S3', 'Amazon VPC'],
+  },
+
+  AMI: {
+    body: [
+      '**An AMI (Amazon Machine Image) is the disk image an EC2 instance boots from**: the OS, runtime, and any pre-installed software. Baking a custom AMI makes new instances start fast and identically instead of configuring each from scratch.',
+      '**It pairs with Auto Scaling.** An Auto Scaling Group launches new instances from an AMI; combined with user data for last-mile config, instances come up ready to serve. Golden AMIs (pre-baked with the app) cut startup time during scale-out.',
+    ],
+    examples: [
+      'Bake an AMI with the runtime and agent pre-installed for fast boot.',
+      'An ASG launches replacement instances from the configured AMI.',
+      'Update the AMI, then roll the ASG to deploy a new base image.',
+    ],
+    diagrams: [
+      {
+        caption: 'Instances boot from an AMI; an ASG launches them.',
+        layout: 'row',
+        nodes: [
+          { id: 'ami', label: 'AMI (image)', accent: 'storage', glyph: 'doc' },
+          { id: 'asg', label: 'Auto Scaling Group', accent: 'compute' },
+          { id: 'inst', label: 'instances', sub: 'identical, fast boot', accent: 'success', glyph: 'chip' },
+        ],
+        edges: [
+          { from: 'ami', to: 'asg' },
+          { from: 'asg', to: 'inst' },
+        ],
+      },
+    ],
+    related: ['EC2 user data', 'Amazon EC2', 'Auto Scaling'],
+  },
+
+  'EC2 user data': {
+    body: [
+      '**User data is a startup script that runs the first time an EC2 instance boots**, used to configure a fresh instance: install packages, fetch config and secrets, and start the app. It is how an instance self-configures on launch.',
+      '**It completes the self-healing fleet.** AMI (base image) + user data (last-mile config) + Auto Scaling Group (launch and replace) means a new or replacement instance comes up fully configured with no manual steps.',
+    ],
+    examples: [
+      'User data installs the agent and starts the service on first boot.',
+      'Fetch a secret from Secrets Manager and write the app config.',
+      'Keep heavy setup in the AMI; keep user data light and fast.',
+    ],
+    diagrams: [
+      {
+        caption: 'User data configures a fresh instance on first boot.',
+        layout: 'row',
+        nodes: [
+          { id: 'boot', label: 'instance boots', accent: 'edge', glyph: 'chip' },
+          { id: 'ud', label: 'user data script', accent: 'compute' },
+          { id: 'ready', label: 'configured + serving', accent: 'success' },
+        ],
+        edges: [
+          { from: 'boot', to: 'ud' },
+          { from: 'ud', to: 'ready' },
+        ],
+      },
+    ],
+    related: ['AMI', 'Amazon EC2', 'Auto Scaling'],
+  },
+
+  'Amazon EFS': {
+    body: [
+      '**EFS (Elastic File System) is a shared NFS file system many EC2 instances can mount at once**, growing automatically. It fills the gap EBS cannot: shared file access across a fleet, or lift-and-shift apps that expect a POSIX file system.',
+      '**Use it only when you truly need shared files.** EFS costs several times more per GB than S3 or EBS, so for blobs prefer S3 and for single-instance disks prefer EBS. Reach for EFS when multiple instances must read/write the same files simultaneously.',
+    ],
+    examples: [
+      'Shared upload or content directory mounted by 20 app servers.',
+      'A legacy app that writes to a local file path, run across a fleet.',
+      'Not for blobs (use S3) or single-instance disks (use EBS).',
+    ],
+    diagrams: [
+      {
+        caption: 'Many instances mount one EFS file system.',
+        layout: 'gather',
+        nodes: [
+          { id: 'a', label: 'instance', accent: 'compute', glyph: 'chip' },
+          { id: 'b', label: 'instance', accent: 'compute', glyph: 'chip' },
+          { id: 'efs', label: 'EFS (shared)', accent: 'success', glyph: 'doc' },
+        ],
+        edges: [
+          { from: 'a', to: 'efs' },
+          { from: 'b', to: 'efs' },
+        ],
+      },
+    ],
+    related: ['Amazon EBS', 'Amazon S3', 'Amazon EC2'],
+  },
+
+  'Amazon EBS': {
+    body: [
+      '**EBS (Elastic Block Store) is a network-attached disk for an EC2 instance**, like a persistent hard drive. It is zonal (lives in one AZ) and attaches to one instance at a time. It is the boot volume and the data volume for databases running on EC2.',
+      '**Size and type up front; snapshot to back up.** Volume types (gp3, io2) trade IOPS for cost, and you provision the size. Snapshots are incremental backups to S3. EBS attaches to a single instance, so for shared file access you need EFS instead.',
+    ],
+    examples: [
+      'The boot disk and data volume for an EC2 instance.',
+      'A database on EC2 storing its files on a provisioned-IOPS volume.',
+      'Snapshot before a risky change to enable a fast restore.',
+    ],
+    diagrams: [
+      {
+        caption: 'One EBS volume attaches to one instance.',
+        layout: 'row',
+        nodes: [
+          { id: 'inst', label: 'EC2 instance', accent: 'compute', glyph: 'chip' },
+          { id: 'ebs', label: 'EBS volume', sub: 'one instance, one AZ', accent: 'storage', glyph: 'database' },
+          { id: 'snap', label: 'snapshot -> S3', accent: 'success' },
+        ],
+        edges: [
+          { from: 'inst', to: 'ebs' },
+          { from: 'ebs', to: 'snap' },
+        ],
+      },
+    ],
+    related: ['Amazon EFS', 'Amazon S3', 'Amazon EC2'],
+  },
+
+  'Application Load Balancer': {
+    body: [
+      '**An ALB is a layer-7 (HTTP) load balancer** that routes requests across targets (EC2, ECS tasks, Lambda) by path or host rules, with health checks that drain unhealthy targets. It is the workhorse front for containerized and EC2 services.',
+      '**It provides resilience and routing.** Spread targets across AZs behind one ALB and a failed task or AZ is routed around automatically. It also does host/path routing, sticky sessions, and TLS termination. For managed API features (auth, throttling) on serverless, API Gateway is the alternative.',
+    ],
+    examples: [
+      '/api/* -> the API service, /img/* -> the image service (path routing).',
+      'Health check /healthz drains a failing task from rotation.',
+      'Spread tasks across AZs behind the ALB for failure tolerance.',
+    ],
+    diagrams: [
+      {
+        caption: 'ALB spreads HTTP traffic across healthy targets.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'alb', label: 'ALB (L7)', accent: 'primary', glyph: 'balancer' },
+          { id: 't1', label: 'task (AZ a)', accent: 'compute', glyph: 'chip' },
+          { id: 't2', label: 'task (AZ b)', accent: 'compute', glyph: 'chip' },
+        ],
+      },
+    ],
+    related: ['Elastic Load Balancing', 'Amazon ECS', 'Amazon API Gateway', 'availability zone'],
+  },
+
+  'Amazon EventBridge': {
+    body: [
+      '**EventBridge is a managed event bus**: producers emit events and rules route them to targets by content, with schemas and built-in SaaS sources. It decouples systems by event type, going beyond a single queue.',
+      '**Use it for event-driven routing.** When an "order placed" event must reach several handlers chosen by content, EventBridge routes it without the producer knowing the consumers. For one-to-many fanout with per-consumer buffering, SNS -> SQS is the simpler classic; EventBridge adds rich routing and filtering.',
+    ],
+    examples: [
+      'Route order.placed to inventory, email, and analytics by rule.',
+      'Filter events by content (only high-value orders to a fraud check).',
+      'Ingest events from a SaaS provider via a partner event source.',
+    ],
+    diagrams: [
+      {
+        caption: 'EventBridge routes events to targets by rule.',
+        layout: 'fanout',
+        nodes: [
+          { id: 'bus', label: 'event bus', accent: 'primary', glyph: 'queue' },
+          { id: 'a', label: 'inventory', accent: 'compute' },
+          { id: 'b', label: 'email', accent: 'compute' },
+          { id: 'c', label: 'analytics', accent: 'compute' },
+        ],
+      },
+    ],
+    related: ['Amazon SNS', 'Amazon SQS', 'Amazon Kinesis'],
+  },
+
+  'Amazon Kinesis': {
+    body: [
+      '**Kinesis ingests and processes high-volume, ordered, replayable streams** (clickstreams, metrics, logs) where multiple consumers each read at their own offset. Order is preserved per shard, and consumers can replay from a past position.',
+      '**It is for streaming analytics, not task queues.** Use Kinesis when you need ordering, replay, and many independent consumers over a firehose of events. For simple "process this job once" work, SQS is simpler; for routing by event type, EventBridge fits better.',
+    ],
+    examples: [
+      'A clickstream of millions of events per minute fanned to analytics.',
+      'Multiple consumers replaying the stream from different offsets.',
+      'Hot shards throttle; partition keys must spread load.',
+    ],
+    diagrams: [
+      {
+        caption: 'An ordered, replayable stream with many consumers.',
+        layout: 'row',
+        nodes: [
+          { id: 'prod', label: 'producers', accent: 'client' },
+          { id: 'stream', label: 'Kinesis stream', sub: 'ordered, replayable', accent: 'primary', glyph: 'queue' },
+          { id: 'cons', label: 'consumers (offsets)', accent: 'success' },
+        ],
+        edges: [
+          { from: 'prod', to: 'stream' },
+          { from: 'stream', to: 'cons' },
+        ],
+      },
+    ],
+    related: ['Amazon SQS', 'Amazon SNS', 'Amazon EventBridge'],
+  },
+
+  'AWS X-Ray': {
+    body: [
+      '**X-Ray is distributed tracing**: it follows a single request across services and shows a timeline of where the latency or error went. Once a request fans out across API Gateway, Lambda, queues, and databases, logs alone cannot tell you which hop was slow; a trace can.',
+      '**It needs instrumentation.** The SDK or service integrations emit segments per call; sampling controls volume (too low and you miss the rare slow request). With X-Ray plus correlation ids, an incident goes from "something is slow" to "the DynamoDB call took 4 seconds".',
+    ],
+    examples: [
+      'A trace shows the request spent 4s in one downstream call.',
+      'Find the one service adding p99 latency in a fan-out.',
+      'Pair with CloudWatch logs and CloudTrail during an incident.',
+    ],
+    diagrams: [
+      {
+        caption: 'X-Ray shows where time/errors went across services.',
+        layout: 'row',
+        nodes: [
+          { id: 'gw', label: 'API GW', accent: 'edge' },
+          { id: 'fn', label: 'Lambda', accent: 'compute', glyph: 'chip' },
+          { id: 'db', label: 'DynamoDB (slow)', accent: 'danger', glyph: 'database' },
+        ],
+        edges: [
+          { from: 'gw', to: 'fn' },
+          { from: 'fn', to: 'db', label: '4s' },
+        ],
+      },
+    ],
+    related: ['Amazon CloudWatch', 'AWS CloudTrail', 'AWS Lambda'],
+  },
+
+  'AWS Systems Manager Parameter Store': {
+    body: [
+      '**Parameter Store holds configuration and secrets**, with SecureString values encrypted by KMS, and it is free for standard parameters. A cheap, clean way to keep config and secrets out of code and fetch them at runtime via an IAM-scoped role.',
+      '**Parameter Store vs Secrets Manager.** Parameter Store is the cost-effective default for non-rotating config and secrets; Secrets Manager adds automatic rotation (and a per-secret cost). Both keep sensitive values out of your repo and environment-variable sprawl.',
+    ],
+    examples: [
+      'Store a feature flag or endpoint URL as a standard parameter (free).',
+      'Store an API key as a SecureString (KMS-encrypted).',
+      'App fetches the value at startup via a scoped IAM role.',
+    ],
+    diagrams: [
+      {
+        caption: 'Config/secrets out of code, fetched at runtime.',
+        layout: 'row',
+        nodes: [
+          { id: 'app', label: 'app (no secrets)', accent: 'compute', glyph: 'chip' },
+          { id: 'role', label: 'IAM role', accent: 'edge', glyph: 'shield' },
+          { id: 'ps', label: 'Parameter Store', sub: 'SecureString (KMS)', accent: 'success' },
+        ],
+        edges: [
+          { from: 'app', to: 'role' },
+          { from: 'role', to: 'ps' },
+        ],
+      },
+    ],
+    related: ['AWS Secrets Manager', 'AWS KMS', 'least privilege'],
+  },
+
+  'AWS WAF': {
+    body: [
+      '**WAF is a web application firewall** you attach to CloudFront, an ALB, or API Gateway, with rules against SQL injection, XSS, bad bots, and rate-based abuse. It filters malicious requests at the edge before they reach your application.',
+      '**Tune it to avoid false positives.** Managed rule groups cover common (OWASP-style) attacks; rate-based rules throttle abusive clients. Too aggressive and you block real users; too loose and it does nothing. WAF handles application-layer attacks; Shield handles volumetric DDoS.',
+    ],
+    examples: [
+      'Block SQL-injection-shaped requests before they hit the app.',
+      'Rate-limit an IP making thousands of requests a minute.',
+      'Attach to CloudFront so attacks are dropped at the edge.',
+    ],
+    diagrams: [
+      {
+        caption: 'WAF filters malicious requests at the edge.',
+        layout: 'row',
+        nodes: [
+          { id: 'req', label: 'requests', accent: 'client' },
+          { id: 'waf', label: 'WAF rules', accent: 'edge', glyph: 'shield' },
+          { id: 'app', label: 'app (clean traffic)', accent: 'success' },
+        ],
+        edges: [
+          { from: 'req', to: 'waf' },
+          { from: 'waf', to: 'app' },
+        ],
+      },
+    ],
+    related: ['AWS Shield', 'Amazon CloudFront', 'Amazon API Gateway'],
+  },
+
+  'AWS Shield': {
+    body: [
+      '**Shield is DDoS protection for AWS endpoints.** Shield Standard is automatic and free, defending against common volumetric attacks; Shield Advanced adds higher-tier protection, cost protection against attack-driven scaling, and a response team.',
+      '**It works with WAF and CloudFront.** Shield absorbs volumetric (network/transport-layer) floods so they do not reach your origin, while WAF handles application-layer attacks. Fronting your app with CloudFront extends that protection to the edge.',
+    ],
+    examples: [
+      'Shield Standard absorbs a common volumetric flood automatically.',
+      'Shield Advanced for high-risk apps adds support and cost protection.',
+      'Pair Shield (DDoS) with WAF (app-layer rules) at the edge.',
+    ],
+    diagrams: [
+      {
+        caption: 'Shield absorbs DDoS before it reaches the origin.',
+        layout: 'row',
+        nodes: [
+          { id: 'flood', label: 'DDoS flood', accent: 'danger', glyph: 'warning' },
+          { id: 'shield', label: 'Shield + CloudFront', accent: 'edge', glyph: 'shield' },
+          { id: 'origin', label: 'origin protected', accent: 'success' },
+        ],
+        edges: [
+          { from: 'flood', to: 'shield' },
+          { from: 'shield', to: 'origin' },
+        ],
+      },
+    ],
+    related: ['AWS WAF', 'Amazon CloudFront', 'Amazon Route 53'],
+  },
+
+  'AWS CDK': {
+    body: [
+      '**The CDK (Cloud Development Kit) defines infrastructure in a real programming language** (TypeScript, Python) with loops, types, and reusable constructs, then synthesizes CloudFormation under the hood. You get abstraction and code reuse over raw templates.',
+      '**Review the synthesized output.** CDK is powerful, but it generates CloudFormation you should still read for surprises, and it deploys as CloudFormation stacks (with change sets and rollback). Terraform is the popular multi-cloud alternative with the same declarative goal.',
+    ],
+    examples: [
+      'new s3.Bucket(this, "Uploads", { versioned: true }) -> a CFN bucket.',
+      'Wrap a common pattern (queue + worker + DLQ) as a reusable construct.',
+      'cdk diff shows what an update will change before you apply it.',
+    ],
+    diagrams: [
+      {
+        caption: 'CDK code synthesizes CloudFormation, then deploys.',
+        layout: 'row',
+        nodes: [
+          { id: 'code', label: 'CDK code', sub: 'TS/Python', accent: 'compute' },
+          { id: 'cfn', label: 'CloudFormation', sub: 'synthesized', accent: 'edge' },
+          { id: 'aws', label: 'deployed stack', accent: 'success' },
+        ],
+        edges: [
+          { from: 'code', to: 'cfn' },
+          { from: 'cfn', to: 'aws' },
+        ],
+      },
+    ],
+    related: ['AWS CloudFormation', 'AWS CodePipeline'],
+  },
+
+  'AWS CodePipeline': {
+    body: [
+      '**CodePipeline orchestrates a deployment pipeline** that runs on every commit: CodeBuild builds and tests, CodeDeploy rolls out (rolling, blue/green, or canary), and CodePipeline ties the stages together with gates and approvals.',
+      '**It makes deploys boring and rollbacks easy.** Every change takes the same automated, reviewable path: tests as a gate, an optional manual approval for prod, and a rollout strategy that catches a bad deploy before full exposure. A pipeline with no tests just ships bugs faster, so the tests are the point.',
+    ],
+    examples: [
+      'commit -> CodeBuild (build + test) -> deploy staging -> approve -> prod.',
+      'CodeDeploy blue/green shifts traffic gradually with auto-rollback.',
+      'A failing test gates the pipeline so a bad build never reaches prod.',
+    ],
+    diagrams: [
+      {
+        caption: 'A pipeline: build, test, deploy on every commit.',
+        layout: 'row',
+        nodes: [
+          { id: 'commit', label: 'commit', accent: 'client' },
+          { id: 'build', label: 'CodeBuild', sub: 'build + test', accent: 'compute' },
+          { id: 'deploy', label: 'CodeDeploy', sub: 'safe rollout', accent: 'success' },
+        ],
+        edges: [
+          { from: 'commit', to: 'build' },
+          { from: 'build', to: 'deploy' },
+        ],
+      },
+    ],
+    related: ['AWS CloudFormation', 'AWS CDK', 'AWS Fargate'],
+  },
+
+  'AWS KMS': {
+    body: [
+      '**KMS (Key Management Service) creates and controls encryption keys** and integrates with most AWS services so data is encrypted at rest with one setting (S3, EBS, RDS, Secrets Manager). It never exposes the raw key; you ask KMS to encrypt/decrypt, gated by IAM and key policies.',
+      '**Envelope encryption is the pattern.** A master key encrypts per-object data keys, so you rotate the master key without re-encrypting everything. Over-broad key policies that let the wrong roles decrypt are the main risk; scope key access like any other permission.',
+    ],
+    examples: [
+      'Encrypt an S3 bucket or EBS volume at rest with a KMS key.',
+      'Secrets Manager and Parameter Store SecureString use KMS.',
+      'Key policy + IAM decide who can decrypt; scope it tightly.',
+    ],
+    diagrams: [
+      {
+        caption: 'Envelope encryption: a master key wraps data keys.',
+        layout: 'row',
+        nodes: [
+          { id: 'master', label: 'KMS master key', accent: 'primary', glyph: 'shield' },
+          { id: 'data', label: 'data key', sub: 'encrypts the data', accent: 'edge', glyph: 'shield' },
+          { id: 'obj', label: 'encrypted at rest', accent: 'success' },
+        ],
+        edges: [
+          { from: 'master', to: 'data' },
+          { from: 'data', to: 'obj' },
+        ],
+      },
+    ],
+    related: ['AWS Secrets Manager', 'AWS Systems Manager Parameter Store', 'Amazon S3'],
+  },
+
+  'AWS Secrets Manager': {
+    body: [
+      '**Secrets Manager stores secrets** (database passwords, API keys) encrypted with KMS and fetched at runtime by an IAM-scoped role, so nothing sensitive lives in code, env files, or logs. Its signature feature is automatic rotation.',
+      '**Secrets Manager vs Parameter Store.** Secrets Manager is built for secrets with built-in rotation (it can call a Lambda to change the password in the database and the secret together), at a per-secret cost. Parameter Store SecureString is the cheaper choice when you do not need rotation.',
+    ],
+    examples: [
+      'Store prod/db credentials; the app fetches them at startup via its role.',
+      'Rotate the DB password every 30 days with a rotation Lambda.',
+      'Grant secretsmanager:GetSecretValue on one secret ARN, nothing more.',
+    ],
+    diagrams: [
+      {
+        caption: 'Secrets fetched at runtime, never in code.',
+        layout: 'row',
+        nodes: [
+          { id: 'app', label: 'app', accent: 'compute', glyph: 'chip' },
+          { id: 'role', label: 'IAM role', accent: 'edge', glyph: 'shield' },
+          { id: 'sm', label: 'Secrets Manager', sub: 'KMS + rotation', accent: 'success' },
+        ],
+        edges: [
+          { from: 'app', to: 'role' },
+          { from: 'role', to: 'sm' },
+        ],
+      },
+    ],
+    related: ['AWS KMS', 'AWS Systems Manager Parameter Store', 'least privilege'],
   },
 
 }

@@ -1,5 +1,6 @@
 import type { Problem, Subject } from './course'
 import { AwsIcon } from './TechIcons'
+import { awsDeepDives, awsDesignCapstones } from './course.awsDeep'
 
 // AWS from zero: a foundation module ladder plus a service flashcard deck.
 // Modules use the interactive lesson format; flashcards (id aws-card-*) render
@@ -182,7 +183,7 @@ const cardProblems: Problem[] = AWS_CARDS.map((c) => ({
 const modules: Problem[] = [
   {
     id: 'aws-rung-what-is-aws',
-    title: 'Module 1: What Is AWS And The Cloud',
+    title: 'Overview 1: What Is AWS And The Cloud',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 12,
@@ -277,7 +278,7 @@ const modules: Problem[] = [
   },
   {
     id: 'aws-rung-regions',
-    title: 'Module 2: Regions, Availability Zones, And The Edge',
+    title: 'Overview 2: Regions, Availability Zones, And The Edge',
     type: 'lesson',
     difficulty: 'Warmup',
     minutes: 12,
@@ -373,7 +374,7 @@ const modules: Problem[] = [
   },
   {
     id: 'aws-rung-iam',
-    title: 'Module 3: IAM: Who Can Do What',
+    title: 'Overview 3: IAM: Who Can Do What',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 13,
@@ -468,7 +469,7 @@ const modules: Problem[] = [
   },
   {
     id: 'aws-rung-compute',
-    title: 'Module 4: Compute: EC2, Containers, And Lambda',
+    title: 'Overview 4: Compute: EC2, Containers, And Lambda',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 14,
@@ -563,7 +564,7 @@ const modules: Problem[] = [
   },
   {
     id: 'aws-rung-storage',
-    title: 'Module 5: Storage: S3, EBS, And EFS',
+    title: 'Overview 5: Storage: S3, EBS, And EFS',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 12,
@@ -658,7 +659,7 @@ const modules: Problem[] = [
   },
   {
     id: 'aws-rung-databases',
-    title: 'Module 6: Databases: RDS, Aurora, And DynamoDB',
+    title: 'Overview 6: Databases: RDS, Aurora, And DynamoDB',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 13,
@@ -754,7 +755,7 @@ const modules: Problem[] = [
   },
   {
     id: 'aws-rung-networking',
-    title: 'Module 7: Networking: VPC, Route 53, CloudFront, And Load Balancers',
+    title: 'Overview 7: Networking: VPC, Route 53, CloudFront, And Load Balancers',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 14,
@@ -853,7 +854,7 @@ const modules: Problem[] = [
   },
   {
     id: 'aws-rung-async-ops',
-    title: 'Module 8: Messaging, Scaling, And Observability',
+    title: 'Overview 8: Messaging, Scaling, And Observability',
     type: 'lesson',
     difficulty: 'Core',
     minutes: 14,
@@ -956,5 +957,5 @@ export const awsSubject: Subject = {
     'Cloud from zero: the AWS mental model, regions, IAM, compute, storage, databases, networking, and a flashcard deck of the core services.',
   icon: AwsIcon,
   color: '#ff9900',
-  problems: [...modules, ...cardProblems],
+  problems: [...modules, ...awsDeepDives, ...awsDesignCapstones, ...cardProblems],
 }

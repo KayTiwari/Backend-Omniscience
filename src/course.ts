@@ -993,12 +993,15 @@ export const subjectTracks: { label: string; subjectIds: string[] }[] = [
       'observability-ops',
       'distributed',
       'system-design',
-      'aws',
       'ai-backend',
       'utilities',
       'algorithms',
       'capstone',
     ],
+  },
+  {
+    label: 'AWS',
+    subjectIds: ['aws'],
   },
   {
     label: 'Languages & Frameworks',

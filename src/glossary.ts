@@ -1636,6 +1636,168 @@ export const glossaryTerms: GlossaryTerm[] = [
       'Opens the manual page for a command (man ls), shown in the less pager (/search, q to quit). --help prints a shorter inline summary; apropos searches man pages by keyword when you do not know the command name.',
     synonyms: ['man page', 'manual', '--help'],
   },
+  {
+    term: 'AWS region',
+    definition:
+      'A geographic location (us-east-1, eu-west-1) with its own isolated copy of AWS services. You choose a region for latency to users, data-residency rules, and cost. Regions are isolated from each other, so multi-region is a deliberate, costlier choice.',
+    synonyms: ['region'],
+  },
+  {
+    term: 'availability zone',
+    definition:
+      'One or more physically separate data centers within an AWS region, linked by fast low-latency networking. Spreading resources across AZs survives a single data-center failure; it is the cheapest reliability win on AWS.',
+    synonyms: ['AZ'],
+  },
+  {
+    term: 'shared responsibility model',
+    definition:
+      'The split where AWS secures the cloud (hardware, data centers, managed-service internals) and you secure what is in the cloud (IAM, security groups, your data, patching what you run). Most breaches are on the customer side: public buckets, broad IAM, leaked keys.',
+    synonyms: ['shared responsibility'],
+  },
+  {
+    term: 'IAM role',
+    definition:
+      'An IAM identity that anything (an EC2 instance, a Lambda, another account) can temporarily assume to get short-lived credentials from STS, scoped by the role policies. Roles replace long-lived access keys for workloads, so there is nothing static to leak.',
+    synonyms: ['assume role', 'instance role'],
+  },
+  {
+    term: 'IAM policy',
+    definition:
+      'A JSON document listing allowed (or denied) actions on resources (effect + action + resource), attached to a user, group, or role. The default is implicit deny; you only get what a policy explicitly allows, and an explicit Deny always wins.',
+    synonyms: ['policy document'],
+  },
+  {
+    term: 'AWS STS',
+    definition:
+      'Security Token Service: issues short-lived, auto-expiring credentials when an identity assumes a role. The mechanism behind role assumption, cross-account access, and federation; even a leaked STS credential dies quickly.',
+    synonyms: ['STS', 'temporary credentials'],
+  },
+  {
+    term: 'service role',
+    definition:
+      'A role an AWS service assumes to act on your behalf (a Lambda execution role, an ECS task role), scoped to exactly what that workload needs. The standard way services get permissions without embedded keys.',
+    synonyms: ['execution role', 'task role'],
+  },
+  {
+    term: 'least privilege',
+    definition:
+      'Granting the minimum permissions needed and no more, scoped to specific actions and resource ARNs. Start from deny-all and add specific allows; never start from admin and trim. The single most effective control for limiting breach blast radius.',
+    synonyms: ['least-privilege', 'principle of least privilege'],
+  },
+  {
+    term: 'subnet',
+    definition:
+      'A slice of a VPC IP range pinned to one availability zone. A subnet is "public" if its route table sends internet-bound traffic to an internet gateway, "private" if it does not. Load balancers go in public subnets; app servers and databases go in private ones.',
+    synonyms: ['VPC subnet'],
+  },
+  {
+    term: 'route table',
+    definition:
+      'The set of rules that decide where network traffic from a subnet goes. A route sending 0.0.0.0/0 to an internet gateway makes a subnet public; sending it to a NAT gateway gives outbound-only access. What makes a subnet public or private.',
+    synonyms: ['routes'],
+  },
+  {
+    term: 'internet gateway',
+    definition:
+      'A VPC component that allows two-way traffic between a public subnet and the internet. A subnet is public only because its route table points internet-bound traffic at an internet gateway (IGW).',
+    synonyms: ['IGW'],
+  },
+  {
+    term: 'NAT gateway',
+    definition:
+      'A managed component (in a public subnet) that lets private-subnet resources make outbound internet connections (to download packages, call APIs) while staying unreachable from inbound. Bills per hour and per GB processed, a frequent hidden cost.',
+    synonyms: ['NAT', 'network address translation gateway'],
+  },
+  {
+    term: 'security group',
+    definition:
+      'A stateful, allow-only firewall attached to a resource (instance, RDS). You allow inbound/outbound by port and source; return traffic is automatically permitted. Reference other security groups as the source (not IPs) so rules survive scaling.',
+    synonyms: ['SG'],
+  },
+  {
+    term: 'network ACL',
+    definition:
+      'A stateless, ordered firewall at the subnet boundary that supports explicit allow and deny and evaluates each direction independently (you must allow return/ephemeral ports). A coarse subnet-level backstop; security groups are the everyday tool.',
+    synonyms: ['NACL'],
+  },
+  {
+    term: 'VPC endpoint',
+    definition:
+      'A private connection from your VPC to an AWS service (S3, DynamoDB, and others) that keeps traffic on the AWS network instead of the internet. Gateway endpoints (S3/DynamoDB) are free and cut NAT cost and data exposure; interface endpoints cover most other services.',
+    synonyms: ['gateway endpoint', 'interface endpoint', 'PrivateLink'],
+  },
+  {
+    term: 'AMI',
+    definition:
+      'Amazon Machine Image: the disk image an EC2 instance boots from (OS, runtime, pre-installed software). Baking a custom AMI makes instances start fast and identically; an Auto Scaling Group launches new instances from it.',
+    synonyms: ['Amazon Machine Image', 'machine image'],
+  },
+  {
+    term: 'EC2 user data',
+    definition:
+      'A startup script that runs the first time an EC2 instance boots, used to configure a fresh instance (install packages, fetch config, start the app). Combined with an AMI and an Auto Scaling Group, it makes instances self-configure on launch.',
+    synonyms: ['user data', 'cloud-init'],
+  },
+  {
+    term: 'Amazon EFS',
+    definition:
+      'Elastic File System: a shared NFS file system many EC2 instances can mount at once, scaling automatically. For shared files across a fleet or lift-and-shift apps expecting a POSIX file system; costs more per GB than S3 or EBS.',
+    synonyms: ['EFS', 'Elastic File System'],
+  },
+  {
+    term: 'Application Load Balancer',
+    definition:
+      'A layer-7 (HTTP) load balancer that routes requests across targets (EC2, ECS tasks, Lambda) by path or host rules, with health checks that drain unhealthy targets. The workhorse front for containerized and EC2 services.',
+    synonyms: ['ALB'],
+  },
+  {
+    term: 'Amazon EventBridge',
+    definition:
+      'A managed event bus where producers emit events and rules route them to targets by content, with schemas and SaaS sources. For event-driven architectures that need routing and decoupling by event type, beyond a simple queue.',
+    synonyms: ['EventBridge', 'event bus'],
+  },
+  {
+    term: 'Amazon Kinesis',
+    definition:
+      'A managed service for ingesting and processing high-volume, ordered, replayable streams (clickstreams, metrics, logs) where multiple consumers read at their own offset. For real-time analytics firehoses, not simple task queues (use SQS for those).',
+    synonyms: ['Kinesis', 'data stream'],
+  },
+  {
+    term: 'AWS X-Ray',
+    definition:
+      'A distributed tracing service that follows a single request across services and shows a timeline of where the latency or error went. Essential once a request fans out across Lambda, queues, and databases.',
+    synonyms: ['X-Ray', 'distributed tracing'],
+  },
+  {
+    term: 'AWS Systems Manager Parameter Store',
+    definition:
+      'A store for configuration and secrets (SecureString values are encrypted with KMS), free for standard parameters. A cheap fit for non-rotating config and secrets; Secrets Manager is preferred when you need automatic rotation.',
+    synonyms: ['Parameter Store', 'SSM Parameter Store'],
+  },
+  {
+    term: 'AWS WAF',
+    definition:
+      'A web application firewall you attach to CloudFront, an ALB, or API Gateway, with rules against SQL injection, XSS, bad bots, and rate-based abuse. Filters malicious requests at the edge before they reach your application.',
+    synonyms: ['WAF', 'web application firewall'],
+  },
+  {
+    term: 'AWS Shield',
+    definition:
+      'DDoS protection for AWS endpoints. Shield Standard is automatic and free; Shield Advanced adds higher-tier protection, cost protection, and a response team. Works with WAF and CloudFront to keep volumetric attacks off your origin.',
+    synonyms: ['Shield', 'DDoS protection'],
+  },
+  {
+    term: 'AWS CDK',
+    definition:
+      'Cloud Development Kit: define infrastructure in a real programming language (TypeScript, Python) with loops, types, and reusable constructs; it synthesizes CloudFormation under the hood. For teams that want abstraction over raw templates.',
+    synonyms: ['CDK', 'Cloud Development Kit'],
+  },
+  {
+    term: 'AWS CodePipeline',
+    definition:
+      'Orchestrates a deployment pipeline (build with CodeBuild, deploy with CodeDeploy) that runs on every commit, with stages, tests as gates, manual approvals, and rollout strategies. Ships application changes through one automated, reviewable path.',
+    synonyms: ['CodePipeline', 'CodeBuild', 'CodeDeploy'],
+  },
 ]
 
 export type GlossaryMatch = {
